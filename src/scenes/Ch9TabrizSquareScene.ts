@@ -34,14 +34,14 @@ export class Ch9TabrizSquareScene extends BaseMapScene {
 
   protected placeDecor(): void {
     this.decor.push(
-      { gridX: 1, gridY: 2, texture: 'ch9-cypress', blocks: true },
-      { gridX: 16, gridY: 2, texture: 'ch9-cypress', blocks: true },
-      { gridX: 3, gridY: 3, texture: 'ch9-lamp', blocks: true },
-      { gridX: 15, gridY: 8, texture: 'ch9-lamp', blocks: true },
-      { gridX: 5, gridY: 4, texture: 'ch9-crowd-shadow' },
-      { gridX: 6, gridY: 5, texture: 'ch9-crowd-shadow' },
-      { gridX: 12, gridY: 5, texture: 'ch9-crowd-shadow' },
-      { gridX: 13, gridY: 6, texture: 'ch9-crowd-shadow' },
+      { gridX: 1, gridY: 2, texture: 'cypress', blocks: true },
+      { gridX: 16, gridY: 2, texture: 'cypress', blocks: true },
+      { gridX: 3, gridY: 3, texture: 'lamp', blocks: true },
+      { gridX: 15, gridY: 8, texture: 'lamp', blocks: true },
+      { gridX: 5, gridY: 4, texture: 'crowd-shadow' },
+      { gridX: 6, gridY: 5, texture: 'crowd-shadow' },
+      { gridX: 12, gridY: 5, texture: 'crowd-shadow' },
+      { gridX: 13, gridY: 6, texture: 'crowd-shadow' },
       { gridX: 4, gridY: 9, texture: 'ch9-cloth-bundle', blocks: true },
       { gridX: 10, gridY: 10, texture: 'ch9-cloth-bundle', blocks: true },
     );
@@ -92,9 +92,9 @@ export class Ch9TabrizSquareScene extends BaseMapScene {
       hat: { style: 'hood', color: 0x1f1b1a },
       shadow: true,
     });
-    this.makeCypress('ch9-cypress');
-    this.makeLamp('ch9-lamp');
-    this.makeCrowdShadow('ch9-crowd-shadow');
+    this.makeCypress('cypress');
+    this.makeLamp('lamp');
+    this.makeCrowdShadow('crowd-shadow');
     this.makeBundle('ch9-cloth-bundle');
     this.makeBarrackFront('ch9-barrack-front');
   }

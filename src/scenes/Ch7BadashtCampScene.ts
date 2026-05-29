@@ -59,15 +59,15 @@ export class Ch7BadashtCampScene extends BaseMapScene {
     for (const [x, y] of trees) this.decor.push({ gridX: x, gridY: y, texture: 'tree', blocks: true });
 
     this.decor.push(
-      { gridX: 4, gridY: 3, texture: 'ch7-carpet' },
-      { gridX: 13, gridY: 3, texture: 'ch7-carpet' },
-      { gridX: 10, gridY: 9, texture: 'ch7-carpet' },
-      { gridX: 6, gridY: 8, texture: 'ch7-lamp' },
-      { gridX: 11, gridY: 8, texture: 'ch7-lamp' },
+      { gridX: 4, gridY: 3, texture: 'rug' },
+      { gridX: 13, gridY: 3, texture: 'rug' },
+      { gridX: 10, gridY: 9, texture: 'rug' },
+      { gridX: 6, gridY: 8, texture: 'lamp' },
+      { gridX: 11, gridY: 8, texture: 'lamp' },
       { gridX: 6, gridY: 11, texture: 'ch7-rosebush', blocks: true },
       { gridX: 11, gridY: 11, texture: 'ch7-rosebush', blocks: true },
-      { gridX: 3, gridY: 1, texture: 'ch7-lamp' },
-      { gridX: 15, gridY: 1, texture: 'ch7-lamp' },
+      { gridX: 3, gridY: 1, texture: 'lamp' },
+      { gridX: 15, gridY: 1, texture: 'lamp' },
     );
   }
 
@@ -80,7 +80,7 @@ export class Ch7BadashtCampScene extends BaseMapScene {
       () => 'Speak with Quddús  [E]',
       () => this.startSimpleDialogue('ch7-quddus-tension'));
 
-    this.addNPC(5, 5, 'ch7-lamp',
+    this.addNPC(5, 5, 'lamp',
       () => 'Listen at the central tent  [E]',
       () => this.startSimpleDialogue('ch7-bahaullah-reconcile'));
 
@@ -187,7 +187,7 @@ export class Ch7BadashtCampScene extends BaseMapScene {
   }
 
   private makeCarpet(): void {
-    const key = 'ch7-carpet';
+    const key = 'rug';
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
@@ -211,7 +211,7 @@ export class Ch7BadashtCampScene extends BaseMapScene {
   }
 
   private makeLamp(): void {
-    const key = 'ch7-lamp';
+    const key = 'lamp';
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();

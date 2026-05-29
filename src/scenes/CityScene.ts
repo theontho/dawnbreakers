@@ -52,7 +52,7 @@ export class CityScene extends BaseMapScene {
   }
 
   private makeCratesTexture(): void {
-    const key = 'ch1-crates';
+    const key = 'crates';
     if (this.textures.exists(key)) return;
 
     const geo = this.isoPrism(1, 1, 18, 4);
@@ -72,7 +72,7 @@ export class CityScene extends BaseMapScene {
   }
 
   private makeLampTexture(): void {
-    const key = 'ch1-lamp';
+    const key = 'lamp';
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
@@ -88,7 +88,7 @@ export class CityScene extends BaseMapScene {
   }
 
   private makeRugTexture(): void {
-    const key = 'ch1-rug';
+    const key = 'rug';
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
@@ -183,12 +183,12 @@ export class CityScene extends BaseMapScene {
     this.decor.push({ gridX: 10, gridY: 5, texture: 'well', blocks: true });
 
     // Market and evening details (non-blocking)
-    this.decor.push({ gridX: 10, gridY: 9, texture: 'ch1-crates' });
-    this.decor.push({ gridX: 16, gridY: 11, texture: 'ch1-crates' });
-    this.decor.push({ gridX: 12, gridY: 9, texture: 'ch1-rug' });
-    this.decor.push({ gridX: 14, gridY: 11, texture: 'ch1-rug' });
-    this.decor.push({ gridX: 9, gridY: 4, texture: 'ch1-lamp' });
-    this.decor.push({ gridX: 12, gridY: 13, texture: 'ch1-lamp' });
+    this.decor.push({ gridX: 10, gridY: 9, texture: 'crates' });
+    this.decor.push({ gridX: 16, gridY: 11, texture: 'crates' });
+    this.decor.push({ gridX: 12, gridY: 9, texture: 'rug' });
+    this.decor.push({ gridX: 14, gridY: 11, texture: 'rug' });
+    this.decor.push({ gridX: 9, gridY: 4, texture: 'lamp' });
+    this.decor.push({ gridX: 12, gridY: 13, texture: 'lamp' });
     this.decor.push({ gridX: 4, gridY: 5, texture: 'ch1-birds' });
   }
 

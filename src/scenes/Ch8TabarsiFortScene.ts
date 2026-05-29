@@ -14,16 +14,25 @@ export class Ch8TabarsiFortScene extends BaseMapScene {
 
   private ensureTextures(): void {
     if (!this.textures.exists('ch8-palisade')) {
-      const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
-      g.fillStyle(0x4a321e, 1);
-      for (let x = 4; x < 60; x += 10) {
-        g.fillRect(x, 16, 7, 42);
-        g.fillTriangle(x, 16, x + 3.5, 6, x + 7, 16);
+      const geo = this.isoPrism(1, 1, 20, 4);
+      const g = this.add.graphics();
+      this.drawIsoPrism(g, geo, {
+        right: 0x563820,
+        left: 0x3a2515,
+        top: 0x7a5430,
+        edge: 0x2b1c10,
+      });
+      g.lineStyle(3, 0x2b1c10, 1);
+      for (const [start, end] of [[geo.left, geo.bottom], [geo.right, geo.bottom]] as const) {
+        g.lineBetween(start.x, start.y - 14, end.x, end.y - 14);
+        g.lineBetween(start.x, start.y - 6, end.x, end.y - 6);
+        for (const t of [0.18, 0.42, 0.66, 0.9]) {
+          const x = start.x + (end.x - start.x) * t;
+          const y = start.y + (end.y - start.y) * t;
+          g.lineBetween(x, y + 2, x, y - 26);
+        }
       }
-      g.lineStyle(4, 0x2b1c10, 1);
-      g.lineBetween(2, 33, 62, 33);
-      g.lineBetween(2, 48, 62, 48);
-      g.generateTexture('ch8-palisade', 64, 64);
+      g.generateTexture('ch8-palisade', geo.texW, geo.texH);
       g.destroy();
     }
 

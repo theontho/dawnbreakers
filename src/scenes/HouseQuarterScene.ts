@@ -54,7 +54,7 @@ export class HouseQuarterScene extends BaseMapScene {
   }
 
   private makeLampTexture(): void {
-    const key = 'ch1-lamp';
+    const key = 'lamp';
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
@@ -70,7 +70,7 @@ export class HouseQuarterScene extends BaseMapScene {
   }
 
   private makeRugTexture(): void {
-    const key = 'ch1-rug';
+    const key = 'rug';
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
@@ -149,10 +149,10 @@ export class HouseQuarterScene extends BaseMapScene {
     this.decor.push({ gridX: 4, gridY: 7, texture: 'ch1-planter' });
     this.decor.push({ gridX: 8, gridY: 7, texture: 'ch1-planter' });
     this.decor.push({ gridX: 9, gridY: 10, texture: 'ch1-planter' });
-    this.decor.push({ gridX: 5, gridY: 7, texture: 'ch1-rug' });
-    this.decor.push({ gridX: 7, gridY: 7, texture: 'ch1-rug' });
-    this.decor.push({ gridX: 3, gridY: 8, texture: 'ch1-lamp' });
-    this.decor.push({ gridX: 9, gridY: 8, texture: 'ch1-lamp' });
+    this.decor.push({ gridX: 5, gridY: 7, texture: 'rug' });
+    this.decor.push({ gridX: 7, gridY: 7, texture: 'rug' });
+    this.decor.push({ gridX: 3, gridY: 8, texture: 'lamp' });
+    this.decor.push({ gridX: 9, gridY: 8, texture: 'lamp' });
   }
 
   protected spawnNPCs(): void {

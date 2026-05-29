@@ -214,17 +214,18 @@ export class BootScene extends Phaser.Scene {
   /** A simple isometric city gate: two pillars + a beam over the front tile. */
   private makeIsoGate(key: string): void {
     const TILE_W = 64, TILE_H = 32;
-    const cells = 1;
-    const baseW = cells * TILE_W;
-    const baseH = cells * TILE_H;
-    const wallH = 70;
-    const texW = baseW;
-    const texH = baseH + wallH + 10;
+    const wallH = 54;
+    const texW = TILE_W;
+    const texH = TILE_H + wallH + 12;
 
-    const top    = { x: texW / 2, y: texH - baseH };
-    const right  = { x: texW,     y: texH - baseH / 2 };
+    const top    = { x: texW / 2, y: texH - TILE_H };
+    const right  = { x: texW,     y: texH - TILE_H / 2 };
     const bottom = { x: texW / 2, y: texH };
-    const left   = { x: 0,        y: texH - baseH / 2 };
+    const left   = { x: 0,        y: texH - TILE_H / 2 };
+    const topR = { x: top.x, y: top.y - wallH };
+    const rightR = { x: right.x, y: right.y - wallH };
+    const bottomR = { x: bottom.x, y: bottom.y - wallH };
+    const leftR = { x: left.x, y: left.y - wallH };
 
     const wall = 0x6a5030;
     const dark = 0x3a2818;
@@ -232,63 +233,32 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     g.lineStyle(1, 0x000000, 0.7);
 
-    // Right pillar (between `right` and `bottom`)
-    const rPillarBase = [
-      { x: right.x - 6,  y: right.y + 3 },
-      { x: right.x,      y: right.y + 6 },
-      { x: bottom.x + 6, y: bottom.y - 6 },
-      { x: bottom.x,     y: bottom.y - 9 },
-    ];
     g.fillStyle(wall, 1);
-    g.fillPoints(rPillarBase, true);
-    g.fillPoints(rPillarBase.map(p => ({ x: p.x, y: p.y - wallH })), true);
-    // vertical sides of right pillar
-    g.fillPoints([
-      rPillarBase[1], rPillarBase[2],
-      { x: rPillarBase[2].x, y: rPillarBase[2].y - wallH },
-      { x: rPillarBase[1].x, y: rPillarBase[1].y - wallH },
-    ], true);
-
-    // Left pillar (between `left` and `bottom`)
-    const lPillarBase = [
-      { x: left.x + 6,    y: left.y + 3 },
-      { x: left.x,        y: left.y + 6 },
-      { x: bottom.x - 6,  y: bottom.y - 6 },
-      { x: bottom.x,      y: bottom.y - 9 },
-    ];
+    g.fillPoints([right, bottom, bottomR, rightR], true);
+    g.strokePoints([right, bottom, bottomR, rightR], true);
     g.fillStyle(Phaser.Display.Color.IntegerToColor(wall).darken(20).color, 1);
-    g.fillPoints(lPillarBase, true);
-    g.fillPoints(lPillarBase.map(p => ({ x: p.x, y: p.y - wallH })), true);
-    g.fillPoints([
-      lPillarBase[1], lPillarBase[2],
-      { x: lPillarBase[2].x, y: lPillarBase[2].y - wallH },
-      { x: lPillarBase[1].x, y: lPillarBase[1].y - wallH },
-    ], true);
+    g.fillPoints([left, bottom, bottomR, leftR], true);
+    g.strokePoints([left, bottom, bottomR, leftR], true);
+    g.fillStyle(Phaser.Display.Color.IntegerToColor(wall).lighten(12).color, 1);
+    g.fillPoints([topR, rightR, bottomR, leftR], true);
+    g.strokePoints([topR, rightR, bottomR, leftR], true);
 
-    // Lintel beam joining the two pillars at the top
+    const along = (from: number, to: number) => {
+      const a = {
+        x: right.x + (bottom.x - right.x) * from,
+        y: right.y + (bottom.y - right.y) * from,
+      };
+      const b = {
+        x: right.x + (bottom.x - right.x) * to,
+        y: right.y + (bottom.y - right.y) * to,
+      };
+      return [a, b, { x: b.x, y: b.y - 38 }, { x: a.x, y: a.y - 38 }];
+    };
     g.fillStyle(dark, 1);
-    const beamBottom = top.y - wallH + 2;
-    const beamTop = beamBottom - 10;
-    g.fillPoints([
-      { x: left.x + 4, y: beamBottom },
-      { x: top.x, y: beamBottom - 10 },
-      { x: right.x - 4, y: beamBottom },
-      { x: top.x, y: beamBottom + 10 },
-    ], true);
-    g.fillStyle(Phaser.Display.Color.IntegerToColor(dark).darken(18).color, 1);
-    g.fillPoints([
-      { x: left.x + 4, y: beamBottom },
-      { x: top.x, y: beamBottom + 10 },
-      { x: top.x, y: beamTop + 10 },
-      { x: left.x + 4, y: beamTop },
-    ], true);
-    g.lineStyle(1, 0x000000, 0.7);
-    g.strokePoints([
-      { x: left.x + 4, y: beamBottom },
-      { x: top.x, y: beamBottom - 10 },
-      { x: right.x - 4, y: beamBottom },
-      { x: top.x, y: beamBottom + 10 },
-    ], true);
+    const opening = along(0.22, 0.78);
+    g.fillPoints(opening, true);
+    g.lineStyle(2, 0x000000, 0.65);
+    g.strokePoints(opening, true);
 
     g.generateTexture(key, texW, texH);
     g.destroy();

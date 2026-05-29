@@ -54,7 +54,7 @@ export class RoadScene extends BaseMapScene {
 
     const cypresses: [number, number][] = [[2, 2], [7, 1], [13, 2], [1, 8], [17, 8]];
     for (const [x, y] of cypresses) {
-      this.decor.push({ gridX: x, gridY: y, texture: 'ch2-cypress', blocks: true });
+      this.decor.push({ gridX: x, gridY: y, texture: 'cypress', blocks: true });
     }
 
     const tamarisks: [number, number][] = [[3, 8], [8, 2], [12, 7], [19, 7]];
@@ -91,7 +91,7 @@ export class RoadScene extends BaseMapScene {
     if (!this.textures.exists('ch2-shrine')) this.makeShrineTexture();
     if (!this.textures.exists('ch2-milestone')) this.makeMilestoneTexture();
     if (!this.textures.exists('ch2-dry-stream')) this.makeDryStreamTexture();
-    if (!this.textures.exists('ch2-cypress')) this.makeCypressTexture();
+    if (!this.textures.exists('cypress')) this.makeCypressTexture();
     if (!this.textures.exists('ch2-tamarisk')) this.makeTamariskTexture();
   }
 
@@ -194,7 +194,7 @@ export class RoadScene extends BaseMapScene {
     g.fillEllipse(w / 2 - 4, h - 55, 10, 42);
     g.lineStyle(1, 0x17351f, 0.8);
     g.strokeEllipse(w / 2, h - 48, 20, 68);
-    g.generateTexture('ch2-cypress', w, h);
+    g.generateTexture('cypress', w, h);
     g.destroy();
   }
 

@@ -40,7 +40,7 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
   }
 
   private makeClosedDoor(): void {
-    if (this.textures.exists('ch4-closed-door')) return;
+    if (this.textures.exists('closed-door')) return;
     const geo = this.isoPrism(1, 1, 42, 12);
     const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
     this.drawIsoPrism(g, geo, {
@@ -58,12 +58,12 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
     g.lineBetween((door[0].x + door[1].x) / 2, (door[0].y + door[1].y) / 2, (door[2].x + door[3].x) / 2, (door[2].y + door[3].y) / 2);
     g.fillStyle(0xc9a55c, 1);
     g.fillCircle(door[1].x - 4, door[1].y - 16, 2);
-    g.generateTexture('ch4-closed-door', geo.texW, geo.texH);
+    g.generateTexture('closed-door', geo.texW, geo.texH);
     g.destroy();
   }
 
   private makeWatchLamp(): void {
-    if (this.textures.exists('ch4-watch-lamp')) return;
+    if (this.textures.exists('lamp')) return;
     const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
     g.lineStyle(3, 0x2b1d12, 1);
     g.lineBetween(16, 6, 16, 42);
@@ -71,12 +71,12 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
     g.fillCircle(16, 16, 6);
     g.fillStyle(0xf3d98a, 0.65);
     g.fillEllipse(16, 18, 22, 18);
-    g.generateTexture('ch4-watch-lamp', 32, 46);
+    g.generateTexture('lamp', 32, 46);
     g.destroy();
   }
 
   private makeCrowd(): void {
-    if (this.textures.exists('ch4-crowd')) return;
+    if (this.textures.exists('crowd')) return;
     const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
     const robes = [0x3f3328, 0x6a5030, 0x2f3b44, 0x574027];
     for (let i = 0; i < robes.length; i++) {
@@ -86,7 +86,7 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
       g.fillStyle(0xd1b37c, 1);
       g.fillCircle(x, 11, 4);
     }
-    g.generateTexture('ch4-crowd', 48, 34);
+    g.generateTexture('crowd', 48, 34);
     g.destroy();
   }
 
@@ -128,13 +128,13 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
 
   protected placeDecor(): void {
     this.decor.push(
-      { gridX: 4, gridY: 3, texture: 'ch4-closed-door', blocks: true },
-      { gridX: 8, gridY: 3, texture: 'ch4-closed-door', blocks: true },
-      { gridX: 13, gridY: 7, texture: 'ch4-closed-door', blocks: true },
-      { gridX: 2, gridY: 4, texture: 'ch4-watch-lamp', blocks: true },
-      { gridX: 12, gridY: 6, texture: 'ch4-watch-lamp', blocks: true },
-      { gridX: 5, gridY: 7, texture: 'ch4-crowd', blocks: true },
-      { gridX: 10, gridY: 7, texture: 'ch4-crowd', blocks: true },
+      { gridX: 4, gridY: 3, texture: 'closed-door', blocks: true },
+      { gridX: 8, gridY: 3, texture: 'closed-door', blocks: true },
+      { gridX: 13, gridY: 7, texture: 'closed-door', blocks: true },
+      { gridX: 2, gridY: 4, texture: 'lamp', blocks: true },
+      { gridX: 12, gridY: 6, texture: 'lamp', blocks: true },
+      { gridX: 5, gridY: 7, texture: 'crowd', blocks: true },
+      { gridX: 10, gridY: 7, texture: 'crowd', blocks: true },
       { gridX: 15, gridY: 4, texture: 'gate', blocks: true },
     );
   }

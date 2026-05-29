@@ -34,11 +34,11 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
   }
 
   protected placeDecor(): void {
-    this.decor.push({ gridX: 8, gridY: 6, texture: 'ch5-courtyard-carpet' });
+    this.decor.push({ gridX: 8, gridY: 6, texture: 'rug' });
 
     const cypresses: [number, number][] = [[2, 4], [15, 4], [3, 11], [14, 11]];
     for (const [x, y] of cypresses) {
-      this.decor.push({ gridX: x, gridY: y, texture: 'ch5-cypress', blocks: true });
+      this.decor.push({ gridX: x, gridY: y, texture: 'cypress', blocks: true });
     }
 
     this.decor.push({ gridX: 12, gridY: 5, texture: 'well', blocks: true });
@@ -53,7 +53,7 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
       () => 'Speak with the Imám-Jumʿih  [E]',
       () => this.startSimpleDialogue('ch5-cleric-question'));
 
-    this.addNPC(10, 7, 'ch5-writing-desk',
+    this.addNPC(10, 7, 'writing-desk',
       () => 'Read beside the revealed treatise  [E]',
       () => this.startSimpleDialogue('ch5-treatise'));
   }
@@ -92,7 +92,7 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
       g.destroy();
     }
 
-    if (!this.textures.exists('ch5-courtyard-carpet')) {
+    if (!this.textures.exists('rug')) {
       const g = this.add.graphics();
       g.lineStyle(1, 0x2a1a0a, 1);
       g.fillStyle(0x7a2636, 1);
@@ -106,27 +106,36 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
       g.strokePath();
       g.lineStyle(2, 0xc9a55c, 1);
       g.strokeEllipse(48, 24, 54, 20);
-      g.generateTexture('ch5-courtyard-carpet', 96, 48);
+      g.generateTexture('rug', 96, 48);
       g.destroy();
     }
 
-    if (!this.textures.exists('ch5-writing-desk')) {
+    if (!this.textures.exists('writing-desk')) {
+      const geo = this.isoPrism(1, 1, 12, 4);
       const g = this.add.graphics();
-      g.lineStyle(1, 0x2a1a0a, 1);
-      g.fillStyle(0x5a3b22, 1);
-      g.fillRect(8, 24, 52, 18);
-      g.strokeRect(8, 24, 52, 18);
+      this.drawIsoPrism(g, geo, {
+        right: 0x6f4424,
+        left: 0x4d2f1a,
+        top: 0x9f6840,
+        edge: 0x2a1a0a,
+      });
+      const paper = [
+        { x: geo.topR.x, y: geo.topR.y + 9 },
+        { x: geo.topR.x + 13, y: geo.topR.y + 15 },
+        { x: geo.topR.x, y: geo.topR.y + 21 },
+        { x: geo.topR.x - 13, y: geo.topR.y + 15 },
+      ];
       g.fillStyle(0xe6d8b0, 1);
-      g.fillRect(18, 14, 30, 15);
-      g.strokeRect(18, 14, 30, 15);
-      g.lineStyle(2, 0x1a1a1a, 1);
-      g.lineBetween(25, 18, 43, 18);
-      g.lineBetween(25, 23, 43, 23);
-      g.generateTexture('ch5-writing-desk', 68, 46);
+      g.fillPoints(paper, true);
+      g.lineStyle(1, 0x1a1a1a, 0.75);
+      g.strokePoints(paper, true);
+      g.lineBetween(paper[3].x + 4, paper[3].y + 1, paper[1].x - 4, paper[1].y + 1);
+      g.lineBetween(paper[3].x + 6, paper[3].y + 5, paper[1].x - 6, paper[1].y + 5);
+      g.generateTexture('writing-desk', geo.texW, geo.texH);
       g.destroy();
     }
 
-    if (!this.textures.exists('ch5-cypress')) {
+    if (!this.textures.exists('cypress')) {
       const g = this.add.graphics();
       g.fillStyle(0x4a2e18, 1);
       g.fillRect(26, 58, 6, 20);
@@ -134,7 +143,7 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
       g.fillTriangle(29, 4, 10, 64, 48, 64);
       g.fillStyle(0x2f6040, 1);
       g.fillTriangle(29, 16, 15, 54, 43, 54);
-      g.generateTexture('ch5-cypress', 58, 82);
+      g.generateTexture('cypress', 58, 82);
       g.destroy();
     }
   }

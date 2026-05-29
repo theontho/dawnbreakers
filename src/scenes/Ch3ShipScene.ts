@@ -57,7 +57,7 @@ export class Ch3ShipScene extends BaseMapScene {
   }
 
   private makeCrateTexture(): void {
-    if (this.textures.exists('ch3-crate')) return;
+    if (this.textures.exists('crates')) return;
 
     const g = this.add.graphics();
     g.fillStyle(0x7a5130, 1);
@@ -66,7 +66,7 @@ export class Ch3ShipScene extends BaseMapScene {
     g.strokeRect(4, 10, 28, 22);
     g.lineBetween(6, 13, 30, 29);
     g.lineBetween(30, 13, 6, 29);
-    g.generateTexture('ch3-crate', 36, 36);
+    g.generateTexture('crates', 36, 36);
     g.destroy();
   }
 
@@ -117,8 +117,8 @@ export class Ch3ShipScene extends BaseMapScene {
     this.decor.push({ gridX: 4, gridY: 6, texture: 'ch3-ship-rail', blocks: true });
     this.decor.push({ gridX: 8, gridY: 2, texture: 'ch3-ship-rail', blocks: true });
     this.decor.push({ gridX: 9, gridY: 6, texture: 'ch3-ship-rail', blocks: true });
-    this.decor.push({ gridX: 3, gridY: 5, texture: 'ch3-crate', blocks: true });
-    this.decor.push({ gridX: 8, gridY: 5, texture: 'ch3-crate', blocks: true });
+    this.decor.push({ gridX: 3, gridY: 5, texture: 'crates', blocks: true });
+    this.decor.push({ gridX: 8, gridY: 5, texture: 'crates', blocks: true });
   }
 
   protected spawnNPCs(): void {

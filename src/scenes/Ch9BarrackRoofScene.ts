@@ -45,8 +45,8 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
     this.decor.push(
       { gridX: 10, gridY: 4, texture: 'ch9-rope-coils', blocks: true },
       { gridX: 12, gridY: 4, texture: 'ch9-rope-coils', blocks: true },
-      { gridX: 3, gridY: 2, texture: 'ch9-lamp', blocks: true },
-      { gridX: 13, gridY: 7, texture: 'ch9-lamp', blocks: true },
+      { gridX: 3, gridY: 2, texture: 'lamp', blocks: true },
+      { gridX: 13, gridY: 7, texture: 'lamp', blocks: true },
       { gridX: 6, gridY: 8, texture: 'ch9-empty-space' },
       { gridX: 8, gridY: 8, texture: 'ch9-empty-space' },
     );
@@ -90,7 +90,7 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
       hat: { style: 'tallHat', color: 0x2e3742 },
       shadow: true,
     });
-    this.makeLamp('ch9-lamp');
+    this.makeLamp('lamp');
     this.makeRopes('ch9-rope-coils');
     this.makeEmptySpace('ch9-empty-space');
     this.makeRoofParapet('ch9-roof-parapet', 4, 1, 30);

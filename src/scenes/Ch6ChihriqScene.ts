@@ -61,7 +61,7 @@ export class Ch6ChihriqScene extends BaseMapScene {
       () => 'Speak with Mullá Ḥusayn  [E]',
       () => this.startSimpleDialogue('ch6-mulla-husayn-visit'));
 
-    this.addNPC(12, 7, 'ch6-writing-desk',
+    this.addNPC(12, 7, 'writing-desk',
       () => 'Read at the writing desk  [E]',
       () => this.startSimpleDialogue('ch6-bayan'));
   }
@@ -86,7 +86,7 @@ export class Ch6ChihriqScene extends BaseMapScene {
       hat: { style: 'turban', color: 0xe8e5dc, accent: 0x22211f },
       shadow: true,
     });
-    this.makeWritingDesk('ch6-writing-desk');
+    this.makeWritingDesk('writing-desk');
   }
 
   private makeFortress(key: string, wall: number, dark: number, snow: number): void {
@@ -166,18 +166,28 @@ export class Ch6ChihriqScene extends BaseMapScene {
   private makeWritingDesk(key: string): void {
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(1, 1, 12, 4);
     const g = this.add.graphics();
-    g.fillStyle(0x463424, 1);
-    g.fillEllipse(28, 32, 46, 18);
+    this.drawIsoPrism(g, geo, {
+      right: 0x5b4330,
+      left: 0x38291d,
+      top: 0x7a5a3f,
+      edge: 0x2a1a0f,
+    });
+    const paper = [
+      { x: geo.topR.x, y: geo.topR.y + 9 },
+      { x: geo.topR.x + 13, y: geo.topR.y + 15 },
+      { x: geo.topR.x, y: geo.topR.y + 21 },
+      { x: geo.topR.x - 13, y: geo.topR.y + 15 },
+    ];
     g.fillStyle(0xd8cfb7, 1);
-    g.fillRect(17, 21, 22, 13);
+    g.fillPoints(paper, true);
     g.lineStyle(1, 0x2a1a0f, 1);
-    g.strokeEllipse(28, 32, 46, 18);
-    g.strokeRect(17, 21, 22, 13);
+    g.strokePoints(paper, true);
     g.lineStyle(1, 0x6f6048, 1);
-    g.lineBetween(21, 25, 35, 25);
-    g.lineBetween(21, 29, 35, 29);
-    g.generateTexture(key, 56, 44);
+    g.lineBetween(paper[3].x + 4, paper[3].y + 1, paper[1].x - 4, paper[1].y + 1);
+    g.lineBetween(paper[3].x + 6, paper[3].y + 5, paper[1].x - 6, paper[1].y + 5);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 

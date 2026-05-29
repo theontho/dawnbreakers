@@ -45,7 +45,7 @@ export class Ch10SiyahChalScene extends BaseMapScene {
       { gridX: 3, gridY: 3, texture: 'ch10-chain-pillar', blocks: true },
       { gridX: 7, gridY: 8, texture: 'ch10-chain-pillar', blocks: true },
       { gridX: 11, gridY: 7, texture: 'ch10-chain-pillar', blocks: true },
-      { gridX: 5, gridY: 7, texture: 'ch10-dim-lamp', blocks: true },
+      { gridX: 5, gridY: 7, texture: 'lamp', blocks: true },
       { gridX: 2, gridY: 9, texture: 'ch10-chain-coil', blocks: true },
       { gridX: 13, gridY: 8, texture: 'ch10-chain-coil', blocks: true },
     );
@@ -86,7 +86,7 @@ export class Ch10SiyahChalScene extends BaseMapScene {
     this.makeChainPillar('ch10-chain-pillar');
     this.makeChainPost('ch10-chain-post');
     this.makeChainCoil('ch10-chain-coil');
-    this.makeDimLamp('ch10-dim-lamp');
+    this.makeDimLamp('lamp');
     this.makeLightShaft('ch10-light-shaft');
     this.makeLowArch('ch10-low-arch');
     this.makeStonePillar('ch10-stone-pillar');

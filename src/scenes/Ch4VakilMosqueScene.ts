@@ -71,7 +71,7 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
   }
 
   private makeCrowd(): void {
-    if (this.textures.exists('ch4-crowd')) return;
+    if (this.textures.exists('crowd')) return;
     const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
     const robes = [0x3f3328, 0x6a5030, 0x2f3b44, 0x574027];
     for (let i = 0; i < robes.length; i++) {
@@ -81,7 +81,7 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
       g.fillStyle(0xd1b37c, 1);
       g.fillCircle(x, 11, 4);
     }
-    g.generateTexture('ch4-crowd', 48, 34);
+    g.generateTexture('crowd', 48, 34);
     g.destroy();
   }
 
@@ -113,17 +113,17 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
   protected placeDecor(): void {
     this.decor.push(
       { gridX: 7, gridY: 4, texture: 'ch4-pulpit', blocks: true },
-      { gridX: 5, gridY: 5, texture: 'ch4-crowd', blocks: true },
-      { gridX: 10, gridY: 5, texture: 'ch4-crowd', blocks: true },
-      { gridX: 4, gridY: 8, texture: 'ch4-crowd', blocks: true },
-      { gridX: 11, gridY: 8, texture: 'ch4-crowd', blocks: true },
+      { gridX: 5, gridY: 5, texture: 'crowd', blocks: true },
+      { gridX: 10, gridY: 5, texture: 'crowd', blocks: true },
+      { gridX: 4, gridY: 8, texture: 'crowd', blocks: true },
+      { gridX: 11, gridY: 8, texture: 'crowd', blocks: true },
       { gridX: 2, gridY: 3, texture: 'well', blocks: true },
       { gridX: 13, gridY: 3, texture: 'tree', blocks: true },
     );
   }
 
   protected spawnNPCs(): void {
-    this.addNPC(8, 4, 'ch4-crowd',
+    this.addNPC(8, 4, 'crowd',
       () => 'Stand among the listening crowd  [E]',
       () => this.startSimpleDialogue('ch4-house-arrest'));
 

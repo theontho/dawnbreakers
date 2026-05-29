@@ -867,8 +867,8 @@ export class MapEditorScene extends Phaser.Scene {
       this.updateStatus(`Unknown object: ${id}`);
       return false;
     }
-    if (def.kind === 'structure' && (!def.isometric || !def.footprint)) {
-      this.updateStatus('Structure rejected: buildings and bridges must use an isometric footprint.');
+    if ((def.kind === 'structure' || def.isometric) && (!def.isometric || !def.footprint)) {
+      this.updateStatus('Asset rejected: iso-locked assets must use an isometric footprint.');
       return false;
     }
     if (!this.footprintInBounds(x, y, def.footprint)) {
@@ -1662,9 +1662,11 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private validateObjectCatalog(): void {
-    const invalid = EDITOR_OBJECTS.find(def => def.kind === 'structure' && (!def.isometric || !def.footprint));
+    const invalid = EDITOR_OBJECTS.find(def =>
+      (def.kind === 'structure' || def.isometric) && (!def.isometric || !def.footprint),
+    );
     if (invalid) {
-      throw new Error(`Map editor structure "${invalid.id}" must be isometric and declare a footprint.`);
+      throw new Error(`Map editor asset "${invalid.id}" must be isometric and declare a footprint.`);
     }
   }
 

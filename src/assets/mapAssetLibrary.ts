@@ -5,18 +5,15 @@ import { makeCharacterTexture, type CharacterTextureOptions } from '../scenes/ch
 export type MapObjectKind = 'structure' | 'prop' | 'character';
 export type MapObjectId = string;
 export type MapAssetCategoryId =
-  | 'editor-basics'
-  | 'core-city'
-  | 'chapter-1'
-  | 'chapter-2'
-  | 'chapter-3'
-  | 'chapter-4'
-  | 'chapter-5'
-  | 'chapter-6'
-  | 'chapter-7'
-  | 'chapter-8'
-  | 'chapter-9'
-  | 'chapter-10'
+  | 'buildings'
+  | 'shrines'
+  | 'bridges-water'
+  | 'plants'
+  | 'furnishings'
+  | 'market-supplies'
+  | 'barriers-prison'
+  | 'lighting-effects'
+  | 'people-crowds'
   | 'characters';
 
 export interface MapTileDefinition {
@@ -80,38 +77,34 @@ export const TILE_CODE = Object.fromEntries(TILE_OPTIONS.map(tile => [tile.kind,
 export const CODE_TILE = Object.fromEntries(TILE_OPTIONS.map(tile => [tile.code, tile.kind])) as Record<string, TileKind>;
 
 export const MAP_OBJECTS: MapObjectDefinition[] = [
-  { id: 'house', label: 'Iso House', texture: 'editor-iso-house', kind: 'structure', color: 0x9b7048, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'marketStall', label: 'Iso Stall', texture: 'editor-iso-stall', kind: 'structure', color: 0xb88742, blocks: true, footprint: { w: 2, h: 1 }, isometric: true },
-  { id: 'bridge', label: 'Iso Bridge', texture: 'editor-iso-bridge', kind: 'structure', color: 0x7b6142, blocks: false, footprint: { w: 3, h: 1 }, isometric: true },
-  { id: 'cypress', label: 'Cypress', texture: 'editor-cypress', kind: 'prop', color: 0x234c2f, blocks: true },
-  { id: 'crateStack', label: 'Crates', texture: 'editor-crates', kind: 'prop', color: 0x8a5a2a, blocks: true },
-  { id: 'lamp', label: 'Lamp', texture: 'editor-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
-  { id: 'rug', label: 'Rug', texture: 'editor-rug', kind: 'prop', color: 0x7a1f1f, blocks: false },
-  { id: 'well', label: 'Well', texture: 'editor-well', kind: 'prop', color: 0x8f8068, blocks: true },
+  { id: 'house', label: 'House', texture: 'house', kind: 'structure', color: 0x8a5a2a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
+  { id: 'mosque', label: 'Mosque', texture: 'mosque', kind: 'structure', color: 0xd8c07a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
+  { id: 'market-stall', label: 'Market Stall', texture: 'stall', kind: 'structure', color: 0xc94f4f, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'gate', label: 'Gate', texture: 'gate', kind: 'structure', color: 0x8f8068, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'bridge', label: 'Bridge', texture: 'bridge', kind: 'structure', color: 0x7b6142, blocks: false, footprint: { w: 3, h: 1 }, isometric: true },
+  { id: 'tree', label: 'Tree', texture: 'tree', kind: 'prop', color: 0x3f6f45, blocks: true },
+  { id: 'cypress', label: 'Cypress', texture: 'cypress', kind: 'prop', color: 0x234c2f, blocks: true },
+  { id: 'crates', label: 'Crates', texture: 'crates', kind: 'prop', color: 0x8a5a2a, blocks: true },
+  { id: 'lamp', label: 'Lamp', texture: 'lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
+  { id: 'rug', label: 'Rug', texture: 'rug', kind: 'prop', color: 0x7a1f1f, blocks: false },
+  { id: 'well', label: 'Well', texture: 'well', kind: 'prop', color: 0x8f8068, blocks: true },
+  { id: 'closed-door', label: 'Closed Door', texture: 'closed-door', kind: 'prop', color: 0x5b3320, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'writing-desk', label: 'Writing Desk', texture: 'writing-desk', kind: 'prop', color: 0x8a5a2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'crowd', label: 'Crowd', texture: 'crowd', kind: 'prop', color: 0x6b5a44, blocks: true },
+  { id: 'crowd-shadow', label: 'Crowd Shadow', texture: 'crowd-shadow', kind: 'prop', color: 0x2a221e, blocks: false },
   { id: 'traveller', label: 'Traveller', texture: 'editor-char-traveller', kind: 'character', color: 0x4a3a2a, blocks: true, character: characterOptions(0x4a3a2a, 'sash', 'headscarf') },
   { id: 'merchant', label: 'Merchant', texture: 'editor-char-merchant', kind: 'character', color: 0x8a5a2a, blocks: true, character: characterOptions(0x8a5a2a, 'vest', 'cap') },
   { id: 'guard', label: 'Guard', texture: 'editor-char-guard', kind: 'character', color: 0x39404a, blocks: true, character: characterOptions(0x39404a, 'uniform', 'tallHat') },
   { id: 'pilgrim', label: 'Pilgrim', texture: 'editor-char-pilgrim', kind: 'character', color: 0xf2ead6, blocks: true, character: characterOptions(0x6b5a44, 'wrap', 'veil') },
 
-  { id: 'core-house', label: 'City House', texture: 'house', kind: 'structure', color: 0x8a5a2a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'core-mosque', label: 'Mosque', texture: 'mosque', kind: 'structure', color: 0xd8c07a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'core-stall', label: 'Stall', texture: 'stall', kind: 'structure', color: 0xc94f4f, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'core-gate', label: 'Gate', texture: 'gate', kind: 'structure', color: 0x8f8068, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'core-tree', label: 'Tree', texture: 'tree', kind: 'prop', color: 0x3f6f45, blocks: true },
-  { id: 'core-well', label: 'Well', texture: 'well', kind: 'prop', color: 0x8f8068, blocks: true },
-
-  { id: 'ch1-crates', label: 'Crates', texture: 'ch1-crates', kind: 'prop', color: 0x8a5a2a, blocks: false },
-  { id: 'ch1-rug', label: 'Bazaar Rug', texture: 'ch1-rug', kind: 'prop', color: 0x7a1f1f, blocks: false },
-  { id: 'ch1-lamp', label: 'Street Lamp', texture: 'ch1-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
   { id: 'ch1-birds', label: 'Birds', texture: 'ch1-birds', kind: 'prop', color: 0x1f1a14, blocks: false },
   { id: 'ch1-house-threshold', label: 'House Threshold', texture: 'ch1-house-threshold', kind: 'prop', color: 0xc9a55c, blocks: false },
   { id: 'ch1-planter', label: 'Planter', texture: 'ch1-planter', kind: 'prop', color: 0x4d7a3a, blocks: true },
 
   { id: 'ch2-caravanserai', label: 'Caravanserai', texture: 'ch2-caravanserai', kind: 'structure', color: 0xa87846, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch2-shrine', label: 'Road Shrine', texture: 'ch2-shrine', kind: 'structure', color: 0xd8c07a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch2-milestone', label: 'Milestone', texture: 'ch2-milestone', kind: 'prop', color: 0xb8aa82, blocks: true },
+  { id: 'ch2-milestone', label: 'Milestone', texture: 'ch2-milestone', kind: 'prop', color: 0xb8aa82, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch2-dry-stream', label: 'Dry Stream', texture: 'ch2-dry-stream', kind: 'prop', color: 0x5d6f7a, blocks: false },
-  { id: 'ch2-cypress', label: 'Road Cypress', texture: 'ch2-cypress', kind: 'prop', color: 0x234c2f, blocks: true },
   { id: 'ch2-tamarisk', label: 'Tamarisk', texture: 'ch2-tamarisk', kind: 'prop', color: 0x6f8a45, blocks: true },
 
   { id: 'ch3-kaaba', label: 'Kaaba', texture: 'ch3-kaaba', kind: 'structure', color: 0x181512, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
@@ -119,47 +112,34 @@ export const MAP_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch3-courtyard-hush', label: 'Courtyard Hush', texture: 'ch3-courtyard-hush', kind: 'prop', color: 0xd8c07a, blocks: false },
   { id: 'ch3-mast', label: 'Ship Mast', texture: 'ch3-mast', kind: 'prop', color: 0x8a5a2a, blocks: true },
   { id: 'ch3-ship-rail', label: 'Ship Rail', texture: 'ch3-ship-rail', kind: 'prop', color: 0x6b5136, blocks: false },
-  { id: 'ch3-crate', label: 'Ship Crate', texture: 'ch3-crate', kind: 'prop', color: 0x8a5a2a, blocks: true },
 
-  { id: 'ch4-pulpit', label: 'Pulpit', texture: 'ch4-pulpit', kind: 'prop', color: 0x8a5a2a, blocks: true },
-  { id: 'ch4-prayer-arch', label: 'Prayer Arch', texture: 'ch4-prayer-arch', kind: 'prop', color: 0xd8c07a, blocks: true },
-  { id: 'ch4-crowd', label: 'Crowd', texture: 'ch4-crowd', kind: 'prop', color: 0x6b5a44, blocks: true },
-  { id: 'ch4-closed-door', label: 'Closed Door', texture: 'ch4-closed-door', kind: 'prop', color: 0x5b3320, blocks: true },
-  { id: 'ch4-watch-lamp', label: 'Watch Lamp', texture: 'ch4-watch-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
+  { id: 'ch4-pulpit', label: 'Pulpit', texture: 'ch4-pulpit', kind: 'prop', color: 0x8a5a2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch4-prayer-arch', label: 'Prayer Arch', texture: 'ch4-prayer-arch', kind: 'prop', color: 0xd8c07a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
 
   { id: 'ch5-bridge-span', label: 'Bridge Span', texture: 'ch5-bridge-span', kind: 'structure', color: 0x8a7552, blocks: false, footprint: { w: 5, h: 2 }, isometric: true },
   { id: 'ch5-market-awning', label: 'Market Awning', texture: 'ch5-market-awning', kind: 'structure', color: 0x315f68, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch5-river-reeds', label: 'River Reeds', texture: 'ch5-river-reeds', kind: 'prop', color: 0x637a3a, blocks: true },
   { id: 'ch5-palace-portico', label: 'Palace Portico', texture: 'ch5-palace-portico', kind: 'structure', color: 0xc8b174, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
-  { id: 'ch5-courtyard-carpet', label: 'Courtyard Carpet', texture: 'ch5-courtyard-carpet', kind: 'prop', color: 0x7a1f1f, blocks: false },
-  { id: 'ch5-writing-desk', label: 'Writing Desk', texture: 'ch5-writing-desk', kind: 'prop', color: 0x8a5a2a, blocks: true },
-  { id: 'ch5-cypress', label: 'Palace Cypress', texture: 'ch5-cypress', kind: 'prop', color: 0x234c2f, blocks: true },
 
   { id: 'ch6-maku-fortress', label: 'Maku Fortress', texture: 'ch6-maku-fortress', kind: 'structure', color: 0x786f68, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch6-chihriq-fortress', label: 'Chihriq Fortress', texture: 'ch6-chihriq-fortress', kind: 'structure', color: 0x6b6f76, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch6-rock', label: 'Mountain Rock', texture: 'ch6-rock', kind: 'prop', color: 0x7c766f, blocks: true },
   { id: 'ch6-snow-shrub', label: 'Snow Shrub', texture: 'ch6-snow-shrub', kind: 'prop', color: 0xd9e3e8, blocks: true },
-  { id: 'ch6-barred-marker', label: 'Barred Marker', texture: 'ch6-barred-marker', kind: 'prop', color: 0x3f4650, blocks: true },
-  { id: 'ch6-writing-desk', label: 'Prison Desk', texture: 'ch6-writing-desk', kind: 'prop', color: 0x8a5a2a, blocks: true },
+  { id: 'ch6-barred-marker', label: 'Barred Marker', texture: 'ch6-barred-marker', kind: 'prop', color: 0x3f4650, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
 
   { id: 'ch7-tent-quddus', label: 'Quddus Tent', texture: 'ch7-tent-quddus', kind: 'structure', color: 0xe0d6b8, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch7-tent-reconciliation', label: 'Reconciliation Tent', texture: 'ch7-tent-reconciliation', kind: 'structure', color: 0xc8b174, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch7-garden-canopy', label: 'Garden Canopy', texture: 'ch7-garden-canopy', kind: 'structure', color: 0x8f6f45, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'ch7-carpet', label: 'Garden Carpet', texture: 'ch7-carpet', kind: 'prop', color: 0x7a1f1f, blocks: false },
-  { id: 'ch7-lamp', label: 'Garden Lamp', texture: 'ch7-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
   { id: 'ch7-rosebush', label: 'Rosebush', texture: 'ch7-rosebush', kind: 'prop', color: 0xb93a4d, blocks: true },
 
   { id: 'ch8-shrine-glimpse', label: 'Shrine Glimpse', texture: 'ch8-shrine-glimpse', kind: 'structure', color: 0xd8c07a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch8-palisade', label: 'Palisade', texture: 'ch8-palisade', kind: 'prop', color: 0x6b5136, blocks: true },
+  { id: 'ch8-palisade', label: 'Palisade', texture: 'ch8-palisade', kind: 'prop', color: 0x6b5136, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch8-shrine', label: 'Tabarsi Shrine', texture: 'ch8-shrine', kind: 'structure', color: 0xd8c07a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch8-truce-flag', label: 'Truce Flag', texture: 'ch8-truce-flag', kind: 'prop', color: 0xf2ead6, blocks: true },
 
   { id: 'ch9-barrack-front', label: 'Barrack Front', texture: 'ch9-barrack-front', kind: 'structure', color: 0x8c7f6a, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch9-cloth-bundle', label: 'Cloth Bundle', texture: 'ch9-cloth-bundle', kind: 'prop', color: 0xd0c1a0, blocks: true },
-  { id: 'ch9-crowd-shadow', label: 'Crowd Shadow', texture: 'ch9-crowd-shadow', kind: 'prop', color: 0x3f3a34, blocks: false },
-  { id: 'ch9-cypress', label: 'Tabriz Cypress', texture: 'ch9-cypress', kind: 'prop', color: 0x234c2f, blocks: true },
-  { id: 'ch9-lamp', label: 'Roof Lamp', texture: 'ch9-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
-  { id: 'ch9-rope-coils', label: 'Rope Coils', texture: 'ch9-rope-coils', kind: 'prop', color: 0xb88742, blocks: true },
+  { id: 'ch9-rope-coils', label: 'Rope Coils', texture: 'ch9-rope-coils', kind: 'prop', color: 0xb88742, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch9-empty-space', label: 'Empty Space', texture: 'ch9-empty-space', kind: 'prop', color: 0x3f3a34, blocks: false },
   { id: 'ch9-roof-parapet', label: 'Roof Parapet', texture: 'ch9-roof-parapet', kind: 'structure', color: 0x6b6258, blocks: true, footprint: { w: 4, h: 1 }, isometric: true },
   { id: 'ch9-roof-north-wall', label: 'Roof North Wall', texture: 'ch9-roof-north-wall', kind: 'structure', color: 0x6b6258, blocks: true, footprint: { w: 14, h: 1 }, isometric: true },
@@ -169,15 +149,11 @@ export const MAP_OBJECTS: MapObjectDefinition[] = [
 
   { id: 'ch10-street-house', label: 'Tehran House', texture: 'ch10-street-house', kind: 'structure', color: 0x8a5a2a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch10-street-arch', label: 'Street Arch', texture: 'ch10-street-arch', kind: 'structure', color: 0x6b6258, blocks: true, footprint: { w: 2, h: 1 }, isometric: true },
-  { id: 'ch10-closed-door', label: 'Closed Door', texture: 'ch10-closed-door', kind: 'prop', color: 0x5b3320, blocks: true },
-  { id: 'ch10-crowd-shadow', label: 'Crowd Shadow', texture: 'ch10-crowd-shadow', kind: 'prop', color: 0x3f3a34, blocks: false },
-  { id: 'ch10-watch-lamp', label: 'Watch Lamp', texture: 'ch10-watch-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
   { id: 'ch10-low-arch', label: 'Low Arch', texture: 'ch10-low-arch', kind: 'structure', color: 0x6b6258, blocks: true, footprint: { w: 4, h: 1 }, isometric: true },
   { id: 'ch10-stone-pillar', label: 'Stone Pillar', texture: 'ch10-stone-pillar', kind: 'structure', color: 0x8f897c, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'ch10-chain-pillar', label: 'Chain Pillar', texture: 'ch10-chain-pillar', kind: 'prop', color: 0x6b6258, blocks: true },
-  { id: 'ch10-chain-post', label: 'Chain Post', texture: 'ch10-chain-post', kind: 'prop', color: 0x6b6258, blocks: true },
-  { id: 'ch10-chain-coil', label: 'Chain Coil', texture: 'ch10-chain-coil', kind: 'prop', color: 0x3f4650, blocks: true },
-  { id: 'ch10-dim-lamp', label: 'Dim Lamp', texture: 'ch10-dim-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
+  { id: 'ch10-chain-pillar', label: 'Chain Pillar', texture: 'ch10-chain-pillar', kind: 'prop', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch10-chain-post', label: 'Chain Post', texture: 'ch10-chain-post', kind: 'prop', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch10-chain-coil', label: 'Chain Coil', texture: 'ch10-chain-coil', kind: 'prop', color: 0x3f4650, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch10-light-shaft', label: 'Light Shaft', texture: 'ch10-light-shaft', kind: 'prop', color: 0xf3d98a, blocks: false },
 
   { id: 'npc-bab', label: 'The Bab', texture: 'npc-bab', kind: 'character', color: 0xf2ead6, blocks: true },
@@ -215,150 +191,137 @@ export const MAP_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch10-prisoner', label: 'Prisoner', texture: 'ch10-prisoner', kind: 'character', color: 0x6b6258, blocks: true },
 ];
 
-const LEGACY_OBJECT_ALIASES: Array<{ id: MapObjectId; sourceId: MapObjectId; label?: string }> = [
-  { id: 'city-house', sourceId: 'core-house', label: 'House' },
-  { id: 'city-mosque', sourceId: 'core-mosque', label: 'Mosque' },
-  { id: 'city-stall', sourceId: 'core-stall', label: 'Stall' },
-  { id: 'city-gate', sourceId: 'core-gate', label: 'Gate' },
-  { id: 'city-tree', sourceId: 'core-tree', label: 'Tree' },
-  { id: 'road-caravanserai', sourceId: 'ch2-caravanserai', label: 'Caravan' },
-  { id: 'road-shrine', sourceId: 'ch2-shrine', label: 'Shrine' },
-  { id: 'road-milestone', sourceId: 'ch2-milestone', label: 'Milestone' },
-  { id: 'road-stream', sourceId: 'ch2-dry-stream', label: 'Dry Stream' },
-  { id: 'road-tamarisk', sourceId: 'ch2-tamarisk', label: 'Tamarisk' },
-  { id: 'mecca-kaaba', sourceId: 'ch3-kaaba', label: 'Kaaba' },
-  { id: 'ship-mast', sourceId: 'ch3-mast', label: 'Ship Mast' },
-  { id: 'ship-rail', sourceId: 'ch3-ship-rail', label: 'Ship Rail' },
-  { id: 'mosque-pulpit', sourceId: 'ch4-pulpit', label: 'Pulpit' },
-  { id: 'mosque-arch', sourceId: 'ch4-prayer-arch', label: 'Prayer Arch' },
-  { id: 'crowd-cluster', sourceId: 'ch4-crowd', label: 'Crowd' },
-  { id: 'closed-door', sourceId: 'ch4-closed-door', label: 'Door' },
-  { id: 'garden-portico', sourceId: 'ch5-palace-portico', label: 'Portico' },
-  { id: 'garden-carpet', sourceId: 'ch5-courtyard-carpet', label: 'Carpet' },
-  { id: 'writing-desk', sourceId: 'ch5-writing-desk', label: 'Desk' },
-  { id: 'market-awning', sourceId: 'ch5-market-awning', label: 'Awning' },
-  { id: 'river-reeds', sourceId: 'ch5-river-reeds', label: 'Reeds' },
-  { id: 'maku-fortress', sourceId: 'ch6-maku-fortress', label: 'Maku Fort' },
-  { id: 'chihriq-fortress', sourceId: 'ch6-chihriq-fortress', label: 'Chihriq' },
-  { id: 'mountain-rock', sourceId: 'ch6-rock', label: 'Rock' },
-  { id: 'snow-shrub', sourceId: 'ch6-snow-shrub', label: 'Snow Shrub' },
-  { id: 'barred-marker', sourceId: 'ch6-barred-marker', label: 'Bars' },
-  { id: 'badasht-tent-a', sourceId: 'ch7-tent-quddus', label: 'Tent A' },
-  { id: 'badasht-tent-b', sourceId: 'ch7-tent-reconciliation', label: 'Tent B' },
-  { id: 'garden-canopy', sourceId: 'ch7-garden-canopy', label: 'Canopy' },
-  { id: 'rosebush', sourceId: 'ch7-rosebush', label: 'Rosebush' },
-  { id: 'tabarsi-palisade', sourceId: 'ch8-palisade', label: 'Palisade' },
-  { id: 'truce-flag', sourceId: 'ch8-truce-flag', label: 'Truce Flag' },
-  { id: 'barrack-front', sourceId: 'ch9-barrack-front', label: 'Barrack' },
-  { id: 'cloth-bundle', sourceId: 'ch9-cloth-bundle', label: 'Bundle' },
-  { id: 'rope-coils', sourceId: 'ch9-rope-coils', label: 'Ropes' },
-  { id: 'low-arch', sourceId: 'ch10-low-arch', label: 'Low Arch' },
-  { id: 'stone-pillar', sourceId: 'ch10-stone-pillar', label: 'Pillar' },
-  { id: 'chain-pillar', sourceId: 'ch10-chain-pillar', label: 'Chain Post' },
-  { id: 'chain-coil', sourceId: 'ch10-chain-coil', label: 'Chain Coil' },
-  { id: 'light-shaft', sourceId: 'ch10-light-shaft', label: 'Light' },
-  { id: 'bab', sourceId: 'npc-bab', label: 'The Bab' },
-  { id: 'mulla-husayn', sourceId: 'ch8-mulla-husayn', label: 'Mulla H.' },
-  { id: 'quddus', sourceId: 'ch3-quddus', label: 'Quddus' },
-  { id: 'tahirih', sourceId: 'ch7-npc-tahirih', label: 'Tahirih' },
-  { id: 'soldier', sourceId: 'ch9-soldier', label: 'Soldier' },
-  { id: 'servant', sourceId: 'ch1-npc-servant', label: 'Servant' },
-  { id: 'prisoner', sourceId: 'ch10-prisoner', label: 'Prisoner' },
-  { id: 'courier', sourceId: 'ch6-courier', label: 'Courier' },
-];
-
-const PRIMARY_OBJECT_BY_ID = new Map(MAP_OBJECTS.map(def => [def.id, def]));
-const LEGACY_OBJECTS: MapObjectDefinition[] = LEGACY_OBJECT_ALIASES.map(alias => {
-  const source = PRIMARY_OBJECT_BY_ID.get(alias.sourceId);
-  if (!source) throw new Error(`Legacy map asset alias "${alias.id}" points to missing asset "${alias.sourceId}".`);
-  return { ...source, id: alias.id, label: alias.label ?? source.label };
-});
-
 export const MAP_OBJECT_BY_ID: ReadonlyMap<MapObjectId, MapObjectDefinition> =
-  new Map([...MAP_OBJECTS, ...LEGACY_OBJECTS].map(def => [def.id, def]));
+  new Map(MAP_OBJECTS.map(def => [def.id, def]));
 export const MAP_SCENERY_OBJECTS = MAP_OBJECTS.filter(def => def.kind !== 'character');
 export const MAP_CHARACTER_OBJECTS = MAP_OBJECTS.filter(def => def.kind === 'character');
 export const MAP_ASSET_CATEGORIES: MapAssetCategory[] = ([
   {
-    id: 'editor-basics',
-    label: 'Editor Basics',
-    description: 'Starter isometric buildings, props, and people made for quick map blocking.',
+    id: 'buildings',
+    label: 'Buildings',
+    description: 'Houses, city structures, tents, gates, and large architectural pieces.',
     objectIds: [
       'house',
-      'marketStall',
-      'bridge',
-      'cypress',
-      'crateStack',
-      'lamp',
-      'rug',
-      'well',
+      'market-stall',
+      'gate',
+      'ch2-caravanserai',
+      'ch5-market-awning',
+      'ch5-palace-portico',
+      'ch7-tent-quddus',
+      'ch7-tent-reconciliation',
+      'ch7-garden-canopy',
+      'ch9-barrack-front',
+      'ch10-street-house',
+      'ch10-street-arch',
     ],
   },
   {
-    id: 'core-city',
-    label: 'Core City',
-    description: 'Reusable city objects shared by the main city and chapter maps.',
-    objectIds: idsWhere(def => def.id.startsWith('core-') && def.kind !== 'character'),
+    id: 'shrines',
+    label: 'Shrines',
+    description: 'Mosques, shrines, prayer spaces, and sacred architectural details.',
+    objectIds: [
+      'mosque',
+      'ch2-shrine',
+      'ch3-kaaba',
+      'ch3-courtyard-hush',
+      'ch4-pulpit',
+      'ch4-prayer-arch',
+      'ch8-shrine-glimpse',
+      'ch8-shrine',
+    ],
   },
   {
-    id: 'chapter-1',
-    label: 'Ch1 Shiraz',
-    description: 'Bazaar, threshold, and Shiraz scenery assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch1-') && def.kind !== 'character'),
+    id: 'bridges-water',
+    label: 'Bridges & Water',
+    description: 'Bridge spans, wells, river edges, reeds, and stream features.',
+    objectIds: [
+      'bridge',
+      'well',
+      'ch2-dry-stream',
+      'ch5-bridge-span',
+      'ch5-river-reeds',
+    ],
   },
   {
-    id: 'chapter-2',
-    label: 'Ch2 Road',
-    description: 'Roadside caravan, shrine, and desert travel assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch2-') && def.kind !== 'character'),
+    id: 'plants',
+    label: 'Plants',
+    description: 'Trees, cypress, shrubs, rosebushes, and planters.',
+    objectIds: [
+      'tree',
+      'cypress',
+      'ch1-planter',
+      'ch2-tamarisk',
+      'ch6-snow-shrub',
+      'ch7-rosebush',
+    ],
   },
   {
-    id: 'chapter-3',
-    label: 'Ch3 Mecca',
-    description: 'Mecca courtyard and ship voyage assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch3-') && def.kind !== 'character'),
+    id: 'furnishings',
+    label: 'Furnishings',
+    description: 'Interior and courtyard details such as rugs, doors, desks, thresholds, and ship pieces.',
+    objectIds: [
+      'rug',
+      'closed-door',
+      'writing-desk',
+      'ch1-house-threshold',
+      'ch2-milestone',
+      'ch3-mast',
+      'ch3-ship-rail',
+    ],
   },
   {
-    id: 'chapter-4',
-    label: 'Ch4 Shiraz',
-    description: 'Vakil mosque, Shiraz return, and town witness assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch4-') && def.kind !== 'character'),
+    id: 'market-supplies',
+    label: 'Market & Supplies',
+    description: 'Crates, bundles, ropes, and other movable supply objects.',
+    objectIds: [
+      'crates',
+      'ch9-cloth-bundle',
+      'ch9-rope-coils',
+    ],
   },
   {
-    id: 'chapter-5',
-    label: 'Ch5 Isfahan',
-    description: 'Bridge, palace, and garden objects from Isfahan scenes.',
-    objectIds: idsWhere(def => def.id.startsWith('ch5-') && def.kind !== 'character'),
+    id: 'barriers-prison',
+    label: 'Barriers & Prison',
+    description: 'Fortress, palisade, roof, prison, chain, rock, and blocking assets.',
+    objectIds: [
+      'ch6-maku-fortress',
+      'ch6-chihriq-fortress',
+      'ch6-rock',
+      'ch6-barred-marker',
+      'ch8-palisade',
+      'ch8-truce-flag',
+      'ch9-roof-parapet',
+      'ch9-roof-north-wall',
+      'ch9-roof-east-wall',
+      'ch9-roof-south-wall-left',
+      'ch9-roof-south-wall-right',
+      'ch10-low-arch',
+      'ch10-stone-pillar',
+      'ch10-chain-pillar',
+      'ch10-chain-post',
+      'ch10-chain-coil',
+    ],
   },
   {
-    id: 'chapter-6',
-    label: 'Ch6 Forts',
-    description: 'Maku and Chihriq fortress, mountain, and prison assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch6-') && def.kind !== 'character'),
+    id: 'lighting-effects',
+    label: 'Lighting & Effects',
+    description: 'Lamps, birds, light shafts, empty-space markers, and atmosphere.',
+    objectIds: [
+      'lamp',
+      'ch1-birds',
+      'ch9-empty-space',
+      'ch10-light-shaft',
+    ],
   },
   {
-    id: 'chapter-7',
-    label: 'Ch7 Badasht',
-    description: 'Badasht tents, garden, and gathering assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch7-') && def.kind !== 'character'),
-  },
-  {
-    id: 'chapter-8',
-    label: 'Ch8 Tabarsi',
-    description: 'Forest road, shrine, palisade, and truce assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch8-') && def.kind !== 'character'),
-  },
-  {
-    id: 'chapter-9',
-    label: 'Ch9 Tabriz',
-    description: 'Tabriz square, barracks, roof, crowd, and soldier assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch9-') && def.kind !== 'character'),
-  },
-  {
-    id: 'chapter-10',
-    label: 'Ch10 Tehran',
-    description: 'Tehran street and Siyah-Chal prison assets.',
-    objectIds: idsWhere(def => def.id.startsWith('ch10-') && def.kind !== 'character'),
+    id: 'people-crowds',
+    label: 'People & Crowds',
+    description: 'Crowd markers and group scene elements that are not individual characters.',
+    objectIds: [
+      'crowd',
+      'crowd-shadow',
+      'ch3-pilgrim-cluster',
+    ],
   },
   {
     id: 'characters',
@@ -503,7 +466,48 @@ function makeGenericPropTexture(scene: Phaser.Scene, def: MapObjectDefinition): 
   const g = scene.add.graphics();
   const label = def.label.toLowerCase();
 
-  if (label.includes('lamp') || label.includes('light')) {
+  if (label.includes('crate') || label.includes('bundle')) {
+    const geo = isoPrism(1, 1, 18, 4);
+    drawIsoPrism(g, geo, {
+      right: darken(def.color, 16),
+      left: darken(def.color, 30),
+      top: lighten(def.color, 12),
+    });
+    g.lineStyle(1, 0x3d2414, 0.9);
+    g.lineBetween(geo.topR.x, geo.topR.y, geo.bottomR.x, geo.bottomR.y);
+    g.lineBetween(geo.leftR.x, geo.leftR.y, geo.rightR.x, geo.rightR.y);
+    g.generateTexture(def.texture, geo.texW, geo.texH);
+  } else if (label.includes('well')) {
+    g.fillStyle(0x000000, 0.18);
+    g.fillEllipse(28, 42, 42, 12);
+    g.fillStyle(def.color, 1);
+    g.fillEllipse(28, 28, 46, 24);
+    g.fillStyle(0x263447, 1);
+    g.fillEllipse(28, 27, 30, 14);
+    g.lineStyle(3, 0x4f463b, 1);
+    g.strokeEllipse(28, 28, 46, 24);
+    g.generateTexture(def.texture, 56, 48);
+  } else if (label.includes('desk')) {
+    const geo = isoPrism(1, 1, 12, 4);
+    drawIsoPrism(g, geo, {
+      right: darken(def.color, 16),
+      left: darken(def.color, 28),
+      top: lighten(def.color, 10),
+    });
+    const paper = [
+      { x: geo.topR.x, y: geo.topR.y + 9 },
+      { x: geo.topR.x + 13, y: geo.topR.y + 15 },
+      { x: geo.topR.x, y: geo.topR.y + 21 },
+      { x: geo.topR.x - 13, y: geo.topR.y + 15 },
+    ];
+    g.fillStyle(0xe6d8b0, 1);
+    g.fillPoints(paper, true);
+    g.lineStyle(1, 0x1a1a1a, 0.75);
+    g.strokePoints(paper, true);
+    g.lineBetween(paper[3].x + 4, paper[3].y + 1, paper[1].x - 4, paper[1].y + 1);
+    g.lineBetween(paper[3].x + 6, paper[3].y + 5, paper[1].x - 6, paper[1].y + 5);
+    g.generateTexture(def.texture, geo.texW, geo.texH);
+  } else if (label.includes('lamp') || label.includes('light')) {
     g.fillStyle(0xf3d98a, label.includes('light') ? 0.35 : 1);
     g.fillEllipse(20, 16, label.includes('light') ? 30 : 14, label.includes('light') ? 46 : 18);
     g.lineStyle(3, 0x3a2a16, 1);
@@ -528,25 +532,58 @@ function makeGenericPropTexture(scene: Phaser.Scene, def: MapObjectDefinition): 
     g.lineStyle(1, 0x3a2a16, 1);
     g.strokeTriangle(14, 8, 40, 18, 14, 28);
     g.generateTexture(def.texture, 44, 54);
-  } else if (label.includes('chain') || label.includes('rope')) {
-    g.lineStyle(4, def.color, 1);
-    g.strokeEllipse(14, 24, 20, 12);
-    g.strokeEllipse(30, 24, 20, 12);
-    g.strokeEllipse(22, 35, 28, 12);
-    g.generateTexture(def.texture, 46, 46);
-  } else if (label.includes('pillar') || label.includes('bars') || label.includes('palisade')) {
-    g.fillStyle(def.color, 1);
-    for (let i = 0; i < 4; i++) g.fillRect(8 + i * 10, 8, 5, 40);
+  } else if (label.includes('pillar') || label.includes('bars') || label.includes('barred') || label.includes('palisade')) {
+    const geo = isoPrism(1, 1, 20, 4);
+    drawIsoPrism(g, geo, {
+      right: darken(def.color, 14),
+      left: darken(def.color, 28),
+      top: lighten(def.color, 10),
+    });
     g.lineStyle(3, 0x3f2b1a, 1);
-    g.lineBetween(5, 22, 45, 22);
-    g.lineBetween(5, 38, 45, 38);
-    g.generateTexture(def.texture, 52, 54);
+    for (const [start, end] of [[geo.left, geo.bottom], [geo.right, geo.bottom]] as const) {
+      g.lineBetween(start.x, start.y - 14, end.x, end.y - 14);
+      g.lineBetween(start.x, start.y - 6, end.x, end.y - 6);
+      for (const t of [0.18, 0.42, 0.66, 0.9]) {
+        const x = start.x + (end.x - start.x) * t;
+        const y = start.y + (end.y - start.y) * t;
+        g.lineBetween(x, y + 2, x, y - 26);
+      }
+    }
+    g.generateTexture(def.texture, geo.texW, geo.texH);
+  } else if (label.includes('chain') || label.includes('rope')) {
+    const points = [{ x: 23, y: 8 }, { x: 46, y: 20 }, { x: 23, y: 32 }, { x: 0, y: 20 }];
+    g.fillStyle(darken(def.color, 18), 0.24);
+    g.fillPoints(points, true);
+    g.lineStyle(4, def.color, 1);
+    g.strokeEllipse(16, 20, 20, 10);
+    g.strokeEllipse(30, 20, 20, 10);
+    g.strokeEllipse(23, 28, 26, 10);
+    g.generateTexture(def.texture, 46, 38);
   } else if (label.includes('arch') || label.includes('door')) {
-    g.fillStyle(def.color, 1);
-    g.fillRoundedRect(6, 8, 44, 44, 8);
+    const geo = isoPrism(1, 1, label.includes('arch') ? 48 : 42, 12);
+    drawIsoPrism(g, geo, {
+      right: darken(def.color, 8),
+      left: darken(def.color, 22),
+      top: lighten(def.color, 10),
+      edge: 0x140d09,
+    });
+    const opening = wallInset(geo.right, geo.bottom, 0.18, 0.82, label.includes('arch') ? 38 : 34);
     g.fillStyle(0x1a120a, 1);
-    g.fillRoundedRect(16, 20, 24, 32, 8);
-    g.generateTexture(def.texture, 56, 56);
+    g.fillPoints(opening, true);
+    g.lineStyle(2, 0x140d09, 0.85);
+    g.strokePoints(opening, true);
+    if (label.includes('door')) {
+      g.lineStyle(1, 0xc9a55c, 0.75);
+      g.lineBetween(
+        (opening[0].x + opening[1].x) / 2,
+        (opening[0].y + opening[1].y) / 2,
+        (opening[2].x + opening[3].x) / 2,
+        (opening[2].y + opening[3].y) / 2,
+      );
+      g.fillStyle(0xc9a55c, 1);
+      g.fillCircle(opening[1].x - 4, opening[1].y - 16, 2);
+    }
+    g.generateTexture(def.texture, geo.texW, geo.texH);
   } else if (label.includes('stream') || label.includes('carpet') || label.includes('rug') || label.includes('space')) {
     const points = [{ x: 28, y: 4 }, { x: 56, y: 18 }, { x: 28, y: 32 }, { x: 0, y: 18 }];
     g.fillStyle(def.color, label.includes('space') ? 0.3 : 0.9);
@@ -554,6 +591,14 @@ function makeGenericPropTexture(scene: Phaser.Scene, def: MapObjectDefinition): 
     g.lineStyle(2, 0xf2d18a, 0.8);
     g.strokePoints(points, true);
     g.generateTexture(def.texture, 56, 36);
+  } else if (label.includes('crowd') && label.includes('shadow')) {
+    g.fillStyle(0x100d0b, 0.3);
+    for (let i = 0; i < 7; i++) {
+      const x = 8 + (i % 4) * 11;
+      const y = 14 + Math.floor(i / 4) * 12;
+      g.fillEllipse(x, y, 12, 7);
+    }
+    g.generateTexture(def.texture, 54, 34);
   } else if (label.includes('crowd')) {
     for (let i = 0; i < 7; i++) {
       const x = 8 + (i % 4) * 11;

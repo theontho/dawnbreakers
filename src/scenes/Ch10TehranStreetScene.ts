@@ -32,7 +32,7 @@ export class Ch10TehranStreetScene extends BaseMapScene {
     this.buildings.push(
       { gridX: 2, gridY: 1, w: 3, h: 2, texture: 'ch10-street-house' },
       { gridX: 11, gridY: 1, w: 4, h: 2, texture: 'ch10-street-arch' },
-      { gridX: 6, gridY: 8, w: 3, h: 2, texture: 'ch10-closed-door' },
+      { gridX: 6, gridY: 8, w: 3, h: 2, texture: 'closed-door' },
     );
     this.blockFootprint(2, 1, 3, 2);
     this.blockFootprint(11, 1, 4, 2);
@@ -41,14 +41,14 @@ export class Ch10TehranStreetScene extends BaseMapScene {
 
   protected placeDecor(): void {
     this.decor.push(
-      { gridX: 3, gridY: 4, texture: 'ch10-crowd-shadow' },
-      { gridX: 5, gridY: 5, texture: 'ch10-crowd-shadow' },
-      { gridX: 12, gridY: 5, texture: 'ch10-crowd-shadow' },
-      { gridX: 15, gridY: 7, texture: 'ch10-crowd-shadow' },
+      { gridX: 3, gridY: 4, texture: 'crowd-shadow' },
+      { gridX: 5, gridY: 5, texture: 'crowd-shadow' },
+      { gridX: 12, gridY: 5, texture: 'crowd-shadow' },
+      { gridX: 15, gridY: 7, texture: 'crowd-shadow' },
       { gridX: 7, gridY: 4, texture: 'ch10-chain-coil', blocks: true },
       { gridX: 10, gridY: 7, texture: 'ch10-chain-coil', blocks: true },
-      { gridX: 1, gridY: 3, texture: 'ch10-watch-lamp', blocks: true },
-      { gridX: 17, gridY: 4, texture: 'ch10-watch-lamp', blocks: true },
+      { gridX: 1, gridY: 3, texture: 'lamp', blocks: true },
+      { gridX: 17, gridY: 4, texture: 'lamp', blocks: true },
     );
   }
 
@@ -57,7 +57,7 @@ export class Ch10TehranStreetScene extends BaseMapScene {
       () => 'Speak with the guard  [E]',
       () => this.startSimpleDialogue('ch10-guard'));
 
-    this.addNPC(9, 6, 'ch10-crowd-shadow',
+    this.addNPC(9, 6, 'crowd-shadow',
       () => 'Listen to hostile whispers  [E]',
       () => this.startSimpleDialogue('ch10-guard'));
   }
@@ -79,12 +79,12 @@ export class Ch10TehranStreetScene extends BaseMapScene {
       hat: { style: 'tallHat', color: 0x242932 },
       shadow: true,
     });
-    this.makeCrowdShadow('ch10-crowd-shadow');
+    this.makeCrowdShadow('crowd-shadow');
     this.makeChainCoil('ch10-chain-coil');
-    this.makeWatchLamp('ch10-watch-lamp');
+    this.makeWatchLamp('lamp');
     this.makeStreetHouse('ch10-street-house');
     this.makeStreetArch('ch10-street-arch');
-    this.makeClosedDoor('ch10-closed-door');
+    this.makeClosedDoor('closed-door');
   }
 
 
