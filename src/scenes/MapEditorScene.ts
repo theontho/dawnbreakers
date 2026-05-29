@@ -16,6 +16,7 @@ import {
 } from '../assets/mapAssetLibrary';
 import { TILE_H, TILE_W, type IsoPoint, type TileKind } from './BaseMapScene';
 import { makeCharacterTexture } from './characterTexture';
+import { buttonFont, clamp, isNarrowLayout, isPortraitLayout, MIN_TOUCH_TARGET, responsiveFont } from '../ui/responsive';
 
 type EditorObjectKind = MapObjectKind;
 type EditorObjectId = MapObjectId;
@@ -54,6 +55,37 @@ interface StoredEditorMap {
   objects?: StoredEditorObject[];
 }
 
+interface EditorLayout {
+  mode: 'side' | 'bottom';
+  panelX: number;
+  panelY: number;
+  panelW: number;
+  panelH: number;
+  mapX: number;
+  mapY: number;
+  mapW: number;
+  mapH: number;
+}
+
+interface AssetPickerGeometry {
+  overlayX: number;
+  overlayY: number;
+  overlayW: number;
+  overlayH: number;
+  gridX: number;
+  gridY: number;
+  gridW: number;
+  contentH: number;
+  previewX: number;
+  previewY: number;
+  previewW: number;
+  previewH: number;
+  gridCellW: number;
+  gridCellH: number;
+  gridGap: number;
+  gridColumns: number;
+}
+
 interface EditorSceneData {
   from?: string;
 }
@@ -84,6 +116,7 @@ const MIN_H = 6;
 const MAX_H = 20;
 const ASSET_PICKER_WHEEL_SCALE = 0.65;
 const ASSET_PICKER_MAX_WHEEL_DELTA = 90;
+const PALETTE_BUTTON_GAP = 6;
 const EDITOR_OBJECTS = MAP_OBJECTS;
 const OBJECT_BY_ID = MAP_OBJECT_BY_ID;
 
@@ -120,34 +153,58 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   create(): void {
-    const { width, height } = this.scale;
-    this.originX = (width - PANEL_W) / 2;
     this.validateObjectCatalog();
     this.ensureEditorObjectTextures();
     this.editorMap = this.loadStoredMap() ?? this.createDefaultMap(18, 12);
+    this.rebuildLayout(true);
+    this.setupInput();
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
+    });
+  }
+
+  private handleResize(): void {
+    if (!this.scene.isActive(this.scene.key)) return;
+    this.stopPanning();
+    this.rebuildLayout(true);
+  }
+
+  private rebuildLayout(resetOrigin: boolean): void {
+    const { width, height } = this.scale;
+    const layout = this.editorLayout();
+    const narrow = isNarrowLayout({ width, height });
+
+    if (resetOrigin) this.resetMapOrigin();
+    this.children.removeAll(true);
+    this.world = undefined;
+    this.assetPreviewContainer = undefined;
+    this.tileTooltip = undefined;
 
     this.add.rectangle(0, 0, width, height, 0x0a0806).setOrigin(0);
     this.add.text(24, 18, 'Map Editor', {
       fontFamily: 'Georgia, serif',
-      fontSize: '34px',
+      fontSize: responsiveFont(34, { width, height }, 24),
       color: '#f3e2b5',
     });
     this.add.text(26, 58, 'Paint tiles, mark collision, place props/characters, and use iso-locked buildings.', {
       fontFamily: 'Georgia, serif',
-      fontSize: '14px',
+      fontSize: responsiveFont(14, { width, height }, 11),
       color: '#9c8458',
+      wordWrap: { width: Math.max(240, layout.mapW - 52) },
     });
-    this.add.text(24, height - 34, 'Esc: back  |  S: save  |  C: copy JSON  |  Right/middle drag or arrows: pan  |  R: recenter', {
+    const footerY = layout.mode === 'bottom' ? layout.panelY - 26 : height - 34;
+    this.add.text(24, footerY, narrow ? 'Esc: back | S: save | arrows / drag: pan | R: recenter' : 'Esc: back  |  S: save  |  C: copy JSON  |  Right/middle drag or arrows: pan  |  R: recenter', {
       fontFamily: 'Georgia, serif',
-      fontSize: '13px',
+      fontSize: responsiveFont(13, { width, height }, 10),
       color: '#6f6048',
+      wordWrap: { width: Math.max(240, layout.mapW - 48) },
     });
 
     this.hover = this.add.graphics().setDepth(9000);
     this.buildUI();
     this.renderWorld();
     this.updateStatus();
-    this.setupInput();
   }
 
   private setupInput(): void {
@@ -213,9 +270,50 @@ export class MapEditorScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-R', () => this.recenterMap());
   }
 
+  private editorLayout(): EditorLayout {
+    const { width, height } = this.scale;
+    const size = { width, height };
+    const useBottomPanel = isPortraitLayout(size) || width < 860;
+    if (!useBottomPanel) {
+      return {
+        mode: 'side',
+        panelX: width - PANEL_W,
+        panelY: 0,
+        panelW: PANEL_W,
+        panelH: height,
+        mapX: 0,
+        mapY: 92,
+        mapW: width - PANEL_W,
+        mapH: height - 92,
+      };
+    }
+
+    const panelH = Math.round(clamp(height * 0.5, 300, Math.min(390, height - 150)));
+    return {
+      mode: 'bottom',
+      panelX: 0,
+      panelY: height - panelH,
+      panelW: width,
+      panelH,
+      mapX: 0,
+      mapY: 92,
+      mapW: width,
+      mapH: height - panelH - 92,
+    };
+  }
+
+  private resetMapOrigin(): void {
+    const layout = this.editorLayout();
+    this.originX = layout.mapX + layout.mapW / 2;
+    this.originY = layout.mapY + 26;
+  }
+
   private buildUI(): void {
     const { width, height } = this.scale;
-    const x = width - PANEL_W + 18;
+    const layout = this.editorLayout();
+    const compact = layout.mode === 'bottom';
+    const x = layout.panelX + 18;
+    const size = { width, height };
     this.hideTileTooltip();
     this.assetPreviewContainer?.destroy(true);
     this.assetPreviewContainer = undefined;
@@ -223,73 +321,109 @@ export class MapEditorScene extends Phaser.Scene {
     this.ui = this.add.container(0, 0).setDepth(10000);
     this.toolButtons = [];
 
-    this.ui.add(this.add.rectangle(width - PANEL_W, 0, PANEL_W, height, 0x120d08, 0.96).setOrigin(0));
-    this.ui.add(this.add.text(x, 16, 'Palette', {
+    this.ui.add(this.add.rectangle(layout.panelX, layout.panelY, layout.panelW, layout.panelH, 0x120d08, 0.96).setOrigin(0));
+    this.ui.add(this.add.text(x, layout.panelY + 14, 'Palette', {
       fontFamily: 'Georgia, serif',
-      fontSize: '24px',
+      fontSize: responsiveFont(24, size, 17),
       color: '#f3e2b5',
     }));
 
-    let y = 52;
+    let y = layout.panelY + (compact ? 46 : 52);
     this.ui.add(this.add.text(x, y, 'Tiles', {
       fontFamily: 'Georgia, serif',
-      fontSize: '14px',
+      fontSize: responsiveFont(14, size),
       color: '#c9b07a',
     }));
-    y += 24;
+    y += 22;
+    const paletteW = layout.panelW - 36;
+    const paletteStep = MIN_TOUCH_TARGET + PALETTE_BUTTON_GAP;
+    const tileColumns = Math.max(1, Math.floor((paletteW + PALETTE_BUTTON_GAP) / paletteStep));
     for (let i = 0; i < TILE_OPTIONS.length; i++) {
       const option = TILE_OPTIONS[i];
-      this.makeTileSwatchButton(x + i * 34, y, option.kind, option.label, option.color);
+      this.makeTileSwatchButton(
+        x + (i % tileColumns) * paletteStep,
+        y + Math.floor(i / tileColumns) * paletteStep,
+        option.kind,
+        option.label,
+        option.color,
+      );
     }
-    const specialToolX = x + 170;
-    this.makeSpecialToolButton(specialToolX, y, 'block', 'Block', 0x7a1f1f, 'block');
-    this.makeSpecialToolButton(specialToolX + 28, y, 'open', 'Open', 0x3f6f45, 'open');
-    this.makeSpecialToolButton(specialToolX + 56, y, 'erase-object', 'Erase Object', 0x4a1f1f, 'erase');
+    const tileRows = Math.ceil(TILE_OPTIONS.length / tileColumns);
+    const specialTools: Array<{ tool: EditorTool; label: string; color: number; icon: SpecialToolIcon }> = [
+      { tool: 'block', label: 'Block', color: 0x7a1f1f, icon: 'block' },
+      { tool: 'open', label: 'Open', color: 0x3f6f45, icon: 'open' },
+      { tool: 'erase-object', label: 'Erase Object', color: 0x4a1f1f, icon: 'erase' },
+    ];
+    const specialColumns = Math.max(1, Math.min(specialTools.length, Math.floor((paletteW + PALETTE_BUTTON_GAP) / paletteStep)));
+    const specialY = y + tileRows * paletteStep;
+    for (let i = 0; i < specialTools.length; i++) {
+      const option = specialTools[i];
+      this.makeSpecialToolButton(
+        x + (i % specialColumns) * paletteStep,
+        specialY + Math.floor(i / specialColumns) * paletteStep,
+        option.tool,
+        option.label,
+        option.color,
+        option.icon,
+      );
+    }
 
-    y += 38;
+    y = specialY + Math.ceil(specialTools.length / specialColumns) * paletteStep + (compact ? 10 : 12);
+    const assetButtonW = Math.min(254, layout.panelW - 36);
     this.ui.add(this.add.text(x, y, 'Objects', {
       fontFamily: 'Georgia, serif',
-      fontSize: '14px',
+      fontSize: responsiveFont(14, size),
       color: '#c9b07a',
     }));
-    y += 24;
-    this.makeAssetBrowserButton(x, y, 254);
+    y += 22;
+    this.makeAssetBrowserButton(x, y, assetButtonW);
 
-    y += 50;
+    y += compact ? 56 : 64;
     this.ui.add(this.add.text(x, y, 'Size', {
       fontFamily: 'Georgia, serif',
-      fontSize: '14px',
+      fontSize: responsiveFont(14, size),
       color: '#c9b07a',
     }));
-    y += 24;
-    this.makeButton(x, y, 58, 28, '- W', () => this.resizeMap(this.editorMap.width - 1, this.editorMap.height));
-    this.makeButton(x + 66, y, 58, 28, '+ W', () => this.resizeMap(this.editorMap.width + 1, this.editorMap.height));
-    this.makeButton(x + 132, y, 58, 28, '- H', () => this.resizeMap(this.editorMap.width, this.editorMap.height - 1));
-    this.makeButton(x + 198, y, 58, 28, '+ H', () => this.resizeMap(this.editorMap.width, this.editorMap.height + 1));
+    y += 22;
+    const sizeButtonW = compact ? Math.min(62, (layout.panelW - 56) / 4) : 62;
+    const sizeGap = compact ? 6 : 8;
+    this.makeButton(x, y, sizeButtonW, MIN_TOUCH_TARGET, '- W', () => this.resizeMap(this.editorMap.width - 1, this.editorMap.height));
+    this.makeButton(x + (sizeButtonW + sizeGap), y, sizeButtonW, MIN_TOUCH_TARGET, '+ W', () => this.resizeMap(this.editorMap.width + 1, this.editorMap.height));
+    this.makeButton(x + (sizeButtonW + sizeGap) * 2, y, sizeButtonW, MIN_TOUCH_TARGET, '- H', () => this.resizeMap(this.editorMap.width, this.editorMap.height - 1));
+    this.makeButton(x + (sizeButtonW + sizeGap) * 3, y, sizeButtonW, MIN_TOUCH_TARGET, '+ H', () => this.resizeMap(this.editorMap.width, this.editorMap.height + 1));
 
-    y += 42;
-    this.makeButton(x, y, 80, 30, 'Save', () => this.saveMap());
-    this.makeButton(x + 88, y, 80, 30, 'Load', () => this.loadMapIntoEditor());
-    this.makeButton(x + 176, y, 80, 30, 'Copy', () => void this.copyExport());
-    y += 38;
-    this.makeButton(x, y, 124, 30, 'Clear', () => this.resetMap());
-    this.makeButton(x + 132, y, 124, 30, 'Back', () => this.goBack());
+    y += compact ? 56 : 62;
+    const actionButtonW = compact ? Math.min(62, (layout.panelW - 60) / 5) : 80;
+    const actionGap = compact ? 6 : 8;
+    this.makeButton(x, y, actionButtonW, MIN_TOUCH_TARGET, 'Save', () => this.saveMap());
+    this.makeButton(x + (actionButtonW + actionGap), y, actionButtonW, MIN_TOUCH_TARGET, 'Load', () => this.loadMapIntoEditor());
+    this.makeButton(x + (actionButtonW + actionGap) * 2, y, actionButtonW, MIN_TOUCH_TARGET, 'Copy', () => void this.copyExport());
+    if (compact) {
+      this.makeButton(x + (actionButtonW + actionGap) * 3, y, actionButtonW, MIN_TOUCH_TARGET, 'Clear', () => this.resetMap());
+      this.makeButton(x + (actionButtonW + actionGap) * 4, y, actionButtonW, MIN_TOUCH_TARGET, 'Back', () => this.goBack());
+    } else {
+      y += 54;
+      this.makeButton(x, y, 124, MIN_TOUCH_TARGET, 'Clear', () => this.resetMap());
+      this.makeButton(x + 132, y, 124, MIN_TOUCH_TARGET, 'Back', () => this.goBack());
+    }
 
-    y += 44;
-    this.statusText = this.add.text(x, y, '', {
+    y += compact ? 54 : 58;
+    const statusY = compact ? layout.panelY + layout.panelH - 34 : y;
+    this.statusText = this.add.text(x, statusY, '', {
       fontFamily: 'Georgia, serif',
-      fontSize: '12px',
+      fontSize: responsiveFont(12, size),
       color: '#c9b07a',
-      wordWrap: { width: PANEL_W - 36 },
+      wordWrap: { width: layout.panelW - 36 },
     });
     this.ui.add(this.statusText);
 
-    this.exportText = this.add.text(x, height - 80, '', {
+    this.exportText = this.add.text(x, compact ? layout.panelY + layout.panelH - 24 : height - 80, '', {
       fontFamily: 'Menlo, Consolas, monospace',
-      fontSize: '10px',
+      fontSize: responsiveFont(10, size),
       color: '#8f8068',
-      wordWrap: { width: PANEL_W - 36 },
+      wordWrap: { width: layout.panelW - 36 },
     });
+    this.exportText.setVisible(!compact);
     this.ui.add(this.exportText);
     this.updateToolButtons();
     this.updateStatus();
@@ -303,14 +437,14 @@ export class MapEditorScene extends Phaser.Scene {
     label: string,
     color: number,
   ): void {
-    const rect = this.add.rectangle(x, y, 28, 26, 0x24170d, 1)
+    const rect = this.add.rectangle(x, y, MIN_TOUCH_TARGET, MIN_TOUCH_TARGET, 0x24170d, 1)
       .setOrigin(0)
       .setStrokeStyle(1, 0x4a3a22, 1)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => this.showTileTooltip(x, y, label))
       .on('pointerout', () => this.hideTileTooltip())
       .on('pointerdown', () => this.selectTool(tool));
-    const swatch = this.add.rectangle(x + 6, y + 5, 16, 16, color, 1)
+    const swatch = this.add.rectangle(x + 10, y + 10, 24, 24, color, 1)
       .setOrigin(0)
       .setStrokeStyle(1, 0x0a0806, 0.7);
 
@@ -320,9 +454,9 @@ export class MapEditorScene extends Phaser.Scene {
 
   private showTileTooltip(x: number, y: number, label: string): void {
     this.hideTileTooltip();
-    const text = this.add.text(x, y - 22, label, {
+    const text = this.add.text(x, y - 28, label, {
       fontFamily: 'Georgia, serif',
-      fontSize: '12px',
+      fontSize: responsiveFont(12, this.scale),
       color: '#f3e2b5',
     });
     const bounds = text.getBounds();
@@ -346,7 +480,7 @@ export class MapEditorScene extends Phaser.Scene {
     color: number,
     icon: SpecialToolIcon,
   ): void {
-    const rect = this.add.rectangle(x, y, 26, 26, 0x24170d, 1)
+    const rect = this.add.rectangle(x, y, MIN_TOUCH_TARGET, MIN_TOUCH_TARGET, 0x24170d, 1)
       .setOrigin(0)
       .setStrokeStyle(1, 0x4a3a22, 1)
       .setInteractive({ useHandCursor: true })
@@ -354,7 +488,7 @@ export class MapEditorScene extends Phaser.Scene {
       .on('pointerout', () => this.hideTileTooltip())
       .on('pointerdown', () => this.selectTool(tool));
     const glyph = this.add.graphics();
-    this.drawSpecialToolIcon(glyph, x, y, color, icon);
+    this.drawSpecialToolIcon(glyph, x + 9, y + 9, color, icon);
 
     this.ui.add([rect, glyph]);
     this.toolButtons.push({ tool, rect });
@@ -417,16 +551,18 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private makeButton(x: number, y: number, w: number, h: number, label: string, onClick: () => void): void {
-    const rect = this.add.rectangle(x, y, w, h, 0x1a120a, 1)
+    const buttonW = Math.max(MIN_TOUCH_TARGET, Math.round(w));
+    const buttonH = Math.max(MIN_TOUCH_TARGET, Math.round(h));
+    const rect = this.add.rectangle(x, y, buttonW, buttonH, 0x1a120a, 1)
       .setOrigin(0)
       .setStrokeStyle(1, 0x5a4428, 1)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => rect.setStrokeStyle(1, 0xf3d98a, 1))
       .on('pointerout', () => rect.setStrokeStyle(1, 0x5a4428, 1))
       .on('pointerdown', onClick);
-    const text = this.add.text(x + w / 2, y + h / 2, label, {
+    const text = this.add.text(x + buttonW / 2, y + buttonH / 2, label, {
       fontFamily: 'Georgia, serif',
-      fontSize: '13px',
+      fontSize: buttonFont(13, this.scale),
       color: '#f3d98a',
     }).setOrigin(0.5);
     this.ui.add([rect, text]);
@@ -434,95 +570,119 @@ export class MapEditorScene extends Phaser.Scene {
 
   private makeAssetBrowserButton(x: number, y: number, width: number): void {
     const activeObject = this.objectDefinitionForTool(this.activeTool);
-    const rect = this.add.rectangle(x, y, width, 30, this.assetPickerOpen || activeObject ? 0x3a2814 : 0x24170d, 1)
+    const rect = this.add.rectangle(x, y, width, MIN_TOUCH_TARGET, this.assetPickerOpen || activeObject ? 0x3a2814 : 0x24170d, 1)
       .setOrigin(0)
       .setStrokeStyle(this.assetPickerOpen || activeObject ? 2 : 1, this.assetPickerOpen ? 0xf3d98a : 0x4a3a22, 1)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => rect.setStrokeStyle(2, 0xf3d98a, 1))
       .on('pointerout', () => rect.setStrokeStyle(this.assetPickerOpen || activeObject ? 2 : 1, this.assetPickerOpen ? 0xf3d98a : 0x4a3a22, 1))
       .on('pointerdown', () => this.openAssetPicker());
-    const swatch = this.add.rectangle(x + 8, y + 8, 16, 14, activeObject?.color ?? 0x6b5a44, 1).setOrigin(0);
+    const swatch = this.add.rectangle(x + 10, y + 12, 20, 20, activeObject?.color ?? 0x6b5a44, 1).setOrigin(0);
     const label = activeObject ? `Assets: ${activeObject.label}` : `Assets (${EDITOR_OBJECTS.length})`;
-    const text = this.add.text(x + 30, y + 8, label, {
+    const text = this.add.text(x + 38, y + 12, label, {
       fontFamily: 'Georgia, serif',
-      fontSize: '12px',
+      fontSize: buttonFont(12, this.scale),
       color: '#e8d9b0',
+      wordWrap: { width: width - 64 },
     });
-    const caret = this.add.text(x + width - 18, y + 15, '>', {
+    const caret = this.add.text(x + width - 18, y + MIN_TOUCH_TARGET / 2, '>', {
       fontFamily: 'Georgia, serif',
-      fontSize: '13px',
+      fontSize: buttonFont(13, this.scale),
       color: '#f3d98a',
     }).setOrigin(0.5);
 
     this.ui.add([rect, swatch, text, caret]);
   }
 
-  private makeAssetPickerOverlay(): void {
+  private assetPickerGeometry(): AssetPickerGeometry {
     const { width, height } = this.scale;
-    const overlayX = 24;
-    const overlayY = 64;
-    const overlayW = Math.max(620, width - 48);
-    const overlayH = Math.max(430, height - 96);
+    const narrow = isNarrowLayout({ width, height });
+    const overlayX = narrow ? 12 : 24;
+    const overlayY = narrow ? 48 : 64;
+    const overlayW = Math.max(1, width - overlayX * 2);
+    const overlayH = Math.max(1, height - overlayY - (narrow ? 12 : 32));
+    const gridGap = 10;
+    const gridCellH = 126;
+
+    if (narrow) {
+      const previewX = overlayX + 18;
+      const previewY = overlayY + 82;
+      const previewW = overlayW - 36;
+      const previewH = 120;
+      const gridX = overlayX + 18;
+      const gridY = previewY + previewH + 12;
+      const gridW = overlayW - 36;
+      const contentH = Math.max(120, overlayY + overlayH - gridY - 58);
+      const gridColumns = Phaser.Math.Clamp(Math.floor((gridW - 20 + gridGap) / (92 + gridGap)), 2, 4);
+      const gridCellW = (gridW - 20 - gridGap * (gridColumns - 1)) / gridColumns;
+      return { overlayX, overlayY, overlayW, overlayH, gridX, gridY, gridW, contentH, previewX, previewY, previewW, previewH, gridCellW, gridCellH, gridGap, gridColumns };
+    }
+
     let gridW = Math.min(760, Math.max(420, overlayW * 0.64));
     let previewW = overlayW - gridW - 52;
     if (previewW < 260) {
       gridW = Math.max(300, overlayW - 312);
       previewW = overlayW - gridW - 52;
     }
+    const gridX = overlayX + 18;
+    const gridY = overlayY + 84;
     const previewX = overlayX + gridW + 28;
     const previewY = overlayY + 84;
     const previewH = overlayH - 116;
-    const gridCellH = 110;
-    const gridGap = 10;
+    const contentH = overlayH - 126;
     const gridColumns = Phaser.Math.Clamp(Math.floor((gridW - 20 + gridGap) / (112 + gridGap)), 2, 5);
     const gridCellW = (gridW - 20 - gridGap * (gridColumns - 1)) / gridColumns;
-    const pickerRows = this.assetPickerRows(gridColumns);
-    const contentH = overlayH - 126;
-    this.assetPickerScrollY = this.clampedAssetPickerScrollY(this.assetPickerScrollY, pickerRows, contentH);
+    return { overlayX, overlayY, overlayW, overlayH, gridX, gridY, gridW, contentH, previewX, previewY, previewW, previewH, gridCellW, gridCellH, gridGap, gridColumns };
+  }
+
+  private makeAssetPickerOverlay(): void {
+    const { width, height } = this.scale;
+    const picker = this.assetPickerGeometry();
+    const pickerRows = this.assetPickerRows(picker.gridColumns);
+    this.assetPickerScrollY = this.clampedAssetPickerScrollY(this.assetPickerScrollY, pickerRows, picker.contentH);
 
     const dimmer = this.add.rectangle(0, 0, width, height, 0x000000, 0.28)
       .setOrigin(0)
       .setInteractive();
-    const panel = this.add.rectangle(overlayX, overlayY, overlayW, overlayH, 0x160f08, 0.98)
+    const panel = this.add.rectangle(picker.overlayX, picker.overlayY, picker.overlayW, picker.overlayH, 0x160f08, 0.98)
       .setOrigin(0)
       .setStrokeStyle(2, 0xf3d98a, 0.9)
       .setInteractive();
-    const title = this.add.text(overlayX + 18, overlayY + 16, 'Assets', {
+    const title = this.add.text(picker.overlayX + 18, picker.overlayY + 16, 'Assets', {
       fontFamily: 'Georgia, serif',
-      fontSize: '21px',
+      fontSize: responsiveFont(21, { width, height }, 16),
       color: '#f3d98a',
     });
-    const description = this.add.text(overlayX + 18, overlayY + 46, 'All placeable assets are grouped by category. Scroll the grid and hover an asset for the detail preview.', {
+    const description = this.add.text(picker.overlayX + 18, picker.overlayY + 46, 'All placeable assets are grouped by category. Scroll the grid and hover an asset for the detail preview.', {
       fontFamily: 'Georgia, serif',
-      fontSize: '13px',
+      fontSize: responsiveFont(13, { width, height }),
       color: '#bda676',
-      wordWrap: { width: gridW + previewW - 74 },
+      wordWrap: { width: picker.overlayW - 124 },
     });
 
     this.ui.add([dimmer, panel, title, description]);
-    this.makeButton(overlayX + overlayW - 88, overlayY + 16, 66, 28, 'Close', () => this.closeAssetPicker());
+    this.makeButton(picker.overlayX + picker.overlayW - 104, picker.overlayY + 12, 82, MIN_TOUCH_TARGET, 'Close', () => this.closeAssetPicker());
 
-    const gridX = overlayX + 18;
-    const gridY = overlayY + 84;
-    const gridBg = this.add.rectangle(gridX, gridY, gridW, contentH + 36, 0x0e0905, 0.88)
+    const gridHeaderH = 52;
+    const gridBg = this.add.rectangle(picker.gridX, picker.gridY, picker.gridW, picker.contentH + gridHeaderH, 0x0e0905, 0.88)
       .setOrigin(0)
       .setStrokeStyle(1, 0x4a3a22, 1)
       .setInteractive();
     this.ui.add(gridBg);
 
     const totalAssets = this.totalCategorizedAssets();
-    const rangeText = this.add.text(gridX + 10, gridY + 9, `${totalAssets} assets | ${MAP_ASSET_CATEGORIES.length} categories`, {
+    const rangeText = this.add.text(picker.gridX + 12, picker.gridY + 17, `${totalAssets} assets | ${MAP_ASSET_CATEGORIES.length} categories`, {
       fontFamily: 'Georgia, serif',
-      fontSize: '11px',
+      fontSize: responsiveFont(11, { width, height }),
       color: '#8f8068',
     });
     this.ui.add(rangeText);
-    this.makeButton(gridX + gridW - 58, gridY + 6, 24, 22, '^', () => this.scrollAssetPickerPixels(-gridCellH));
-    this.makeButton(gridX + gridW - 28, gridY + 6, 24, 22, 'v', () => this.scrollAssetPickerPixels(gridCellH));
+    this.makeButton(picker.gridX + picker.gridW - 96, picker.gridY + 4, MIN_TOUCH_TARGET, MIN_TOUCH_TARGET, '^', () => this.scrollAssetPickerPixels(-picker.gridCellH));
+    this.makeButton(picker.gridX + picker.gridW - 48, picker.gridY + 4, MIN_TOUCH_TARGET, MIN_TOUCH_TARGET, 'v', () => this.scrollAssetPickerPixels(picker.gridCellH));
 
     const maskShape = this.add.graphics();
     maskShape.fillStyle(0xffffff, 1);
-    maskShape.fillRect(gridX + 10, gridY + 36, gridW - 20, contentH);
+    maskShape.fillRect(picker.gridX + 10, picker.gridY + gridHeaderH, picker.gridW - 20, picker.contentH);
     maskShape.setVisible(false);
     const gridContent = this.add.container(0, 0).setMask(maskShape.createGeometryMask());
     this.ui.add([maskShape, gridContent]);
@@ -530,17 +690,17 @@ export class MapEditorScene extends Phaser.Scene {
     const visibleAssets = this.drawAssetPickerRows(
       pickerRows,
       this.assetPickerScrollY,
-      gridX + 10,
-      gridY + 36,
-      gridW - 20,
-      contentH,
-      gridCellW,
-      gridGap,
-      gridCellH,
-      previewX,
-      previewY,
-      previewW,
-      previewH,
+      picker.gridX + 10,
+      picker.gridY + gridHeaderH,
+      picker.gridW - 20,
+      picker.contentH,
+      picker.gridCellW,
+      picker.gridGap,
+      picker.gridCellH,
+      picker.previewX,
+      picker.previewY,
+      picker.previewW,
+      picker.previewH,
       gridContent,
     );
     const fallbackPreview = visibleAssets[0] ?? this.firstCategorizedAsset();
@@ -551,7 +711,7 @@ export class MapEditorScene extends Phaser.Scene {
     }
     preview ??= fallbackPreview;
     this.assetPickerPreviewId = preview?.id;
-    if (preview) this.previewAsset(preview, previewX, previewY, previewW, previewH);
+    if (preview) this.previewAsset(preview, picker.previewX, picker.previewY, picker.previewW, picker.previewH);
   }
 
   private selectTool(tool: EditorTool): void {
@@ -566,13 +726,12 @@ export class MapEditorScene extends Phaser.Scene {
 
   private openAssetPicker(): void {
     this.assetPickerOpen = true;
-    const gridColumns = this.assetPickerGridColumns();
+    const picker = this.assetPickerGeometry();
     const activeObject = this.objectDefinitionForTool(this.activeTool);
-    const rows = this.assetPickerRows(gridColumns);
-    const contentH = Math.max(430, this.scale.height - 96) - 126;
+    const rows = this.assetPickerRows(picker.gridColumns);
     const activeScrollY = activeObject ? this.assetPickerOffsetForAsset(rows, activeObject.id) : 0;
     this.assetPickerPreviewId = activeObject?.id ?? this.firstCategorizedAsset()?.id;
-    this.assetPickerScrollY = this.clampedAssetPickerScrollY(activeScrollY, rows, contentH);
+    this.assetPickerScrollY = this.clampedAssetPickerScrollY(activeScrollY, rows, picker.contentH);
     this.buildUI();
   }
 
@@ -601,10 +760,9 @@ export class MapEditorScene extends Phaser.Scene {
 
   private scrollAssetPickerPixels(deltaY: number): void {
     if (!this.assetPickerOpen) return;
-    const gridColumns = this.assetPickerGridColumns();
-    const rows = this.assetPickerRows(gridColumns);
-    const contentH = Math.max(430, this.scale.height - 96) - 126;
-    const next = this.clampedAssetPickerScrollY(this.assetPickerScrollY + deltaY, rows, contentH);
+    const picker = this.assetPickerGeometry();
+    const rows = this.assetPickerRows(picker.gridColumns);
+    const next = this.clampedAssetPickerScrollY(this.assetPickerScrollY + deltaY, rows, picker.contentH);
     if (next === this.assetPickerScrollY) return;
     this.assetPickerScrollY = next;
     this.assetPickerPreviewId = this.firstAssetAfterScrollY(rows, next)?.id;
@@ -613,14 +771,6 @@ export class MapEditorScene extends Phaser.Scene {
 
   private clampedAssetPickerScrollY(scrollY: number, rows: AssetPickerRow[], contentH: number): number {
     return Phaser.Math.Clamp(scrollY, 0, Math.max(0, this.totalAssetPickerContentHeight(rows) - contentH));
-  }
-
-  private assetPickerGridColumns(): number {
-    const overlayW = Math.max(620, this.scale.width - 48);
-    let gridW = Math.min(760, Math.max(420, overlayW * 0.64));
-    const previewW = overlayW - gridW - 52;
-    if (previewW < 260) gridW = Math.max(300, overlayW - 312);
-    return Phaser.Math.Clamp(Math.floor((gridW - 10) / 122), 2, 5);
   }
 
   private assetPickerRows(gridColumns: number): AssetPickerRow[] {
@@ -665,17 +815,17 @@ export class MapEditorScene extends Phaser.Scene {
       const cursorY = y + rowTopY - scrollY;
       if (cursorY > bottomY) break;
       if (row.kind === 'header') {
-        const bg = this.add.rectangle(x, cursorY + 2, width, 26, 0x1f160d, 1)
+        const bg = this.add.rectangle(x, cursorY + 2, width, 34, 0x1f160d, 1)
           .setOrigin(0)
           .setStrokeStyle(1, 0x5a4428, 0.8);
-        const title = this.add.text(x + 10, cursorY + 7, row.category.label, {
+        const title = this.add.text(x + 10, cursorY + 10, row.category.label, {
           fontFamily: 'Georgia, serif',
-          fontSize: '13px',
+          fontSize: responsiveFont(13, this.scale),
           color: '#f3d98a',
         });
-        const count = this.add.text(x + width - 10, cursorY + 7, `${row.count} assets`, {
+        const count = this.add.text(x + width - 10, cursorY + 10, `${row.count} assets`, {
           fontFamily: 'Georgia, serif',
-          fontSize: '11px',
+          fontSize: responsiveFont(11, this.scale),
           color: '#8f8068',
         }).setOrigin(1, 0);
         gridContent.add([bg, title, count]);
@@ -693,13 +843,13 @@ export class MapEditorScene extends Phaser.Scene {
           .setInteractive({ useHandCursor: true })
           .on('pointerover', () => this.previewAsset(option, previewX, previewY, previewW, previewH))
           .on('pointerdown', () => this.selectAssetFromPicker(option));
-        const thumbnail = this.add.image(optionX + gridCellW / 2, cursorY + 62, option.texture)
+        const thumbnail = this.add.image(optionX + gridCellW / 2, cursorY + 70, option.texture)
           .setOrigin(0.5, 1);
-        thumbnail.setScale(Math.min((gridCellW - 20) / thumbnail.width, 58 / thumbnail.height, 1.4));
-        const swatch = this.add.rectangle(optionX + 7, cursorY + 7, 13, 13, option.color, 1).setOrigin(0);
-        const label = this.add.text(optionX + 8, cursorY + 70, option.label, {
+        thumbnail.setScale(Math.min((gridCellW - 20) / thumbnail.width, 66 / thumbnail.height, 1.4));
+        const swatch = this.add.rectangle(optionX + 8, cursorY + 8, 16, 16, option.color, 1).setOrigin(0);
+        const label = this.add.text(optionX + 8, cursorY + 80, option.label, {
           fontFamily: 'Georgia, serif',
-          fontSize: '11px',
+          fontSize: responsiveFont(11, this.scale),
           color: '#e8d9b0',
           align: 'center',
           wordWrap: { width: gridCellW - 16 },
@@ -707,7 +857,7 @@ export class MapEditorScene extends Phaser.Scene {
         label.setX(optionX + gridCellW / 2 - label.width / 2);
         const meta = this.add.text(optionX + gridCellW - 8, cursorY + 8, option.kind, {
           fontFamily: 'Georgia, serif',
-          fontSize: '10px',
+          fontSize: responsiveFont(10, this.scale),
           color: '#8f8068',
         }).setOrigin(1, 0);
         gridContent.add([rect, thumbnail, swatch, label, meta]);
@@ -718,7 +868,7 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private assetPickerRowHeight(row: AssetPickerRow): number {
-    return row.kind === 'header' ? 34 : 110;
+    return row.kind === 'header' ? 42 : 126;
   }
 
   private totalAssetPickerContentHeight(rows: AssetPickerRow[]): number {
@@ -763,6 +913,7 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private previewAsset(def: EditorObjectDefinition, x: number, y: number, w: number, h: number): void {
+    if (w < 120 || h < 90) return;
     this.assetPickerPreviewId = def.id;
     this.assetPreviewContainer?.destroy(true);
     const previewPanel = this.add.rectangle(x, y, w, h, 0x0e0905, 0.88)
@@ -770,7 +921,7 @@ export class MapEditorScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x4a3a22, 1);
     const title = this.add.text(x + 18, y + 16, def.label, {
       fontFamily: 'Georgia, serif',
-      fontSize: '20px',
+      fontSize: responsiveFont(20, this.scale),
       color: '#f3d98a',
     });
     const details = [
@@ -780,7 +931,7 @@ export class MapEditorScene extends Phaser.Scene {
     ].filter(Boolean).join(' | ');
     const meta = this.add.text(x + 18, y + 46, details, {
       fontFamily: 'Georgia, serif',
-      fontSize: '12px',
+      fontSize: responsiveFont(12, this.scale),
       color: '#8f8068',
     });
 
@@ -788,7 +939,7 @@ export class MapEditorScene extends Phaser.Scene {
     floor.fillStyle(0x3a2814, 0.55);
     floor.lineStyle(1, 0xf3d98a, 0.3);
     const cx = x + w / 2;
-    const groundY = y + h - 76;
+    const groundY = y + h - (h < 160 ? 26 : 76);
     floor.beginPath();
     floor.moveTo(cx, groundY - TILE_H / 2);
     floor.lineTo(cx + TILE_W, groundY);
@@ -799,17 +950,18 @@ export class MapEditorScene extends Phaser.Scene {
     floor.strokePath();
 
     const image = this.add.image(cx, groundY, def.texture).setOrigin(0.5, 1);
-    const maxSpriteW = Math.max(120, w - 120);
-    const maxSpriteH = Math.max(140, h - 150);
+    const maxSpriteW = Math.max(80, w - 120);
+    const maxSpriteH = Math.max(48, h - 92);
     const scale = Math.min(maxSpriteW / image.width, maxSpriteH / image.height, 3);
     image.setScale(scale);
 
-    const help = this.add.text(x + 18, y + h - 42, 'Click an asset tile to select it, then click the map to place it.', {
+    const help = h >= 160 ? this.add.text(x + 18, y + h - 42, 'Click an asset tile to select it, then click the map to place it.', {
       fontFamily: 'Georgia, serif',
-      fontSize: '12px',
+      fontSize: responsiveFont(12, this.scale),
       color: '#bda676',
-    });
-    this.assetPreviewContainer = this.add.container(0, 0, [previewPanel, floor, image, title, meta, help]).setDepth(10010);
+      wordWrap: { width: w - 36 },
+    }) : undefined;
+    this.assetPreviewContainer = this.add.container(0, 0, [previewPanel, floor, image, title, meta, ...(help ? [help] : [])]).setDepth(10010);
     this.ui.add(this.assetPreviewContainer);
   }
 
@@ -1168,8 +1320,7 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private recenterMap(): void {
-    this.originX = (this.scale.width - PANEL_W) / 2;
-    this.originY = 118;
+    this.resetMapOrigin();
     this.hover.clear();
     this.renderWorld();
     this.updateStatus('Recentered map.');
@@ -1260,7 +1411,11 @@ export class MapEditorScene extends Phaser.Scene {
 
   private isUIPointer(pointer: Phaser.Input.Pointer): boolean {
     if (this.assetPickerOpen) return true;
-    return pointer.x >= this.scale.width - PANEL_W || pointer.y < 92;
+    const layout = this.editorLayout();
+    return pointer.y < layout.mapY ||
+      pointer.x < layout.mapX ||
+      pointer.x >= layout.mapX + layout.mapW ||
+      pointer.y >= layout.mapY + layout.mapH;
   }
 
   private isPanPointer(pointer: Phaser.Input.Pointer): boolean {

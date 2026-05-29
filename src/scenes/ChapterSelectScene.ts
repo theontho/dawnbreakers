@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { chapters, type Chapter } from '../data/chapters';
 import { getFlags, resetFlags } from '../dialogue/flags';
+import { buttonFont, isNarrowLayout, responsiveFont, responsiveMargin, restartSceneOnResize } from '../ui/responsive';
 
 /**
  * A grid view of all chapters. Click any chapter to jump straight into it.
@@ -11,22 +12,30 @@ export class ChapterSelectScene extends Phaser.Scene {
   constructor() { super('ChapterSelect'); }
 
   create(): void {
+    restartSceneOnResize(this);
+
     const { width, height } = this.scale;
+    const size = { width, height };
+    const narrow = isNarrowLayout(size);
+    const margin = responsiveMargin(size);
 
     this.add.rectangle(0, 0, width, height, 0x0a0806).setOrigin(0);
 
-    this.add.text(width / 2, 80, 'Chapters', {
-      fontFamily: 'Georgia, serif', fontSize: '54px', color: '#f3e2b5',
+    this.add.text(width / 2, margin + 42, 'Chapters', {
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(54, size, 32), color: '#f3e2b5',
     }).setOrigin(0.5);
-    this.add.text(width / 2, 130, 'Choose where to begin — your discovered rumours and outcomes carry forward.', {
-      fontFamily: 'Georgia, serif', fontSize: '16px', color: '#9c8458', fontStyle: 'italic',
+    this.add.text(width / 2, margin + 88, 'Choose where to begin — your discovered rumours and outcomes carry forward.', {
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, size, 12), color: '#9c8458', fontStyle: 'italic',
+      align: 'center',
+      wordWrap: { width: width - margin * 2 },
     }).setOrigin(0.5);
 
     const flags = getFlags();
-    const cardW = 900, cardH = 90;
-    const gap = 14;
-    const viewportY = 180;
-    const viewportH = height - 260;
+    const cardW = Math.min(900, width - margin * 2);
+    const cardH = narrow ? 132 : 100;
+    const gap = narrow ? 10 : 14;
+    const viewportY = margin + 132;
+    const viewportH = Math.max(220, height - viewportY - 124);
     const contentH = chapters.length * (cardH + gap) - gap;
     const maxScroll = Math.max(0, contentH - viewportH);
     let scrollY = 0;
@@ -42,12 +51,12 @@ export class ChapterSelectScene extends Phaser.Scene {
       this.drawChapterCard(list, 0, y, cardW, cardH, ch, ch.isComplete(flags));
     });
 
-    const track = this.add.rectangle(width - 42, viewportY, 6, viewportH, 0x2a1c10, 0.85)
+    const track = this.add.rectangle(width - Math.max(16, margin * 0.6), viewportY, 6, viewportH, 0x2a1c10, 0.85)
       .setOrigin(0.5, 0);
     const thumbH = maxScroll > 0
       ? Math.max(44, viewportH * (viewportH / contentH))
       : viewportH;
-    const thumb = this.add.rectangle(width - 42, viewportY, 10, thumbH, 0xc9a55c, 0.9)
+    const thumb = this.add.rectangle(track.x, viewportY, 10, thumbH, 0xc9a55c, 0.9)
       .setOrigin(0.5, 0);
     track.setVisible(maxScroll > 0);
     thumb.setVisible(maxScroll > 0);
@@ -74,15 +83,15 @@ export class ChapterSelectScene extends Phaser.Scene {
 
     if (maxScroll > 0) {
       this.add.text(width / 2, height - 82, 'Scroll for later chapters', {
-        fontFamily: 'Georgia, serif', fontSize: '13px', color: '#9c8458', fontStyle: 'italic',
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, size, 11), color: '#9c8458', fontStyle: 'italic',
       }).setOrigin(0.5);
     }
 
     // Footer controls
-    const footerY = height - 40;
-    this.makeTextButton(width / 2 - 110, footerY, 'Back to Title',
+    const footerY = height - 46;
+    this.makeTextButton(width / 2 - (narrow ? 90 : 118), footerY, 'Back to Title',
       () => this.scene.start('Title')).setOrigin(0.5);
-    this.makeTextButton(width / 2 + 110, footerY, 'Reset Story',
+    this.makeTextButton(width / 2 + (narrow ? 90 : 118), footerY, 'Reset Story',
       () => { resetFlags(); this.scene.restart(); }).setOrigin(0.5);
   }
 
@@ -100,23 +109,24 @@ export class ChapterSelectScene extends Phaser.Scene {
     list.add(card);
 
     list.add(this.add.text(x + 24, y + 14, `Chapter ${chapter.number}`, {
-      fontFamily: 'Georgia, serif', fontSize: '14px', color: '#9c8458', fontStyle: 'italic',
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, this.scale), color: '#9c8458', fontStyle: 'italic',
     }));
     list.add(this.add.text(x + 24, y + 30, chapter.title, {
-      fontFamily: 'Georgia, serif', fontSize: '24px', color: '#f3e2b5',
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(24, this.scale, 17), color: '#f3e2b5',
+      wordWrap: { width: w - 48 },
     }));
     list.add(this.add.text(x + 24, y + 60, chapter.subtitle + '  —  ' + chapter.description, {
-      fontFamily: 'Georgia, serif', fontSize: '13px', color: '#c9b07a',
-      wordWrap: { width: w - 220 },
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, this.scale), color: '#c9b07a',
+      wordWrap: { width: w - (w < 620 ? 48 : 220) },
     }));
 
     if (completed) {
       list.add(this.add.text(x + w - 24, y + h / 2, '✓ completed', {
-        fontFamily: 'Georgia, serif', fontSize: '16px', color: '#c9a55c', fontStyle: 'italic',
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, this.scale), color: '#c9a55c', fontStyle: 'italic',
       }).setOrigin(1, 0.5));
     } else {
       list.add(this.add.text(x + w - 24, y + h / 2, 'enter ›', {
-        fontFamily: 'Georgia, serif', fontSize: '18px', color: '#f3d98a',
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(18, this.scale), color: '#f3d98a',
       }).setOrigin(1, 0.5));
     }
   }
@@ -133,8 +143,8 @@ export class ChapterSelectScene extends Phaser.Scene {
 
   private makeTextButton(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Text {
     const t = this.add.text(x, y, label, {
-      fontFamily: 'Georgia, serif', fontSize: '15px', color: '#c9b07a',
-      backgroundColor: '#1a120acc', padding: { x: 12, y: 6 },
+      fontFamily: 'Georgia, serif', fontSize: buttonFont(15, this.scale), color: '#c9b07a',
+      backgroundColor: '#1a120acc', padding: { x: 14, y: 14 },
     })
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => t.setColor('#fff1c0'))

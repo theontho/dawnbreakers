@@ -30,10 +30,14 @@ const config: Phaser.Types.Core.GameConfig = {
   parent: 'game',
   backgroundColor: '#0a0806',
   scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 1280,
-    height: 720,
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.NO_CENTER,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    min: {
+      width: 320,
+      height: 480,
+    },
   },
   pixelArt: false,
   scene: [

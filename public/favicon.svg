@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="The Dawn-Breakers favicon">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#071226"/>
+      <stop offset=".34" stop-color="#17264c"/>
+      <stop offset=".58" stop-color="#69466d"/>
+      <stop offset=".77" stop-color="#d56b4e"/>
+      <stop offset="1" stop-color="#f0b765"/>
+    </linearGradient>
+    <clipPath id="round">
+      <rect width="32" height="32" rx="7"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#round)" shape-rendering="geometricPrecision">
+    <rect width="32" height="32" fill="url(#sky)"/>
+    <circle cx="16" cy="22" r="10" fill="#ffb84d"/>
+    <circle cx="16" cy="20" r="5" fill="#ffe09a" opacity=".45"/>
+    <path d="M0 22h7v-3h4v3h3v-5h4v5h3v-4h4v4h7v10H0z" fill="#090706"/>
+    <path d="M0 27c5-2 10-3 16-3s11 1 16 3v5H0z" fill="#050403"/>
+  </g>
+</svg>
