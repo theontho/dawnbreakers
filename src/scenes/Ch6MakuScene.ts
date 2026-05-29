@@ -87,31 +87,31 @@ export class Ch6MakuScene extends BaseMapScene {
   private makeFortress(key: string, wall: number, dark: number, snow: number): void {
     if (this.textures.exists(key)) return;
 
-    const w = 150;
-    const h = 132;
+    const geo = this.isoPrism(3, 3, 78, 24);
     const g = this.add.graphics();
 
-    g.fillStyle(0x252b31, 1);
-    g.fillTriangle(w / 2, h, 8, h - 28, w - 8, h - 28);
-    g.fillStyle(wall, 1);
-    g.fillRect(26, 44, 98, 70);
-    g.fillStyle(dark, 1);
-    g.fillRect(36, 30, 22, 84);
-    g.fillRect(92, 24, 24, 90);
-    g.fillStyle(snow, 1);
-    g.fillRect(23, 40, 104, 8);
-    g.fillRect(34, 26, 26, 7);
-    g.fillRect(90, 20, 28, 7);
-    g.fillStyle(0x13181d, 1);
-    g.fillRect(69, 76, 18, 38);
-    g.fillRect(47, 58, 10, 16);
-    g.fillRect(98, 54, 10, 16);
+    this.drawIsoPrism(g, geo, {
+      right: wall,
+      left: dark,
+      top: 0x2d3740,
+      edge: 0x14181c,
+    });
     g.lineStyle(2, 0x14181c, 1);
-    g.strokeRect(26, 44, 98, 70);
-    g.strokeRect(36, 30, 22, 84);
-    g.strokeRect(92, 24, 24, 90);
+    g.fillStyle(snow, 1);
+    g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    g.lineBetween(geo.leftR.x + 8, geo.leftR.y + 5, geo.bottomR.x, geo.bottomR.y + 5);
+    g.lineBetween(geo.bottomR.x, geo.bottomR.y + 5, geo.rightR.x - 8, geo.rightR.y + 5);
+    g.fillStyle(dark, 1);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.12, 0.3, 88), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.68, 0.88, 92), true);
+    g.strokePoints(this.wallInset(geo.left, geo.bottom, 0.12, 0.3, 88), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.68, 0.88, 92), true);
+    g.fillStyle(0x13181d, 1);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.56, 36), true);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.44, 0.54, 16), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.22, 0.32, 16), true);
 
-    g.generateTexture(key, w, h);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 

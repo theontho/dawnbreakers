@@ -1,4 +1,4 @@
-import { BaseMapScene, TILE_H, TILE_W } from './BaseMapScene';
+import { BaseMapScene } from './BaseMapScene';
 
 export class Ch10SiyahChalScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -178,33 +178,40 @@ export class Ch10SiyahChalScene extends BaseMapScene {
   private makeLowArch(key: string): void {
     if (this.textures.exists(key)) return;
 
-    const w = TILE_W * 4;
-    const h = TILE_H + 72;
+    const geo = this.isoPrism(4, 1, 46, 12);
     const g = this.add.graphics();
-    g.fillStyle(0x302f2d, 1);
-    g.fillRect(16, 30, w - 32, 48);
+    this.drawIsoPrism(g, geo, {
+      right: 0x302f2d,
+      left: 0x242322,
+      top: 0x393736,
+      edge: 0x0b0b0a,
+    });
     g.fillStyle(0x151413, 1);
-    g.fillRoundedRect(w / 2 - 34, 44, 68, 34, 16);
+    const arch = this.wallInset(geo.right, geo.bottom, 0.28, 0.62, 32);
+    g.fillPoints(arch, true);
     g.lineStyle(2, 0x0b0b0a, 0.9);
-    g.strokeRect(16, 30, w - 32, 48);
-    g.generateTexture(key, w, h);
+    g.strokePoints(arch, true);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
   private makeStonePillar(key: string): void {
     if (this.textures.exists(key)) return;
 
-    const w = TILE_W * 2;
-    const h = TILE_H * 2 + 72;
+    const geo = this.isoPrism(2, 2, 76, 8);
     const g = this.add.graphics();
-    g.fillStyle(0x363534, 1);
-    g.fillRect(38, 20, 52, 88);
-    g.fillStyle(0x242322, 1);
-    g.fillRect(28, 14, 72, 14);
-    g.fillRect(28, 100, 72, 12);
-    g.lineStyle(2, 0x0c0c0b, 0.85);
-    g.strokeRect(38, 20, 52, 88);
-    g.generateTexture(key, w, h);
+    this.drawIsoPrism(g, geo, {
+      right: 0x363534,
+      left: 0x242322,
+      top: 0x444240,
+      edge: 0x0c0c0b,
+    });
+    g.lineStyle(2, 0x242322, 0.8);
+    g.lineBetween(geo.leftR.x + 6, geo.leftR.y + 12, geo.bottomR.x, geo.bottomR.y + 12);
+    g.lineBetween(geo.bottomR.x, geo.bottomR.y + 12, geo.rightR.x - 6, geo.rightR.y + 12);
+    g.lineBetween(geo.left.x + 6, geo.left.y - 10, geo.bottom.x, geo.bottom.y - 10);
+    g.lineBetween(geo.bottom.x, geo.bottom.y - 10, geo.right.x - 6, geo.right.y - 10);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 }

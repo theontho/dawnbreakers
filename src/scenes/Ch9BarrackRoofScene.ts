@@ -1,6 +1,4 @@
-import { BaseMapScene, TILE_H, TILE_W } from './BaseMapScene';
-
-type IsoPoint = { x: number; y: number };
+import { BaseMapScene } from './BaseMapScene';
 
 export class Ch9BarrackRoofScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -198,40 +196,5 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
 
     g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
-  }
-
-  private isoPrism(widthCells: number, heightCells: number, wallH: number, topPad = 0) {
-    const leftExtent = widthCells * TILE_W / 2;
-    const rightExtent = heightCells * TILE_W / 2;
-    const halfW = Math.max(leftExtent, rightExtent);
-    const baseH = (widthCells + heightCells) * TILE_H / 2;
-    const texH = baseH + wallH + topPad;
-    const bottom = { x: halfW, y: texH };
-    const top = {
-      x: halfW + (heightCells - widthCells) * TILE_W / 2,
-      y: texH - baseH,
-    };
-    const right = {
-      x: halfW + rightExtent,
-      y: texH - heightCells * TILE_H / 2,
-    };
-    const left = {
-      x: halfW - leftExtent,
-      y: texH - widthCells * TILE_H / 2,
-    };
-    const raise = (p: IsoPoint) => ({ x: p.x, y: p.y - wallH });
-
-    return {
-      texW: halfW * 2,
-      texH,
-      top,
-      right,
-      bottom,
-      left,
-      topR: raise(top),
-      rightR: raise(right),
-      bottomR: raise(bottom),
-      leftR: raise(left),
-    };
   }
 }

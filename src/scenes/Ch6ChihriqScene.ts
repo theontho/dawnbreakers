@@ -86,36 +86,35 @@ export class Ch6ChihriqScene extends BaseMapScene {
   private makeFortress(key: string, wall: number, dark: number, snow: number): void {
     if (this.textures.exists(key)) return;
 
-    const w = 160;
-    const h = 140;
+    const geo = this.isoPrism(3, 3, 86, 26);
     const g = this.add.graphics();
 
-    g.fillStyle(0x20252b, 1);
-    g.fillTriangle(w / 2, h, 10, h - 24, w - 10, h - 24);
-    g.fillStyle(wall, 1);
-    g.fillRect(26, 48, 108, 70);
-    g.fillStyle(dark, 1);
-    g.fillRect(32, 34, 26, 84);
-    g.fillRect(103, 28, 28, 90);
-    g.fillStyle(snow, 1);
-    g.fillRect(24, 44, 112, 7);
-    g.fillRect(30, 30, 30, 7);
-    g.fillRect(101, 24, 32, 7);
-    g.fillStyle(0x101418, 1);
-    g.fillRect(72, 76, 20, 42);
-    g.fillRect(45, 57, 12, 17);
-    g.fillRect(108, 55, 12, 18);
-    g.lineStyle(2, 0xb9c4cc, 0.85);
-    g.lineBetween(48, 57, 48, 74);
-    g.lineBetween(53, 57, 53, 74);
-    g.lineBetween(111, 55, 111, 73);
-    g.lineBetween(116, 55, 116, 73);
+    this.drawIsoPrism(g, geo, {
+      right: wall,
+      left: dark,
+      top: 0x1f252d,
+      edge: 0x11161c,
+    });
     g.lineStyle(2, 0x11161c, 1);
-    g.strokeRect(26, 48, 108, 70);
-    g.strokeRect(32, 34, 26, 84);
-    g.strokeRect(103, 28, 28, 90);
+    g.fillStyle(snow, 1);
+    g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    g.lineBetween(geo.leftR.x + 8, geo.leftR.y + 6, geo.bottomR.x, geo.bottomR.y + 6);
+    g.lineBetween(geo.bottomR.x, geo.bottomR.y + 6, geo.rightR.x - 8, geo.rightR.y + 6);
+    g.fillStyle(dark, 1);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.1, 0.28, 94), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.66, 0.88, 98), true);
+    g.strokePoints(this.wallInset(geo.left, geo.bottom, 0.1, 0.28, 94), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.66, 0.88, 98), true);
+    g.fillStyle(0x101418, 1);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.56, 40), true);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.43, 0.53, 18), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.2, 0.3, 18), true);
+    g.lineStyle(2, 0xb9c4cc, 0.85);
+    const leftBars = this.wallInset(geo.left, geo.bottom, 0.43, 0.53, 18);
+    g.lineBetween(leftBars[0].x + 3, leftBars[0].y, leftBars[3].x + 3, leftBars[3].y);
+    g.lineBetween(leftBars[1].x - 3, leftBars[1].y, leftBars[2].x - 3, leftBars[2].y);
 
-    g.generateTexture(key, w, h);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
@@ -138,17 +137,23 @@ export class Ch6ChihriqScene extends BaseMapScene {
   private makeBarredMarker(key: string): void {
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(1, 1, 34, 8);
     const g = this.add.graphics();
-    g.fillStyle(0x2a3038, 1);
-    g.fillRect(14, 12, 20, 34);
+    this.drawIsoPrism(g, geo, {
+      right: 0x2a3038,
+      left: 0x1d232a,
+      top: 0x3a414a,
+      edge: 0x101418,
+    });
+    const opening = this.wallInset(geo.right, geo.bottom, 0.28, 0.62, 22);
     g.fillStyle(0x12161b, 1);
-    g.fillRect(17, 17, 14, 18);
+    g.fillPoints(opening, true);
     g.lineStyle(2, 0xb9c4cc, 1);
-    g.lineBetween(20, 17, 20, 35);
-    g.lineBetween(25, 17, 25, 35);
+    g.lineBetween(opening[0].x + 4, opening[0].y - 1, opening[3].x + 4, opening[3].y + 1);
+    g.lineBetween(opening[1].x - 4, opening[1].y - 1, opening[2].x - 4, opening[2].y + 1);
     g.lineStyle(1, 0x101418, 1);
-    g.strokeRect(14, 12, 20, 34);
-    g.generateTexture(key, 48, 52);
+    g.strokePoints(opening, true);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 

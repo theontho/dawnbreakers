@@ -46,17 +46,19 @@ export class CityScene extends BaseMapScene {
     const key = 'ch1-crates';
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(1, 1, 18, 4);
     const g = this.add.graphics();
-    g.fillStyle(0x7a4f2a, 1);
-    g.fillRect(6, 18, 18, 16);
-    g.fillRect(22, 12, 18, 22);
-    g.fillStyle(0x9b6a3a, 1);
-    g.fillRect(10, 10, 18, 14);
     g.lineStyle(1, 0x2a1a0a, 0.8);
-    g.strokeRect(6, 18, 18, 16);
-    g.strokeRect(22, 12, 18, 22);
-    g.strokeRect(10, 10, 18, 14);
-    g.generateTexture(key, 48, 40);
+    this.drawIsoPrism(g, geo, {
+      right: 0x7a4f2a,
+      left: 0x5f3a20,
+      top: 0x9b6a3a,
+      edge: 0x2a1a0a,
+    });
+    g.lineStyle(1, 0x3d2414, 0.9);
+    g.lineBetween(geo.topR.x, geo.topR.y, geo.bottomR.x, geo.bottomR.y);
+    g.lineBetween(geo.leftR.x, geo.leftR.y, geo.rightR.x, geo.rightR.y);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 

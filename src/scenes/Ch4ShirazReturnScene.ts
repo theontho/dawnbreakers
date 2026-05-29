@@ -40,18 +40,24 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
 
   private makeClosedDoor(): void {
     if (this.textures.exists('ch4-closed-door')) return;
+    const geo = this.isoPrism(1, 1, 42, 12);
     const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
-    g.fillStyle(0x6f5636, 1);
-    g.fillRect(8, 10, 48, 54);
+    this.drawIsoPrism(g, geo, {
+      right: 0x6f5636,
+      left: 0x534029,
+      top: 0x7c6240,
+      edge: 0x140d09,
+    });
+    const door = this.wallInset(geo.right, geo.bottom, 0.18, 0.82, 34);
     g.fillStyle(0x2c1d14, 1);
-    g.fillRect(14, 18, 36, 46);
+    g.fillPoints(door, true);
     g.lineStyle(2, 0x140d09, 0.8);
-    g.strokeRect(8, 10, 48, 54);
+    g.strokePoints(door, true);
     g.lineStyle(1, 0xc9a55c, 0.7);
-    g.lineBetween(32, 18, 32, 64);
+    g.lineBetween((door[0].x + door[1].x) / 2, (door[0].y + door[1].y) / 2, (door[2].x + door[3].x) / 2, (door[2].y + door[3].y) / 2);
     g.fillStyle(0xc9a55c, 1);
-    g.fillCircle(39, 42, 2);
-    g.generateTexture('ch4-closed-door', 64, 72);
+    g.fillCircle(door[1].x - 4, door[1].y - 16, 2);
+    g.generateTexture('ch4-closed-door', geo.texW, geo.texH);
     g.destroy();
   }
 

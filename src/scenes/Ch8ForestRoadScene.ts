@@ -14,16 +14,24 @@ export class Ch8ForestRoadScene extends BaseMapScene {
 
   private ensureTextures(): void {
     if (!this.textures.exists('ch8-shrine-glimpse')) {
+      const geo = this.isoPrism(2, 2, 44, 24);
       const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
-      g.fillStyle(0x3b3426, 1);
-      g.fillRect(28, 44, 40, 28);
-      g.fillStyle(0x756342, 1);
-      g.fillTriangle(24, 44, 48, 20, 72, 44);
+      this.drawIsoPrism(g, geo, {
+        right: 0x756342,
+        left: 0x3b3426,
+        top: 0x8d7a57,
+        edge: 0x2d261c,
+      });
       g.fillStyle(0xb9aa79, 0.9);
-      g.fillCircle(48, 22, 10);
+      g.fillCircle(geo.bottomR.x, geo.topR.y - 8, 10);
       g.fillStyle(0x1d2d24, 0.8);
-      g.fillRect(0, 66, 96, 30);
-      g.generateTexture('ch8-shrine-glimpse', 96, 96);
+      g.fillPoints([
+        { x: geo.left.x, y: geo.left.y + 8 },
+        { x: geo.right.x, y: geo.right.y + 8 },
+        geo.bottom,
+        { x: geo.bottom.x, y: geo.bottom.y + 10 },
+      ], true);
+      g.generateTexture('ch8-shrine-glimpse', geo.texW, geo.texH);
       g.destroy();
     }
   }

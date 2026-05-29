@@ -28,18 +28,21 @@ export class Ch8TabarsiFortScene extends BaseMapScene {
     }
 
     if (!this.textures.exists('ch8-shrine')) {
+      const geo = this.isoPrism(3, 3, 56, 24);
       const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
-      g.fillStyle(0x5b5140, 1);
-      g.fillRect(34, 58, 92, 50);
-      g.fillStyle(0x8d7a57, 1);
-      g.fillTriangle(26, 58, 80, 24, 134, 58);
+      this.drawIsoPrism(g, geo, {
+        right: 0x8d7a57,
+        left: 0x5b5140,
+        top: 0xb8aa78,
+        edge: 0x2d261c,
+      });
       g.fillStyle(0xb8aa78, 1);
-      g.fillCircle(80, 28, 15);
+      g.fillCircle(geo.bottomR.x, geo.topR.y - 12, 15);
       g.fillStyle(0x2c251c, 1);
-      g.fillRect(72, 78, 16, 30);
+      g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.56, 30), true);
       g.lineStyle(3, 0x2d261c, 1);
-      g.strokeRect(34, 58, 92, 50);
-      g.generateTexture('ch8-shrine', 160, 128);
+      g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.56, 30), true);
+      g.generateTexture('ch8-shrine', geo.texW, geo.texH);
       g.destroy();
     }
 

@@ -69,25 +69,26 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
 
   private ensureTextures(): void {
     if (!this.textures.exists('ch5-palace-portico')) {
+      const geo = this.isoPrism(5, 3, 70, 30);
       const g = this.add.graphics();
+      this.drawIsoPrism(g, geo, {
+        right: 0x9b7a4d,
+        left: 0x6f5435,
+        top: 0x315f68,
+        edge: 0x2a1a0a,
+      });
       g.lineStyle(2, 0x2a1a0a, 1);
-      g.fillStyle(0x9b7a4d, 1);
-      g.fillRect(20, 70, 280, 72);
-      g.fillStyle(0x6f5435, 1);
-      g.fillRect(20, 132, 280, 26);
       g.fillStyle(0xc8b27a, 1);
-      for (let x = 50; x <= 250; x += 50) {
-        g.fillRect(x, 78, 14, 76);
-        g.strokeRect(x, 78, 14, 76);
+      for (let t = 0.16; t <= 0.86; t += 0.175) {
+        const col = this.wallInset(geo.right, geo.bottom, t, t + 0.04, 62);
+        g.fillPoints(col, true);
+        g.strokePoints(col, true);
       }
-      g.fillStyle(0x315f68, 1);
-      g.fillTriangle(8, 72, 160, 18, 312, 72);
-      g.fillStyle(0xc9a55c, 1);
-      g.fillCircle(160, 28, 10);
-      g.strokeTriangle(8, 72, 160, 18, 312, 72);
       g.fillStyle(0x2a1a0a, 1);
-      g.fillRect(142, 104, 36, 54);
-      g.generateTexture('ch5-palace-portico', 320, 168);
+      g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.43, 0.58, 46), true);
+      g.fillStyle(0xc9a55c, 1);
+      g.fillCircle(geo.bottomR.x, geo.topR.y - 8, 10);
+      g.generateTexture('ch5-palace-portico', geo.texW, geo.texH);
       g.destroy();
     }
 

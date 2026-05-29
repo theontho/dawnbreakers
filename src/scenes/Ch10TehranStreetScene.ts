@@ -1,4 +1,4 @@
-import { BaseMapScene, TILE_H, TILE_W } from './BaseMapScene';
+import { BaseMapScene } from './BaseMapScene';
 
 export class Ch10TehranStreetScene extends BaseMapScene {
   protected mapWidth = 19;
@@ -144,56 +144,63 @@ export class Ch10TehranStreetScene extends BaseMapScene {
   private makeStreetHouse(key: string): void {
     if (this.textures.exists(key)) return;
 
-    const w = TILE_W * 3;
-    const h = TILE_H * 2 + 72;
+    const geo = this.isoPrism(3, 2, 62, 12);
     const g = this.add.graphics();
-    g.fillStyle(0x6b5b49, 1);
-    g.fillRect(18, 38, w - 36, 58);
-    g.fillStyle(0x4b3f36, 1);
-    g.fillRect(14, 28, w - 28, 16);
+    this.drawIsoPrism(g, geo, {
+      right: 0x6b5b49,
+      left: 0x4b3f36,
+      top: 0x5b4f45,
+      edge: 0x1a1512,
+    });
     g.fillStyle(0x2c241e, 1);
-    g.fillRect(42, 58, 22, 38);
-    g.fillRect(116, 58, 22, 38);
-    g.lineStyle(2, 0x1a1512, 0.85);
-    g.strokeRect(18, 38, w - 36, 58);
-    g.strokeRect(14, 28, w - 28, 16);
-    g.generateTexture(key, w, h);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.2, 0.36, 32), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.56, 0.72, 32), true);
+    g.lineStyle(1, 0x1a1512, 0.85);
+    g.strokePoints(this.wallInset(geo.left, geo.bottom, 0.2, 0.36, 32), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.56, 0.72, 32), true);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
   private makeStreetArch(key: string): void {
     if (this.textures.exists(key)) return;
 
-    const w = TILE_W * 4;
-    const h = TILE_H * 2 + 86;
+    const geo = this.isoPrism(4, 2, 72, 14);
     const g = this.add.graphics();
-    g.fillStyle(0x5b5048, 1);
-    g.fillRect(22, 36, w - 44, 64);
+    this.drawIsoPrism(g, geo, {
+      right: 0x5b5048,
+      left: 0x463d36,
+      top: 0x4e443d,
+      edge: 0x171310,
+    });
     g.fillStyle(0x26221f, 1);
-    g.fillRoundedRect(w / 2 - 24, 58, 48, 42, 18);
-    g.fillStyle(0x463d36, 1);
-    g.fillRect(14, 22, w - 28, 18);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.36, 0.58, 40), true);
     g.lineStyle(2, 0x171310, 0.85);
-    g.strokeRect(22, 36, w - 44, 64);
-    g.strokeRect(14, 22, w - 28, 18);
-    g.generateTexture(key, w, h);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.36, 0.58, 40), true);
+    g.lineBetween(geo.leftR.x + 10, geo.leftR.y + 10, geo.bottomR.x, geo.bottomR.y + 10);
+    g.lineBetween(geo.bottomR.x, geo.bottomR.y + 10, geo.rightR.x - 10, geo.rightR.y + 10);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
   private makeClosedDoor(key: string): void {
     if (this.textures.exists(key)) return;
 
-    const w = TILE_W * 3;
-    const h = TILE_H * 2 + 70;
+    const geo = this.isoPrism(3, 2, 60, 12);
     const g = this.add.graphics();
-    g.fillStyle(0x4b433c, 1);
-    g.fillRect(24, 34, w - 48, 62);
+    this.drawIsoPrism(g, geo, {
+      right: 0x4b433c,
+      left: 0x34302c,
+      top: 0x5a5148,
+      edge: 0x171310,
+    });
     g.fillStyle(0x241f1b, 1);
-    g.fillRect(w / 2 - 20, 54, 40, 42);
+    const door = this.wallInset(geo.right, geo.bottom, 0.38, 0.58, 40);
+    g.fillPoints(door, true);
     g.lineStyle(2, 0x171310, 0.85);
-    g.strokeRect(24, 34, w - 48, 62);
-    g.lineBetween(w / 2, 54, w / 2, 96);
-    g.generateTexture(key, w, h);
+    g.strokePoints(door, true);
+    g.lineBetween((door[0].x + door[1].x) / 2, (door[0].y + door[1].y) / 2, (door[2].x + door[3].x) / 2, (door[2].y + door[3].y) / 2);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 }

@@ -1,4 +1,4 @@
-import { BaseMapScene, TILE_H, TILE_W } from './BaseMapScene';
+import { BaseMapScene } from './BaseMapScene';
 
 /**
  * Chapter 2 — a dusty road north of Shíráz where conviction becomes movement.
@@ -96,50 +96,52 @@ export class RoadScene extends BaseMapScene {
   }
 
   private makeCaravanseraiTexture(): void {
-    const w = TILE_W * 3;
-    const h = TILE_H * 2 + 84;
+    const geo = this.isoPrism(3, 2, 66, 20);
     const g = this.add.graphics();
-    g.lineStyle(2, 0x2a1a0a, 0.85);
-    g.fillStyle(0x6f5534, 0.35);
-    g.fillEllipse(w / 2, h - 10, w - 18, 28);
-    g.fillStyle(0xb88b55, 1);
-    g.fillRoundedRect(18, 42, w - 36, 56, 6);
-    g.strokeRoundedRect(18, 42, w - 36, 56, 6);
-    g.fillStyle(0x8b653a, 1);
-    g.fillRect(22, 34, 28, 68);
-    g.fillRect(w - 50, 34, 28, 68);
-    g.strokeRect(22, 34, 28, 68);
-    g.strokeRect(w - 50, 34, 28, 68);
+
+    this.drawIsoPrism(g, geo, {
+      right: 0xb88b55,
+      left: 0x8b653a,
+      top: 0xcaa36a,
+      edge: 0x2a1a0a,
+    });
+    g.lineStyle(1, 0x2a1a0a, 0.9);
     g.fillStyle(0x5b3820, 1);
-    g.fillRoundedRect(w / 2 - 18, 62, 36, 38, 8);
-    g.fillStyle(0xcaa36a, 1);
-    g.fillRect(14, 38, w - 28, 8);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.39, 0.57, 34), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.39, 0.57, 34), true);
+    g.fillStyle(0x6b4824, 1);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.08, 0.22, 58), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.78, 0.94, 58), true);
+    g.strokePoints(this.wallInset(geo.left, geo.bottom, 0.08, 0.22, 58), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.78, 0.94, 58), true);
     g.fillStyle(0xd8bf7a, 1);
-    g.fillCircle(36, 26, 5);
-    g.fillCircle(w - 36, 26, 5);
-    g.generateTexture('ch2-caravanserai', w, h);
+    g.fillCircle(geo.leftR.x + 18, geo.leftR.y - 6, 5);
+    g.fillCircle(geo.rightR.x - 18, geo.rightR.y - 6, 5);
+    g.generateTexture('ch2-caravanserai', geo.texW, geo.texH);
     g.destroy();
   }
 
   private makeShrineTexture(): void {
-    const w = 58;
-    const h = 76;
+    const geo = this.isoPrism(1, 1, 36, 18);
     const g = this.add.graphics();
+    this.drawIsoPrism(g, geo, {
+      right: 0xd0b47a,
+      left: 0xa98c5c,
+      top: 0x8b6a3a,
+      edge: 0x2a1a0a,
+    });
+    const cx = geo.bottomR.x;
+    const cy = (geo.topR.y + geo.bottomR.y) / 2;
     g.lineStyle(1, 0x2a1a0a, 0.9);
-    g.fillStyle(0x7d6846, 0.45);
-    g.fillEllipse(w / 2, h - 8, 46, 18);
-    g.fillStyle(0xd0b47a, 1);
-    g.fillRoundedRect(13, 30, 32, 34, 4);
-    g.strokeRoundedRect(13, 30, 32, 34, 4);
     g.fillStyle(0x4a7a82, 1);
-    g.fillEllipse(w / 2, 30, 34, 22);
-    g.strokeEllipse(w / 2, 30, 34, 22);
+    g.fillEllipse(cx, cy - 18, 36, 24);
+    g.strokeEllipse(cx, cy - 18, 36, 24);
     g.fillStyle(0x5a3a24, 1);
-    g.fillRoundedRect(23, 43, 12, 20, 5);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.58, 20), true);
     g.fillStyle(0xc9a55c, 1);
-    g.fillRect(w / 2 - 1, 8, 2, 13);
-    g.fillCircle(w / 2, 7, 3);
-    g.generateTexture('ch2-shrine', w, h);
+    g.fillRect(cx - 1, cy - 46, 2, 13);
+    g.fillCircle(cx, cy - 48, 3);
+    g.generateTexture('ch2-shrine', geo.texW, geo.texH);
     g.destroy();
   }
 

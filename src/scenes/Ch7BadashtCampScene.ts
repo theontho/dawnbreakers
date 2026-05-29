@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { BaseMapScene } from './BaseMapScene';
 
 /** Chapter 7 — the Conference of Badasht, held among three distinct camps. */
@@ -107,19 +108,32 @@ export class Ch7BadashtCampScene extends BaseMapScene {
   private makeTent(key: string, cloth: number, trim: number): void {
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(3, 2, 0, 58);
+    const peak = { x: geo.bottom.x, y: geo.top.y - 48 };
     const g = this.add.graphics();
     g.fillStyle(0x000000, 0.2);
-    g.fillEllipse(64, 88, 92, 14);
+    g.fillPoints([geo.top, geo.right, geo.bottom, geo.left], true);
     g.fillStyle(cloth, 1);
-    g.fillTriangle(14, 78, 64, 18, 114, 78);
+    g.fillPoints([geo.left, peak, geo.bottom], true);
+    g.fillStyle(Phaser.Display.Color.IntegerToColor(cloth).darken(18).color, 1);
+    g.fillPoints([geo.right, peak, geo.bottom], true);
     g.fillStyle(0xead8aa, 1);
-    g.fillTriangle(64, 22, 82, 78, 46, 78);
+    g.fillPoints([geo.bottom, peak, {
+      x: geo.bottom.x + (geo.right.x - geo.bottom.x) * 0.28,
+      y: geo.bottom.y + (geo.right.y - geo.bottom.y) * 0.28,
+    }], true);
     g.fillStyle(0x241d1c, 0.65);
-    g.fillTriangle(64, 46, 76, 78, 52, 78);
+    g.fillPoints([geo.bottom, {
+      x: geo.bottom.x - 12,
+      y: geo.bottom.y - 30,
+    }, {
+      x: geo.bottom.x + 12,
+      y: geo.bottom.y - 30,
+    }], true);
     g.lineStyle(3, trim, 1);
-    g.strokeTriangle(14, 78, 64, 18, 114, 78);
-    g.lineBetween(64, 20, 64, 80);
-    g.generateTexture(key, 128, 96);
+    g.strokePoints([geo.left, peak, geo.right, geo.bottom], true);
+    g.lineBetween(peak.x, peak.y, geo.bottom.x, geo.bottom.y);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
@@ -127,19 +141,30 @@ export class Ch7BadashtCampScene extends BaseMapScene {
     const key = 'ch7-garden-canopy';
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(3, 2, 0, 60);
+    const peak = { x: geo.bottom.x, y: geo.top.y - 34 };
     const g = this.add.graphics();
     g.fillStyle(0x000000, 0.18);
-    g.fillEllipse(64, 88, 96, 14);
+    g.fillPoints([geo.top, geo.right, geo.bottom, geo.left], true);
     g.lineStyle(4, 0x7b5a37, 1);
-    g.lineBetween(28, 34, 28, 82);
-    g.lineBetween(100, 34, 100, 82);
+    g.lineBetween(geo.left.x + 10, geo.left.y - 2, geo.left.x + 10, geo.left.y + 46);
+    g.lineBetween(geo.right.x - 10, geo.right.y - 2, geo.right.x - 10, geo.right.y + 46);
     g.fillStyle(0x8d3f42, 1);
-    g.fillTriangle(18, 38, 64, 12, 110, 38);
+    g.fillPoints([geo.left, peak, geo.bottom], true);
+    g.fillStyle(0x6f3134, 1);
+    g.fillPoints([geo.right, peak, geo.bottom], true);
     g.fillStyle(0xc9a55c, 1);
-    g.fillRect(28, 38, 72, 8);
+    g.lineStyle(3, 0xc9a55c, 1);
+    g.lineBetween(geo.left.x, geo.left.y, peak.x, peak.y);
+    g.lineBetween(peak.x, peak.y, geo.right.x, geo.right.y);
     g.fillStyle(0x4f6f46, 1);
-    g.fillRect(34, 62, 60, 16);
-    g.generateTexture(key, 128, 96);
+    g.fillPoints([
+      { x: geo.bottom.x - 26, y: geo.bottom.y - 18 },
+      { x: geo.bottom.x + 18, y: geo.bottom.y - 8 },
+      { x: geo.bottom.x + 4, y: geo.bottom.y },
+      { x: geo.bottom.x - 38, y: geo.bottom.y - 9 },
+    ], true);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
@@ -149,9 +174,20 @@ export class Ch7BadashtCampScene extends BaseMapScene {
 
     const g = this.add.graphics();
     g.fillStyle(0x7e2e2e, 1);
-    g.fillRect(6, 16, 52, 20);
+    g.fillPoints([
+      { x: 32, y: 8 },
+      { x: 60, y: 22 },
+      { x: 32, y: 36 },
+      { x: 4, y: 22 },
+    ], true);
     g.lineStyle(2, 0xd8b56a, 1);
-    g.strokeRect(10, 20, 44, 12);
+    g.strokePoints([
+      { x: 32, y: 8 },
+      { x: 60, y: 22 },
+      { x: 32, y: 36 },
+      { x: 4, y: 22 },
+    ], true);
+    g.strokeEllipse(32, 22, 30, 12);
     g.generateTexture(key, 64, 40);
     g.destroy();
   }

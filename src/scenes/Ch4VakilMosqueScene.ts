@@ -56,19 +56,22 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
 
   private makePrayerArch(): void {
     if (this.textures.exists('ch4-prayer-arch')) return;
+    const geo = this.isoPrism(4, 2, 58, 18);
     const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
-    g.fillStyle(0xb89968, 1);
-    g.fillRect(8, 24, 80, 66);
-    g.fillStyle(0x5d4a34, 1);
-    g.fillRoundedRect(26, 38, 44, 50, 20);
-    g.fillStyle(0x2a2118, 1);
-    g.fillRoundedRect(34, 48, 28, 40, 14);
-    g.lineStyle(2, 0x4a3320, 1);
-    g.strokeRect(8, 24, 80, 66);
+    this.drawIsoPrism(g, geo, {
+      right: 0xb89968,
+      left: 0x8f7049,
+      top: 0xd0b47a,
+      edge: 0x4a3320,
+    });
     g.lineStyle(1, 0xc9a55c, 0.7);
-    g.lineBetween(14, 34, 82, 34);
-    g.lineBetween(14, 82, 82, 82);
-    g.generateTexture('ch4-prayer-arch', 96, 94);
+    g.lineBetween(geo.leftR.x + 10, geo.leftR.y + 14, geo.bottomR.x, geo.bottomR.y + 14);
+    g.lineBetween(geo.bottomR.x, geo.bottomR.y + 14, geo.rightR.x - 10, geo.rightR.y + 14);
+    g.lineStyle(2, 0x4a3320, 1);
+    g.fillStyle(0x2a2118, 1);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.33, 0.58, 42), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.33, 0.58, 42), true);
+    g.generateTexture('ch4-prayer-arch', geo.texW, geo.texH);
     g.destroy();
   }
 

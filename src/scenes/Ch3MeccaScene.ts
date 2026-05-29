@@ -77,30 +77,18 @@ export class Ch3MeccaScene extends BaseMapScene {
   private makeKaabaTexture(): void {
     if (this.textures.exists('ch3-kaaba')) return;
 
+    const geo = this.isoPrism(3, 2, 56, 10);
     const g = this.add.graphics();
-    const top = { x: 48, y: 18 };
-    const right = { x: 88, y: 38 };
-    const bottom = { x: 48, y: 58 };
-    const left = { x: 8, y: 38 };
-    const lift = 48;
-    const topR = { x: top.x, y: top.y - lift };
-    const rightR = { x: right.x, y: right.y - lift };
-    const bottomR = { x: bottom.x, y: bottom.y - lift };
-    const leftR = { x: left.x, y: left.y - lift };
-
-    g.fillStyle(0x151515, 1);
-    g.fillPoints([right, bottom, bottomR, rightR], true);
-    g.fillStyle(0x0b0b0b, 1);
-    g.fillPoints([left, bottom, bottomR, leftR], true);
-    g.fillStyle(0x202020, 1);
-    g.fillPoints([topR, rightR, bottomR, leftR], true);
-    g.lineStyle(1, 0x000000, 0.8);
-    g.strokePoints([right, bottom, bottomR, rightR], true);
-    g.strokePoints([left, bottom, bottomR, leftR], true);
-    g.strokePoints([topR, rightR, bottomR, leftR], true);
+    this.drawIsoPrism(g, geo, {
+      right: 0x151515,
+      left: 0x0b0b0b,
+      top: 0x202020,
+      edge: 0x000000,
+    });
     g.lineStyle(3, 0xc9a55c, 0.9);
-    g.lineBetween(leftR.x + 4, leftR.y + 17, rightR.x - 4, rightR.y + 17);
-    g.generateTexture('ch3-kaaba', 96, 72);
+    g.lineBetween(geo.leftR.x + 6, geo.leftR.y + 18, geo.bottomR.x, geo.bottomR.y + 18);
+    g.lineBetween(geo.bottomR.x, geo.bottomR.y + 18, geo.rightR.x - 6, geo.rightR.y + 18);
+    g.generateTexture('ch3-kaaba', geo.texW, geo.texH);
     g.destroy();
   }
 

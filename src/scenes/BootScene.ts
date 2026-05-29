@@ -150,9 +150,36 @@ export class BootScene extends Phaser.Scene {
       g.fillRect(cx - 1, cy - decorH, 2, decorH / 2);
     } else if (decor === 'box') {
       const dc = decorColor ?? wallColor;
+      const boxBottom = bottomR;
+      const boxTop = { x: boxBottom.x, y: boxBottom.y - decorH };
       g.fillStyle(dc, 1);
-      g.fillRect(texW / 2 - 10, topR.y - decorH, 20, decorH);
-      g.strokeRect(texW / 2 - 10, topR.y - decorH, 20, decorH);
+      g.fillPoints([
+        { x: boxBottom.x - 14, y: boxBottom.y - 7 },
+        { x: boxBottom.x, y: boxBottom.y - 14 },
+        { x: boxBottom.x + 14, y: boxBottom.y - 7 },
+        boxBottom,
+      ], true);
+      g.fillStyle(Phaser.Display.Color.IntegerToColor(dc).darken(18).color, 1);
+      g.fillPoints([
+        { x: boxBottom.x - 14, y: boxBottom.y - 7 },
+        boxBottom,
+        boxTop,
+        { x: boxTop.x - 14, y: boxTop.y - 7 },
+      ], true);
+      g.fillStyle(Phaser.Display.Color.IntegerToColor(dc).darken(8).color, 1);
+      g.fillPoints([
+        { x: boxBottom.x + 14, y: boxBottom.y - 7 },
+        boxBottom,
+        boxTop,
+        { x: boxTop.x + 14, y: boxTop.y - 7 },
+      ], true);
+      g.lineStyle(1, edge, 1);
+      g.strokePoints([
+        { x: boxTop.x - 14, y: boxTop.y - 7 },
+        boxTop,
+        { x: boxTop.x + 14, y: boxTop.y - 7 },
+        boxBottom,
+      ], true);
     }
 
     g.generateTexture(key, texW, texH);
@@ -215,8 +242,28 @@ export class BootScene extends Phaser.Scene {
 
     // Lintel beam joining the two pillars at the top
     g.fillStyle(dark, 1);
-    g.fillRect(2, top.y - wallH - 6, texW - 4, 10);
-    g.strokeRect(2, top.y - wallH - 6, texW - 4, 10);
+    const beamBottom = top.y - wallH + 2;
+    const beamTop = beamBottom - 10;
+    g.fillPoints([
+      { x: left.x + 4, y: beamBottom },
+      { x: top.x, y: beamBottom - 10 },
+      { x: right.x - 4, y: beamBottom },
+      { x: top.x, y: beamBottom + 10 },
+    ], true);
+    g.fillStyle(Phaser.Display.Color.IntegerToColor(dark).darken(18).color, 1);
+    g.fillPoints([
+      { x: left.x + 4, y: beamBottom },
+      { x: top.x, y: beamBottom + 10 },
+      { x: top.x, y: beamTop + 10 },
+      { x: left.x + 4, y: beamTop },
+    ], true);
+    g.lineStyle(1, 0x000000, 0.7);
+    g.strokePoints([
+      { x: left.x + 4, y: beamBottom },
+      { x: top.x, y: beamBottom - 10 },
+      { x: right.x - 4, y: beamBottom },
+      { x: top.x, y: beamBottom + 10 },
+    ], true);
 
     g.generateTexture(key, texW, texH);
     g.destroy();

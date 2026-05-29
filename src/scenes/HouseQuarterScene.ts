@@ -44,19 +44,21 @@ export class HouseQuarterScene extends BaseMapScene {
     const key = 'ch1-planter';
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(1, 1, 10, 16);
     const g = this.add.graphics();
-    g.fillStyle(0x8a5a2a, 1);
-    g.fillEllipse(24, 30, 38, 14);
-    g.fillStyle(0x5f3a20, 1);
-    g.fillRect(9, 18, 30, 12);
-    g.lineStyle(1, 0x2a1a0a, 0.8);
-    g.strokeRect(9, 18, 30, 12);
-    g.strokeEllipse(24, 30, 38, 14);
+    this.drawIsoPrism(g, geo, {
+      right: 0x8a5a2a,
+      left: 0x5f3a20,
+      top: 0x4f3424,
+      edge: 0x2a1a0a,
+    });
+    g.fillStyle(0x3f7a4a, 0.35);
+    g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
     g.fillStyle(0x3f7a4a, 1);
-    g.fillCircle(17, 16, 7);
-    g.fillCircle(26, 12, 8);
-    g.fillCircle(33, 17, 6);
-    g.generateTexture(key, 48, 38);
+    g.fillCircle(geo.bottomR.x - 10, geo.bottomR.y - 15, 7);
+    g.fillCircle(geo.bottomR.x, geo.bottomR.y - 20, 8);
+    g.fillCircle(geo.bottomR.x + 9, geo.bottomR.y - 14, 6);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
@@ -93,16 +95,22 @@ export class HouseQuarterScene extends BaseMapScene {
     const key = 'ch1-house-threshold';
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(1, 1, 34, 12);
     const g = this.add.graphics();
+    this.drawIsoPrism(g, geo, {
+      right: 0x6f4a24,
+      left: 0x4f321b,
+      top: 0x8c6230,
+      edge: 0x1a0f08,
+    });
+    const door = this.wallInset(geo.right, geo.bottom, 0.36, 0.62, 24);
     g.fillStyle(0x26180f, 1);
-    g.fillEllipse(32, 36, 44, 14);
-    g.fillStyle(0x6f4a24, 1);
-    g.fillRect(18, 10, 28, 28);
-    g.fillStyle(0xe5c36e, 0.7);
-    g.fillCircle(32, 20, 9);
+    g.fillPoints(door, true);
     g.lineStyle(2, 0x1a0f08, 0.85);
-    g.strokeRect(18, 10, 28, 28);
-    g.generateTexture(key, 64, 44);
+    g.strokePoints(door, true);
+    g.fillStyle(0xe5c36e, 0.7);
+    g.fillCircle(door[1].x - 3, door[1].y - 10, 4);
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
   }
 
