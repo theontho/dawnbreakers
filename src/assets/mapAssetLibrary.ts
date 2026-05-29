@@ -156,7 +156,6 @@ export const MAP_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch10-chain-coil', label: 'Chain Coil', texture: 'ch10-chain-coil', kind: 'prop', color: 0x3f4650, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch10-light-shaft', label: 'Light Shaft', texture: 'ch10-light-shaft', kind: 'prop', color: 0xf3d98a, blocks: false },
 
-  { id: 'npc-bab', label: 'The Bab', texture: 'npc-bab', kind: 'character', color: 0xf2ead6, blocks: true },
   { id: 'npc-traveller', label: 'Traveller', texture: 'npc-traveller', kind: 'character', color: 0x4a3a2a, blocks: true },
   { id: 'npc-merchant', label: 'Merchant', texture: 'npc-merchant', kind: 'character', color: 0x8a5a2a, blocks: true },
   { id: 'npc-mulla', label: 'Mulla', texture: 'npc-mulla', kind: 'character', color: 0x1a1a1a, blocks: true },

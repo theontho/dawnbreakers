@@ -20,13 +20,6 @@ export class BootScene extends Phaser.Scene {
     this.makeIsoTile('tile-water', 0x2c4a6b, 0x1a3050);
     this.makeIsoTile('tile-sand', 0xb89968, 0x856b42);
 
-    this.makeCharacter('npc-bab', {
-      body: 0x2e7d4f,
-      skin: 0xf6e8c2,
-      clothing: { style: 'cloak', secondary: 0xf0e6c8, accent: 0xc9a55c },
-      hat: { style: 'turban', color: 0xf0e6c8, accent: 0x2e7d4f },
-      shadow: true,
-    });
     this.makeCharacter('npc-traveller', {
       body: 0x4a3a2a,
       skin: 0xd9c79a,

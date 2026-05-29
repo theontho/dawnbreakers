@@ -40,6 +40,7 @@ export class Ch5IsfahanBridgeScene extends BaseMapScene {
       [12, 5], [12, 4], [13, 4], [14, 4], [15, 4], [16, 4], [17, 4],
       [18, 4], [19, 4], [19, 5],
     ]);
+    this.blocked[5][19] = false;
 
     this.map[4][3] = 'water';
     this.blockTile(3, 4);

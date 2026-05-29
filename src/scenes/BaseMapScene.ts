@@ -70,6 +70,24 @@ export interface SceneSpawnData {
   spawnY?: number;
 }
 
+interface RevealTarget {
+  x: number;
+  y: number;
+  depth: number;
+  radius: number;
+}
+
+interface RevealMaskState {
+  sprite: Phaser.GameObjects.Image;
+  bounds: Phaser.Geom.Rectangle;
+  staticReveals: RevealTarget[];
+  textureKey?: string;
+  texture?: Phaser.Textures.CanvasTexture;
+  context?: CanvasRenderingContext2D;
+  maskObject?: Phaser.GameObjects.Image;
+  maskShape?: Phaser.GameObjects.Graphics;
+}
+
 /**
  * Shared logic for any walkable map scene: iso rendering, grid movement,
  * NPC interaction, dialogue/journal/restart HUD, and edge-of-map exits.
@@ -91,6 +109,12 @@ export abstract class BaseMapScene extends Phaser.Scene {
   protected buildings: Building[] = [];
   protected decor: Decor[] = [];
   protected exits: MapExit[] = [];
+  private occludableSprites: Phaser.GameObjects.Image[] = [];
+  private revealMaskStates: RevealMaskState[] = [];
+  private lastPlayerReveal?: RevealTarget;
+  private interactableHighlightGraphics: Phaser.GameObjects.Graphics[] = [];
+  private interactableHighlightsToggled = false;
+  private interactableHighlightsHeld = false;
 
   protected promptText!: Phaser.GameObjects.Text;
   protected exitPromptText!: Phaser.GameObjects.Text;
@@ -103,7 +127,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
   protected interactKey!: Phaser.Input.Keyboard.Key;
   protected journalKey!: Phaser.Input.Keyboard.Key;
   protected chapterKey!: Phaser.Input.Keyboard.Key;
-  protected editorKey!: Phaser.Input.Keyboard.Key;
+  protected highlightKey!: Phaser.Input.Keyboard.Key;
+  protected tabHighlightKey!: Phaser.Input.Keyboard.Key;
   protected restartKey!: Phaser.Input.Keyboard.Key;
   protected wasdKeys!: {
     W: Phaser.Input.Keyboard.Key;
@@ -136,6 +161,12 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.buildings = [];
     this.decor = [];
     this.exits = [];
+    this.occludableSprites = [];
+    this.revealMaskStates = [];
+    this.lastPlayerReveal = undefined;
+    this.interactableHighlightGraphics = [];
+    this.interactableHighlightsToggled = false;
+    this.interactableHighlightsHeld = false;
     this.endingShown = false;
   }
 
@@ -158,12 +189,15 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.drawWorld();
     this.spawnNPCs();
     this.spawnPlayer();
+    this.setupInteractableRevealMask();
+    this.setupInteractableHighlights();
     this.setupInput();
     this.setupHUD(width, height);
     this.setupCameraFollow(width, height);
     this.events.on(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
+      this.destroyInteractableRevealMasks();
     });
 
     // Camera fade-in on scene entry
@@ -225,16 +259,18 @@ export abstract class BaseMapScene extends Phaser.Scene {
       const frontX = b.gridX + b.w - 1;
       const frontY = b.gridY + b.h - 1;
       const front = this.gridToScreen(frontX, frontY);
-      this.add.image(front.sx, front.sy + TILE_H / 2, b.texture)
+      const sprite = this.add.image(front.sx, front.sy + TILE_H / 2, b.texture)
         .setOrigin(0.5, 1)
         .setDepth(front.sy + 1);
+      this.occludableSprites.push(sprite);
     }
 
     for (const d of this.decor) {
       const pos = this.gridToScreen(d.gridX, d.gridY);
-      this.add.image(pos.sx, pos.sy + TILE_H / 2, d.texture)
+      const sprite = this.add.image(pos.sx, pos.sy + TILE_H / 2, d.texture)
         .setOrigin(0.5, 1)
         .setDepth(pos.sy + 1);
+      this.occludableSprites.push(sprite);
       if (d.blocks) this.blockTile(d.gridX, d.gridY);
     }
 
@@ -412,6 +448,253 @@ export abstract class BaseMapScene extends Phaser.Scene {
     });
   }
 
+  private setupInteractableRevealMask(): void {
+    const revealTargets = this.interactableRevealTargets();
+    if (this.occludableSprites.length === 0) return;
+
+    for (const sprite of this.occludableSprites) {
+      const bounds = sprite.getBounds();
+      const staticReveals = revealTargets.filter((reveal) =>
+        sprite.depth > reveal.depth && this.circleIntersectsRect(reveal.x, reveal.y, reveal.radius, bounds));
+
+      if (this.game.renderer.type === Phaser.WEBGL) {
+        this.createSoftRevealMask(sprite, bounds, staticReveals);
+      } else {
+        this.createHardRevealMask(sprite, bounds, staticReveals);
+      }
+    }
+    this.updatePlayerRevealMasks(true);
+  }
+
+  private interactableRevealTargets(): RevealTarget[] {
+    return this.interactables
+      .map((interactable) => interactable.sprite)
+      .filter((sprite): sprite is Phaser.GameObjects.Image => Boolean(sprite))
+      .map((sprite) => {
+        const bounds = sprite.getBounds();
+        return {
+          x: bounds.centerX,
+          y: bounds.centerY,
+          depth: sprite.depth,
+          radius: Phaser.Math.Clamp(Math.max(bounds.width, bounds.height) * 0.62, 34, 54),
+        };
+      });
+  }
+
+  private playerRevealTarget(): RevealTarget {
+    const bounds = this.player.getBounds();
+    return {
+      x: bounds.centerX,
+      y: bounds.centerY,
+      depth: this.player.depth,
+      radius: Phaser.Math.Clamp(Math.max(bounds.width, bounds.height) * 0.68, 38, 60),
+    };
+  }
+
+  private createSoftRevealMask(
+    sprite: Phaser.GameObjects.Image,
+    bounds: Phaser.Geom.Rectangle,
+    staticReveals: RevealTarget[],
+  ): void {
+    const width = Math.max(1, Math.ceil(bounds.width));
+    const height = Math.max(1, Math.ceil(bounds.height));
+    const textureKey = `${this.scene.key}-reveal-mask-${this.revealMaskStates.length}`;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.warn('Could not create interactable reveal mask canvas context');
+      return;
+    }
+
+    const texture = this.textures.addCanvas(textureKey, canvas);
+    if (!texture) {
+      console.warn(`Could not create interactable reveal mask texture: ${textureKey}`);
+      return;
+    }
+
+    const maskObject = this.make.image({
+      x: bounds.centerX,
+      y: bounds.centerY,
+      key: textureKey,
+      add: false,
+    }).setOrigin(0.5);
+
+    const mask = maskObject.createBitmapMask();
+    mask.invertAlpha = true;
+    sprite.setMask(mask);
+    this.revealMaskStates.push({
+      sprite,
+      bounds,
+      staticReveals,
+      textureKey,
+      texture,
+      context: ctx,
+      maskObject,
+    });
+  }
+
+  private createHardRevealMask(
+    sprite: Phaser.GameObjects.Image,
+    bounds: Phaser.Geom.Rectangle,
+    staticReveals: RevealTarget[],
+  ): void {
+    const maskShape = this.add.graphics().setVisible(false);
+    const mask = maskShape.createGeometryMask();
+    mask.setInvertAlpha(true);
+    sprite.setMask(mask);
+    this.revealMaskStates.push({
+      sprite,
+      bounds,
+      staticReveals,
+      maskShape,
+    });
+  }
+
+  private updatePlayerRevealMasks(force = false): void {
+    if (this.revealMaskStates.length === 0) return;
+
+    const playerReveal = this.playerRevealTarget();
+    if (!force && this.lastPlayerReveal
+      && Math.abs(this.lastPlayerReveal.x - playerReveal.x) < 0.5
+      && Math.abs(this.lastPlayerReveal.y - playerReveal.y) < 0.5
+      && Math.abs(this.lastPlayerReveal.depth - playerReveal.depth) < 0.5) {
+      return;
+    }
+
+    for (const state of this.revealMaskStates) {
+      const reveals = [...state.staticReveals];
+      if (state.sprite.depth > playerReveal.depth
+        && this.circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds)) {
+        reveals.push(playerReveal);
+      }
+      this.redrawRevealMask(state, reveals);
+    }
+    this.lastPlayerReveal = playerReveal;
+  }
+
+  private redrawRevealMask(state: RevealMaskState, reveals: RevealTarget[]): void {
+    if (state.context && state.texture) {
+      state.context.clearRect(0, 0, state.context.canvas.width, state.context.canvas.height);
+      for (const reveal of reveals) {
+        this.drawSoftRevealCircle(state.context, state.bounds, reveal);
+      }
+      state.texture.refresh();
+      return;
+    }
+
+    state.maskShape?.clear();
+    state.maskShape?.fillStyle(0xffffff, 1);
+    for (const reveal of reveals) {
+      state.maskShape?.fillCircle(reveal.x, reveal.y, reveal.radius);
+    }
+  }
+
+  private drawSoftRevealCircle(
+    ctx: CanvasRenderingContext2D,
+    bounds: Phaser.Geom.Rectangle,
+    reveal: RevealTarget,
+  ): void {
+    const localX = reveal.x - bounds.left;
+    const localY = reveal.y - bounds.top;
+    const gradient = ctx.createRadialGradient(localX, localY, 0, localX, localY, reveal.radius);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.96)');
+    gradient.addColorStop(0.52, 'rgba(255, 255, 255, 0.82)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(
+      Math.floor(localX - reveal.radius),
+      Math.floor(localY - reveal.radius),
+      Math.ceil(reveal.radius * 2),
+      Math.ceil(reveal.radius * 2),
+    );
+  }
+
+  private destroyInteractableRevealMasks(): void {
+    for (const sprite of this.occludableSprites) {
+      sprite.clearMask(true);
+    }
+    for (const state of this.revealMaskStates) {
+      state.maskObject?.destroy();
+      state.maskShape?.destroy();
+      if (state.textureKey && this.textures.exists(state.textureKey)) this.textures.remove(state.textureKey);
+    }
+    this.revealMaskStates = [];
+    this.lastPlayerReveal = undefined;
+  }
+
+  private circleIntersectsRect(
+    circleX: number,
+    circleY: number,
+    radius: number,
+    rect: Phaser.Geom.Rectangle,
+  ): boolean {
+    const nearestX = Phaser.Math.Clamp(circleX, rect.left, rect.right);
+    const nearestY = Phaser.Math.Clamp(circleY, rect.top, rect.bottom);
+    const dx = circleX - nearestX;
+    const dy = circleY - nearestY;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  private setupInteractableHighlights(): void {
+    for (const reveal of this.interactableRevealTargets()) {
+      const highlight = this.add.graphics()
+        .setDepth(9000)
+        .setVisible(false);
+      highlight.fillStyle(0xf3d98a, 0.12);
+      highlight.fillCircle(reveal.x, reveal.y, reveal.radius);
+      highlight.lineStyle(3, 0xf3d98a, 0.85);
+      highlight.strokeCircle(reveal.x, reveal.y, reveal.radius);
+      highlight.lineStyle(1, 0xffffff, 0.55);
+      highlight.strokeCircle(reveal.x, reveal.y, reveal.radius * 0.72);
+      this.interactableHighlightGraphics.push(highlight);
+    }
+
+    for (const exit of this.exits) {
+      const pos = this.gridToScreen(exit.fromX, exit.fromY);
+      const highlight = this.add.graphics()
+        .setDepth(pos.sy + 9000)
+        .setVisible(false);
+      highlight.fillStyle(0x66d9ff, 0.16);
+      highlight.fillEllipse(pos.sx, pos.sy, 58, 28, 48);
+      highlight.lineStyle(3, 0x66d9ff, 0.9);
+      highlight.strokeEllipse(pos.sx, pos.sy, 58, 28, 48);
+      highlight.lineStyle(1, 0xffffff, 0.55);
+      highlight.strokeEllipse(pos.sx, pos.sy, 42, 20, 48);
+      this.interactableHighlightGraphics.push(highlight);
+    }
+
+    if (this.interactableHighlightGraphics.length > 0) {
+      this.tweens.add({
+        targets: this.interactableHighlightGraphics,
+        alpha: 0.52,
+        duration: 720,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  private toggleInteractableHighlights(): void {
+    this.interactableHighlightsToggled = !this.interactableHighlightsToggled;
+    this.applyInteractableHighlightVisibility();
+  }
+
+  private holdInteractableHighlights(held: boolean): void {
+    this.interactableHighlightsHeld = held;
+    this.applyInteractableHighlightVisibility();
+  }
+
+  private applyInteractableHighlightVisibility(): void {
+    const visible = this.interactableHighlightsToggled || this.interactableHighlightsHeld;
+    for (const highlight of this.interactableHighlightGraphics) {
+      highlight.setVisible(visible);
+    }
+  }
+
   protected spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
     this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, 'player')
@@ -515,7 +798,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.journalKey  = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.J);
     this.chapterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
-    this.editorKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+    this.highlightKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    this.tabHighlightKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.TAB, true);
     this.restartKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
     this.wasdKeys = {
       W: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -544,7 +828,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(narrow ? 16 : 18, size), color: '#e8d9b0',
       wordWrap: { width: titleW },
     }).setScrollFactor(0).setDepth(UI_DEPTH);
-    this.add.text(margin, narrow ? 31 : 38, narrow ? 'WASD/Arrows • E Speak • J Journal' : 'Arrows / WASD walk  •  E speak  •  J journal', {
+    this.add.text(margin, narrow ? 31 : 38, narrow ? 'WASD/Arrows • E Speak • Tab Highlight' : 'Arrows / WASD walk  •  E speak  •  H toggle / Tab hold highlight  •  J journal', {
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, size), color: '#9c8458',
       wordWrap: { width: titleW },
     }).setScrollFactor(0).setDepth(UI_DEPTH);
@@ -553,7 +837,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.makeHudIconButton(right - buttonSize, buttonY, buttonSize, '⟲', 'R', 'Restart', () => this.restart()).setScrollFactor(0).setDepth(UI_DEPTH);
     this.makeHudIconButton(right - (buttonSize + buttonGap) * 2 + buttonGap, buttonY, buttonSize, '◫', 'J', 'Journal', () => this.openJournal()).setScrollFactor(0).setDepth(UI_DEPTH);
     this.makeHudIconButton(right - (buttonSize + buttonGap) * 3 + buttonGap, buttonY, buttonSize, '☰', 'C', 'Chapters', () => this.openChapterSelect()).setScrollFactor(0).setDepth(UI_DEPTH);
-    this.makeHudIconButton(right - (buttonSize + buttonGap) * 4 + buttonGap, buttonY, buttonSize, '✎', 'M', 'Editor', () => this.openMapEditor()).setScrollFactor(0).setDepth(UI_DEPTH);
+    this.makeHudIconButton(right - (buttonSize + buttonGap) * 4 + buttonGap, buttonY, buttonSize, '◎', 'H / Tab', 'Highlight', () => this.toggleInteractableHighlights()).setScrollFactor(0).setDepth(UI_DEPTH);
 
     this.promptText = this.add.text(width / 2, promptY, '', {
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(18, size, 13), color: '#f3d98a',
@@ -757,12 +1041,6 @@ export abstract class BaseMapScene extends Phaser.Scene {
     });
   }
 
-  protected openMapEditor(): void {
-    this.scene.stop('Dialogue');
-    this.scene.stop('Journal');
-    this.scene.start('MapEditor', { from: this.scene.key });
-  }
-
   protected restart(): void {
     resetFlags();
     this.scene.stop('Dialogue');
@@ -775,10 +1053,13 @@ export abstract class BaseMapScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     this.moveCooldown -= delta;
     this.handleMovement();
+    this.updatePlayerRevealMasks();
     this.handleInteractionPrompt();
     if (Phaser.Input.Keyboard.JustDown(this.journalKey)) this.openJournal();
     if (Phaser.Input.Keyboard.JustDown(this.chapterKey)) this.openChapterSelect();
-    if (Phaser.Input.Keyboard.JustDown(this.editorKey)) this.openMapEditor();
+    if (Phaser.Input.Keyboard.JustDown(this.highlightKey)) this.toggleInteractableHighlights();
+    if (Phaser.Input.Keyboard.JustDown(this.tabHighlightKey)) this.holdInteractableHighlights(true);
+    if (Phaser.Input.Keyboard.JustUp(this.tabHighlightKey)) this.holdInteractableHighlights(false);
     if (Phaser.Input.Keyboard.JustDown(this.restartKey)) this.restart();
   }
 
@@ -820,7 +1101,11 @@ export abstract class BaseMapScene extends Phaser.Scene {
       targets: this.player,
       x: pos.sx, y: pos.sy + TILE_H / 2,
       duration: 140, ease: 'Sine.easeInOut',
-      onUpdate: () => { this.player.setDepth(this.player.y + 2); },
+      onUpdate: () => {
+        this.player.setDepth(this.player.y + 2);
+        this.updatePlayerRevealMasks();
+      },
+      onComplete: () => this.updatePlayerRevealMasks(true),
     });
     this.moveCooldown = 150;
   }

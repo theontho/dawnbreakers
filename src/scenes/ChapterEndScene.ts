@@ -53,9 +53,18 @@ export class ChapterEndScene extends Phaser.Scene {
 
     let buttonY = cy + 30;
     if (next) {
+      let continuing = false;
+      const continueToNext = () => {
+        if (continuing) return;
+        continuing = true;
+        this.gotoScene(next.startScene, next.startSpawnX, next.startSpawnY);
+      };
+
       this.makeButton(cx, buttonY,
         `Continue to Chapter ${next.number}: ${next.title}  ›`,
-        () => this.gotoScene(next.startScene, next.startSpawnX, next.startSpawnY));
+        continueToNext);
+      this.input.keyboard?.once('keydown-ENTER', continueToNext);
+      this.input.keyboard?.once('keydown-SPACE', continueToNext);
       buttonY += 62;
     } else {
       this.add.text(cx, cy + 10, 'You have reached the end of the current content.', {

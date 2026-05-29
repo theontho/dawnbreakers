@@ -124,10 +124,6 @@ export class ChapterSelectScene extends Phaser.Scene {
       list.add(this.add.text(x + w - 24, y + h / 2, '✓ completed', {
         fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, this.scale), color: '#c9a55c', fontStyle: 'italic',
       }).setOrigin(1, 0.5));
-    } else {
-      list.add(this.add.text(x + w - 24, y + h / 2, 'enter ›', {
-        fontFamily: 'Georgia, serif', fontSize: responsiveFont(18, this.scale), color: '#f3d98a',
-      }).setOrigin(1, 0.5));
     }
   }
 
