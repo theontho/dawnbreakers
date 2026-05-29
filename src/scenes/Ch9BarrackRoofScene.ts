@@ -1,4 +1,6 @@
-import { BaseMapScene } from './BaseMapScene';
+import { BaseMapScene, TILE_H, TILE_W } from './BaseMapScene';
+
+type IsoPoint = { x: number; y: number };
 
 export class Ch9BarrackRoofScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -31,7 +33,13 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
   }
 
   protected placeBuildings(): void {
-    this.buildings.push({ gridX: 5, gridY: 1, w: 4, h: 1, texture: 'ch9-roof-parapet' });
+    this.buildings.push(
+      { gridX: 2, gridY: 0, w: 14, h: 1, texture: 'ch9-roof-north-wall' },
+      { gridX: 15, gridY: 1, w: 1, h: 8, texture: 'ch9-roof-east-wall' },
+      { gridX: 2, gridY: 9, w: 5, h: 1, texture: 'ch9-roof-south-wall-left' },
+      { gridX: 9, gridY: 9, w: 7, h: 1, texture: 'ch9-roof-south-wall-right' },
+      { gridX: 5, gridY: 1, w: 4, h: 1, texture: 'ch9-roof-parapet' },
+    );
     this.blockFootprint(5, 1, 4, 1);
   }
 
@@ -55,7 +63,7 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
       () => 'Speak with the waiting soldier  [E]',
       () => this.startSimpleDialogue('ch9-crowd-witness'));
 
-    this.addNPC(11, 5, 'ch9-bab-anis',
+    this.addNPC(11, 5, 'ch9-empty-space',
       () => 'Stand in solemn witness  [E]',
       () => this.startSimpleDialogue('ch9-final-witness'));
   }
@@ -72,11 +80,14 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
   private ensureTextures(): void {
     this.makeCharacter('ch9-sam-khan', 0x59606a, 0xd8c6a0);
     this.makeCharacter('ch9-soldier', 0x4c5360, 0xd6c09a);
-    this.makePairedFigures('ch9-bab-anis');
     this.makeLamp('ch9-lamp');
     this.makeRopes('ch9-rope-coils');
     this.makeEmptySpace('ch9-empty-space');
-    this.makeRoofParapet('ch9-roof-parapet');
+    this.makeRoofParapet('ch9-roof-parapet', 4, 1, 30);
+    this.makeRoofParapet('ch9-roof-north-wall', 14, 1, 24);
+    this.makeRoofParapet('ch9-roof-east-wall', 1, 8, 24);
+    this.makeRoofParapet('ch9-roof-south-wall-left', 5, 1, 24);
+    this.makeRoofParapet('ch9-roof-south-wall-right', 7, 1, 24);
   }
 
   private makeCharacter(key: string, body: number, head: number): void {
@@ -94,30 +105,27 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
     g.destroy();
   }
 
-  private makePairedFigures(key: string): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(0xefe3c5, 1);
-    g.fillRoundedRect(6, 18, 13, 24, 3);
-    g.fillRoundedRect(25, 19, 13, 23, 3);
-    g.fillStyle(0xd8c6a0, 1);
-    g.fillCircle(12, 11, 6);
-    g.fillCircle(31, 12, 6);
-    g.lineStyle(1, 0x2a2118, 0.45);
-    g.strokeRoundedRect(6, 18, 13, 24, 3);
-    g.strokeRoundedRect(25, 19, 13, 23, 3);
-    g.generateTexture(key, 44, 46);
-    g.destroy();
-  }
-
   private makeLamp(key: string): void {
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
+    g.fillStyle(0x1d1712, 0.25);
+    g.fillEllipse(24, 57, 26, 10);
+    g.fillStyle(0x5b4128, 1);
+    g.fillPoints([
+      { x: 24, y: 50 },
+      { x: 34, y: 55 },
+      { x: 24, y: 60 },
+      { x: 14, y: 55 },
+    ], true);
     g.fillStyle(0x3a2a1b, 1);
     g.fillRect(21, 16, 6, 42);
-    g.fillRect(13, 14, 22, 5);
+    g.fillPoints([
+      { x: 12, y: 15 },
+      { x: 24, y: 10 },
+      { x: 36, y: 15 },
+      { x: 24, y: 20 },
+    ], true);
     g.fillStyle(0xc9a55c, 0.8);
     g.fillCircle(24, 12, 7);
     g.lineStyle(1, 0x1a120a, 0.8);
@@ -131,12 +139,13 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
 
     const g = this.add.graphics();
     g.lineStyle(3, 0xbca06d, 1);
-    g.strokeCircle(20, 24, 10);
-    g.strokeCircle(30, 26, 9);
+    g.strokeEllipse(19, 25, 22, 10);
+    g.strokeEllipse(32, 27, 20, 9);
     g.lineBetween(10, 34, 42, 18);
+    g.lineBetween(14, 29, 44, 24);
     g.lineStyle(1, 0x5a4630, 0.8);
-    g.strokeCircle(20, 24, 10);
-    g.strokeCircle(30, 26, 9);
+    g.strokeEllipse(19, 25, 22, 10);
+    g.strokeEllipse(32, 27, 20, 9);
     g.generateTexture(key, 52, 44);
     g.destroy();
   }
@@ -145,24 +154,84 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
-    g.lineStyle(1, 0x2b2622, 0.35);
-    g.strokeEllipse(32, 22, 44, 14);
+    g.fillStyle(0x1b1714, 0.28);
+    g.fillPoints([
+      { x: 32, y: 10 },
+      { x: 58, y: 22 },
+      { x: 32, y: 34 },
+      { x: 6, y: 22 },
+    ], true);
+    g.lineStyle(1, 0x2b2622, 0.45);
+    g.strokePoints([
+      { x: 32, y: 10 },
+      { x: 58, y: 22 },
+      { x: 32, y: 34 },
+      { x: 6, y: 22 },
+    ], true);
+    g.lineBetween(14, 22, 50, 22);
+    g.lineBetween(32, 12, 32, 32);
     g.generateTexture(key, 64, 40);
     g.destroy();
   }
 
-  private makeRoofParapet(key: string): void {
+  private makeRoofParapet(key: string, widthCells: number, heightCells: number, wallH: number): void {
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(widthCells, heightCells, wallH, 8);
     const g = this.add.graphics();
-    g.fillStyle(0x5e574d, 1);
-    g.fillRect(10, 24, 172, 30);
-    g.fillStyle(0x403a33, 1);
-    g.fillRect(4, 12, 184, 18);
     g.lineStyle(2, 0x1f1a16, 0.85);
-    g.strokeRect(10, 24, 172, 30);
-    g.strokeRect(4, 12, 184, 18);
-    g.generateTexture(key, 192, 64);
+
+    g.fillStyle(0x5e574d, 1);
+    g.fillPoints([geo.right, geo.bottom, geo.bottomR, geo.rightR], true);
+    g.strokePoints([geo.right, geo.bottom, geo.bottomR, geo.rightR], true);
+
+    g.fillStyle(0x484139, 1);
+    g.fillPoints([geo.left, geo.bottom, geo.bottomR, geo.leftR], true);
+    g.strokePoints([geo.left, geo.bottom, geo.bottomR, geo.leftR], true);
+
+    g.fillStyle(0x403a33, 1);
+    g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    g.strokePoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    g.lineStyle(1, 0x2d2823, 0.7);
+    g.lineBetween(geo.topR.x, geo.topR.y, geo.bottomR.x, geo.bottomR.y);
+    g.lineBetween(geo.leftR.x, geo.leftR.y, geo.rightR.x, geo.rightR.y);
+
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
+  }
+
+  private isoPrism(widthCells: number, heightCells: number, wallH: number, topPad = 0) {
+    const leftExtent = widthCells * TILE_W / 2;
+    const rightExtent = heightCells * TILE_W / 2;
+    const halfW = Math.max(leftExtent, rightExtent);
+    const baseH = (widthCells + heightCells) * TILE_H / 2;
+    const texH = baseH + wallH + topPad;
+    const bottom = { x: halfW, y: texH };
+    const top = {
+      x: halfW + (heightCells - widthCells) * TILE_W / 2,
+      y: texH - baseH,
+    };
+    const right = {
+      x: halfW + rightExtent,
+      y: texH - heightCells * TILE_H / 2,
+    };
+    const left = {
+      x: halfW - leftExtent,
+      y: texH - widthCells * TILE_H / 2,
+    };
+    const raise = (p: IsoPoint) => ({ x: p.x, y: p.y - wallH });
+
+    return {
+      texW: halfW * 2,
+      texH,
+      top,
+      right,
+      bottom,
+      left,
+      topR: raise(top),
+      rightR: raise(right),
+      bottomR: raise(bottom),
+      leftR: raise(left),
+    };
   }
 }

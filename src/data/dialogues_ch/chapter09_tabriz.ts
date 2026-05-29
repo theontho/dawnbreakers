@@ -90,8 +90,8 @@ export const ch9SamKhan: DialogueTree = {
     },
     bab: {
       id: 'bab',
-      speaker: 'The Báb',
-      text: 'Follow your instructions. If your intention be sincere, the Almighty is surely able to relieve you of your perplexity.',
+      speaker: 'Narrator',
+      text: 'The answer given to him is calm and unadorned: follow your instructions; if your intention is sincere, the Almighty is surely able to relieve you of your perplexity.',
       choices: [{ text: '(Receive the words gravely.)', next: 'firstVolley' }],
     },
     firstVolley: {

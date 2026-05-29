@@ -45,7 +45,6 @@ export class Ch10SiyahChalScene extends BaseMapScene {
       { gridX: 3, gridY: 3, texture: 'ch10-chain-pillar', blocks: true },
       { gridX: 7, gridY: 8, texture: 'ch10-chain-pillar', blocks: true },
       { gridX: 11, gridY: 7, texture: 'ch10-chain-pillar', blocks: true },
-      { gridX: 8, gridY: 5, texture: 'ch10-light-shaft' },
       { gridX: 5, gridY: 7, texture: 'ch10-dim-lamp', blocks: true },
       { gridX: 2, gridY: 9, texture: 'ch10-chain-coil', blocks: true },
       { gridX: 13, gridY: 8, texture: 'ch10-chain-coil', blocks: true },
@@ -53,8 +52,8 @@ export class Ch10SiyahChalScene extends BaseMapScene {
   }
 
   protected spawnNPCs(): void {
-    this.addNPC(9, 5, 'ch10-bahaullah',
-      () => 'Approach Bahá\'u\'lláh  [E]',
+    this.addNPC(8, 5, 'ch10-light-shaft',
+      () => 'Attend to the shaft of light  [E]',
       () => this.startSimpleDialogue('ch10-vision'));
 
     this.addNPC(4, 6, 'ch10-prisoner',
@@ -76,7 +75,6 @@ export class Ch10SiyahChalScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacter('ch10-bahaullah', 0x2a2520, 0xd6c3a0, 0xf0ead8);
     this.makeCharacter('ch10-prisoner', 0x3a3836, 0xbda982);
     this.makeChainPillar('ch10-chain-pillar');
     this.makeChainPost('ch10-chain-post');

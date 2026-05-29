@@ -1,4 +1,6 @@
-import { BaseMapScene } from './BaseMapScene';
+import { BaseMapScene, TILE_H, TILE_W } from './BaseMapScene';
+
+type IsoPoint = { x: number; y: number };
 
 export class Ch9TabrizSquareScene extends BaseMapScene {
   protected mapWidth = 18;
@@ -115,9 +117,23 @@ export class Ch9TabrizSquareScene extends BaseMapScene {
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
+    g.fillStyle(0x1d1712, 0.25);
+    g.fillEllipse(24, 57, 26, 10);
+    g.fillStyle(0x5b4128, 1);
+    g.fillPoints([
+      { x: 24, y: 50 },
+      { x: 34, y: 55 },
+      { x: 24, y: 60 },
+      { x: 14, y: 55 },
+    ], true);
     g.fillStyle(0x3a2a1b, 1);
     g.fillRect(21, 16, 6, 42);
-    g.fillRect(13, 14, 22, 5);
+    g.fillPoints([
+      { x: 12, y: 15 },
+      { x: 24, y: 10 },
+      { x: 36, y: 15 },
+      { x: 24, y: 20 },
+    ], true);
     g.fillStyle(0xc9a55c, 0.8);
     g.fillCircle(24, 12, 7);
     g.lineStyle(1, 0x1a120a, 0.8);
@@ -143,30 +159,116 @@ export class Ch9TabrizSquareScene extends BaseMapScene {
     if (this.textures.exists(key)) return;
 
     const g = this.add.graphics();
-    g.fillStyle(0x6a5140, 1);
-    g.fillEllipse(24, 28, 38, 18);
+    g.fillStyle(0x1d1712, 0.25);
+    g.fillEllipse(26, 38, 38, 12);
+    g.fillStyle(0x4d3a31, 1);
+    g.fillPoints([
+      { x: 8, y: 27 },
+      { x: 26, y: 36 },
+      { x: 44, y: 27 },
+      { x: 44, y: 35 },
+      { x: 26, y: 44 },
+      { x: 8, y: 35 },
+    ], true);
+    g.fillStyle(0x7b604e, 1);
+    g.fillPoints([
+      { x: 26, y: 14 },
+      { x: 48, y: 27 },
+      { x: 26, y: 39 },
+      { x: 4, y: 27 },
+    ], true);
     g.lineStyle(1, 0x2b211b, 0.8);
-    g.strokeEllipse(24, 28, 38, 18);
-    g.lineBetween(10, 27, 38, 22);
-    g.generateTexture(key, 48, 40);
+    g.strokePoints([
+      { x: 26, y: 14 },
+      { x: 48, y: 27 },
+      { x: 26, y: 39 },
+      { x: 4, y: 27 },
+    ], true);
+    g.lineBetween(8, 27, 44, 27);
+    g.lineBetween(18, 20, 36, 34);
+    g.generateTexture(key, 52, 46);
     g.destroy();
   }
 
   private makeBarrackFront(key: string): void {
     if (this.textures.exists(key)) return;
 
+    const geo = this.isoPrism(3, 2, 76, 18);
     const g = this.add.graphics();
-    g.fillStyle(0x6e6252, 1);
-    g.fillRect(14, 28, 132, 72);
-    g.fillStyle(0x4f473d, 1);
-    g.fillRect(10, 16, 140, 18);
-    g.fillStyle(0x2b2622, 1);
-    g.fillRect(36, 58, 18, 42);
-    g.fillRect(104, 58, 18, 42);
     g.lineStyle(2, 0x1d1712, 0.85);
-    g.strokeRect(14, 28, 132, 72);
-    g.strokeRect(10, 16, 140, 18);
-    g.generateTexture(key, 160, 110);
+
+    g.fillStyle(0x766a5a, 1);
+    g.fillPoints([geo.right, geo.bottom, geo.bottomR, geo.rightR], true);
+    g.strokePoints([geo.right, geo.bottom, geo.bottomR, geo.rightR], true);
+
+    g.fillStyle(0x5b5045, 1);
+    g.fillPoints([geo.left, geo.bottom, geo.bottomR, geo.leftR], true);
+    g.strokePoints([geo.left, geo.bottom, geo.bottomR, geo.leftR], true);
+
+    g.fillStyle(0x4f473d, 1);
+    g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    g.strokePoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    g.lineStyle(1, 0x2a241f, 0.7);
+    g.lineBetween(geo.topR.x, geo.topR.y, geo.bottomR.x, geo.bottomR.y);
+    g.lineBetween(geo.leftR.x, geo.leftR.y, geo.rightR.x, geo.rightR.y);
+
+    g.lineStyle(1, 0x1d1712, 0.9);
+    g.fillStyle(0x2b2622, 1);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.35, 0.5, 42), true);
+    g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.68, 0.82, 30), true);
+    g.fillStyle(0x24201d, 1);
+    g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.2, 0.34, 28), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.35, 0.5, 42), true);
+    g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.68, 0.82, 30), true);
+    g.strokePoints(this.wallInset(geo.left, geo.bottom, 0.2, 0.34, 28), true);
+
+    g.generateTexture(key, geo.texW, geo.texH);
     g.destroy();
+  }
+
+  private isoPrism(widthCells: number, heightCells: number, wallH: number, topPad = 0) {
+    const leftExtent = widthCells * TILE_W / 2;
+    const rightExtent = heightCells * TILE_W / 2;
+    const halfW = Math.max(leftExtent, rightExtent);
+    const baseH = (widthCells + heightCells) * TILE_H / 2;
+    const texH = baseH + wallH + topPad;
+    const bottom = { x: halfW, y: texH };
+    const top = {
+      x: halfW + (heightCells - widthCells) * TILE_W / 2,
+      y: texH - baseH,
+    };
+    const right = {
+      x: halfW + rightExtent,
+      y: texH - heightCells * TILE_H / 2,
+    };
+    const left = {
+      x: halfW - leftExtent,
+      y: texH - widthCells * TILE_H / 2,
+    };
+    const raise = (p: IsoPoint) => ({ x: p.x, y: p.y - wallH });
+
+    return {
+      texW: halfW * 2,
+      texH,
+      top,
+      right,
+      bottom,
+      left,
+      topR: raise(top),
+      rightR: raise(right),
+      bottomR: raise(bottom),
+      leftR: raise(left),
+    };
+  }
+
+  private wallInset(start: IsoPoint, end: IsoPoint, from: number, to: number, height: number): IsoPoint[] {
+    const along = (t: number) => ({
+      x: start.x + (end.x - start.x) * t,
+      y: start.y + (end.y - start.y) * t,
+    });
+    const a = along(from);
+    const b = along(to);
+
+    return [a, b, { x: b.x, y: b.y - height }, { x: a.x, y: a.y - height }];
   }
 }

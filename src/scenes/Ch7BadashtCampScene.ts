@@ -39,7 +39,7 @@ export class Ch7BadashtCampScene extends BaseMapScene {
 
   protected placeBuildings(): void {
     this.buildings.push(
-      { gridX: 1, gridY: 2, w: 3, h: 2, texture: 'ch7-tent-bahaullah' },
+      { gridX: 1, gridY: 2, w: 3, h: 2, texture: 'ch7-tent-reconciliation' },
       { gridX: 14, gridY: 2, w: 3, h: 2, texture: 'ch7-tent-quddus' },
       { gridX: 7, gridY: 10, w: 3, h: 2, texture: 'ch7-garden-canopy' },
     );
@@ -79,8 +79,8 @@ export class Ch7BadashtCampScene extends BaseMapScene {
       () => 'Speak with Quddús  [E]',
       () => this.startSimpleDialogue('ch7-quddus-tension'));
 
-    this.addNPC(5, 5, 'ch7-npc-bahaullah',
-      () => 'Speak with Bahá\'u\'lláh  [E]',
+    this.addNPC(5, 5, 'ch7-lamp',
+      () => 'Listen at the central tent  [E]',
       () => this.startSimpleDialogue('ch7-bahaullah-reconcile'));
 
     this.addNPC(9, 5, 'ch7-npc-believer',
@@ -93,7 +93,7 @@ export class Ch7BadashtCampScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeTent('ch7-tent-bahaullah', 0x3f4f70, 0xd8b56a);
+    this.makeTent('ch7-tent-reconciliation', 0x3f4f70, 0xd8b56a);
     this.makeTent('ch7-tent-quddus', 0x48613e, 0xc9a55c);
     this.makeCanopy();
     this.makeCarpet();
@@ -101,7 +101,6 @@ export class Ch7BadashtCampScene extends BaseMapScene {
     this.makeRosebush();
     this.makeFigure('ch7-npc-tahirih', 0xf0d9a4, 0x6f3b5c, 0xf7ecd0);
     this.makeFigure('ch7-npc-quddus', 0x506b45, 0x2f3b2f, 0xe0c38a);
-    this.makeFigure('ch7-npc-bahaullah', 0x4a4f68, 0x303044, 0xe8d9b0);
     this.makeFigure('ch7-npc-believer', 0x8a6f4d, 0x5b4632, 0xd6c0a0);
   }
 

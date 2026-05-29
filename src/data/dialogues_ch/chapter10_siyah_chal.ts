@@ -94,7 +94,7 @@ export const ch10Vision: DialogueTree = {
   nodes: {
     g: {
       id: 'g',
-      speaker: 'Bahá\'u\'lláh',
+      speaker: 'Narrator',
       text: 'In this pit, beneath the feet of Tihrán, the outward world has narrowed to stone, darkness, and iron. Yet the worlds of God are not narrowed.',
       choices: [
         {
@@ -116,13 +116,13 @@ export const ch10Vision: DialogueTree = {
     },
     compassion: {
       id: 'compassion',
-      speaker: 'Bahá\'u\'lláh',
+      speaker: 'Recollected Voice',
       text: 'Let the trembling heart become spacious. The wrongs of men cannot exhaust the mercy of God.',
       choices: [{ text: '(Listen as the darkness grows still.)', next: 'light' }],
     },
     wonder: {
       id: 'wonder',
-      speaker: 'Bahá\'u\'lláh',
+      speaker: 'Recollected Voice',
       text: 'Men look for dawn on the horizon. God may kindle it where no horizon can be seen.',
       choices: [{ text: '(Listen as the darkness grows still.)', next: 'light' }],
     },

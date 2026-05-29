@@ -93,7 +93,7 @@ export class Ch8TabarsiFortScene extends BaseMapScene {
     this.addNPC(5, 5, 'npc-merchant',
       () => 'Meet the officer under truce  [E]',
       () => this.startSimpleDialogue('ch8-truce'));
-    this.addNPC(9, 6, 'npc-bab',
+    this.addNPC(9, 6, 'npc-mulla',
       () => 'Seek Quddús’s counsel  [E]',
       () => this.startSimpleDialogue('ch8-quddus-counsel'));
     this.addNPC(10, 8, 'npc-traveller',

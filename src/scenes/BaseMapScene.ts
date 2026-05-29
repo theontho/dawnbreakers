@@ -122,11 +122,6 @@ export abstract class BaseMapScene extends Phaser.Scene {
     // Camera fade-in on scene entry
     this.cameras.main.fadeIn(300, 0, 0, 0);
 
-    const ending = getFlags().ending as string | undefined;
-    if (ending) {
-      this.endingShown = true;
-      this.showBanner(this.endingBannerText(ending));
-    }
   }
 
   // ---------- map ----------
@@ -256,7 +251,12 @@ export abstract class BaseMapScene extends Phaser.Scene {
       && !flags[`shown_${chapter.id}`];
 
     const ending = flags.ending as string | undefined;
-    if (ending && !this.endingShown) {
+    const shouldShowFirstLetterBanner = chapter?.id === 'shiraz'
+      && !!ending
+      && !this.endingShown
+      && !flags[`shown_${chapter.id}`];
+
+    if (shouldShowFirstLetterBanner) {
       this.endingShown = true;
       this.showBanner(this.endingBannerText(ending), {
         onComplete: chapterFreshlyDone ? () => this.openChapterEnd(chapter!.id) : undefined,
@@ -284,19 +284,19 @@ export abstract class BaseMapScene extends Phaser.Scene {
    * Cancels any previous banner tweens so re-triggers behave sanely.
    */
   protected showBanner(text: string, opts: { holdMs?: number; onComplete?: () => void } = {}): void {
-    const holdMs = opts.holdMs ?? 4500;
+    const holdMs = opts.holdMs ?? 1800;
     this.tweens.killTweensOf(this.banner);
     this.banner.setText(text).setAlpha(0);
     this.tweens.add({
       targets: this.banner,
       alpha: 1,
-      duration: 800,
+      duration: 300,
       onComplete: () => {
         this.tweens.add({
           targets: this.banner,
           alpha: 0,
           delay: holdMs,
-          duration: 1400,
+          duration: 500,
           onComplete: opts.onComplete,
         });
       },

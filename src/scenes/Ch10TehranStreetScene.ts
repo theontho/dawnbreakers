@@ -57,8 +57,8 @@ export class Ch10TehranStreetScene extends BaseMapScene {
       () => 'Speak with the guard  [E]',
       () => this.startSimpleDialogue('ch10-guard'));
 
-    this.addNPC(9, 6, 'ch10-bahaullah',
-      () => 'Walk beside Bahá\'u\'lláh  [E]',
+    this.addNPC(9, 6, 'ch10-crowd-shadow',
+      () => 'Listen to hostile whispers  [E]',
       () => this.startSimpleDialogue('ch10-guard'));
   }
 
@@ -73,7 +73,6 @@ export class Ch10TehranStreetScene extends BaseMapScene {
 
   private ensureTextures(): void {
     this.makeCharacter('ch10-guard', 0x39404a, 0xc8b48d);
-    this.makeCharacter('ch10-bahaullah', 0x2f2922, 0xd6c3a0, 0xf0ead8);
     this.makeCrowdShadow('ch10-crowd-shadow');
     this.makeChainCoil('ch10-chain-coil');
     this.makeWatchLamp('ch10-watch-lamp');

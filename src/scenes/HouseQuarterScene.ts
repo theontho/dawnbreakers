@@ -22,6 +22,7 @@ export class HouseQuarterScene extends BaseMapScene {
     this.makePlanterTexture();
     this.makeLampTexture();
     this.makeRugTexture();
+    this.makeThresholdTexture();
   }
 
   private makeCharacterTexture(key: string, body: number, head: number): void {
@@ -88,6 +89,23 @@ export class HouseQuarterScene extends BaseMapScene {
     g.destroy();
   }
 
+  private makeThresholdTexture(): void {
+    const key = 'ch1-house-threshold';
+    if (this.textures.exists(key)) return;
+
+    const g = this.add.graphics();
+    g.fillStyle(0x26180f, 1);
+    g.fillEllipse(32, 36, 44, 14);
+    g.fillStyle(0x6f4a24, 1);
+    g.fillRect(18, 10, 28, 28);
+    g.fillStyle(0xe5c36e, 0.7);
+    g.fillCircle(32, 20, 9);
+    g.lineStyle(2, 0x1a0f08, 0.85);
+    g.strokeRect(18, 10, 28, 28);
+    g.generateTexture(key, 64, 44);
+    g.destroy();
+  }
+
   protected getDefaultSpawn(): { x: number; y: number } {
     return { x: 6, y: 13 };
   }
@@ -139,9 +157,9 @@ export class HouseQuarterScene extends BaseMapScene {
   }
 
   protected spawnNPCs(): void {
-    // The Young Host — outside His door (gated dialogue based on rumour count)
-    this.addNPC(6, 7, 'npc-bab',
-      () => 'Speak with the Young Host  [E]',
+    // The lamplit threshold gates the decisive meeting without placing the Báb as a map NPC.
+    this.addNPC(6, 7, 'ch1-house-threshold',
+      () => 'Knock at the lamplit threshold  [E]',
       () => this.startBabDialogue());
 
     // A quiet neighbour — small backstory, also counts as a rumour

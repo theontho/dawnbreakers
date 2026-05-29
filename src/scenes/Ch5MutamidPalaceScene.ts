@@ -35,7 +35,6 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
 
   protected placeDecor(): void {
     this.decor.push({ gridX: 8, gridY: 6, texture: 'ch5-courtyard-carpet' });
-    this.decor.push({ gridX: 10, gridY: 7, texture: 'ch5-writing-desk', blocks: true });
 
     const cypresses: [number, number][] = [[2, 4], [15, 4], [3, 11], [14, 11]];
     for (const [x, y] of cypresses) {
@@ -54,8 +53,8 @@ export class Ch5MutamidPalaceScene extends BaseMapScene {
       () => 'Speak with the Imám-Jumʿih  [E]',
       () => this.startSimpleDialogue('ch5-cleric-question'));
 
-    this.addNPC(9, 8, 'npc-bab',
-      () => 'Listen as the treatise is revealed  [E]',
+    this.addNPC(10, 7, 'ch5-writing-desk',
+      () => 'Read beside the revealed treatise  [E]',
       () => this.startSimpleDialogue('ch5-treatise'));
   }
 

@@ -15,7 +15,6 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
   private ensureTextures(): void {
     this.makeCharacter('ch4-officer', 0x31424a, 0xd9c79a, 0x6f2222);
     this.makeCharacter('ch4-witness', 0x5b4936, 0xd1b37c, 0x7a5a3a);
-    this.makeCharacter('ch4-bab-composed', 0x2e7d4f, 0xf6e8c2, 0xf0ead6);
     this.makePulpit();
     this.makePrayerArch();
     this.makeCrowd();
@@ -126,8 +125,8 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
   }
 
   protected spawnNPCs(): void {
-    this.addNPC(8, 4, 'ch4-bab-composed',
-      () => 'Listen in respectful stillness  [E]',
+    this.addNPC(8, 4, 'ch4-crowd',
+      () => 'Stand among the listening crowd  [E]',
       () => this.startSimpleDialogue('ch4-house-arrest'));
 
     this.addNPC(8, 7, 'ch4-witness',

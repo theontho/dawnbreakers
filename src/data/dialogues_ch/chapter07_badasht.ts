@@ -107,8 +107,8 @@ export const bahaullahReconcile: DialogueTree = {
   nodes: {
     g: {
       id: 'g',
-      speaker: 'Bahá\'u\'lláh',
-      text: 'Come in peace. No soul gathered here is served by scorn — not the one who trembles, not the one who proclaims, not the one who has misunderstood both.',
+      speaker: 'Messenger at the Central Tent',
+      text: 'Come in peace. Counsel from the central tent is passing through the camp: no soul gathered here is served by scorn — not the one who trembles, not the one who proclaims, not the one who has misunderstood both.',
       choices: [
         { text: '"How can the friends be made one again?"', next: 'names' },
         { text: '"I fear this day will scatter them."', next: 'fear' },
@@ -116,16 +116,16 @@ export const bahaullahReconcile: DialogueTree = {
     },
     fear: {
       id: 'fear',
-      speaker: 'Bahá\'u\'lláh',
-      text: 'A storm may scatter dry leaves, but it also clears the air. Let this day be remembered not for confusion, but for the meanings it forced into the open.',
+      speaker: 'Messenger at the Central Tent',
+      text: 'The reply is carried gently: a storm may scatter dry leaves, but it also clears the air. Let this day be remembered not for confusion, but for the meanings it forced into the open.',
       choices: [
         { text: '"Then reconciliation must tell the truth plainly."', next: 'names' },
       ],
     },
     names: {
       id: 'names',
-      speaker: 'Bahá\'u\'lláh',
-      text: 'New names are given, and with them a charge: to arise as servants of a new Day. Ṭáhirih has spoken with agency; Quddús has guarded the friends; now unity must deepen, not erase, what has been revealed.',
+      speaker: 'Narrator',
+      text: 'Within the central tent, new names are given, and with them a charge: to arise as servants of a new Day. Ṭáhirih has spoken with agency; Quddús has guarded the friends; now unity must deepen, not erase, what has been revealed.',
       choices: [
         { text: '(Let the gathering settle beneath the lamps.)', next: 'complete' },
       ],
@@ -149,7 +149,7 @@ export const shakenBeliever: DialogueTree = {
       text: 'I came to Badasht seeking counsel, and now the very ground beneath counsel has moved. Was this unveiling a rupture, or a mercy I am too frightened to understand?',
       choices: [
         { text: '"Let us not answer fear with accusation."', next: 'steady' },
-        { text: '"Go to the central tent; Bahá\'u\'lláh is reconciling the friends."', next: 'steady' },
+        { text: '"Go to the central tent; the friends are being reconciled there."', next: 'steady' },
       ],
     },
     steady: {

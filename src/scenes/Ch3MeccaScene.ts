@@ -14,10 +14,10 @@ export class Ch3MeccaScene extends BaseMapScene {
 
   private ensureTextures(): void {
     this.makeKaabaTexture();
-    this.makePilgrimTexture('ch3-bab', 0xf0ead8, 0xe8d7ae, true);
     this.makePilgrimTexture('ch3-muhit', 0x2a2520, 0xdfc28f, false);
     this.makePilgrimTexture('ch3-pilgrim', 0x6b5a44, 0xe2c997, false);
     this.makePilgrimClusterTexture();
+    this.makeCourtyardHushTexture();
   }
 
   private makePilgrimTexture(key: string, robe: number, head: number, veil: boolean): void {
@@ -55,6 +55,22 @@ export class Ch3MeccaScene extends BaseMapScene {
       g.fillCircle(figure.x, 12, 5);
     }
     g.generateTexture('ch3-pilgrim-cluster', 50, 40);
+    g.destroy();
+  }
+
+  private makeCourtyardHushTexture(): void {
+    if (this.textures.exists('ch3-courtyard-hush')) return;
+
+    const g = this.add.graphics();
+    g.fillStyle(0xf7f0dc, 0.22);
+    g.fillEllipse(32, 30, 56, 18);
+    g.lineStyle(2, 0xc9a55c, 0.65);
+    g.strokeEllipse(32, 30, 46, 12);
+    g.lineStyle(1, 0xf7f0dc, 0.5);
+    g.lineBetween(32, 6, 32, 28);
+    g.lineBetween(22, 12, 30, 28);
+    g.lineBetween(42, 12, 34, 28);
+    g.generateTexture('ch3-courtyard-hush', 64, 42);
     g.destroy();
   }
 
@@ -117,8 +133,8 @@ export class Ch3MeccaScene extends BaseMapScene {
   }
 
   protected spawnNPCs(): void {
-    this.addNPC(9, 6, 'ch3-bab',
-      () => 'Listen with reverence  [E]',
+    this.addNPC(9, 6, 'ch3-courtyard-hush',
+      () => 'Stand where the proclamation is heard  [E]',
       () => this.startSimpleDialogue('ch3-proclamation'));
     this.addNPC(5, 7, 'ch3-muhit',
       () => 'Speak with Mírzá Muḥíṭ-i-Kirmání  [E]',
