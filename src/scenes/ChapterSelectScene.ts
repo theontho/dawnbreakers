@@ -24,11 +24,59 @@ export class ChapterSelectScene extends Phaser.Scene {
 
     const flags = getFlags();
     const cardW = 900, cardH = 90;
-    const startY = 200;
+    const gap = 14;
+    const viewportY = 180;
+    const viewportH = height - 260;
+    const contentH = chapters.length * (cardH + gap) - gap;
+    const maxScroll = Math.max(0, contentH - viewportH);
+    let scrollY = 0;
+
+    const list = this.add.container(width / 2 - cardW / 2, viewportY);
+    const maskShape = this.add.rectangle(0, viewportY, width, viewportH, 0xffffff, 0)
+      .setOrigin(0);
+    list.setMask(maskShape.createGeometryMask());
+    maskShape.setVisible(false);
+
     chapters.forEach((ch, i) => {
-      const y = startY + i * (cardH + 14);
-      this.drawChapterCard(width / 2 - cardW / 2, y, cardW, cardH, ch, ch.isComplete(flags));
+      const y = i * (cardH + gap);
+      this.drawChapterCard(list, 0, y, cardW, cardH, ch, ch.isComplete(flags));
     });
+
+    const track = this.add.rectangle(width - 42, viewportY, 6, viewportH, 0x2a1c10, 0.85)
+      .setOrigin(0.5, 0);
+    const thumbH = maxScroll > 0
+      ? Math.max(44, viewportH * (viewportH / contentH))
+      : viewportH;
+    const thumb = this.add.rectangle(width - 42, viewportY, 10, thumbH, 0xc9a55c, 0.9)
+      .setOrigin(0.5, 0);
+    track.setVisible(maxScroll > 0);
+    thumb.setVisible(maxScroll > 0);
+
+    const setScroll = (value: number) => {
+      scrollY = Phaser.Math.Clamp(value, 0, maxScroll);
+      list.y = viewportY - scrollY;
+      if (maxScroll > 0) {
+        thumb.y = viewportY + (viewportH - thumbH) * (scrollY / maxScroll);
+      }
+    };
+
+    this.input.on('wheel', (
+      _pointer: Phaser.Input.Pointer,
+      _gameObjects: Phaser.GameObjects.GameObject[],
+      _deltaX: number,
+      deltaY: number,
+    ) => setScroll(scrollY + deltaY * 0.6));
+
+    this.input.keyboard?.on('keydown-UP', () => setScroll(scrollY - 70));
+    this.input.keyboard?.on('keydown-DOWN', () => setScroll(scrollY + 70));
+    this.input.keyboard?.on('keydown-PAGE_UP', () => setScroll(scrollY - viewportH));
+    this.input.keyboard?.on('keydown-PAGE_DOWN', () => setScroll(scrollY + viewportH));
+
+    if (maxScroll > 0) {
+      this.add.text(width / 2, height - 82, 'Scroll for later chapters', {
+        fontFamily: 'Georgia, serif', fontSize: '13px', color: '#9c8458', fontStyle: 'italic',
+      }).setOrigin(0.5);
+    }
 
     // Footer controls
     const footerY = height - 40;
@@ -39,7 +87,7 @@ export class ChapterSelectScene extends Phaser.Scene {
   }
 
   private drawChapterCard(
-    x: number, y: number, w: number, h: number,
+    list: Phaser.GameObjects.Container, x: number, y: number, w: number, h: number,
     chapter: Chapter, completed: boolean,
   ): void {
     const card = this.add.rectangle(x, y, w, h, 0x1a120a, 0.95)
@@ -49,26 +97,27 @@ export class ChapterSelectScene extends Phaser.Scene {
       .on('pointerover', () => card.setStrokeStyle(2, 0xf3d98a, 1))
       .on('pointerout',  () => card.setStrokeStyle(2, completed ? 0xc9a55c : 0x4a3a22, 1))
       .on('pointerdown', () => this.startChapter(chapter));
+    list.add(card);
 
-    this.add.text(x + 24, y + 14, `Chapter ${chapter.number}`, {
+    list.add(this.add.text(x + 24, y + 14, `Chapter ${chapter.number}`, {
       fontFamily: 'Georgia, serif', fontSize: '14px', color: '#9c8458', fontStyle: 'italic',
-    });
-    this.add.text(x + 24, y + 30, chapter.title, {
+    }));
+    list.add(this.add.text(x + 24, y + 30, chapter.title, {
       fontFamily: 'Georgia, serif', fontSize: '24px', color: '#f3e2b5',
-    });
-    this.add.text(x + 24, y + 60, chapter.subtitle + '  —  ' + chapter.description, {
+    }));
+    list.add(this.add.text(x + 24, y + 60, chapter.subtitle + '  —  ' + chapter.description, {
       fontFamily: 'Georgia, serif', fontSize: '13px', color: '#c9b07a',
       wordWrap: { width: w - 220 },
-    });
+    }));
 
     if (completed) {
-      this.add.text(x + w - 24, y + h / 2, '✓ completed', {
+      list.add(this.add.text(x + w - 24, y + h / 2, '✓ completed', {
         fontFamily: 'Georgia, serif', fontSize: '16px', color: '#c9a55c', fontStyle: 'italic',
-      }).setOrigin(1, 0.5);
+      }).setOrigin(1, 0.5));
     } else {
-      this.add.text(x + w - 24, y + h / 2, 'enter ›', {
+      list.add(this.add.text(x + w - 24, y + h / 2, 'enter ›', {
         fontFamily: 'Georgia, serif', fontSize: '18px', color: '#f3d98a',
-      }).setOrigin(1, 0.5);
+      }).setOrigin(1, 0.5));
     }
   }
 
