@@ -424,6 +424,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
       .setOrigin(1, 0).setDepth(UI_DEPTH);
     this.makeHudButton(width - 210, 16, 'Chapters', () => this.openChapterSelect())
       .setOrigin(1, 0).setDepth(UI_DEPTH);
+    this.makeHudButton(width - 320, 16, 'Editor', () => this.openMapEditor())
+      .setOrigin(1, 0).setDepth(UI_DEPTH);
 
     this.promptText = this.add.text(width / 2, height - 36, '', {
       fontFamily: 'Georgia, serif', fontSize: '18px', color: '#f3d98a',
@@ -464,6 +466,12 @@ export abstract class BaseMapScene extends Phaser.Scene {
       this.scene.stop('Journal');
       this.scene.start('ChapterSelect');
     });
+  }
+
+  protected openMapEditor(): void {
+    this.scene.stop('Dialogue');
+    this.scene.stop('Journal');
+    this.scene.start('MapEditor', { from: this.scene.key });
   }
 
   protected restart(): void {

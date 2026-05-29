@@ -54,6 +54,18 @@ export class TitleScene extends Phaser.Scene {
         this.scene.start('ChapterSelect');
       });
 
+    const editor = this.add.text(width / 2, height * 0.86, 'Map Editor', {
+      fontFamily: 'Georgia, serif', fontSize: '18px', color: '#c9b07a',
+      backgroundColor: '#1a120acc', padding: { x: 14, y: 8 },
+    }).setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => editor.setColor('#fff1c0'))
+      .on('pointerout',  () => editor.setColor('#c9b07a'))
+      .on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: { stopPropagation: () => void }) => {
+        ev.stopPropagation();
+        this.scene.start('MapEditor', { from: 'Title' });
+      });
+
     const reset = this.add.text(width - 20, height - 20, 'Reset story', {
       fontFamily: 'Georgia, serif', fontSize: '14px', color: '#9c8458',
       backgroundColor: '#1a120acc', padding: { x: 8, y: 4 },

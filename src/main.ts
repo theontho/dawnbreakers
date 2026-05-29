@@ -23,6 +23,7 @@ import { TitleScene } from './scenes/TitleScene';
 import { JournalScene } from './scenes/JournalScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ChapterEndScene } from './scenes/ChapterEndScene';
+import { MapEditorScene } from './scenes/MapEditorScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -46,7 +47,7 @@ const config: Phaser.Types.Core.GameConfig = {
     Ch8ForestRoadScene, Ch8TabarsiFortScene,
     Ch9TabrizSquareScene, Ch9BarrackRoofScene,
     Ch10TehranStreetScene, Ch10SiyahChalScene,
-    DialogueScene, JournalScene, ChapterEndScene,
+    DialogueScene, JournalScene, ChapterEndScene, MapEditorScene,
   ],
 };
 
