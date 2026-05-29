@@ -12,6 +12,82 @@ export class HouseQuarterScene extends BaseMapScene {
 
   constructor() { super('HouseQuarter'); }
 
+  create(): void {
+    this.ensureTextures();
+    super.create();
+  }
+
+  private ensureTextures(): void {
+    this.makeCharacterTexture('ch1-npc-servant', 0x5f4a2d, 0xe0c08a);
+    this.makePlanterTexture();
+    this.makeLampTexture();
+    this.makeRugTexture();
+  }
+
+  private makeCharacterTexture(key: string, body: number, head: number): void {
+    if (this.textures.exists(key)) return;
+
+    const g = this.add.graphics();
+    g.fillStyle(body, 1);
+    g.fillRoundedRect(4, 16, 16, 22, 3);
+    g.fillStyle(head, 1);
+    g.fillCircle(12, 10, 7);
+    g.lineStyle(1, 0x000000, 0.6);
+    g.strokeRoundedRect(4, 16, 16, 22, 3);
+    g.strokeCircle(12, 10, 7);
+    g.generateTexture(key, 24, 40);
+    g.destroy();
+  }
+
+  private makePlanterTexture(): void {
+    const key = 'ch1-planter';
+    if (this.textures.exists(key)) return;
+
+    const g = this.add.graphics();
+    g.fillStyle(0x8a5a2a, 1);
+    g.fillEllipse(24, 30, 38, 14);
+    g.fillStyle(0x5f3a20, 1);
+    g.fillRect(9, 18, 30, 12);
+    g.lineStyle(1, 0x2a1a0a, 0.8);
+    g.strokeRect(9, 18, 30, 12);
+    g.strokeEllipse(24, 30, 38, 14);
+    g.fillStyle(0x3f7a4a, 1);
+    g.fillCircle(17, 16, 7);
+    g.fillCircle(26, 12, 8);
+    g.fillCircle(33, 17, 6);
+    g.generateTexture(key, 48, 38);
+    g.destroy();
+  }
+
+  private makeLampTexture(): void {
+    const key = 'ch1-lamp';
+    if (this.textures.exists(key)) return;
+
+    const g = this.add.graphics();
+    g.fillStyle(0x3a2818, 1);
+    g.fillRect(14, 12, 4, 34);
+    g.fillRect(8, 12, 16, 3);
+    g.fillStyle(0xc98b3a, 1);
+    g.fillCircle(16, 10, 6);
+    g.fillStyle(0xf0d890, 0.6);
+    g.fillCircle(16, 10, 10);
+    g.generateTexture(key, 32, 50);
+    g.destroy();
+  }
+
+  private makeRugTexture(): void {
+    const key = 'ch1-rug';
+    if (this.textures.exists(key)) return;
+
+    const g = this.add.graphics();
+    g.fillStyle(0x7f3030, 1);
+    g.fillEllipse(26, 18, 44, 16);
+    g.lineStyle(2, 0xc9a55c, 1);
+    g.strokeEllipse(26, 18, 36, 10);
+    g.generateTexture(key, 52, 28);
+    g.destroy();
+  }
+
   protected getDefaultSpawn(): { x: number; y: number } {
     return { x: 6, y: 13 };
   }
@@ -24,6 +100,7 @@ export class HouseQuarterScene extends BaseMapScene {
     this.paintPath([
       [6, 8], [6, 9], [6, 10], [6, 11], [6, 12], [6, 13],
     ]);
+    this.paintPath([[5, 8], [7, 8], [8, 8], [9, 8]]);
 
     // A garden plot east of the lane
     this.paintRect(9, 9, 3, 3, 'grass');
@@ -50,6 +127,15 @@ export class HouseQuarterScene extends BaseMapScene {
     }
     // A neighbourhood well by the lane
     this.decor.push({ gridX: 4, gridY: 10, texture: 'well', blocks: true });
+
+    // Quiet household details (non-blocking)
+    this.decor.push({ gridX: 4, gridY: 7, texture: 'ch1-planter' });
+    this.decor.push({ gridX: 8, gridY: 7, texture: 'ch1-planter' });
+    this.decor.push({ gridX: 9, gridY: 10, texture: 'ch1-planter' });
+    this.decor.push({ gridX: 5, gridY: 7, texture: 'ch1-rug' });
+    this.decor.push({ gridX: 7, gridY: 7, texture: 'ch1-rug' });
+    this.decor.push({ gridX: 3, gridY: 8, texture: 'ch1-lamp' });
+    this.decor.push({ gridX: 9, gridY: 8, texture: 'ch1-lamp' });
   }
 
   protected spawnNPCs(): void {
@@ -62,6 +148,11 @@ export class HouseQuarterScene extends BaseMapScene {
     this.addNPC(3, 9, 'npc-merchant',
       () => 'Speak with the Quiet Neighbour  [E]',
       () => this.startSimpleDialogue('rumour-neighbour'));
+
+    // A household servant — keeps watch over the evening threshold
+    this.addNPC(8, 8, 'ch1-npc-servant',
+      () => 'Speak with the Household Servant  [E]',
+      () => this.startSimpleDialogue('rumour-servant'));
   }
 
   protected setupExits(): void {
