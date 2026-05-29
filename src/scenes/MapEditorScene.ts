@@ -1,39 +1,28 @@
 import Phaser from 'phaser';
+import {
+  CODE_TILE,
+  ensureMapAssetTextures,
+  ensureTileTextures,
+  MAP_ASSET_CATEGORIES,
+  type MapAssetCategory,
+  MAP_OBJECT_BY_ID,
+  MAP_OBJECTS,
+  TILE_CODE,
+  TILE_OPTIONS,
+  type MapObjectDefinition,
+  type MapObjectFootprint,
+  type MapObjectId,
+  type MapObjectKind,
+} from '../assets/mapAssetLibrary';
 import { TILE_H, TILE_W, type IsoPoint, type TileKind } from './BaseMapScene';
 import { makeCharacterTexture } from './characterTexture';
 
-type EditorObjectKind = 'structure' | 'prop' | 'character';
-type EditorObjectId =
-  | 'house'
-  | 'marketStall'
-  | 'bridge'
-  | 'cypress'
-  | 'crateStack'
-  | 'lamp'
-  | 'rug'
-  | 'well'
-  | 'traveller'
-  | 'merchant'
-  | 'guard'
-  | 'pilgrim';
+type EditorObjectKind = MapObjectKind;
+type EditorObjectId = MapObjectId;
 type ObjectTool = `object:${EditorObjectId}`;
 type EditorTool = TileKind | 'block' | 'open' | 'erase-object' | ObjectTool;
-
-interface ObjectFootprint {
-  w: number;
-  h: number;
-}
-
-interface EditorObjectDefinition {
-  id: EditorObjectId;
-  label: string;
-  texture: string;
-  kind: EditorObjectKind;
-  color: number;
-  blocks: boolean;
-  footprint?: ObjectFootprint;
-  isometric?: true;
-}
+type ObjectFootprint = MapObjectFootprint;
+type EditorObjectDefinition = MapObjectDefinition;
 
 interface EditorPlacedObject {
   id: EditorObjectId;
@@ -82,81 +71,21 @@ interface EditorIsoPrism {
   leftR: IsoPoint;
 }
 
+type AssetPickerRow =
+  | { kind: 'header'; category: MapAssetCategory; count: number }
+  | { kind: 'assets'; category: MapAssetCategory; assets: EditorObjectDefinition[] };
+type SpecialToolIcon = 'block' | 'open' | 'erase';
+
 const STORAGE_KEY = 'dawnbreakers.mapEditor.v1';
 const PANEL_W = 300;
 const MIN_W = 6;
 const MAX_W = 30;
 const MIN_H = 6;
 const MAX_H = 20;
-
-const TILE_OPTIONS: Array<{ kind: TileKind; label: string; color: number }> = [
-  { kind: 'grass', label: 'Grass', color: 0x4a6b3a },
-  { kind: 'path', label: 'Path', color: 0x9c8458 },
-  { kind: 'stone', label: 'Stone', color: 0x6b5a44 },
-  { kind: 'water', label: 'Water', color: 0x2c4a6b },
-  { kind: 'sand', label: 'Sand', color: 0xb89968 },
-];
-
-const EDITOR_OBJECTS: EditorObjectDefinition[] = [
-  {
-    id: 'house',
-    label: 'Iso House',
-    texture: 'editor-iso-house',
-    kind: 'structure',
-    color: 0x9b7048,
-    blocks: true,
-    footprint: { w: 2, h: 2 },
-    isometric: true,
-  },
-  {
-    id: 'marketStall',
-    label: 'Iso Stall',
-    texture: 'editor-iso-stall',
-    kind: 'structure',
-    color: 0xb88742,
-    blocks: true,
-    footprint: { w: 2, h: 1 },
-    isometric: true,
-  },
-  {
-    id: 'bridge',
-    label: 'Iso Bridge',
-    texture: 'editor-iso-bridge',
-    kind: 'structure',
-    color: 0x7b6142,
-    blocks: false,
-    footprint: { w: 3, h: 1 },
-    isometric: true,
-  },
-  { id: 'cypress', label: 'Cypress', texture: 'editor-cypress', kind: 'prop', color: 0x234c2f, blocks: true },
-  { id: 'crateStack', label: 'Crates', texture: 'editor-crates', kind: 'prop', color: 0x8a5a2a, blocks: true },
-  { id: 'lamp', label: 'Lamp', texture: 'editor-lamp', kind: 'prop', color: 0xd8a23a, blocks: true },
-  { id: 'rug', label: 'Rug', texture: 'editor-rug', kind: 'prop', color: 0x7a1f1f, blocks: false },
-  { id: 'well', label: 'Well', texture: 'editor-well', kind: 'prop', color: 0x8f8068, blocks: true },
-  { id: 'traveller', label: 'Traveller', texture: 'editor-char-traveller', kind: 'character', color: 0x4a3a2a, blocks: true },
-  { id: 'merchant', label: 'Merchant', texture: 'editor-char-merchant', kind: 'character', color: 0x8a5a2a, blocks: true },
-  { id: 'guard', label: 'Guard', texture: 'editor-char-guard', kind: 'character', color: 0x39404a, blocks: true },
-  { id: 'pilgrim', label: 'Pilgrim', texture: 'editor-char-pilgrim', kind: 'character', color: 0xf2ead6, blocks: true },
-];
-
-const OBJECT_BY_ID: ReadonlyMap<EditorObjectId, EditorObjectDefinition> =
-  new Map(EDITOR_OBJECTS.map(def => [def.id, def]));
-
-const TILE_CODE: Record<TileKind, string> = {
-  grass: 'g',
-  path: 'p',
-  stone: 's',
-  water: 'w',
-  sand: 'a',
-};
-
-const CODE_TILE: Record<string, TileKind> = {
-  g: 'grass',
-  p: 'path',
-  s: 'stone',
-  w: 'water',
-  a: 'sand',
-};
+const ASSET_PICKER_WHEEL_SCALE = 0.65;
+const ASSET_PICKER_MAX_WHEEL_DELTA = 90;
+const EDITOR_OBJECTS = MAP_OBJECTS;
+const OBJECT_BY_ID = MAP_OBJECT_BY_ID;
 
 export class MapEditorScene extends Phaser.Scene {
   private editorMap!: EditorMap;
@@ -171,6 +100,16 @@ export class MapEditorScene extends Phaser.Scene {
   private originY = 118;
   private lastPainted = '';
   private returnScene = 'Title';
+  private assetPickerOpen = false;
+  private assetPickerScrollY = 0;
+  private assetPickerPreviewId?: EditorObjectId;
+  private assetPreviewContainer?: Phaser.GameObjects.Container;
+  private suppressMapPaintUntilPointerUp = false;
+  private isPanning = false;
+  private panPointerId?: number;
+  private lastPanX = 0;
+  private lastPanY = 0;
+  private tileTooltip?: Phaser.GameObjects.Container;
 
   constructor() {
     super('MapEditor');
@@ -198,7 +137,7 @@ export class MapEditorScene extends Phaser.Scene {
       fontSize: '14px',
       color: '#9c8458',
     });
-    this.add.text(24, height - 34, 'Esc: back  |  S: save  |  C: copy JSON  |  B: block  |  O: open  |  E: erase object', {
+    this.add.text(24, height - 34, 'Esc: back  |  S: save  |  C: copy JSON  |  Right/middle drag or arrows: pan  |  R: recenter', {
       fontFamily: 'Georgia, serif',
       fontSize: '13px',
       color: '#6f6048',
@@ -212,29 +151,74 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private setupInput(): void {
+    this.input.mouse?.disableContextMenu();
+
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.suppressMapPaintUntilPointerUp) return;
+      if (this.isUIPointer(pointer)) return;
+      if (this.isPanPointer(pointer)) {
+        this.startPanning(pointer);
+        return;
+      }
       this.lastPainted = '';
       this.paintAtPointer(pointer);
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.isPanning && pointer.id === this.panPointerId) {
+        this.panMap(pointer.x - this.lastPanX, pointer.y - this.lastPanY);
+        this.lastPanX = pointer.x;
+        this.lastPanY = pointer.y;
+        return;
+      }
       this.updateHover(pointer);
-      if (pointer.leftButtonDown()) this.paintAtPointer(pointer);
+      if (pointer.leftButtonDown() && !this.suppressMapPaintUntilPointerUp) this.paintAtPointer(pointer);
     });
     this.input.on('pointerup', () => {
       this.lastPainted = '';
+      this.suppressMapPaintUntilPointerUp = false;
+      this.stopPanning();
+    });
+    this.input.on('pointerupoutside', () => {
+      this.lastPainted = '';
+      this.suppressMapPaintUntilPointerUp = false;
+      this.stopPanning();
+    });
+    this.input.on('wheel', (pointer: Phaser.Input.Pointer, _gameObjects: unknown, deltaX: number, deltaY: number) => {
+      if (this.assetPickerOpen) {
+        this.handleAssetPickerWheel(deltaY);
+        return;
+      }
+      if (this.isUIPointer(pointer)) {
+        return;
+      }
+      this.panMap(
+        Phaser.Math.Clamp(-deltaX, -100, 100),
+        Phaser.Math.Clamp(-deltaY, -100, 100),
+      );
     });
 
-    this.input.keyboard?.on('keydown-ESC', () => this.goBack());
+    this.input.keyboard?.on('keydown-ESC', () => {
+      if (this.assetPickerOpen) this.closeAssetPicker();
+      else this.goBack();
+    });
     this.input.keyboard?.on('keydown-S', () => this.saveMap());
     this.input.keyboard?.on('keydown-C', () => void this.copyExport());
     this.input.keyboard?.on('keydown-B', () => this.selectTool('block'));
     this.input.keyboard?.on('keydown-O', () => this.selectTool('open'));
     this.input.keyboard?.on('keydown-E', () => this.selectTool('erase-object'));
+    this.input.keyboard?.on('keydown-LEFT', () => this.panMap(-48, 0));
+    this.input.keyboard?.on('keydown-RIGHT', () => this.panMap(48, 0));
+    this.input.keyboard?.on('keydown-UP', () => this.panMap(0, -32));
+    this.input.keyboard?.on('keydown-DOWN', () => this.panMap(0, 32));
+    this.input.keyboard?.on('keydown-R', () => this.recenterMap());
   }
 
   private buildUI(): void {
     const { width, height } = this.scale;
     const x = width - PANEL_W + 18;
+    this.hideTileTooltip();
+    this.assetPreviewContainer?.destroy(true);
+    this.assetPreviewContainer = undefined;
     this.ui?.destroy(true);
     this.ui = this.add.container(0, 0).setDepth(10000);
     this.toolButtons = [];
@@ -255,38 +239,23 @@ export class MapEditorScene extends Phaser.Scene {
     y += 24;
     for (let i = 0; i < TILE_OPTIONS.length; i++) {
       const option = TILE_OPTIONS[i];
-      this.makeToolButton(x + (i % 2) * 132, y + Math.floor(i / 2) * 34, 122, option.label, option.kind, option.color);
+      this.makeTileSwatchButton(x + i * 34, y, option.kind, option.label, option.color);
     }
+    const specialToolX = x + 170;
+    this.makeSpecialToolButton(specialToolX, y, 'block', 'Block', 0x7a1f1f, 'block');
+    this.makeSpecialToolButton(specialToolX + 28, y, 'open', 'Open', 0x3f6f45, 'open');
+    this.makeSpecialToolButton(specialToolX + 56, y, 'erase-object', 'Erase Object', 0x4a1f1f, 'erase');
 
-    y += 106;
-    this.makeToolButton(x, y, 122, 'Block', 'block', 0x7a1f1f);
-    this.makeToolButton(x + 132, y, 122, 'Open', 'open', 0x3f6f45);
-    y += 42;
-
-    this.ui.add(this.add.text(x, y, 'Props, characters, structures', {
+    y += 38;
+    this.ui.add(this.add.text(x, y, 'Objects', {
       fontFamily: 'Georgia, serif',
       fontSize: '14px',
       color: '#c9b07a',
     }));
     y += 24;
-    const objectCols = 3;
-    const objectButtonW = 84;
-    for (let i = 0; i < EDITOR_OBJECTS.length; i++) {
-      const option = EDITOR_OBJECTS[i];
-      this.makeToolButton(
-        x + (i % objectCols) * 86,
-        y + Math.floor(i / objectCols) * 34,
-        objectButtonW,
-        option.label,
-        this.objectTool(option.id),
-        option.color,
-      );
-    }
+    this.makeAssetBrowserButton(x, y, 254);
 
-    y += Math.ceil(EDITOR_OBJECTS.length / objectCols) * 34 + 8;
-    this.makeToolButton(x, y, 254, 'Erase Object', 'erase-object', 0x4a1f1f);
-
-    y += 46;
+    y += 50;
     this.ui.add(this.add.text(x, y, 'Size', {
       fontFamily: 'Georgia, serif',
       fontSize: '14px',
@@ -323,30 +292,128 @@ export class MapEditorScene extends Phaser.Scene {
     });
     this.ui.add(this.exportText);
     this.updateToolButtons();
+    this.updateStatus();
+    if (this.assetPickerOpen) this.makeAssetPickerOverlay();
   }
 
-  private makeToolButton(
+  private makeTileSwatchButton(
     x: number,
     y: number,
-    width: number,
+    tool: TileKind,
     label: string,
-    tool: EditorTool,
     color: number,
   ): void {
-    const rect = this.add.rectangle(x, y, width, 28, 0x24170d, 1)
+    const rect = this.add.rectangle(x, y, 28, 26, 0x24170d, 1)
       .setOrigin(0)
       .setStrokeStyle(1, 0x4a3a22, 1)
       .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.showTileTooltip(x, y, label))
+      .on('pointerout', () => this.hideTileTooltip())
       .on('pointerdown', () => this.selectTool(tool));
-    const swatch = this.add.rectangle(x + 8, y + 7, 16, 14, color, 1).setOrigin(0);
-    const text = this.add.text(x + 30, y + 7, label, {
-      fontFamily: 'Georgia, serif',
-      fontSize: width < 100 ? '10px' : '12px',
-      color: '#e8d9b0',
-    });
+    const swatch = this.add.rectangle(x + 6, y + 5, 16, 16, color, 1)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x0a0806, 0.7);
 
-    this.ui.add([rect, swatch, text]);
+    this.ui.add([rect, swatch]);
     this.toolButtons.push({ tool, rect });
+  }
+
+  private showTileTooltip(x: number, y: number, label: string): void {
+    this.hideTileTooltip();
+    const text = this.add.text(x, y - 22, label, {
+      fontFamily: 'Georgia, serif',
+      fontSize: '12px',
+      color: '#f3e2b5',
+    });
+    const bounds = text.getBounds();
+    const bg = this.add.rectangle(bounds.x - 5, bounds.y - 3, bounds.width + 10, bounds.height + 6, 0x0a0806, 0.96)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0xf3d98a, 0.8);
+    this.tileTooltip = this.add.container(0, 0, [bg, text]).setDepth(10020);
+    this.ui.add(this.tileTooltip);
+  }
+
+  private hideTileTooltip(): void {
+    this.tileTooltip?.destroy(true);
+    this.tileTooltip = undefined;
+  }
+
+  private makeSpecialToolButton(
+    x: number,
+    y: number,
+    tool: EditorTool,
+    label: string,
+    color: number,
+    icon: SpecialToolIcon,
+  ): void {
+    const rect = this.add.rectangle(x, y, 26, 26, 0x24170d, 1)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x4a3a22, 1)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.showTileTooltip(x, y, label))
+      .on('pointerout', () => this.hideTileTooltip())
+      .on('pointerdown', () => this.selectTool(tool));
+    const glyph = this.add.graphics();
+    this.drawSpecialToolIcon(glyph, x, y, color, icon);
+
+    this.ui.add([rect, glyph]);
+    this.toolButtons.push({ tool, rect });
+  }
+
+  private drawSpecialToolIcon(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    color: number,
+    icon: SpecialToolIcon,
+  ): void {
+    const cx = x + 13;
+    const cy = y + 13;
+
+    graphics.fillStyle(color, 0.95);
+    graphics.lineStyle(1, 0x0a0806, 0.8);
+    graphics.beginPath();
+    graphics.moveTo(cx, y + 5);
+    graphics.lineTo(x + 21, cy);
+    graphics.lineTo(cx, y + 21);
+    graphics.lineTo(x + 5, cy);
+    graphics.closePath();
+    graphics.fillPath();
+    graphics.strokePath();
+
+    if (icon === 'block') {
+      graphics.lineStyle(2, 0xf3e2b5, 1);
+      graphics.beginPath();
+      graphics.moveTo(x + 9, y + 9);
+      graphics.lineTo(x + 17, y + 17);
+      graphics.moveTo(x + 17, y + 9);
+      graphics.lineTo(x + 9, y + 17);
+      graphics.strokePath();
+      return;
+    }
+
+    if (icon === 'open') {
+      graphics.lineStyle(2, 0xf3e2b5, 1);
+      graphics.beginPath();
+      graphics.moveTo(x + 8, y + 13);
+      graphics.lineTo(x + 12, y + 17);
+      graphics.lineTo(x + 19, y + 9);
+      graphics.strokePath();
+      return;
+    }
+
+    graphics.fillStyle(0xf3e2b5, 1);
+    graphics.lineStyle(1, 0x0a0806, 0.8);
+    graphics.beginPath();
+    graphics.moveTo(x + 8, y + 16);
+    graphics.lineTo(x + 15, y + 9);
+    graphics.lineTo(x + 19, y + 13);
+    graphics.lineTo(x + 12, y + 20);
+    graphics.closePath();
+    graphics.fillPath();
+    graphics.strokePath();
+    graphics.fillStyle(0xc98282, 1);
+    graphics.fillRect(x + 14, y + 10, 4, 4);
   }
 
   private makeButton(x: number, y: number, w: number, h: number, label: string, onClick: () => void): void {
@@ -365,10 +432,385 @@ export class MapEditorScene extends Phaser.Scene {
     this.ui.add([rect, text]);
   }
 
+  private makeAssetBrowserButton(x: number, y: number, width: number): void {
+    const activeObject = this.objectDefinitionForTool(this.activeTool);
+    const rect = this.add.rectangle(x, y, width, 30, this.assetPickerOpen || activeObject ? 0x3a2814 : 0x24170d, 1)
+      .setOrigin(0)
+      .setStrokeStyle(this.assetPickerOpen || activeObject ? 2 : 1, this.assetPickerOpen ? 0xf3d98a : 0x4a3a22, 1)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => rect.setStrokeStyle(2, 0xf3d98a, 1))
+      .on('pointerout', () => rect.setStrokeStyle(this.assetPickerOpen || activeObject ? 2 : 1, this.assetPickerOpen ? 0xf3d98a : 0x4a3a22, 1))
+      .on('pointerdown', () => this.openAssetPicker());
+    const swatch = this.add.rectangle(x + 8, y + 8, 16, 14, activeObject?.color ?? 0x6b5a44, 1).setOrigin(0);
+    const label = activeObject ? `Assets: ${activeObject.label}` : `Assets (${EDITOR_OBJECTS.length})`;
+    const text = this.add.text(x + 30, y + 8, label, {
+      fontFamily: 'Georgia, serif',
+      fontSize: '12px',
+      color: '#e8d9b0',
+    });
+    const caret = this.add.text(x + width - 18, y + 15, '>', {
+      fontFamily: 'Georgia, serif',
+      fontSize: '13px',
+      color: '#f3d98a',
+    }).setOrigin(0.5);
+
+    this.ui.add([rect, swatch, text, caret]);
+  }
+
+  private makeAssetPickerOverlay(): void {
+    const { width, height } = this.scale;
+    const overlayX = 24;
+    const overlayY = 64;
+    const overlayW = Math.max(620, width - 48);
+    const overlayH = Math.max(430, height - 96);
+    let gridW = Math.min(760, Math.max(420, overlayW * 0.64));
+    let previewW = overlayW - gridW - 52;
+    if (previewW < 260) {
+      gridW = Math.max(300, overlayW - 312);
+      previewW = overlayW - gridW - 52;
+    }
+    const previewX = overlayX + gridW + 28;
+    const previewY = overlayY + 84;
+    const previewH = overlayH - 116;
+    const gridCellH = 110;
+    const gridGap = 10;
+    const gridColumns = Phaser.Math.Clamp(Math.floor((gridW - 20 + gridGap) / (112 + gridGap)), 2, 5);
+    const gridCellW = (gridW - 20 - gridGap * (gridColumns - 1)) / gridColumns;
+    const pickerRows = this.assetPickerRows(gridColumns);
+    const contentH = overlayH - 126;
+    this.assetPickerScrollY = this.clampedAssetPickerScrollY(this.assetPickerScrollY, pickerRows, contentH);
+
+    const dimmer = this.add.rectangle(0, 0, width, height, 0x000000, 0.28)
+      .setOrigin(0)
+      .setInteractive();
+    const panel = this.add.rectangle(overlayX, overlayY, overlayW, overlayH, 0x160f08, 0.98)
+      .setOrigin(0)
+      .setStrokeStyle(2, 0xf3d98a, 0.9)
+      .setInteractive();
+    const title = this.add.text(overlayX + 18, overlayY + 16, 'Assets', {
+      fontFamily: 'Georgia, serif',
+      fontSize: '21px',
+      color: '#f3d98a',
+    });
+    const description = this.add.text(overlayX + 18, overlayY + 46, 'All placeable assets are grouped by category. Scroll the grid and hover an asset for the detail preview.', {
+      fontFamily: 'Georgia, serif',
+      fontSize: '13px',
+      color: '#bda676',
+      wordWrap: { width: gridW + previewW - 74 },
+    });
+
+    this.ui.add([dimmer, panel, title, description]);
+    this.makeButton(overlayX + overlayW - 88, overlayY + 16, 66, 28, 'Close', () => this.closeAssetPicker());
+
+    const gridX = overlayX + 18;
+    const gridY = overlayY + 84;
+    const gridBg = this.add.rectangle(gridX, gridY, gridW, contentH + 36, 0x0e0905, 0.88)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x4a3a22, 1)
+      .setInteractive();
+    this.ui.add(gridBg);
+
+    const totalAssets = this.totalCategorizedAssets();
+    const rangeText = this.add.text(gridX + 10, gridY + 9, `${totalAssets} assets | ${MAP_ASSET_CATEGORIES.length} categories`, {
+      fontFamily: 'Georgia, serif',
+      fontSize: '11px',
+      color: '#8f8068',
+    });
+    this.ui.add(rangeText);
+    this.makeButton(gridX + gridW - 58, gridY + 6, 24, 22, '^', () => this.scrollAssetPickerPixels(-gridCellH));
+    this.makeButton(gridX + gridW - 28, gridY + 6, 24, 22, 'v', () => this.scrollAssetPickerPixels(gridCellH));
+
+    const maskShape = this.add.graphics();
+    maskShape.fillStyle(0xffffff, 1);
+    maskShape.fillRect(gridX + 10, gridY + 36, gridW - 20, contentH);
+    maskShape.setVisible(false);
+    const gridContent = this.add.container(0, 0).setMask(maskShape.createGeometryMask());
+    this.ui.add([maskShape, gridContent]);
+
+    const visibleAssets = this.drawAssetPickerRows(
+      pickerRows,
+      this.assetPickerScrollY,
+      gridX + 10,
+      gridY + 36,
+      gridW - 20,
+      contentH,
+      gridCellW,
+      gridGap,
+      gridCellH,
+      previewX,
+      previewY,
+      previewW,
+      previewH,
+      gridContent,
+    );
+    const fallbackPreview = visibleAssets[0] ?? this.firstCategorizedAsset();
+    let preview = this.assetPickerPreviewId ? OBJECT_BY_ID.get(this.assetPickerPreviewId) : undefined;
+    if (preview) {
+      const previewId = preview.id;
+      if (!visibleAssets.some(def => def.id === previewId)) preview = fallbackPreview;
+    }
+    preview ??= fallbackPreview;
+    this.assetPickerPreviewId = preview?.id;
+    if (preview) this.previewAsset(preview, previewX, previewY, previewW, previewH);
+  }
+
   private selectTool(tool: EditorTool): void {
     this.activeTool = tool;
+    if (this.assetPickerOpen) {
+      this.closeAssetPicker();
+      return;
+    }
     this.updateToolButtons();
     this.updateStatus();
+  }
+
+  private openAssetPicker(): void {
+    this.assetPickerOpen = true;
+    const gridColumns = this.assetPickerGridColumns();
+    const activeObject = this.objectDefinitionForTool(this.activeTool);
+    const rows = this.assetPickerRows(gridColumns);
+    const contentH = Math.max(430, this.scale.height - 96) - 126;
+    const activeScrollY = activeObject ? this.assetPickerOffsetForAsset(rows, activeObject.id) : 0;
+    this.assetPickerPreviewId = activeObject?.id ?? this.firstCategorizedAsset()?.id;
+    this.assetPickerScrollY = this.clampedAssetPickerScrollY(activeScrollY, rows, contentH);
+    this.buildUI();
+  }
+
+  private closeAssetPicker(): void {
+    if (!this.assetPickerOpen) return;
+    this.assetPickerOpen = false;
+    this.assetPickerScrollY = 0;
+    this.assetPickerPreviewId = undefined;
+    this.assetPreviewContainer?.destroy(true);
+    this.assetPreviewContainer = undefined;
+    this.buildUI();
+  }
+
+  private selectAssetFromPicker(def: EditorObjectDefinition): void {
+    this.suppressMapPaintUntilPointerUp = true;
+    this.activeTool = this.objectTool(def.id);
+    this.closeAssetPicker();
+  }
+
+  private handleAssetPickerWheel(deltaY: number): void {
+    if (deltaY === 0) return;
+    this.scrollAssetPickerPixels(
+      Phaser.Math.Clamp(deltaY * ASSET_PICKER_WHEEL_SCALE, -ASSET_PICKER_MAX_WHEEL_DELTA, ASSET_PICKER_MAX_WHEEL_DELTA),
+    );
+  }
+
+  private scrollAssetPickerPixels(deltaY: number): void {
+    if (!this.assetPickerOpen) return;
+    const gridColumns = this.assetPickerGridColumns();
+    const rows = this.assetPickerRows(gridColumns);
+    const contentH = Math.max(430, this.scale.height - 96) - 126;
+    const next = this.clampedAssetPickerScrollY(this.assetPickerScrollY + deltaY, rows, contentH);
+    if (next === this.assetPickerScrollY) return;
+    this.assetPickerScrollY = next;
+    this.assetPickerPreviewId = this.firstAssetAfterScrollY(rows, next)?.id;
+    this.buildUI();
+  }
+
+  private clampedAssetPickerScrollY(scrollY: number, rows: AssetPickerRow[], contentH: number): number {
+    return Phaser.Math.Clamp(scrollY, 0, Math.max(0, this.totalAssetPickerContentHeight(rows) - contentH));
+  }
+
+  private assetPickerGridColumns(): number {
+    const overlayW = Math.max(620, this.scale.width - 48);
+    let gridW = Math.min(760, Math.max(420, overlayW * 0.64));
+    const previewW = overlayW - gridW - 52;
+    if (previewW < 260) gridW = Math.max(300, overlayW - 312);
+    return Phaser.Math.Clamp(Math.floor((gridW - 10) / 122), 2, 5);
+  }
+
+  private assetPickerRows(gridColumns: number): AssetPickerRow[] {
+    const rows: AssetPickerRow[] = [];
+    for (const category of MAP_ASSET_CATEGORIES) {
+      const assets = this.assetsForCategory(category);
+      if (assets.length === 0) continue;
+      rows.push({ kind: 'header', category, count: assets.length });
+      for (let i = 0; i < assets.length; i += gridColumns) {
+        rows.push({ kind: 'assets', category, assets: assets.slice(i, i + gridColumns) });
+      }
+    }
+    return rows;
+  }
+
+  private drawAssetPickerRows(
+    rows: AssetPickerRow[],
+    scrollY: number,
+    x: number,
+    y: number,
+    width: number,
+    contentH: number,
+    gridCellW: number,
+    gridGap: number,
+    gridCellH: number,
+    previewX: number,
+    previewY: number,
+    previewW: number,
+    previewH: number,
+    gridContent: Phaser.GameObjects.Container,
+  ): EditorObjectDefinition[] {
+    const visibleAssets: EditorObjectDefinition[] = [];
+    let rowOffsetY = 0;
+    const bottomY = y + contentH;
+    for (const row of rows) {
+      const rowH = this.assetPickerRowHeight(row);
+      const rowTopY = rowOffsetY;
+      const rowBottomY = rowOffsetY + rowH;
+      rowOffsetY = rowBottomY;
+      if (rowBottomY < scrollY) continue;
+
+      const cursorY = y + rowTopY - scrollY;
+      if (cursorY > bottomY) break;
+      if (row.kind === 'header') {
+        const bg = this.add.rectangle(x, cursorY + 2, width, 26, 0x1f160d, 1)
+          .setOrigin(0)
+          .setStrokeStyle(1, 0x5a4428, 0.8);
+        const title = this.add.text(x + 10, cursorY + 7, row.category.label, {
+          fontFamily: 'Georgia, serif',
+          fontSize: '13px',
+          color: '#f3d98a',
+        });
+        const count = this.add.text(x + width - 10, cursorY + 7, `${row.count} assets`, {
+          fontFamily: 'Georgia, serif',
+          fontSize: '11px',
+          color: '#8f8068',
+        }).setOrigin(1, 0);
+        gridContent.add([bg, title, count]);
+        continue;
+      }
+
+      for (let i = 0; i < row.assets.length; i++) {
+        const option = row.assets[i];
+        const optionX = x + i * (gridCellW + gridGap);
+        const selected = this.activeTool === this.objectTool(option.id);
+        const isPreview = option.id === this.assetPickerPreviewId;
+        const rect = this.add.rectangle(optionX, cursorY, gridCellW, gridCellH - 8, selected || isPreview ? 0x3a2814 : 0x24170d, 1)
+          .setOrigin(0)
+          .setStrokeStyle(selected || isPreview ? 2 : 1, selected ? 0xf3d98a : 0x4a3a22, 1)
+          .setInteractive({ useHandCursor: true })
+          .on('pointerover', () => this.previewAsset(option, previewX, previewY, previewW, previewH))
+          .on('pointerdown', () => this.selectAssetFromPicker(option));
+        const thumbnail = this.add.image(optionX + gridCellW / 2, cursorY + 62, option.texture)
+          .setOrigin(0.5, 1);
+        thumbnail.setScale(Math.min((gridCellW - 20) / thumbnail.width, 58 / thumbnail.height, 1.4));
+        const swatch = this.add.rectangle(optionX + 7, cursorY + 7, 13, 13, option.color, 1).setOrigin(0);
+        const label = this.add.text(optionX + 8, cursorY + 70, option.label, {
+          fontFamily: 'Georgia, serif',
+          fontSize: '11px',
+          color: '#e8d9b0',
+          align: 'center',
+          wordWrap: { width: gridCellW - 16 },
+        });
+        label.setX(optionX + gridCellW / 2 - label.width / 2);
+        const meta = this.add.text(optionX + gridCellW - 8, cursorY + 8, option.kind, {
+          fontFamily: 'Georgia, serif',
+          fontSize: '10px',
+          color: '#8f8068',
+        }).setOrigin(1, 0);
+        gridContent.add([rect, thumbnail, swatch, label, meta]);
+        visibleAssets.push(option);
+      }
+    }
+    return visibleAssets;
+  }
+
+  private assetPickerRowHeight(row: AssetPickerRow): number {
+    return row.kind === 'header' ? 34 : 110;
+  }
+
+  private totalAssetPickerContentHeight(rows: AssetPickerRow[]): number {
+    return rows.reduce((sum, row) => sum + this.assetPickerRowHeight(row), 0);
+  }
+
+  private assetPickerOffsetForAsset(rows: AssetPickerRow[], id: EditorObjectId): number {
+    let offsetY = 0;
+    for (const row of rows) {
+      if (row.kind === 'assets' && row.assets.some(asset => asset.id === id)) return offsetY;
+      offsetY += this.assetPickerRowHeight(row);
+    }
+    return 0;
+  }
+
+  private firstAssetAfterScrollY(rows: AssetPickerRow[], scrollY: number): EditorObjectDefinition | undefined {
+    let offsetY = 0;
+    for (const row of rows) {
+      offsetY += this.assetPickerRowHeight(row);
+      if (offsetY < scrollY || row.kind !== 'assets') continue;
+      return row.assets[0];
+    }
+    return undefined;
+  }
+
+  private firstCategorizedAsset(): EditorObjectDefinition | undefined {
+    for (const category of MAP_ASSET_CATEGORIES) {
+      const asset = this.assetsForCategory(category)[0];
+      if (asset) return asset;
+    }
+    return undefined;
+  }
+
+  private totalCategorizedAssets(): number {
+    return MAP_ASSET_CATEGORIES.reduce((sum, category) => sum + this.assetsForCategory(category).length, 0);
+  }
+
+  private assetsForCategory(category: MapAssetCategory): EditorObjectDefinition[] {
+    return category.objectIds
+      .map(id => OBJECT_BY_ID.get(id))
+      .filter((def): def is EditorObjectDefinition => def !== undefined);
+  }
+
+  private previewAsset(def: EditorObjectDefinition, x: number, y: number, w: number, h: number): void {
+    this.assetPickerPreviewId = def.id;
+    this.assetPreviewContainer?.destroy(true);
+    const previewPanel = this.add.rectangle(x, y, w, h, 0x0e0905, 0.88)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x4a3a22, 1);
+    const title = this.add.text(x + 18, y + 16, def.label, {
+      fontFamily: 'Georgia, serif',
+      fontSize: '20px',
+      color: '#f3d98a',
+    });
+    const details = [
+      def.kind,
+      def.footprint ? `${def.footprint.w}x${def.footprint.h} footprint` : 'single tile',
+      def.isometric ? 'isometric safe' : undefined,
+    ].filter(Boolean).join(' | ');
+    const meta = this.add.text(x + 18, y + 46, details, {
+      fontFamily: 'Georgia, serif',
+      fontSize: '12px',
+      color: '#8f8068',
+    });
+
+    const floor = this.add.graphics();
+    floor.fillStyle(0x3a2814, 0.55);
+    floor.lineStyle(1, 0xf3d98a, 0.3);
+    const cx = x + w / 2;
+    const groundY = y + h - 76;
+    floor.beginPath();
+    floor.moveTo(cx, groundY - TILE_H / 2);
+    floor.lineTo(cx + TILE_W, groundY);
+    floor.lineTo(cx, groundY + TILE_H / 2);
+    floor.lineTo(cx - TILE_W, groundY);
+    floor.closePath();
+    floor.fillPath();
+    floor.strokePath();
+
+    const image = this.add.image(cx, groundY, def.texture).setOrigin(0.5, 1);
+    const maxSpriteW = Math.max(120, w - 120);
+    const maxSpriteH = Math.max(140, h - 150);
+    const scale = Math.min(maxSpriteW / image.width, maxSpriteH / image.height, 3);
+    image.setScale(scale);
+
+    const help = this.add.text(x + 18, y + h - 42, 'Click an asset tile to select it, then click the map to place it.', {
+      fontFamily: 'Georgia, serif',
+      fontSize: '12px',
+      color: '#bda676',
+    });
+    this.assetPreviewContainer = this.add.container(0, 0, [previewPanel, floor, image, title, meta, help]).setDepth(10010);
+    this.ui.add(this.assetPreviewContainer);
   }
 
   private updateToolButtons(): void {
@@ -704,6 +1146,35 @@ export class MapEditorScene extends Phaser.Scene {
     return { width, height, tiles, blocked, objects: [] };
   }
 
+  private startPanning(pointer: Phaser.Input.Pointer): void {
+    this.isPanning = true;
+    this.panPointerId = pointer.id;
+    this.lastPanX = pointer.x;
+    this.lastPanY = pointer.y;
+    this.hover.clear();
+  }
+
+  private stopPanning(): void {
+    this.isPanning = false;
+    this.panPointerId = undefined;
+  }
+
+  private panMap(dx: number, dy: number): void {
+    if (dx === 0 && dy === 0) return;
+    this.originX += dx;
+    this.originY += dy;
+    this.hover.clear();
+    this.renderWorld();
+  }
+
+  private recenterMap(): void {
+    this.originX = (this.scale.width - PANEL_W) / 2;
+    this.originY = 118;
+    this.hover.clear();
+    this.renderWorld();
+    this.updateStatus('Recentered map.');
+  }
+
   private gridFromPointer(pointer: Phaser.Input.Pointer): { x: number; y: number } | undefined {
     const a = (pointer.x - this.originX) / (TILE_W / 2);
     const b = (pointer.y - this.originY) / (TILE_H / 2);
@@ -788,12 +1259,23 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private isUIPointer(pointer: Phaser.Input.Pointer): boolean {
+    if (this.assetPickerOpen) return true;
     return pointer.x >= this.scale.width - PANEL_W || pointer.y < 92;
   }
 
+  private isPanPointer(pointer: Phaser.Input.Pointer): boolean {
+    return pointer.rightButtonDown() ||
+      pointer.middleButtonDown() ||
+      (pointer.event instanceof MouseEvent && pointer.event.shiftKey);
+  }
+
   private activeObjectDefinition(): EditorObjectDefinition | undefined {
-    if (!this.isObjectTool(this.activeTool)) return undefined;
-    return OBJECT_BY_ID.get(this.activeTool.slice('object:'.length) as EditorObjectId);
+    return this.objectDefinitionForTool(this.activeTool);
+  }
+
+  private objectDefinitionForTool(tool: EditorTool): EditorObjectDefinition | undefined {
+    if (!this.isObjectTool(tool)) return undefined;
+    return OBJECT_BY_ID.get(tool.slice('object:'.length) as EditorObjectId);
   }
 
   private isObjectTool(tool: EditorTool): tool is ObjectTool {
@@ -826,6 +1308,8 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private ensureEditorObjectTextures(): void {
+    ensureTileTextures(this);
+    ensureMapAssetTextures(this);
     this.makeIsoHouseTexture();
     this.makeIsoStallTexture();
     this.makeIsoBridgeTexture();
@@ -834,35 +1318,156 @@ export class MapEditorScene extends Phaser.Scene {
     this.makeLampTexture();
     this.makeRugTexture();
     this.makeWellTexture();
+    for (const def of EDITOR_OBJECTS) {
+      this.ensureCatalogTexture(def);
+    }
+  }
 
-    makeCharacterTexture(this, 'editor-char-traveller', {
-      body: 0x4a3a2a,
-      skin: 0xd9c79a,
-      clothing: { style: 'sash', secondary: 0x6b8a9a, accent: 0xd8c7a0 },
-      hat: { style: 'headscarf', color: 0x8a7450 },
+  private ensureCatalogTexture(def: EditorObjectDefinition): void {
+    if (this.textures.exists(def.texture)) return;
+    if (def.kind === 'structure') {
+      this.makeGenericIsoStructureTexture(def);
+      return;
+    }
+    if (def.kind === 'character') {
+      this.makeGenericCharacterTexture(def);
+      return;
+    }
+    this.makeGenericPropTexture(def);
+  }
+
+  private makeGenericIsoStructureTexture(def: EditorObjectDefinition): void {
+    const footprint = def.footprint ?? { w: 1, h: 1 };
+    const wallH = 20 + Math.max(footprint.w, footprint.h) * 8;
+    const geo = this.isoPrism(footprint.w, footprint.h, wallH, 12);
+    const base = Phaser.Display.Color.IntegerToColor(def.color);
+    const g = this.add.graphics();
+    this.drawIsoPrism(g, geo, {
+      right: base.darken(24).color,
+      left: base.darken(10).color,
+      top: base.lighten(16).color,
+    });
+
+    if (def.label.toLowerCase().includes('tent') || def.label.toLowerCase().includes('canopy')) {
+      g.fillStyle(0xf2ead6, 0.95);
+      g.fillPoints([geo.leftR, geo.topR, geo.rightR, geo.bottomR], true);
+      g.lineStyle(2, 0x8f6f45, 0.85);
+      g.lineBetween(geo.topR.x, geo.topR.y, geo.bottomR.x, geo.bottomR.y);
+    } else if (def.label.toLowerCase().includes('bridge')) {
+      g.lineStyle(3, 0x3f2b1a, 1);
+      g.lineBetween(geo.leftR.x + 8, geo.leftR.y - 8, geo.bottomR.x - 8, geo.bottomR.y - 8);
+      g.lineBetween(geo.topR.x + 8, geo.topR.y - 8, geo.rightR.x - 8, geo.rightR.y - 8);
+    } else {
+      g.fillStyle(0x2d1b10, 0.75);
+      g.fillPoints(this.wallInset(geo.left, geo.bottom, 0.42, 0.64, Math.min(18, wallH - 8)), true);
+      g.fillStyle(0xf3d98a, 0.9);
+      g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.28, 0.44, 10), true);
+    }
+
+    g.generateTexture(def.texture, geo.texW, geo.texH);
+    g.destroy();
+  }
+
+  private makeGenericCharacterTexture(def: EditorObjectDefinition): void {
+    const styles = ['robe', 'cloak', 'vest', 'uniform', 'sash', 'wrap'] as const;
+    const hats = ['none', 'turban', 'cap', 'veil', 'headscarf', 'hood', 'tallHat'] as const;
+    const hash = this.stringHash(def.id);
+    makeCharacterTexture(this, def.texture, {
+      body: def.color,
+      skin: [0xd9c79a, 0xe6c89a, 0xc8b48d, 0xb8916d][hash % 4],
+      clothing: {
+        style: styles[hash % styles.length],
+        secondary: Phaser.Display.Color.IntegerToColor(def.color).lighten(18).color,
+        accent: 0xc9a55c,
+      },
+      hat: {
+        style: hats[hash % hats.length],
+        color: Phaser.Display.Color.IntegerToColor(def.color).darken(18).color,
+      },
+      hair: 0x2d1b10,
       shadow: true,
     });
-    makeCharacterTexture(this, 'editor-char-merchant', {
-      body: 0x8a5a2a,
-      skin: 0xe6c89a,
-      clothing: { style: 'vest', secondary: 0x3f5f73, accent: 0xc9a55c },
-      hat: { style: 'cap', color: 0xb88742 },
-      shadow: true,
-    });
-    makeCharacterTexture(this, 'editor-char-guard', {
-      body: 0x39404a,
-      skin: 0xc8b48d,
-      clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c },
-      hat: { style: 'tallHat', color: 0x242932 },
-      shadow: true,
-    });
-    makeCharacterTexture(this, 'editor-char-pilgrim', {
-      body: 0x6b5a44,
-      skin: 0xe2c997,
-      clothing: { style: 'wrap', secondary: 0xf2ead6, accent: 0x9c8458 },
-      hat: { style: 'veil', color: 0xf2ead6 },
-      shadow: true,
-    });
+  }
+
+  private makeGenericPropTexture(def: EditorObjectDefinition): void {
+    const g = this.add.graphics();
+    const label = def.label.toLowerCase();
+
+    if (label.includes('lamp') || label.includes('light')) {
+      g.fillStyle(0xf3d98a, label.includes('light') ? 0.35 : 1);
+      g.fillEllipse(20, 16, label.includes('light') ? 30 : 14, label.includes('light') ? 46 : 18);
+      g.lineStyle(3, 0x3a2a16, 1);
+      g.lineBetween(20, 16, 20, 50);
+      g.lineBetween(12, 50, 28, 50);
+      g.generateTexture(def.texture, 40, 56);
+    } else if (label.includes('tree') || label.includes('shrub') || label.includes('reeds') || label.includes('rose') || label.includes('tamarisk')) {
+      g.fillStyle(0x000000, 0.2);
+      g.fillEllipse(24, 48, 34, 8);
+      g.fillStyle(0x5b3a24, 1);
+      g.fillRect(20, 28, 8, 20);
+      g.fillStyle(def.color, 1);
+      g.fillEllipse(24, 24, 34, 34);
+      g.fillStyle(0xf2ead6, label.includes('snow') ? 0.85 : 0.15);
+      g.fillEllipse(18, 16, 18, 12);
+      g.generateTexture(def.texture, 48, 54);
+    } else if (label.includes('flag')) {
+      g.lineStyle(3, 0x5b3a24, 1);
+      g.lineBetween(12, 6, 12, 50);
+      g.fillStyle(def.color, 1);
+      g.fillTriangle(14, 8, 40, 18, 14, 28);
+      g.lineStyle(1, 0x3a2a16, 1);
+      g.strokeTriangle(14, 8, 40, 18, 14, 28);
+      g.generateTexture(def.texture, 44, 54);
+    } else if (label.includes('chain') || label.includes('rope')) {
+      g.lineStyle(4, def.color, 1);
+      g.strokeEllipse(14, 24, 20, 12);
+      g.strokeEllipse(30, 24, 20, 12);
+      g.strokeEllipse(22, 35, 28, 12);
+      g.generateTexture(def.texture, 46, 46);
+    } else if (label.includes('pillar') || label.includes('bars') || label.includes('palisade')) {
+      g.fillStyle(def.color, 1);
+      for (let i = 0; i < 4; i++) g.fillRect(8 + i * 10, 8, 5, 40);
+      g.lineStyle(3, 0x3f2b1a, 1);
+      g.lineBetween(5, 22, 45, 22);
+      g.lineBetween(5, 38, 45, 38);
+      g.generateTexture(def.texture, 52, 54);
+    } else if (label.includes('arch') || label.includes('door')) {
+      g.fillStyle(def.color, 1);
+      g.fillRoundedRect(6, 8, 44, 44, 8);
+      g.fillStyle(0x1a120a, 1);
+      g.fillRoundedRect(16, 20, 24, 32, 8);
+      g.generateTexture(def.texture, 56, 56);
+    } else if (label.includes('stream') || label.includes('carpet') || label.includes('rug')) {
+      const points = [{ x: 28, y: 4 }, { x: 56, y: 18 }, { x: 28, y: 32 }, { x: 0, y: 18 }];
+      g.fillStyle(def.color, 0.9);
+      g.fillPoints(points, true);
+      g.lineStyle(2, 0xf2d18a, 0.8);
+      g.strokePoints(points, true);
+      g.generateTexture(def.texture, 56, 36);
+    } else if (label.includes('crowd')) {
+      for (let i = 0; i < 7; i++) {
+        const x = 8 + (i % 4) * 11;
+        const y = 10 + Math.floor(i / 4) * 14;
+        g.fillStyle([0x4a3a2a, 0x6f2236, 0x2f4a5f, 0x8a5a2a][i % 4], 1);
+        g.fillCircle(x, y, 5);
+        g.fillRect(x - 4, y + 5, 8, 12);
+      }
+      g.generateTexture(def.texture, 54, 42);
+    } else {
+      g.fillStyle(def.color, 1);
+      g.fillPoints([{ x: 24, y: 4 }, { x: 48, y: 16 }, { x: 24, y: 30 }, { x: 0, y: 16 }], true);
+      g.fillStyle(Phaser.Display.Color.IntegerToColor(def.color).darken(22).color, 1);
+      g.fillPoints([{ x: 0, y: 16 }, { x: 24, y: 30 }, { x: 24, y: 46 }, { x: 0, y: 32 }], true);
+      g.lineStyle(1, 0x2d1b10, 0.8);
+      g.strokePoints([{ x: 24, y: 4 }, { x: 48, y: 16 }, { x: 24, y: 46 }, { x: 0, y: 32 }, { x: 0, y: 16 }], true);
+      g.generateTexture(def.texture, 48, 48);
+    }
+
+    g.destroy();
+  }
+
+  private stringHash(value: string): number {
+    return [...value].reduce((total, char) => total + char.charCodeAt(0), 0);
   }
 
   private makeIsoHouseTexture(): void {

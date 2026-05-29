@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { ensureMapAssetTextures, ensureTileTextures } from '../assets/mapAssetLibrary';
 import { makeCharacterTexture, type CharacterTextureOptions } from './characterTexture';
 
 /**
@@ -62,6 +63,8 @@ export class BootScene extends Phaser.Scene {
     this.makeIsoGate('gate');
     this.makeTree('tree');
     this.makeWell('well');
+    ensureTileTextures(this);
+    ensureMapAssetTextures(this);
 
     this.scene.start('Title');
   }
