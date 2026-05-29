@@ -38,7 +38,7 @@ export class TitleScene extends Phaser.Scene {
 
     this.tweens.add({ targets: prompt, alpha: 0.3, duration: 900, yoyo: true, repeat: -1 });
 
-    const start = () => this.scene.start('Shiraz');
+    const start = () => this.scene.start('City');
     this.input.keyboard?.once('keydown-SPACE', start);
     this.input.once('pointerdown', start);
 

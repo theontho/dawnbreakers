@@ -5,7 +5,8 @@ function rumourCount(flags: Record<string, boolean | number | string>): number {
   return (
     (flags.rumourTraveller ? 1 : 0) +
     (flags.rumourMerchant  ? 1 : 0) +
-    (flags.rumourMulla     ? 1 : 0)
+    (flags.rumourMulla     ? 1 : 0) +
+    (flags.rumourNeighbour ? 1 : 0)
   );
 }
 
@@ -226,12 +227,39 @@ export const mullaWarning: DialogueTree = {
   },
 };
 
+/** A quiet neighbour in the Báb's lane — gives a fourth, gentler rumour. */
+export const neighbourQuiet: DialogueTree = {
+  id: 'rumour-neighbour',
+  startId: 'g',
+  nodes: {
+    g: {
+      id: 'g',
+      speaker: 'A Quiet Neighbour',
+      onEnter: { set: { rumourNeighbour: true } },
+      text: 'Salaam, friend. You are looking for the young Siyyid? He keeps a peaceful house here — His wife, Khadíjih-Bagum, is much loved on this lane. If He invites you within, count yourself fortunate.',
+      choices: [
+        { text: '"Is He often at home?"', next: 'home' },
+        { text: '"Thank you. Peace be with you."' },
+      ],
+    },
+    home: {
+      id: 'home',
+      speaker: 'A Quiet Neighbour',
+      text: 'At all hours, of late. (She lowers her gaze.) Some come and never leave the same.',
+      choices: [
+        { text: '(Nod, and walk on.)' },
+      ],
+    },
+  },
+};
+
 export const dialogues: Record<string, DialogueTree> = {
   [babDeclaration.id]: babDeclaration,
   [babLocked.id]:      babLocked,
   [travellerRumour.id]: travellerRumour,
   [merchantRumour.id]:  merchantRumour,
   [mullaWarning.id]:    mullaWarning,
+  [neighbourQuiet.id]:  neighbourQuiet,
 };
 
 /** Used by ShirazScene to decide which Báb tree to launch. */

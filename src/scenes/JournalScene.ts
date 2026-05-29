@@ -24,6 +24,11 @@ const ENTRIES: JournalEntry[] = [
     body: 'The mullá of the great mosque speaks bitterly of the youth — a merchant turned mystic, stirring the foolish with hidden meanings. He counsels you to leave the city.',
   },
   {
+    flag: 'rumourNeighbour',
+    title: 'A Neighbour\'s Welcome',
+    body: 'A woman in the Báb\'s own lane speaks gently of Him and His wife Khadíjih-Bagum. "Some come, and never leave the same."',
+  },
+  {
     flag: 'enteredHouse',
     title: 'Across the Threshold',
     body: 'You accepted the Young Host\'s invitation and crossed His threshold. He asked you the sign of the Promised One.',
@@ -36,8 +41,14 @@ const ENTRIES: JournalEntry[] = [
 ];
 
 export class JournalScene extends Phaser.Scene {
+  private fromKey = 'City';
+
   constructor() {
     super('Journal');
+  }
+
+  init(data: { from?: string }): void {
+    this.fromKey = data.from ?? 'City';
   }
 
   create(): void {
@@ -83,7 +94,7 @@ export class JournalScene extends Phaser.Scene {
       }
     }
 
-    const close = (): void => { this.scene.stop(); this.scene.resume('Shiraz'); };
+    const close = (): void => { this.scene.stop(); this.scene.resume(this.fromKey); };
     this.input.keyboard?.once('keydown-J', close);
     this.input.keyboard?.once('keydown-ESC', close);
   }

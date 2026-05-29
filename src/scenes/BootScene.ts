@@ -28,6 +28,8 @@ export class BootScene extends Phaser.Scene {
     this.makeIsoBuilding('mosque', 2, 0xd9c79a, 0x8b6a3a, 'dome', 0x4a7a9a);
     this.makeIsoBuilding('stall',  1, 0xa07040, 0x6a3a1a, 'box',  0xc05030);
     this.makeIsoGate('gate');
+    this.makeTree('tree');
+    this.makeWell('well');
 
     this.scene.start('Title');
   }
@@ -217,6 +219,49 @@ export class BootScene extends Phaser.Scene {
     g.strokeRect(2, top.y - wallH - 6, texW - 4, 10);
 
     g.generateTexture(key, texW, texH);
+    g.destroy();
+  }
+
+  /** A small isometric tree on a single tile (canopy + trunk). */
+  private makeTree(key: string): void {
+    const w = 56, h = 80;
+    const g = this.add.graphics();
+    // trunk
+    g.fillStyle(0x4a2e18, 1);
+    g.fillRect(w / 2 - 4, h - 28, 8, 22);
+    g.lineStyle(1, 0x1c130a, 0.7);
+    g.strokeRect(w / 2 - 4, h - 28, 8, 22);
+    // canopy
+    g.fillStyle(0x2f6b3a, 1);
+    g.fillCircle(w / 2 - 8, h - 42, 20);
+    g.fillCircle(w / 2 + 8, h - 46, 18);
+    g.fillCircle(w / 2,     h - 56, 22);
+    g.fillStyle(0x3f7a4a, 1);
+    g.fillCircle(w / 2 - 6, h - 50, 12);
+    g.generateTexture(key, w, h);
+    g.destroy();
+  }
+
+  /** A small isometric well. */
+  private makeWell(key: string): void {
+    const w = 48, h = 56;
+    const g = this.add.graphics();
+    // stone rim (ellipse to look iso)
+    g.fillStyle(0x7a6a4a, 1);
+    g.fillEllipse(w / 2, h - 12, 40, 18);
+    g.lineStyle(1, 0x2a1a0a, 1);
+    g.strokeEllipse(w / 2, h - 12, 40, 18);
+    // water inside
+    g.fillStyle(0x2c4a6b, 1);
+    g.fillEllipse(w / 2, h - 14, 28, 12);
+    // posts + roof
+    g.fillStyle(0x4a2e18, 1);
+    g.fillRect(w / 2 - 18, h - 50, 4, 38);
+    g.fillRect(w / 2 + 14, h - 50, 4, 38);
+    g.fillStyle(0x8b6a3a, 1);
+    g.fillTriangle(w / 2 - 22, h - 46, w / 2, h - 56, w / 2 + 22, h - 46);
+    g.strokeTriangle(w / 2 - 22, h - 46, w / 2, h - 56, w / 2 + 22, h - 46);
+    g.generateTexture(key, w, h);
     g.destroy();
   }
 }
