@@ -76,8 +76,20 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacter('ch9-sam-khan', 0x59606a, 0xd8c6a0);
-    this.makeCharacter('ch9-soldier', 0x4c5360, 0xd6c09a);
+    this.makePersonTexture('ch9-sam-khan', {
+      body: 0x59606a,
+      skin: 0xd8c6a0,
+      clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c },
+      hat: { style: 'tallHat', color: 0x3b4048, accent: 0xc9a55c },
+      shadow: true,
+    });
+    this.makePersonTexture('ch9-soldier', {
+      body: 0x4c5360,
+      skin: 0xd6c09a,
+      clothing: { style: 'uniform', secondary: 0x2e3742, accent: 0xc9a55c },
+      hat: { style: 'tallHat', color: 0x2e3742 },
+      shadow: true,
+    });
     this.makeLamp('ch9-lamp');
     this.makeRopes('ch9-rope-coils');
     this.makeEmptySpace('ch9-empty-space');
@@ -88,20 +100,6 @@ export class Ch9BarrackRoofScene extends BaseMapScene {
     this.makeRoofParapet('ch9-roof-south-wall-right', 7, 1, 24);
   }
 
-  private makeCharacter(key: string, body: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 10, 7);
-    g.lineStyle(1, 0x111111, 0.55);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(12, 10, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
-  }
 
   private makeLamp(key: string): void {
     if (this.textures.exists(key)) return;

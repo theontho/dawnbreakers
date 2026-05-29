@@ -13,28 +13,23 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacter('ch4-officer', 0x31424a, 0xd9c79a, 0x6f2222);
-    this.makeCharacter('ch4-witness', 0x5b4936, 0xd1b37c, 0x7a5a3a);
+    this.makePersonTexture('ch4-officer', {
+      body: 0x31424a,
+      skin: 0xd9c79a,
+      clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c },
+      hat: { style: 'tallHat', color: 0x6f2222 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch4-witness', {
+      body: 0x5b4936,
+      skin: 0xd1b37c,
+      clothing: { style: 'robe', secondary: 0x7a5a3a, accent: 0xd8c7a0 },
+      hat: { style: 'turban', color: 0xd8c7a0, accent: 0x7a5a3a },
+      shadow: true,
+    });
     this.makePulpit();
     this.makePrayerArch();
     this.makeCrowd();
-  }
-
-  private makeCharacter(key: string, body: number, head: number, turban: number): void {
-    if (this.textures.exists(key)) return;
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
-    g.fillStyle(turban, 1);
-    g.fillEllipse(12, 7, 18, 8);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 11, 7);
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 17, 16, 21, 3);
-    g.lineStyle(1, 0x000000, 0.55);
-    g.strokeEllipse(12, 7, 18, 8);
-    g.strokeCircle(12, 11, 7);
-    g.strokeRoundedRect(4, 17, 16, 21, 3);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
   }
 
   private makePulpit(): void {

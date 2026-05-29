@@ -100,9 +100,27 @@ export class Ch7BadashtCampScene extends BaseMapScene {
     this.makeCarpet();
     this.makeLamp();
     this.makeRosebush();
-    this.makeFigure('ch7-npc-tahirih', 0xf0d9a4, 0x6f3b5c, 0xf7ecd0);
-    this.makeFigure('ch7-npc-quddus', 0x506b45, 0x2f3b2f, 0xe0c38a);
-    this.makeFigure('ch7-npc-believer', 0x8a6f4d, 0x5b4632, 0xd6c0a0);
+    this.makePersonTexture('ch7-npc-tahirih', {
+      body: 0xf0d9a4,
+      skin: 0xd8b98a,
+      clothing: { style: 'cloak', secondary: 0x6f3b5c, accent: 0xf7ecd0 },
+      hat: { style: 'veil', color: 0xf7ecd0, accent: 0x6f3b5c },
+      shadow: true,
+    });
+    this.makePersonTexture('ch7-npc-quddus', {
+      body: 0x506b45,
+      skin: 0xe0c38a,
+      clothing: { style: 'robe', secondary: 0x2f3b2f, accent: 0xc9a55c },
+      hat: { style: 'turban', color: 0xe0c38a, accent: 0x506b45 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch7-npc-believer', {
+      body: 0x8a6f4d,
+      skin: 0xd6c0a0,
+      clothing: { style: 'sash', secondary: 0x5b4632, accent: 0xd6c0a0 },
+      hat: { style: 'headscarf', color: 0xd6c0a0 },
+      shadow: true,
+    });
   }
 
   private makeTent(key: string, cloth: number, trim: number): void {
@@ -224,21 +242,4 @@ export class Ch7BadashtCampScene extends BaseMapScene {
     g.destroy();
   }
 
-  private makeFigure(key: string, robe: number, cloak: number, accent: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(0x000000, 0.25);
-    g.fillEllipse(12, 38, 18, 5);
-    g.fillStyle(cloak, 1);
-    g.fillTriangle(2, 38, 12, 12, 22, 38);
-    g.fillStyle(robe, 1);
-    g.fillRect(8, 18, 8, 18);
-    g.fillStyle(0xc4976c, 1);
-    g.fillCircle(12, 11, 5);
-    g.lineStyle(2, accent, 1);
-    g.lineBetween(6, 22, 18, 22);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
-  }
 }

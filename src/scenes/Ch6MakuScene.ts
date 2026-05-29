@@ -80,8 +80,20 @@ export class Ch6MakuScene extends BaseMapScene {
     this.makeFortress('ch6-maku-fortress', 0x5d6870, 0x2d3740, 0x9fb0bc);
     this.makeRock('ch6-rock', 0x5b6268, 0x343b42);
     this.makeSnowShrub('ch6-snow-shrub');
-    this.makeCharacter('ch6-warden', 0x263241, 0xd8c7a0);
-    this.makeCharacter('ch6-courier', 0x4b463f, 0xd6c09a);
+    this.makePersonTexture('ch6-warden', {
+      body: 0x263241,
+      skin: 0xd8c7a0,
+      clothing: { style: 'cloak', secondary: 0xd8dce0, accent: 0x87919a },
+      hat: { style: 'tallHat', color: 0x1f252d },
+      shadow: true,
+    });
+    this.makePersonTexture('ch6-courier', {
+      body: 0x4b463f,
+      skin: 0xd6c09a,
+      clothing: { style: 'sash', secondary: 0xb88a3b, accent: 0xe8d8b0 },
+      hat: { style: 'cap', color: 0x5f4a2d },
+      shadow: true,
+    });
   }
 
   private makeFortress(key: string, wall: number, dark: number, snow: number): void {
@@ -145,22 +157,4 @@ export class Ch6MakuScene extends BaseMapScene {
     g.destroy();
   }
 
-  private makeCharacter(key: string, body: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const w = 24;
-    const h = 40;
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(0xd8dce0, 0.55);
-    g.fillRect(4, 16, 16, 5);
-    g.fillStyle(head, 1);
-    g.fillCircle(w / 2, 10, 7);
-    g.lineStyle(1, 0x111111, 0.7);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(w / 2, 10, 7);
-    g.generateTexture(key, w, h);
-    g.destroy();
-  }
 }

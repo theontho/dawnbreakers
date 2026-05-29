@@ -72,7 +72,13 @@ export class Ch10TehranStreetScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacter('ch10-guard', 0x39404a, 0xc8b48d);
+    this.makePersonTexture('ch10-guard', {
+      body: 0x39404a,
+      skin: 0xc8b48d,
+      clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c },
+      hat: { style: 'tallHat', color: 0x242932 },
+      shadow: true,
+    });
     this.makeCrowdShadow('ch10-crowd-shadow');
     this.makeChainCoil('ch10-chain-coil');
     this.makeWatchLamp('ch10-watch-lamp');
@@ -81,22 +87,6 @@ export class Ch10TehranStreetScene extends BaseMapScene {
     this.makeClosedDoor('ch10-closed-door');
   }
 
-  private makeCharacter(key: string, body: number, head: number, robe?: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(robe ?? body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(body, 1);
-    g.fillRect(5, 18, 14, 8);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 10, 7);
-    g.lineStyle(1, 0x111111, 0.55);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(12, 10, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
-  }
 
   private makeCrowdShadow(key: string): void {
     if (this.textures.exists(key)) return;

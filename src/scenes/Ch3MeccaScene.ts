@@ -14,29 +14,22 @@ export class Ch3MeccaScene extends BaseMapScene {
 
   private ensureTextures(): void {
     this.makeKaabaTexture();
-    this.makePilgrimTexture('ch3-muhit', 0x2a2520, 0xdfc28f, false);
-    this.makePilgrimTexture('ch3-pilgrim', 0x6b5a44, 0xe2c997, false);
+    this.makePersonTexture('ch3-muhit', {
+      body: 0x2a2520,
+      skin: 0xdfc28f,
+      clothing: { style: 'robe', secondary: 0xf2ead6, accent: 0xc9a55c },
+      hat: { style: 'turban', color: 0xf2ead6, accent: 0x2a2520 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch3-pilgrim', {
+      body: 0x6b5a44,
+      skin: 0xe2c997,
+      clothing: { style: 'wrap', secondary: 0xf7f0dc, accent: 0x9c8458 },
+      hat: { style: 'veil', color: 0xf7f0dc },
+      shadow: true,
+    });
     this.makePilgrimClusterTexture();
     this.makeCourtyardHushTexture();
-  }
-
-  private makePilgrimTexture(key: string, robe: number, head: number, veil: boolean): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(robe, 1);
-    g.fillRoundedRect(5, 15, 14, 23, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 9, 7);
-    if (veil) {
-      g.fillStyle(0xf7f0dc, 0.85);
-      g.fillRect(4, 8, 16, 12);
-    }
-    g.lineStyle(1, 0x111111, 0.4);
-    g.strokeRoundedRect(5, 15, 14, 23, 3);
-    g.strokeCircle(12, 9, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
   }
 
   private makePilgrimClusterTexture(): void {
@@ -44,15 +37,17 @@ export class Ch3MeccaScene extends BaseMapScene {
 
     const g = this.add.graphics();
     const figures = [
-      { x: 10, robe: 0xd8d0bd },
-      { x: 25, robe: 0xb8aa8d },
-      { x: 39, robe: 0xe4dccb },
+      { x: 10, robe: 0xd8d0bd, hat: 0xf7f0dc },
+      { x: 25, robe: 0xb8aa8d, hat: 0x8a7450 },
+      { x: 39, robe: 0xe4dccb, hat: 0xf2ead6 },
     ];
     for (const figure of figures) {
       g.fillStyle(figure.robe, 0.9);
       g.fillRoundedRect(figure.x - 5, 18, 10, 18, 3);
       g.fillStyle(0xd8bd8a, 0.9);
       g.fillCircle(figure.x, 12, 5);
+      g.fillStyle(figure.hat, 0.9);
+      g.fillEllipse(figure.x, 8, 13, 5);
     }
     g.generateTexture('ch3-pilgrim-cluster', 50, 40);
     g.destroy();

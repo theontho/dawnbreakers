@@ -13,29 +13,30 @@ export class Ch3ShipScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makePilgrimTexture('ch3-quddus', 0x263d4f, 0xe8d8b0);
-    this.makePilgrimTexture('ch3-sailor', 0x5b3a24, 0xd8bd8a);
-    this.makePilgrimTexture('ch3-pilgrim', 0x6b5a44, 0xe2c997);
+    this.makePersonTexture('ch3-quddus', {
+      body: 0x263d4f,
+      skin: 0xe8d8b0,
+      clothing: { style: 'robe', secondary: 0xf2ead6, accent: 0xc9a55c },
+      hat: { style: 'turban', color: 0xf2ead6, accent: 0x263d4f },
+      shadow: true,
+    });
+    this.makePersonTexture('ch3-sailor', {
+      body: 0x5b3a24,
+      skin: 0xd8bd8a,
+      clothing: { style: 'vest', secondary: 0x2f5f73, accent: 0xd8c7a0 },
+      hat: { style: 'cap', color: 0x3f5f73 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch3-ship-pilgrim', {
+      body: 0x6b5a44,
+      skin: 0xe2c997,
+      clothing: { style: 'wrap', secondary: 0xf2ead6, accent: 0x9c8458 },
+      hat: { style: 'headscarf', color: 0xf2ead6 },
+      shadow: true,
+    });
     this.makeMastTexture();
     this.makeCrateTexture();
     this.makeRailTexture();
-  }
-
-  private makePilgrimTexture(key: string, robe: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(robe, 1);
-    g.fillRoundedRect(5, 15, 14, 23, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 9, 7);
-    g.fillStyle(0xf2ead6, 0.9);
-    g.fillRect(5, 13, 14, 5);
-    g.lineStyle(1, 0x111111, 0.45);
-    g.strokeRoundedRect(5, 15, 14, 23, 3);
-    g.strokeCircle(12, 9, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
   }
 
   private makeMastTexture(): void {
@@ -127,7 +128,7 @@ export class Ch3ShipScene extends BaseMapScene {
     this.addNPC(9, 5, 'ch3-sailor',
       () => 'Ask the sailor about the crossing  [E]',
       () => this.startSimpleDialogue('ch3-pilgrim-question'));
-    this.addNPC(7, 6, 'ch3-pilgrim',
+    this.addNPC(7, 6, 'ch3-ship-pilgrim',
       () => 'Speak with a quiet pilgrim  [E]',
       () => this.startSimpleDialogue('ch3-pilgrim-question'));
   }

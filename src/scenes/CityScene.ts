@@ -17,29 +17,38 @@ export class CityScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacterTexture('ch1-npc-water-carrier', 0x2d5f73, 0xd9c79a);
-    this.makeCharacterTexture('ch1-npc-guard', 0x5a4630, 0xe0c08a);
-    this.makeCharacterTexture('ch1-npc-calligrapher', 0x46345f, 0xe6c89a);
-    this.makeCharacterTexture('ch1-npc-beggar', 0x6b5a44, 0xcaa978);
+    this.makePersonTexture('ch1-npc-water-carrier', {
+      body: 0x2d5f73,
+      skin: 0xd9c79a,
+      clothing: { style: 'wrap', secondary: 0xd8c7a0, accent: 0x9fb8c4 },
+      hat: { style: 'headscarf', color: 0xbfc5aa },
+      shadow: true,
+    });
+    this.makePersonTexture('ch1-npc-guard', {
+      body: 0x5a4630,
+      skin: 0xe0c08a,
+      clothing: { style: 'uniform', secondary: 0x2f3f48, accent: 0xc9a55c },
+      hat: { style: 'tallHat', color: 0x2f2a22 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch1-npc-calligrapher', {
+      body: 0x46345f,
+      skin: 0xe6c89a,
+      clothing: { style: 'vest', secondary: 0xe8d8b0, accent: 0x6f5636 },
+      hat: { style: 'cap', color: 0x5f4a72 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch1-npc-beggar', {
+      body: 0x6b5a44,
+      skin: 0xcaa978,
+      clothing: { style: 'cloak', secondary: 0x4a3a2a, accent: 0x8a7450 },
+      hat: { style: 'hood', color: 0x4a3a2a },
+      shadow: true,
+    });
     this.makeCratesTexture();
     this.makeLampTexture();
     this.makeRugTexture();
     this.makeBirdsTexture();
-  }
-
-  private makeCharacterTexture(key: string, body: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 10, 7);
-    g.lineStyle(1, 0x000000, 0.6);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(12, 10, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
   }
 
   private makeCratesTexture(): void {

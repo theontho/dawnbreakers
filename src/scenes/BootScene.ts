@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { makeCharacterTexture, type CharacterTextureOptions } from './characterTexture';
 
 /**
  * Generates simple placeholder textures procedurally so the game runs with
@@ -18,11 +19,42 @@ export class BootScene extends Phaser.Scene {
     this.makeIsoTile('tile-water', 0x2c4a6b, 0x1a3050);
     this.makeIsoTile('tile-sand', 0xb89968, 0x856b42);
 
-    this.makeCharacter('npc-bab',       0x2e7d4f, 0xf6e8c2);
-    this.makeCharacter('npc-traveller', 0x4a3a2a, 0xd9c79a);
-    this.makeCharacter('npc-merchant',  0x8a5a2a, 0xe6c89a);
-    this.makeCharacter('npc-mulla',     0x1a1a1a, 0xeadcb6);
-    this.makeCharacter('player',        0x6a3a3a, 0xe0c08a);
+    this.makeCharacter('npc-bab', {
+      body: 0x2e7d4f,
+      skin: 0xf6e8c2,
+      clothing: { style: 'cloak', secondary: 0xf0e6c8, accent: 0xc9a55c },
+      hat: { style: 'turban', color: 0xf0e6c8, accent: 0x2e7d4f },
+      shadow: true,
+    });
+    this.makeCharacter('npc-traveller', {
+      body: 0x4a3a2a,
+      skin: 0xd9c79a,
+      clothing: { style: 'sash', secondary: 0x6b8a9a, accent: 0xd8c7a0 },
+      hat: { style: 'headscarf', color: 0x8a7450 },
+      shadow: true,
+    });
+    this.makeCharacter('npc-merchant', {
+      body: 0x8a5a2a,
+      skin: 0xe6c89a,
+      clothing: { style: 'vest', secondary: 0x3f5f73, accent: 0xc9a55c },
+      hat: { style: 'cap', color: 0xb88742 },
+      shadow: true,
+    });
+    this.makeCharacter('npc-mulla', {
+      body: 0x1a1a1a,
+      skin: 0xeadcb6,
+      clothing: { style: 'robe', secondary: 0xf2ead6, accent: 0x7a6a4a },
+      hat: { style: 'turban', color: 0xf2ead6, accent: 0x1a1a1a },
+      shadow: true,
+    });
+    this.makeCharacter('player', {
+      body: 0x6a3a3a,
+      skin: 0xe0c08a,
+      clothing: { style: 'sash', secondary: 0xc9a55c, accent: 0xead8aa },
+      hat: { style: 'none' },
+      hair: 0x2f1d12,
+      shadow: true,
+    });
 
     this.makeIsoBuilding('house',  2, 0xb0884e, 0x6b4824, 'none');
     this.makeIsoBuilding('mosque', 2, 0xd9c79a, 0x8b6a3a, 'dome', 0x4a7a9a);
@@ -52,19 +84,9 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Simple character billboard, 24x40 (body + head). */
-  private makeCharacter(key: string, body: number, head: number): void {
-    const w = 24, h = 40;
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(w / 2, 10, 7);
-    g.lineStyle(1, 0x000000, 0.6);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(w / 2, 10, 7);
-    g.generateTexture(key, w, h);
-    g.destroy();
+  /** Character billboard with configurable clothes and headwear. */
+  private makeCharacter(key: string, options: CharacterTextureOptions): void {
+    makeCharacterTexture(this, key, options);
   }
 
   /**

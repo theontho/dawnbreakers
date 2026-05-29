@@ -71,9 +71,27 @@ export class Ch9TabrizSquareScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacter('ch9-witness', 0x4b3b34, 0xd8c6a0);
-    this.makeCharacter('ch9-soldier', 0x4c5360, 0xd6c09a);
-    this.makeCharacter('ch9-final-witness', 0x2f2b2a, 0xcdbb94);
+    this.makePersonTexture('ch9-witness', {
+      body: 0x4b3b34,
+      skin: 0xd8c6a0,
+      clothing: { style: 'vest', secondary: 0x7a5a3a, accent: 0xd8c7a0 },
+      hat: { style: 'cap', color: 0x7a5a3a },
+      shadow: true,
+    });
+    this.makePersonTexture('ch9-soldier', {
+      body: 0x4c5360,
+      skin: 0xd6c09a,
+      clothing: { style: 'uniform', secondary: 0x2e3742, accent: 0xc9a55c },
+      hat: { style: 'tallHat', color: 0x2e3742 },
+      shadow: true,
+    });
+    this.makePersonTexture('ch9-final-witness', {
+      body: 0x2f2b2a,
+      skin: 0xcdbb94,
+      clothing: { style: 'cloak', secondary: 0x1f1b1a, accent: 0x8a7450 },
+      hat: { style: 'hood', color: 0x1f1b1a },
+      shadow: true,
+    });
     this.makeCypress('ch9-cypress');
     this.makeLamp('ch9-lamp');
     this.makeCrowdShadow('ch9-crowd-shadow');
@@ -81,20 +99,6 @@ export class Ch9TabrizSquareScene extends BaseMapScene {
     this.makeBarrackFront('ch9-barrack-front');
   }
 
-  private makeCharacter(key: string, body: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 10, 7);
-    g.lineStyle(1, 0x111111, 0.55);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(12, 10, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
-  }
 
   private makeCypress(key: string): void {
     if (this.textures.exists(key)) return;

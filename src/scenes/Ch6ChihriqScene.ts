@@ -79,7 +79,13 @@ export class Ch6ChihriqScene extends BaseMapScene {
     this.makeFortress('ch6-chihriq-fortress', 0x4b525b, 0x1f252d, 0xaebbc4);
     this.makeRock('ch6-rock', 0x565d65, 0x2f353d);
     this.makeBarredMarker('ch6-barred-marker');
-    this.makeCharacter('ch6-mulla-husayn', 0x22211f, 0xe2d1aa);
+    this.makePersonTexture('ch6-mulla-husayn', {
+      body: 0x22211f,
+      skin: 0xe2d1aa,
+      clothing: { style: 'robe', secondary: 0xe8e5dc, accent: 0x6f6048 },
+      hat: { style: 'turban', color: 0xe8e5dc, accent: 0x22211f },
+      shadow: true,
+    });
     this.makeWritingDesk('ch6-writing-desk');
   }
 
@@ -175,22 +181,4 @@ export class Ch6ChihriqScene extends BaseMapScene {
     g.destroy();
   }
 
-  private makeCharacter(key: string, body: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const w = 24;
-    const h = 40;
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(0xe8e5dc, 0.8);
-    g.fillRect(4, 16, 16, 6);
-    g.fillStyle(head, 1);
-    g.fillCircle(w / 2, 10, 7);
-    g.lineStyle(1, 0x111111, 0.7);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(w / 2, 10, 7);
-    g.generateTexture(key, w, h);
-    g.destroy();
-  }
 }

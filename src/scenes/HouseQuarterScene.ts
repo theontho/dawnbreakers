@@ -18,26 +18,17 @@ export class HouseQuarterScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacterTexture('ch1-npc-servant', 0x5f4a2d, 0xe0c08a);
+    this.makePersonTexture('ch1-npc-servant', {
+      body: 0x5f4a2d,
+      skin: 0xe0c08a,
+      clothing: { style: 'apron', secondary: 0xd8c7a0, accent: 0x8a6f4d },
+      hat: { style: 'headscarf', color: 0xead8aa },
+      shadow: true,
+    });
     this.makePlanterTexture();
     this.makeLampTexture();
     this.makeRugTexture();
     this.makeThresholdTexture();
-  }
-
-  private makeCharacterTexture(key: string, body: number, head: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 10, 7);
-    g.lineStyle(1, 0x000000, 0.6);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(12, 10, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
   }
 
   private makePlanterTexture(): void {

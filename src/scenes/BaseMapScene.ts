@@ -4,6 +4,7 @@ import { getFlags, resetFlags, applyEffect } from '../dialogue/flags';
 import { chapterByScene } from '../data/chapters';
 import type { DialogueLaunch } from './DialogueScene';
 import type { DialogueTree } from '../dialogue/types';
+import { makeCharacterTexture, type CharacterTextureOptions } from './characterTexture';
 
 export const TILE_W = 64;
 export const TILE_H = 32;
@@ -290,6 +291,10 @@ export abstract class BaseMapScene extends Phaser.Scene {
     g.fillStyle(colors.top, 1);
     g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
     g.strokePoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+  }
+
+  protected makePersonTexture(key: string, options: CharacterTextureOptions): void {
+    makeCharacterTexture(this, key, options);
   }
 
   // ---------- NPCs ----------

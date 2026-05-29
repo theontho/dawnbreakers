@@ -75,7 +75,14 @@ export class Ch10SiyahChalScene extends BaseMapScene {
   }
 
   private ensureTextures(): void {
-    this.makeCharacter('ch10-prisoner', 0x3a3836, 0xbda982);
+    this.makePersonTexture('ch10-prisoner', {
+      body: 0x3a3836,
+      skin: 0xbda982,
+      clothing: { style: 'robe', secondary: 0x5b554e, accent: 0x8a867d },
+      hat: { style: 'none' },
+      hair: 0x1f1b18,
+      shadow: true,
+    });
     this.makeChainPillar('ch10-chain-pillar');
     this.makeChainPost('ch10-chain-post');
     this.makeChainCoil('ch10-chain-coil');
@@ -85,22 +92,6 @@ export class Ch10SiyahChalScene extends BaseMapScene {
     this.makeStonePillar('ch10-stone-pillar');
   }
 
-  private makeCharacter(key: string, body: number, head: number, robe?: number): void {
-    if (this.textures.exists(key)) return;
-
-    const g = this.add.graphics();
-    g.fillStyle(robe ?? body, 1);
-    g.fillRoundedRect(4, 16, 16, 22, 3);
-    g.fillStyle(body, 1);
-    g.fillRect(5, 18, 14, 8);
-    g.fillStyle(head, 1);
-    g.fillCircle(12, 10, 7);
-    g.lineStyle(1, 0x080807, 0.65);
-    g.strokeRoundedRect(4, 16, 16, 22, 3);
-    g.strokeCircle(12, 10, 7);
-    g.generateTexture(key, 24, 40);
-    g.destroy();
-  }
 
   private makeChainPillar(key: string): void {
     if (this.textures.exists(key)) return;
