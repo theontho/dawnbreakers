@@ -42,6 +42,18 @@ export class TitleScene extends Phaser.Scene {
     this.input.keyboard?.once('keydown-SPACE', start);
     this.input.once('pointerdown', start);
 
+    const chapters = this.add.text(width / 2, height * 0.78, 'Chapters ›', {
+      fontFamily: 'Georgia, serif', fontSize: '18px', color: '#c9b07a',
+      backgroundColor: '#1a120acc', padding: { x: 14, y: 8 },
+    }).setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => chapters.setColor('#fff1c0'))
+      .on('pointerout',  () => chapters.setColor('#c9b07a'))
+      .on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: { stopPropagation: () => void }) => {
+        ev.stopPropagation();
+        this.scene.start('ChapterSelect');
+      });
+
     const reset = this.add.text(width - 20, height - 20, 'Reset story', {
       fontFamily: 'Georgia, serif', fontSize: '14px', color: '#9c8458',
       backgroundColor: '#1a120acc', padding: { x: 8, y: 4 },

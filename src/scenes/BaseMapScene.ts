@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { dialogues, babTreeFor } from '../data/dialogues';
-import { getFlags, resetFlags } from '../dialogue/flags';
+import { getFlags, resetFlags, applyEffect } from '../dialogue/flags';
+import { chapterByScene } from '../data/chapters';
 import type { DialogueLaunch } from './DialogueScene';
+import type { DialogueTree } from '../dialogue/types';
 
 export const TILE_W = 64;
 export const TILE_H = 32;
@@ -123,7 +125,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     const ending = getFlags().ending as string | undefined;
     if (ending) {
       this.endingShown = true;
-      this.banner.setText(this.endingBannerText(ending)).setAlpha(1);
+      this.showBanner(this.endingBannerText(ending));
     }
   }
 
@@ -232,13 +234,14 @@ export abstract class BaseMapScene extends Phaser.Scene {
 
   protected startSimpleDialogue(id: string): void {
     const tree = dialogues[id];
-    if (!tree) return;
-    this.scene.launch('Dialogue', { tree, onComplete: () => this.scene.resume() } as DialogueLaunch);
-    this.scene.pause();
+    if (tree) this.startDialogueTree(tree);
   }
 
   protected startBabDialogue(): void {
-    const tree = babTreeFor(getFlags());
+    this.startDialogueTree(babTreeFor(getFlags()));
+  }
+
+  protected startDialogueTree(tree: DialogueTree): void {
     this.scene.launch('Dialogue', {
       tree,
       onComplete: () => { this.scene.resume(); this.handleEnding(); },
@@ -247,11 +250,57 @@ export abstract class BaseMapScene extends Phaser.Scene {
   }
 
   protected handleEnding(): void {
-    const ending = getFlags().ending as string | undefined;
-    if (!ending || this.endingShown) return;
-    this.endingShown = true;
-    this.banner.setText(this.endingBannerText(ending)).setAlpha(0);
-    this.tweens.add({ targets: this.banner, alpha: 1, duration: 800 });
+    const flags = getFlags();
+    const chapter = chapterByScene(this.scene.key);
+    const chapterFreshlyDone = !!chapter && chapter.isComplete(flags)
+      && !flags[`shown_${chapter.id}`];
+
+    const ending = flags.ending as string | undefined;
+    if (ending && !this.endingShown) {
+      this.endingShown = true;
+      this.showBanner(this.endingBannerText(ending), {
+        onComplete: chapterFreshlyDone ? () => this.openChapterEnd(chapter!.id) : undefined,
+      });
+      if (chapterFreshlyDone) {
+        applyEffect({ set: { [`shown_${chapter!.id}`]: true } });
+      }
+      return;
+    }
+
+    if (chapterFreshlyDone) {
+      applyEffect({ set: { [`shown_${chapter!.id}`]: true } });
+      this.openChapterEnd(chapter!.id);
+    }
+  }
+
+  protected openChapterEnd(chapterId: string): void {
+    if (this.scene.isActive('ChapterEnd')) return;
+    this.scene.launch('ChapterEnd', { chapterId, from: this.scene.key });
+    this.scene.pause();
+  }
+
+  /**
+   * Fade the banner in, hold it for a few seconds, then fade out.
+   * Cancels any previous banner tweens so re-triggers behave sanely.
+   */
+  protected showBanner(text: string, opts: { holdMs?: number; onComplete?: () => void } = {}): void {
+    const holdMs = opts.holdMs ?? 4500;
+    this.tweens.killTweensOf(this.banner);
+    this.banner.setText(text).setAlpha(0);
+    this.tweens.add({
+      targets: this.banner,
+      alpha: 1,
+      duration: 800,
+      onComplete: () => {
+        this.tweens.add({
+          targets: this.banner,
+          alpha: 0,
+          delay: holdMs,
+          duration: 1400,
+          onComplete: opts.onComplete,
+        });
+      },
+    });
   }
 
   protected endingBannerText(ending: string): string {
@@ -281,6 +330,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.makeHudButton(width - 20, 16, 'Restart', () => this.restart())
       .setOrigin(1, 0).setDepth(UI_DEPTH);
     this.makeHudButton(width - 110, 16, 'Journal', () => this.openJournal())
+      .setOrigin(1, 0).setDepth(UI_DEPTH);
+    this.makeHudButton(width - 210, 16, 'Chapters', () => this.openChapterSelect())
       .setOrigin(1, 0).setDepth(UI_DEPTH);
 
     this.promptText = this.add.text(width / 2, height - 36, '', {
@@ -313,6 +364,15 @@ export abstract class BaseMapScene extends Phaser.Scene {
     if (this.scene.isActive('Journal')) return;
     this.scene.launch('Journal', { from: this.scene.key });
     this.scene.pause();
+  }
+
+  protected openChapterSelect(): void {
+    this.cameras.main.fadeOut(280, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.stop('Dialogue');
+      this.scene.stop('Journal');
+      this.scene.start('ChapterSelect');
+    });
   }
 
   protected restart(): void {

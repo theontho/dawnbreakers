@@ -253,13 +253,59 @@ export const neighbourQuiet: DialogueTree = {
   },
 };
 
+/** Chapter 2 opener: meeting another seeker on the road north of Shíráz. */
+export const roadEncounter: DialogueTree = {
+  id: 'road-encounter',
+  startId: 'g',
+  nodes: {
+    g: {
+      id: 'g',
+      speaker: 'Another Seeker',
+      text: 'Peace upon you, friend. The dust of Shíráz is on your sandals. Have you news of the One Siyyid Káẓim foretold?',
+      choices: [
+        { text: '"I have. The Promise is fulfilled — I have met Him."',
+          next: 'told', requires: f => !!f.firstLetter,
+          effect: { set: { sharedNews: true } } },
+        { text: '"Travel south, friend, and judge for yourself."',
+          next: 'cryptic' },
+        { text: '"I am only a wanderer. Forgive me."',
+          next: 'cryptic' },
+      ],
+    },
+    told: {
+      id: 'told',
+      speaker: 'Another Seeker',
+      text: '(His eyes fill.) Then I shall ride through the night. Where, friend? Where shall I find Him?',
+      choices: [
+        { text: '"At the house of Siyyid ʿAlí-Muḥammad, in Shíráz."',
+          next: 'farewell', effect: { set: { directionsGiven: true } } },
+      ],
+    },
+    cryptic: {
+      id: 'cryptic',
+      speaker: 'Another Seeker',
+      text: 'You speak in riddles, as the learned do. Yet I will go. The road southward calls every heart that has counted the signs.',
+      choices: [
+        { text: '(Wish him well, and watch him ride.)', next: 'farewell' },
+      ],
+    },
+    farewell: {
+      id: 'farewell',
+      speaker: 'Narrator',
+      onEnter: { set: { roadComplete: true } },
+      text: 'You part as kindred. He rides south; you turn your face north. Somewhere ahead — Iṣfahán, Tabríz, Mákú — the Dawn-Breakers are gathering.\n\n(To be continued.)',
+    },
+  },
+};
+
 export const dialogues: Record<string, DialogueTree> = {
-  [babDeclaration.id]: babDeclaration,
-  [babLocked.id]:      babLocked,
+  [babDeclaration.id]:  babDeclaration,
+  [babLocked.id]:       babLocked,
   [travellerRumour.id]: travellerRumour,
   [merchantRumour.id]:  merchantRumour,
   [mullaWarning.id]:    mullaWarning,
   [neighbourQuiet.id]:  neighbourQuiet,
+  [roadEncounter.id]:   roadEncounter,
 };
 
 /** Used by ShirazScene to decide which Báb tree to launch. */

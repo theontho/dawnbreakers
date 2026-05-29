@@ -2,9 +2,12 @@ import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { CityScene } from './scenes/CityScene';
 import { HouseQuarterScene } from './scenes/HouseQuarterScene';
+import { RoadScene } from './scenes/RoadScene';
 import { DialogueScene } from './scenes/DialogueScene';
 import { TitleScene } from './scenes/TitleScene';
 import { JournalScene } from './scenes/JournalScene';
+import { ChapterSelectScene } from './scenes/ChapterSelectScene';
+import { ChapterEndScene } from './scenes/ChapterEndScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -17,7 +20,11 @@ const config: Phaser.Types.Core.GameConfig = {
     height: 720,
   },
   pixelArt: false,
-  scene: [BootScene, TitleScene, CityScene, HouseQuarterScene, DialogueScene, JournalScene],
+  scene: [
+    BootScene, TitleScene, ChapterSelectScene,
+    CityScene, HouseQuarterScene, RoadScene,
+    DialogueScene, JournalScene, ChapterEndScene,
+  ],
 };
 
 new Phaser.Game(config);
