@@ -57,12 +57,20 @@ Sized in three buckets:
   locale. Build target bumped to `ES2022` (tsconfig + vite) for top-level
   await. Each locale is a separate ~57–89 KB chunk; non-active locales no
   longer ship in the initial bundle.
-- **Item 8 — partial.** All magic numbers in `src/ui/responsive.ts` named
-  as exports (`NARROW_BREAKPOINT_PX`, `PORTRAIT_ASPECT_RATIO`,
-  `NARROW_/WIDE_MARGIN_RATIO`/`MIN_PX`/`MAX_PX`,
+- **Item 8 — done (with deferred sub-item).** All magic numbers in
+  `src/ui/responsive.ts` named as exports (`NARROW_BREAKPOINT_PX`,
+  `PORTRAIT_ASPECT_RATIO`, `NARROW_/WIDE_MARGIN_RATIO`/`MIN_PX`/`MAX_PX`,
   `NARROW_/WIDE_BOTTOM_GUTTER_*`, `REFERENCE_WIDTH/HEIGHT_PX`,
-  `FONT_SCALE_MIN/MAX`). `handleResize` migration across HUD/map scenes
-  still pending.
+  `FONT_SCALE_MIN/MAX`). The `handleResize` migration across the seven
+  `restartSceneOnResize` callers is **intentionally deferred**:
+  Phaser's `scene.restart()` already runs `SHUTDOWN` → `CREATE`, and a
+  true incremental `handleResize` would still need to tear down and
+  rebuild the same listeners and game objects to avoid leaks. The
+  perf delta on a rare event (resize) is invisible; the regression
+  risk (subtle leftover state during a soft rebuild) is real. Keeping
+  `restartSceneOnResize` as the documented idiom for menu/HUD scenes;
+  `DialogueScene.handleResize` stays as the example for scenes where
+  preserving in-flight state across a rebuild matters.
 - **Item 9 — done.** `book-animation.svg` moved to `public/`;
   `generate-book.js` moved to `scripts/generate-book.mjs` (writes to
   `public/book-animation.svg` via `fileURLToPath`). New `scripts/README.md`
