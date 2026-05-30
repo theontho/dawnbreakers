@@ -1,4 +1,4 @@
-# Dawn-Breakers RPG — 10 Chapter Build Plan
+# Dawn-Breakers RPG - 10 Chapter Build Plan
 
 This plan is the implementation contract for a dialogue-first, 2.5D isometric web RPG based on Nabíl-i-Aʿẓam's *The Dawn-Breakers* (*Maṭáliʿu'l-Anwár*). The game remains non-combat: walking, exploration, conversations, journals, choices, flags, chapter transitions, and reflective historical set pieces.
 
@@ -11,12 +11,16 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 - **Dialogue:** Each chapter owns its own dialogue module under `src/data/dialogues_ch/`.
 - **Scenes:** Each new chapter owns scene files under `src/scenes/` with chapter-prefixed class names.
 - **Completion UI:** `ChapterEndScene` appears once when a chapter's completion predicate becomes true.
+- **Map assets:** Shared map asset definitions and procedural texture generation live under `src/assets/mapAsset*.ts`.
+- **Localization:** Current locale files remain as-is; the narrative localization model is intentionally deferred.
 
 ## Shared implementation conventions
 
 - Chapter files must not overwrite unrelated chapter work.
 - New scenes should subclass `BaseMapScene`.
+- Shared tile/map geometry belongs in `src/scenes/baseMapTypes.ts` and `src/scenes/isoGeometry.ts`, not in individual chapter scenes.
 - New chapter dialogue modules should export `chapterNNDialogues`.
+- Central figures such as the Báb and Bahá'u'lláh may be described through narration, setting, and reverent story objects, but should not be ordinary interactable NPCs.
 - The manager wires shared registries after agents finish:
   - `src/main.ts`
   - `src/data/chapters.ts`
@@ -29,7 +33,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
   - one or more secondary dialogues for atmosphere or context
   - a concise historical note embedded through dialogue or narrator text
 
-## Chapter 1 — The First Letter of the Living
+## Chapter 1 - The First Letter of the Living
 
 **Historical focus:** Shíráz, evening of 22 May 1844 into dawn of 23 May 1844. Mullá Ḥusayn searches for the Promised One and is received by the Báb.
 
@@ -79,7 +83,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Agent deliverable:** a richer Chapter 1 without changing chapter completion semantics.
 
-## Chapter 2 — The Road North
+## Chapter 2 - The Road North
 
 **Historical focus:** The spread of news after the declaration. The seeker leaves Shíráz; conviction must become movement.
 
@@ -117,7 +121,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Agent deliverable:** a richer Chapter 2 transition with more atmosphere and one deeper branch.
 
-## Chapter 3 — Pilgrimage to Mecca
+## Chapter 3 - Pilgrimage to Mecca
 
 **Historical focus:** The Báb's pilgrimage to Mecca and public proclamation before the Kaʿba.
 
@@ -144,7 +148,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 - Quddús aboard ship.
 - A sailor or pilgrim aboard ship.
 - Mírzá Muḥíṭ-i-Kirmání near the Kaʿba.
-- The Báb near the Kaʿba.
+- A restrained proclamation focal point near the Kaʿba, represented through narration and setting rather than an ordinary interactable NPC.
 
 **Primary narrative arc:**
 1. Player speaks with Quddús on the ship about certainty and sacrifice.
@@ -160,7 +164,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Historical tone note:** Avoid gamifying worship. Treat the Kaʿba scene with restraint and reverence.
 
-## Chapter 4 — Return to Shíráz
+## Chapter 4 - Return to Shíráz
 
 **Historical focus:** Return from pilgrimage, rising opposition, public humiliation of Quddús, and the Báb's confinement in Shíráz.
 
@@ -188,7 +192,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 - Quddús.
 - A frightened townsman.
 - Mosque witness.
-- Optional: the Báb represented with restraint in the mosque scene.
+- Optional: restrained mosque-scene narration or setting details that speak of the Báb without placing Him as an ordinary interactable NPC.
 
 **Primary narrative arc:**
 1. Player senses the city's change after the proclamation.
@@ -203,7 +207,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Design constraint:** No combat, no graphic depiction. The emotional weight comes through witnesses and aftermath.
 
-## Chapter 5 — Iṣfahán, the Muʿtamid's Sanctuary
+## Chapter 5 - Iṣfahán, the Muʿtamid's Sanctuary
 
 **Historical focus:** The Báb's stay in Iṣfahán under the protection of Manúchihr Khán, the Muʿtamid; learned debates and the treatise on prophethood.
 
@@ -245,7 +249,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Player stance branch:** respect for learning, concern for politics, or personal wonder.
 
-## Chapter 6 — The Mountain Prisons
+## Chapter 6 - The Mountain Prisons
 
 **Historical focus:** Imprisonment at Mákú and Chihríq, the harsh mountain setting, the transformation of wardens, and the revelation of the Persian Bayán.
 
@@ -289,7 +293,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Tone:** sparse, cold, contemplative.
 
-## Chapter 7 — The Conference of Badasht
+## Chapter 7 - The Conference of Badasht
 
 **Historical focus:** The break with the Islamic dispensation publicly dramatized at Badasht; Ṭáhirih's unveiling; Bahá'u'lláh's reconciling presence.
 
@@ -334,7 +338,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Design constraint:** Present Ṭáhirih with dignity and agency; avoid sensationalism.
 
-## Chapter 8 — Fort Shaykh Ṭabarsí
+## Chapter 8 - Fort Shaykh Ṭabarsí
 
 **Historical focus:** The gathering at the shrine of Shaykh Ṭabarsí, Mullá Ḥusayn's death, Quddús's leadership, siege, treachery, and sacrifice.
 
@@ -378,7 +382,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Design constraint:** Keep combat off-screen. Use aftermath, soundless tension, and dialogue.
 
-## Chapter 9 — Tabríz
+## Chapter 9 - Tabríz
 
 **Historical focus:** The martyrdom of the Báb in Tabríz, July 1850; the first volley's failure; Sám Khán's plea; final witness.
 
@@ -421,7 +425,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Design constraint:** Treat martyrdom with gravity. No spectacle; no player agency over the execution.
 
-## Chapter 10 — The Black Pit of Tihrán
+## Chapter 10 - The Black Pit of Tihrán
 
 **Historical focus:** Síyáh-Chál, 1852; Bahá'u'lláh's imprisonment and the foundational vision in the darkness.
 

@@ -1,4 +1,5 @@
 import { BaseMapScene } from './BaseMapScene';
+import { makeTextureGraphics } from './graphicsFactory';
 
 export class Ch8ForestRoadScene extends BaseMapScene {
   protected mapWidth = 18;
@@ -15,7 +16,7 @@ export class Ch8ForestRoadScene extends BaseMapScene {
   private ensureTextures(): void {
     if (!this.textures.exists('ch8-shrine-glimpse')) {
       const geo = this.isoPrism(2, 2, 44, 24);
-      const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+      const g = makeTextureGraphics(this);
       this.drawIsoPrism(g, geo, {
         right: 0x756342,
         left: 0x3b3426,

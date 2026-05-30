@@ -7,71 +7,21 @@ import type { DialogueTree } from '../dialogue/types';
 import { makeCharacterTexture, type CharacterTextureOptions } from './characterTexture';
 import { buttonFont, isNarrowLayout, MIN_TOUCH_TARGET, responsiveFont, responsiveMargin, restartSceneOnResize, safeLayout, touchSize } from '../ui/responsive';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
-
-export const TILE_W = 64;
-export const TILE_H = 32;
-
-export type TileKind = 'grass' | 'path' | 'stone' | 'water' | 'sand';
+import { createIsoPrism, drawIsoPrismShape, gridToIsoScreen, wallInsetPoints } from './isoGeometry';
+import {
+  TILE_H,
+  TILE_W,
+  type Building,
+  type Decor,
+  type Interactable,
+  type IsoPoint,
+  type IsoPrism,
+  type MapExit,
+  type SceneSpawnData,
+  type TileKind,
+} from './baseMapTypes';
 
 const WORLD_BACKDROP_COLOR = 0x0a0806;
-
-export interface IsoPoint {
-  x: number;
-  y: number;
-}
-
-export interface IsoPrism {
-  texW: number;
-  texH: number;
-  top: IsoPoint;
-  right: IsoPoint;
-  bottom: IsoPoint;
-  left: IsoPoint;
-  topR: IsoPoint;
-  rightR: IsoPoint;
-  bottomR: IsoPoint;
-  leftR: IsoPoint;
-}
-
-export interface Building {
-  gridX: number;
-  gridY: number;
-  w: number;
-  h: number;
-  texture: string;
-}
-
-export interface Decor {
-  gridX: number;
-  gridY: number;
-  texture: string;
-  blocks?: boolean;
-}
-
-export interface Interactable {
-  gridX: number;
-  gridY: number;
-  prompt: string;
-  texture: string;
-  action: () => void;
-  sprite?: Phaser.GameObjects.Image;
-}
-
-export interface MapExit {
-  fromX: number;
-  fromY: number;
-  dx: number;       // direction of departure (-1, 0, 1)
-  dy: number;
-  targetScene: string;
-  targetSpawnX: number;
-  targetSpawnY: number;
-  label: string;    // e.g. "→ The Quiet Quarter"
-}
-
-export interface SceneSpawnData {
-  spawnX?: number;
-  spawnY?: number;
-}
 
 interface RevealTarget {
   x: number;
@@ -296,9 +246,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
   }
 
   protected gridToScreen(gx: number, gy: number): { sx: number; sy: number } {
-    const sx = this.originX + (gx - gy) * (TILE_W / 2);
-    const sy = this.originY + (gx + gy) * (TILE_H / 2);
-    return { sx, sy };
+    return gridToIsoScreen(this.originX, this.originY, gx, gy);
   }
 
   protected setupCameraFollow(width: number, height: number): void {
@@ -398,49 +346,11 @@ export abstract class BaseMapScene extends Phaser.Scene {
   }
 
   protected isoPrism(widthCells: number, heightCells: number, wallH: number, topPad = 0): IsoPrism {
-    const leftExtent = widthCells * TILE_W / 2;
-    const rightExtent = heightCells * TILE_W / 2;
-    const halfW = Math.max(leftExtent, rightExtent);
-    const baseH = (widthCells + heightCells) * TILE_H / 2;
-    const texH = baseH + wallH + topPad;
-    const bottom = { x: halfW, y: texH };
-    const top = {
-      x: halfW + (heightCells - widthCells) * TILE_W / 2,
-      y: texH - baseH,
-    };
-    const right = {
-      x: halfW + rightExtent,
-      y: texH - heightCells * TILE_H / 2,
-    };
-    const left = {
-      x: halfW - leftExtent,
-      y: texH - widthCells * TILE_H / 2,
-    };
-    const raise = (p: IsoPoint) => ({ x: p.x, y: p.y - wallH });
-
-    return {
-      texW: halfW * 2,
-      texH,
-      top,
-      right,
-      bottom,
-      left,
-      topR: raise(top),
-      rightR: raise(right),
-      bottomR: raise(bottom),
-      leftR: raise(left),
-    };
+    return createIsoPrism(widthCells, heightCells, wallH, topPad);
   }
 
   protected wallInset(start: IsoPoint, end: IsoPoint, from: number, to: number, height: number): IsoPoint[] {
-    const along = (t: number) => ({
-      x: start.x + (end.x - start.x) * t,
-      y: start.y + (end.y - start.y) * t,
-    });
-    const a = along(from);
-    const b = along(to);
-
-    return [a, b, { x: b.x, y: b.y - height }, { x: a.x, y: a.y - height }];
+    return wallInsetPoints(start, end, from, to, height);
   }
 
   protected drawIsoPrism(
@@ -448,21 +358,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     geo: IsoPrism,
     colors: { right: number; left: number; top: number; edge?: number; alpha?: number },
   ): void {
-    const edge = colors.edge ?? 0x2a1a0a;
-    const alpha = colors.alpha ?? 1;
-
-    g.lineStyle(2, edge, alpha);
-    g.fillStyle(colors.right, 1);
-    g.fillPoints([geo.right, geo.bottom, geo.bottomR, geo.rightR], true);
-    g.strokePoints([geo.right, geo.bottom, geo.bottomR, geo.rightR], true);
-
-    g.fillStyle(colors.left, 1);
-    g.fillPoints([geo.left, geo.bottom, geo.bottomR, geo.leftR], true);
-    g.strokePoints([geo.left, geo.bottom, geo.bottomR, geo.leftR], true);
-
-    g.fillStyle(colors.top, 1);
-    g.fillPoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
-    g.strokePoints([geo.topR, geo.rightR, geo.bottomR, geo.leftR], true);
+    drawIsoPrismShape(g, geo, colors);
   }
 
   protected makePersonTexture(key: string, options: CharacterTextureOptions): void {

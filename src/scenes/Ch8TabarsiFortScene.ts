@@ -1,4 +1,5 @@
 import { BaseMapScene } from './BaseMapScene';
+import { makeTextureGraphics } from './graphicsFactory';
 
 export class Ch8TabarsiFortScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -38,7 +39,7 @@ export class Ch8TabarsiFortScene extends BaseMapScene {
 
     if (!this.textures.exists('ch8-shrine')) {
       const geo = this.isoPrism(3, 3, 56, 24);
-      const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+      const g = makeTextureGraphics(this);
       this.drawIsoPrism(g, geo, {
         right: 0x8d7a57,
         left: 0x5b5140,
@@ -56,7 +57,7 @@ export class Ch8TabarsiFortScene extends BaseMapScene {
     }
 
     if (!this.textures.exists('ch8-truce-flag')) {
-      const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+      const g = makeTextureGraphics(this);
       g.lineStyle(4, 0x3b2a16, 1);
       g.lineBetween(22, 8, 22, 58);
       g.fillStyle(0xe8dec1, 1);

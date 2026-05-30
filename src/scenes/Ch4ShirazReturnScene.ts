@@ -1,4 +1,5 @@
 import { BaseMapScene } from './BaseMapScene';
+import { makeTextureGraphics } from './graphicsFactory';
 
 export class Ch4ShirazReturnScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -42,7 +43,7 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
   private makeClosedDoor(): void {
     if (this.textures.exists('closed-door')) return;
     const geo = this.isoPrism(1, 1, 42, 12);
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+    const g = makeTextureGraphics(this);
     this.drawIsoPrism(g, geo, {
       right: 0x6f5636,
       left: 0x534029,
@@ -64,7 +65,7 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
 
   private makeWatchLamp(): void {
     if (this.textures.exists('lamp')) return;
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+    const g = makeTextureGraphics(this);
     g.lineStyle(3, 0x2b1d12, 1);
     g.lineBetween(16, 6, 16, 42);
     g.fillStyle(0xc9a55c, 1);
@@ -77,7 +78,7 @@ export class Ch4ShirazReturnScene extends BaseMapScene {
 
   private makeCrowd(): void {
     if (this.textures.exists('crowd')) return;
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+    const g = makeTextureGraphics(this);
     const robes = [0x3f3328, 0x6a5030, 0x2f3b44, 0x574027];
     for (let i = 0; i < robes.length; i++) {
       const x = 8 + i * 10;

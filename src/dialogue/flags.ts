@@ -7,14 +7,35 @@ let flags: FlagState = load();
 function load(): FlagState {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) as FlagState : {};
-  } catch {
+    if (!raw) return {};
+
+    const parsed: unknown = JSON.parse(raw);
+    if (isFlagState(parsed)) return parsed;
+
+    console.warn(`Ignoring invalid dialogue flag data in ${KEY}.`);
+    return {};
+  } catch (error) {
+    console.warn(`Unable to load dialogue flags from ${KEY}.`, error);
     return {};
   }
 }
 
 function persist(): void {
-  try { localStorage.setItem(KEY, JSON.stringify(flags)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(flags));
+  } catch (error) {
+    console.warn(`Unable to persist dialogue flags to ${KEY}.`, error);
+  }
+}
+
+function isFlagState(value: unknown): value is FlagState {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+
+  return Object.values(value).every(flag =>
+    typeof flag === 'boolean' ||
+    typeof flag === 'number' ||
+    typeof flag === 'string',
+  );
 }
 
 export function getFlags(): FlagState {

@@ -108,6 +108,17 @@ export function playTitleBookOpening(
 
 type Point3D = { x: number, y: number, z: number };
 
+type BookSlab = {
+  F0: Point3D;
+  F1: Point3D;
+  F2: Point3D;
+  F3: Point3D;
+  B0: Point3D;
+  B1: Point3D;
+  B2: Point3D;
+  B3: Point3D;
+};
+
 function drawBook3D(
   g: Phaser.GameObjects.Graphics,
   p: number,
@@ -233,7 +244,7 @@ function drawBook3D(
   const pageLine = 0xe7ca8c;
   const edgeColor = 0xe0c080;
 
-  const addSlabPolys = (slab: any, side: number) => {
+  const addSlabPolys = (slab: BookSlab, side: number) => {
     const { F0, F1, F2, F3, B0, B1, B2, B3 } = slab;
     
     if (side === 1) {

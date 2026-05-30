@@ -1,4 +1,5 @@
 import { BaseMapScene } from './BaseMapScene';
+import { makeTextureGraphics } from './graphicsFactory';
 
 export class Ch4VakilMosqueScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -34,7 +35,7 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
 
   private makePulpit(): void {
     if (this.textures.exists('ch4-pulpit')) return;
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+    const g = makeTextureGraphics(this);
     g.fillStyle(0x7b5d39, 1);
     g.fillRect(20, 22, 22, 42);
     g.fillStyle(0x4a3320, 1);
@@ -52,7 +53,7 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
   private makePrayerArch(): void {
     if (this.textures.exists('ch4-prayer-arch')) return;
     const geo = this.isoPrism(4, 2, 58, 18);
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+    const g = makeTextureGraphics(this);
     this.drawIsoPrism(g, geo, {
       right: 0xb89968,
       left: 0x8f7049,
@@ -72,7 +73,7 @@ export class Ch4VakilMosqueScene extends BaseMapScene {
 
   private makeCrowd(): void {
     if (this.textures.exists('crowd')) return;
-    const g = this.make.graphics({ x: 0, y: 0, add: false } as any);
+    const g = makeTextureGraphics(this);
     const robes = [0x3f3328, 0x6a5030, 0x2f3b44, 0x574027];
     for (let i = 0; i < robes.length; i++) {
       const x = 8 + i * 10;
