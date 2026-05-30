@@ -188,7 +188,7 @@ export class TitleScene extends Phaser.Scene {
       { at: 1, color: 0xf5d19a },
     ]).setAlpha(0);
     const sunRays = this.add.graphics();
-    const sunrise = this.addSunrise(width, height, horizonY);
+    const sunrise = this.addSunrise(width, height, cityBaseY);
     const dawnGlow = this.addHorizonGlow(width, height, horizonY).setAlpha(0);
     const stars = this.addStars(width, height, cityBaseY);
     const cloudDrift = { fromX: -width * 0.28, toX: width * 0.28 };
@@ -278,7 +278,7 @@ export class TitleScene extends Phaser.Scene {
   private addSunrise(
     width: number,
     height: number,
-    horizonY: number,
+    visibleHorizonY: number,
   ): {
     layer: Phaser.GameObjects.Container;
     disk: Phaser.GameObjects.Arc;
@@ -290,7 +290,7 @@ export class TitleScene extends Phaser.Scene {
     const backEffects = this.add.container(0, 0).setAlpha(0);
     const sunX = width / 2;
     const sunRadius = Phaser.Math.Clamp(Math.min(width, height) * 0.15, 52, 132);
-    const sunY = horizonY + sunRadius * 2.35;
+    const sunY = Math.max(visibleHorizonY + sunRadius * 1.3, visibleHorizonY * 1.22);
 
     for (let i = 5; i >= 1; i -= 1) {
       backEffects.add(this.add.circle(sunX, sunY, sunRadius * (1 + i * 0.38), 0xffb55a, 0.026 + i * 0.006));
