@@ -1,11 +1,4 @@
 import type { TranslationCatalog } from './i18n/types';
-import { names as faNames, text as fa } from './i18n/locales/fa';
-import { names as esNames, text as es } from './i18n/locales/es';
-import { names as frNames, text as fr } from './i18n/locales/fr';
-import { names as heNames, text as he } from './i18n/locales/he';
-import { names as zhNames, text as zh } from './i18n/locales/zh';
-import { names as jaNames, text as ja } from './i18n/locales/ja';
-import { names as koNames, text as ko } from './i18n/locales/ko';
 
 export const SUPPORTED_LOCALES = ['en', 'fa', 'es', 'fr', 'he', 'zh', 'ja', 'ko'] as const;
 
@@ -72,6 +65,9 @@ export function setLocale(locale: Locale): Locale {
     }
   }
 
+  // Fire-and-forget: catalog will be available on subsequent renders.
+  // Callers that need to await the catalog should call `loadLocale` directly.
+  void loadLocale(locale);
   applyLocaleDocument();
   return activeLocale;
 }
@@ -89,27 +85,48 @@ export function languageButtonLabel(): string {
 
 type Params = Record<string, string | number>;
 
+const EMPTY_CATALOG: TranslationCatalog = {};
 const catalogs: Record<Locale, TranslationCatalog> = {
-  en: {},
-  fa,
-  es,
-  fr,
-  he,
-  zh,
-  ja,
-  ko,
+  en: EMPTY_CATALOG, fa: EMPTY_CATALOG, es: EMPTY_CATALOG, fr: EMPTY_CATALOG,
+  he: EMPTY_CATALOG, zh: EMPTY_CATALOG, ja: EMPTY_CATALOG, ko: EMPTY_CATALOG,
+};
+const namesByLocale: Record<Locale, TranslationCatalog> = {
+  en: EMPTY_CATALOG, fa: EMPTY_CATALOG, es: EMPTY_CATALOG, fr: EMPTY_CATALOG,
+  he: EMPTY_CATALOG, zh: EMPTY_CATALOG, ja: EMPTY_CATALOG, ko: EMPTY_CATALOG,
 };
 
-const namesByLocale: Record<Locale, TranslationCatalog> = {
-  en: {},
-  fa: faNames,
-  es: esNames,
-  fr: frNames,
-  he: heNames,
-  zh: zhNames,
-  ja: jaNames,
-  ko: koNames,
+const localeLoaders: Record<Exclude<Locale, 'en'>, () => Promise<{ text: TranslationCatalog; names: TranslationCatalog }>> = {
+  fa: () => import('./i18n/locales/fa'),
+  es: () => import('./i18n/locales/es'),
+  fr: () => import('./i18n/locales/fr'),
+  he: () => import('./i18n/locales/he'),
+  zh: () => import('./i18n/locales/zh'),
+  ja: () => import('./i18n/locales/ja'),
+  ko: () => import('./i18n/locales/ko'),
 };
+
+const inFlight = new Map<Locale, Promise<void>>();
+
+/**
+ * Lazy-load a locale catalog. Idempotent: subsequent calls reuse the same
+ * Promise. English is a no-op (the catalog is the identity).
+ *
+ * Boot must `await loadLocale(activeLocale)` before any scene calls `t()`,
+ * otherwise non-english locales render their english keys until the import
+ * resolves.
+ */
+export async function loadLocale(locale: Locale): Promise<void> {
+  if (locale === 'en' || catalogs[locale] !== EMPTY_CATALOG) return;
+  const existing = inFlight.get(locale);
+  if (existing) return existing;
+  const loader = localeLoaders[locale];
+  const promise = loader().then(mod => {
+    catalogs[locale] = mod.text;
+    namesByLocale[locale] = mod.names;
+  });
+  inFlight.set(locale, promise);
+  return promise;
+}
 
 const speakWithTemplates: Record<Locale, string> = {
   en: 'Speak with {name}  [E]',

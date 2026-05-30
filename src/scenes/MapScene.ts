@@ -5,15 +5,6 @@ import type { DialogueTree } from '../dialogue/types';
 import { isNarrowLayout, responsiveMargin, restartSceneOnResize } from '../ui/responsive';
 import { gridToIsoScreen } from './isoGeometry';
 import {
-  circleIntersectsRect,
-  createHardRevealMaskState,
-  createSoftRevealMaskState,
-  redrawRevealMaskState,
-  revealTargetForSprite,
-  type RevealMaskState,
-  type RevealTarget,
-} from './baseMapReveal';
-import {
   TILE_H,
   type Building,
   type Decor,
@@ -36,6 +27,22 @@ import {
   nearestInteractable as getNearestInteractable,
   updateInteractionPrompt,
 } from './baseMapMovement';
+import {
+  applyInteractableHighlightVisibility,
+  createInteractableHighlightHandle,
+  destroyInteractableRevealMasks,
+  setupInteractableHighlights,
+  setupInteractableRevealMasks,
+  updatePlayerRevealMasks,
+  type InteractableHighlightHandle,
+  type RevealMaskHandle,
+} from './baseMapInteractables';
+import {
+  blockFootprintInto,
+  emptyMap,
+  inBounds as inBoundsOf,
+  makeTileCanvas,
+} from './baseMapTileCanvas';
 import type { MapDefinition, NpcAction, NpcSpec, TileCanvas } from '../data/maps/types';
 
 /**
@@ -61,11 +68,8 @@ export class MapScene extends Phaser.Scene {
   private decor: Decor[] = [];
   private exits: MapExit[] = [];
   private occludableSprites: Phaser.GameObjects.Image[] = [];
-  private revealMaskStates: RevealMaskState[] = [];
-  private lastPlayerReveal?: RevealTarget;
-  private interactableHighlightGraphics: Phaser.GameObjects.Graphics[] = [];
-  private interactableHighlightsToggled = false;
-  private interactableHighlightsHeld = false;
+  private revealMasks: RevealMaskHandle = { states: [] };
+  private highlights: InteractableHighlightHandle = createInteractableHighlightHandle();
 
   private promptText!: Phaser.GameObjects.Text;
   private exitPromptText!: Phaser.GameObjects.Text;
@@ -111,11 +115,8 @@ export class MapScene extends Phaser.Scene {
     this.decor = [];
     this.exits = [];
     this.occludableSprites = [];
-    this.revealMaskStates = [];
-    this.lastPlayerReveal = undefined;
-    this.interactableHighlightGraphics = [];
-    this.interactableHighlightsToggled = false;
-    this.interactableHighlightsHeld = false;
+    this.revealMasks = { states: [] };
+    this.highlights = createInteractableHighlightHandle();
     this.endingShown = false;
   }
 
@@ -156,48 +157,18 @@ export class MapScene extends Phaser.Scene {
   // ---------- map ----------
 
   private initEmptyMap(): void {
-    for (let y = 0; y < this.mapHeight; y++) {
-      const row: TileKind[] = [];
-      const brow: boolean[] = [];
-      for (let x = 0; x < this.mapWidth; x++) {
-        row.push('grass');
-        brow.push(false);
-      }
-      this.map.push(row);
-      this.blocked.push(brow);
-    }
+    const grids = emptyMap(this.mapWidth, this.mapHeight);
+    this.map = grids.map;
+    this.blocked = grids.blocked;
   }
 
   /** Adapter exposed to `MapDefinition.build` for tile painting. */
   private tileCanvas(): TileCanvas {
-    return {
-      width: this.mapWidth,
-      height: this.mapHeight,
-      map: this.map,
-      blocked: this.blocked,
-      paintRect: (x, y, w, h, kind) => this.paintRect(x, y, w, h, kind),
-      paintPath: cells => this.paintPath(cells),
-      setTile: (x, y, kind) => { if (this.inBounds(x, y)) this.map[y][x] = kind; },
-      block: (x, y) => this.blockTile(x, y),
-      unblock: (x, y) => { if (this.inBounds(x, y)) this.blocked[y][x] = false; },
-      inBounds: (x, y) => this.inBounds(x, y),
-    };
-  }
-
-  private paintRect(x0: number, y0: number, w: number, h: number, kind: TileKind): void {
-    for (let y = y0; y < y0 + h; y++)
-      for (let x = x0; x < x0 + w; x++)
-        if (this.inBounds(x, y)) this.map[y][x] = kind;
-  }
-
-  private paintPath(pts: ReadonlyArray<readonly [number, number]>): void {
-    for (const [x, y] of pts) if (this.inBounds(x, y)) this.map[y][x] = 'path';
+    return makeTileCanvas(this.mapWidth, this.mapHeight, this.map, this.blocked);
   }
 
   private blockFootprint(x: number, y: number, w: number, h: number): void {
-    for (let dy = 0; dy < h; dy++)
-      for (let dx = 0; dx < w; dx++)
-        if (this.inBounds(x + dx, y + dy)) this.blocked[y + dy][x + dx] = true;
+    blockFootprintInto(this.blocked, this.mapWidth, this.mapHeight, x, y, w, h);
   }
 
   private blockTile(x: number, y: number): void {
@@ -205,7 +176,7 @@ export class MapScene extends Phaser.Scene {
   }
 
   private inBounds(x: number, y: number): boolean {
-    return x >= 0 && y >= 0 && x < this.mapWidth && y < this.mapHeight;
+    return inBoundsOf(this.mapWidth, this.mapHeight, x, y);
   }
 
   // ---------- placements from definition ----------
@@ -300,142 +271,41 @@ export class MapScene extends Phaser.Scene {
   }
 
   private setupInteractableRevealMask(): void {
-    const revealTargets = this.interactableRevealTargets();
-    if (this.occludableSprites.length === 0) return;
-
-    for (const sprite of this.occludableSprites) {
-      const bounds = sprite.getBounds();
-      const staticReveals = revealTargets.filter((reveal) =>
-        sprite.depth > reveal.depth && circleIntersectsRect(reveal.x, reveal.y, reveal.radius, bounds));
-
-      if (this.game.renderer.type === Phaser.WEBGL) {
-        this.createSoftRevealMask(sprite, bounds, staticReveals);
-      } else {
-        this.createHardRevealMask(sprite, bounds, staticReveals);
-      }
-    }
-    this.updatePlayerRevealMasks(true);
-  }
-
-  private interactableRevealTargets(): RevealTarget[] {
-    return this.interactables
-      .map((interactable) => interactable.sprite)
-      .filter((sprite): sprite is Phaser.GameObjects.Image => Boolean(sprite))
-      .map((sprite) => revealTargetForSprite(sprite, 0.62, 34, 54));
-  }
-
-  private playerRevealTarget(): RevealTarget {
-    return revealTargetForSprite(this.player, 0.68, 38, 60);
-  }
-
-  private createSoftRevealMask(
-    sprite: Phaser.GameObjects.Image,
-    bounds: Phaser.Geom.Rectangle,
-    staticReveals: RevealTarget[],
-  ): void {
-    const textureKey = `${this.scene.key}-reveal-mask-${this.revealMaskStates.length}`;
-    const state = createSoftRevealMaskState(this, sprite, bounds, staticReveals, textureKey);
-    if (state) this.revealMaskStates.push(state);
-  }
-
-  private createHardRevealMask(
-    sprite: Phaser.GameObjects.Image,
-    bounds: Phaser.Geom.Rectangle,
-    staticReveals: RevealTarget[],
-  ): void {
-    this.revealMaskStates.push(createHardRevealMaskState(this, sprite, bounds, staticReveals));
+    this.revealMasks = setupInteractableRevealMasks(
+      this,
+      this.occludableSprites,
+      this.interactables,
+      this.player,
+      this.scene.key,
+    );
   }
 
   private updatePlayerRevealMasks(force = false): void {
-    if (this.revealMaskStates.length === 0) return;
-
-    const playerReveal = this.playerRevealTarget();
-    if (!force && this.lastPlayerReveal
-      && Math.abs(this.lastPlayerReveal.x - playerReveal.x) < 0.5
-      && Math.abs(this.lastPlayerReveal.y - playerReveal.y) < 0.5
-      && Math.abs(this.lastPlayerReveal.depth - playerReveal.depth) < 0.5) {
-      return;
-    }
-
-    for (const state of this.revealMaskStates) {
-      const reveals = [...state.staticReveals];
-      if (state.sprite.depth > playerReveal.depth
-        && circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds)) {
-        reveals.push(playerReveal);
-      }
-      redrawRevealMaskState(state, reveals);
-    }
-    this.lastPlayerReveal = playerReveal;
+    updatePlayerRevealMasks(this.revealMasks, this.player, force);
   }
 
   private destroyInteractableRevealMasks(): void {
-    for (const sprite of this.occludableSprites) {
-      sprite.clearMask(true);
-    }
-    for (const state of this.revealMaskStates) {
-      state.maskObject?.destroy();
-      state.maskShape?.destroy();
-      if (state.textureKey && this.textures.exists(state.textureKey)) this.textures.remove(state.textureKey);
-    }
-    this.revealMaskStates = [];
-    this.lastPlayerReveal = undefined;
+    destroyInteractableRevealMasks(this.revealMasks, this, this.occludableSprites);
   }
 
   private setupInteractableHighlights(): void {
-    for (const reveal of this.interactableRevealTargets()) {
-      const highlight = this.add.graphics()
-        .setDepth(9000)
-        .setVisible(false);
-      highlight.fillStyle(0xf3d98a, 0.12);
-      highlight.fillCircle(reveal.x, reveal.y, reveal.radius);
-      highlight.lineStyle(3, 0xf3d98a, 0.85);
-      highlight.strokeCircle(reveal.x, reveal.y, reveal.radius);
-      highlight.lineStyle(1, 0xffffff, 0.55);
-      highlight.strokeCircle(reveal.x, reveal.y, reveal.radius * 0.72);
-      this.interactableHighlightGraphics.push(highlight);
-    }
-
-    for (const exit of this.exits) {
-      const pos = this.gridToScreen(exit.fromX, exit.fromY);
-      const highlight = this.add.graphics()
-        .setDepth(pos.sy + 9000)
-        .setVisible(false);
-      highlight.fillStyle(0x66d9ff, 0.16);
-      highlight.fillEllipse(pos.sx, pos.sy, 58, 28, 48);
-      highlight.lineStyle(3, 0x66d9ff, 0.9);
-      highlight.strokeEllipse(pos.sx, pos.sy, 58, 28, 48);
-      highlight.lineStyle(1, 0xffffff, 0.55);
-      highlight.strokeEllipse(pos.sx, pos.sy, 42, 20, 48);
-      this.interactableHighlightGraphics.push(highlight);
-    }
-
-    if (this.interactableHighlightGraphics.length > 0) {
-      this.tweens.add({
-        targets: this.interactableHighlightGraphics,
-        alpha: 0.52,
-        duration: 720,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-      });
-    }
+    setupInteractableHighlights(
+      this,
+      this.interactables,
+      this.exits,
+      (gx, gy) => this.gridToScreen(gx, gy),
+      this.highlights,
+    );
   }
 
   private toggleInteractableHighlights(): void {
-    this.interactableHighlightsToggled = !this.interactableHighlightsToggled;
-    this.applyInteractableHighlightVisibility();
+    this.highlights.toggled = !this.highlights.toggled;
+    applyInteractableHighlightVisibility(this.highlights);
   }
 
   private holdInteractableHighlights(held: boolean): void {
-    this.interactableHighlightsHeld = held;
-    this.applyInteractableHighlightVisibility();
-  }
-
-  private applyInteractableHighlightVisibility(): void {
-    const visible = this.interactableHighlightsToggled || this.interactableHighlightsHeld;
-    for (const highlight of this.interactableHighlightGraphics) {
-      highlight.setVisible(visible);
-    }
+    this.highlights.held = held;
+    applyInteractableHighlightVisibility(this.highlights);
   }
 
   private spawnPlayer(): void {

@@ -43,7 +43,44 @@ Sized in three buckets:
   via `src/data/maps/index.ts` → `MAP_DEFINITIONS`; `main.ts` iterates the
   registry into Phaser's `scene` array. Headless smoke test confirms all
   18 scenes boot without errors.
-- Items 4, 6–10 — pending.
+- **Item 4 — done.** `src/scenes/MapScene.ts` 613 → 483 LOC. Reveal-mask +
+  highlight handle code extracted to `src/scenes/baseMapInteractables.ts`
+  (162 LOC); tile-canvas primitives (`emptyMap`, `inBounds`,
+  `paintRectInto`, `paintPathInto`, `blockFootprintInto`, `makeTileCanvas`)
+  extracted to `src/scenes/baseMapTileCanvas.ts` (93 LOC). All non-locale
+  source files now under 500 LOC.
+- **Item 6 — done.** `src/i18n.ts` rewritten with `localeLoaders:
+  Record<Locale, () => Promise<{ default: LocaleCatalog }>>` of dynamic
+  `import()` thunks plus an `inFlight` Promise cache and exported
+  `loadLocale(locale)`. `src/main.ts` now `await loadLocale(activeLocale)`
+  before constructing `Phaser.Game` so the first paint is in the active
+  locale. Build target bumped to `ES2022` (tsconfig + vite) for top-level
+  await. Each locale is a separate ~57–89 KB chunk; non-active locales no
+  longer ship in the initial bundle.
+- **Item 8 — partial.** All magic numbers in `src/ui/responsive.ts` named
+  as exports (`NARROW_BREAKPOINT_PX`, `PORTRAIT_ASPECT_RATIO`,
+  `NARROW_/WIDE_MARGIN_RATIO`/`MIN_PX`/`MAX_PX`,
+  `NARROW_/WIDE_BOTTOM_GUTTER_*`, `REFERENCE_WIDTH/HEIGHT_PX`,
+  `FONT_SCALE_MIN/MAX`). `handleResize` migration across HUD/map scenes
+  still pending.
+- **Item 9 — done.** `book-animation.svg` moved to `public/`;
+  `generate-book.js` moved to `scripts/generate-book.mjs` (writes to
+  `public/book-animation.svg` via `fileURLToPath`). New `scripts/README.md`
+  documents lint scripts + generator.
+- **Item 10 — done.** New `scripts/lint-content.mjs` flags em-dash
+  (`\u2014`) in user-facing strings (`t()`/`tName()` args,
+  `text|body|label|title|subtitle|prompt|description|speaker|sceneTitle:`
+  fields, all locale `.ts` strings) and central-figure NPC speaker/id
+  values (Bahá'u'lláh variants + anchored `^The B[áa]b$` / `^B[áa]b$`)
+  plus `kind: 'bab'|'bahaullah'` `NpcAction`. Baseline file
+  `scripts/lint-content-baseline.json` grandfathers 526 legacy entries
+  with `--update-baseline`. Wired as `npm run lint:content` and
+  aggregated in `npm run lint`.
+- **Item 7 — partial.** `package.json`: removed dead `"main": "index.js"`
+  and placeholder `"test"` script; added `lint:content` and aggregate
+  `lint`. `tsconfig.json`: `target` and `lib` bumped to ES2022. Still
+  pending: `noUncheckedIndexedAccess` (133 fallout errors), `@/` path
+  alias, ESLint + `@typescript-eslint`, evaluate `@types/node` necessity.
 
 ---
 

@@ -9,10 +9,14 @@ import { SettingsScene } from './scenes/SettingsScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ChapterEndScene } from './scenes/ChapterEndScene';
 import { MapEditorScene } from './scenes/MapEditorScene';
-import { applyLocaleDocument } from './i18n';
+import { activeLocale, applyLocaleDocument, loadLocale } from './i18n';
 import { measuredSafeAreaInsets } from './ui/responsive';
 
 applyLocaleDocument();
+
+// Block boot on the active locale's catalog so the first paint isn't english
+// fallback. Other locales lazy-load when the player switches via Settings.
+await loadLocale(activeLocale);
 
 const gameElement = document.getElementById('game');
 syncGameViewportHeight(gameElement);

@@ -1,4 +1,6 @@
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Straight-on Perspective Projection
 function project(x, y, z) {
@@ -191,5 +193,7 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
   </g>
 </svg>`;
 
-fs.writeFileSync('book-animation.svg', svg);
-console.log('Final SVG generated successfully!');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const outPath = path.resolve(__dirname, '..', 'public', 'book-animation.svg');
+fs.writeFileSync(outPath, svg);
+console.log(`Final SVG generated at ${outPath}`);

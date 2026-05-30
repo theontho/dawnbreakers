@@ -25,6 +25,30 @@ export const MIN_TOUCH_TARGET = 44;
 export const MIN_BODY_FONT_SIZE = 14;
 export const MIN_BUTTON_FONT_SIZE = 16;
 
+/** Width below which we treat the layout as "narrow" (phone-portrait-ish). */
+export const NARROW_BREAKPOINT_PX = 760;
+/** Aspect ratio above which we treat the layout as portrait. */
+export const PORTRAIT_ASPECT_RATIO = 1.05;
+/** Margin scaling: percent of the short side for narrow / wide layouts. */
+export const NARROW_MARGIN_RATIO = 0.025;
+export const WIDE_MARGIN_RATIO = 0.045;
+export const NARROW_MARGIN_MIN_PX = 8;
+export const NARROW_MARGIN_MAX_PX = 16;
+export const WIDE_MARGIN_MIN_PX = 14;
+export const WIDE_MARGIN_MAX_PX = 72;
+/** Bottom-edge gutter (room for the on-screen action button) by layout. */
+export const NARROW_BOTTOM_GUTTER_RATIO = 0.075;
+export const NARROW_BOTTOM_GUTTER_MIN_PX = 28;
+export const NARROW_BOTTOM_GUTTER_MAX_PX = 44;
+export const WIDE_BOTTOM_GUTTER_RATIO = 0.025;
+export const WIDE_BOTTOM_GUTTER_MIN_PX = 14;
+export const WIDE_BOTTOM_GUTTER_MAX_PX = 24;
+/** Reference resolution for `responsiveFont` scaling. */
+export const REFERENCE_WIDTH_PX = 1280;
+export const REFERENCE_HEIGHT_PX = 720;
+export const FONT_SCALE_MIN = 0.68;
+export const FONT_SCALE_MAX = 1;
+
 let safeAreaProbe: HTMLDivElement | undefined;
 
 export function clamp(value: number, min: number, max: number): number {
@@ -32,15 +56,19 @@ export function clamp(value: number, min: number, max: number): number {
 }
 
 export function isPortraitLayout({ width, height }: LayoutSize): boolean {
-  return height > width * 1.05;
+  return height > width * PORTRAIT_ASPECT_RATIO;
 }
 
 export function isNarrowLayout({ width }: LayoutSize): boolean {
-  return width < 760;
+  return width < NARROW_BREAKPOINT_PX;
 }
 
 export function responsiveFont(size: number, { width, height }: LayoutSize, min = MIN_BODY_FONT_SIZE): string {
-  const scale = clamp(Math.min(width / 1280, height / 720), 0.68, 1);
+  const scale = clamp(
+    Math.min(width / REFERENCE_WIDTH_PX, height / REFERENCE_HEIGHT_PX),
+    FONT_SCALE_MIN,
+    FONT_SCALE_MAX,
+  );
   return `${Math.round(Math.max(MIN_BODY_FONT_SIZE, min, size * scale))}px`;
 }
 
@@ -53,11 +81,12 @@ export function touchSize(size: number): number {
 }
 
 export function responsiveMargin({ width, height }: LayoutSize): number {
-  if (width <= 760) {
-    return Math.round(clamp(Math.min(width, height) * 0.025, 8, 16));
+  const shortSide = Math.min(width, height);
+  if (width <= NARROW_BREAKPOINT_PX) {
+    return Math.round(clamp(shortSide * NARROW_MARGIN_RATIO, NARROW_MARGIN_MIN_PX, NARROW_MARGIN_MAX_PX));
   }
 
-  return Math.round(clamp(Math.min(width, height) * 0.045, 14, 72));
+  return Math.round(clamp(shortSide * WIDE_MARGIN_RATIO, WIDE_MARGIN_MIN_PX, WIDE_MARGIN_MAX_PX));
 }
 
 export function safeAreaInsets(): SafeAreaInsets {
@@ -107,8 +136,14 @@ export function safeLayout(size: LayoutSize): SafeLayout {
 
 function bottomEdgeGutter({ width, height }: LayoutSize): number {
   const shortSide = Math.min(width, height);
-  if (width <= 760) return Math.round(clamp(shortSide * 0.075, 28, 44));
-  return Math.round(clamp(shortSide * 0.025, 14, 24));
+  if (width <= NARROW_BREAKPOINT_PX) {
+    return Math.round(
+      clamp(shortSide * NARROW_BOTTOM_GUTTER_RATIO, NARROW_BOTTOM_GUTTER_MIN_PX, NARROW_BOTTOM_GUTTER_MAX_PX),
+    );
+  }
+  return Math.round(
+    clamp(shortSide * WIDE_BOTTOM_GUTTER_RATIO, WIDE_BOTTOM_GUTTER_MIN_PX, WIDE_BOTTOM_GUTTER_MAX_PX),
+  );
 }
 
 function cssPx(value: string): number {

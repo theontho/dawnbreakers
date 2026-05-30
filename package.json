@@ -2,16 +2,16 @@
   "name": "dawnbreakers",
   "version": "0.1.0",
   "description": "A 2.5D web RPG based on The Dawn-Breakers",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
     "dev:server": "vite --host 0.0.0.0 --port 5173 --strictPort",
     "build": "tsc --noEmit && vite build",
     "demo:build": "tsc --noEmit && vite build --outDir dist-demo",
     "demo:serve": "vite preview --host 0.0.0.0 --port 4173 --strictPort --outDir dist-demo",
+    "lint": "npm run lint:localization && npm run lint:dialogues && npm run lint:content",
     "lint:localization": "node scripts/lint-localization.mjs",
     "lint:dialogues": "node scripts/lint-dialogues.mjs",
+    "lint:content": "node scripts/lint-content.mjs",
     "lint:duplicates": "jscpd --config .jscpd.json src scripts",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
