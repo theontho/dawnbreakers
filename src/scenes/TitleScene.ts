@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { resetFlags } from '../dialogue/flags';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
-import { addLanguageDropdown } from '../ui/languageDropdown';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
+import { activateTitleTextButton, addFastSunriseButton, addTitleLanguageButton } from './titleControls';
 import { playTitleBookOpening } from './titleBookOpening';
 import { addTitleCityDaylight, addTitleCitySilhouette, addTitleCloud } from './titleCity';
 import { calculateTitleDaylight } from './titleDaylight';
@@ -100,74 +100,15 @@ export class TitleScene extends Phaser.Scene {
         this.tweens.add({ targets: prompt, alpha: 0.3, duration: 900, yoyo: true, repeat: -1 });
         this.input.keyboard?.once('keydown-SPACE', start);
         this.input.once('pointerdown', start);
-        this.addLanguageButton(size);
-        showRestartOpening = this.addFastSunriseButton(size, speedUpSunrise);
-        this.activateTextButton(chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
-        this.activateTextButton(editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
-        this.activateTextButton(reset, '#9c8458', '#f3d98a', () => {
+        addTitleLanguageButton(this, size, () => this.scene.restart());
+        showRestartOpening = addFastSunriseButton(this, size, speedUpSunrise);
+        activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
+        activateTitleTextButton(this, editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
+        activateTitleTextButton(this, reset, '#9c8458', '#f3d98a', () => {
           resetFlags();
           reset.setText(t('Reset ✓'));
         });
       },
-    });
-  }
-
-  private addFastSunriseButton(size: { width: number; height: number }, speedUpSunrise: () => void): () => void {
-    const safe = safeLayout(size);
-    const fast = this.add.text(rtl ? safe.right : safe.x, safe.bottom, t('Fast'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(14, size), color: '#9c8458',
-      backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
-    })).setOrigin(textOriginX(0), 1);
-    let mode: 'fast' | 'accelerating' | 'restart' = 'fast';
-
-    this.activateTextButton(fast, '#9c8458', '#f3d98a', () => {
-      if (mode === 'restart') {
-        this.scene.restart();
-        return;
-      }
-
-      if (mode === 'accelerating') return;
-
-      mode = 'accelerating';
-      speedUpSunrise();
-      fast.setText(t('Fast ✓'));
-      fast.setAlpha(0.7);
-    });
-
-    return () => {
-      mode = 'restart';
-      fast.setText(t('Restart opening'));
-      fast.setAlpha(1);
-    };
-  }
-
-  private activateTextButton(
-    button: Phaser.GameObjects.Text,
-    normalColor: string,
-    hoverColor: string,
-    onClick: () => void,
-  ): void {
-    button.setInteractive({ useHandCursor: true })
-      .on('pointerover', () => button.setColor(hoverColor))
-      .on('pointerout', () => button.setColor(normalColor))
-      .on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: { stopPropagation: () => void }) => {
-        ev.stopPropagation();
-        onClick();
-      });
-  }
-
-  private addLanguageButton(size: { width: number; height: number }): void {
-    const safe = safeLayout(size);
-    const buttonW = 88;
-    const x = rtl ? safe.x : safe.right - buttonW;
-    const y = safe.y;
-    addLanguageDropdown(this, {
-      x,
-      y,
-      buttonWidth: buttonW,
-      menuWidth: 132,
-      size,
-      onChange: () => this.scene.restart(),
     });
   }
 

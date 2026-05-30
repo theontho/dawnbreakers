@@ -9,6 +9,15 @@ import { buttonFont, isNarrowLayout, MIN_TOUCH_TARGET, responsiveFont, responsiv
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { createIsoPrism, drawIsoPrismShape, gridToIsoScreen, wallInsetPoints } from './isoGeometry';
 import {
+  circleIntersectsRect,
+  createHardRevealMaskState,
+  createSoftRevealMaskState,
+  redrawRevealMaskState,
+  revealTargetForSprite,
+  type RevealMaskState,
+  type RevealTarget,
+} from './baseMapReveal';
+import {
   TILE_H,
   TILE_W,
   type Building,
@@ -20,26 +29,9 @@ import {
   type SceneSpawnData,
   type TileKind,
 } from './baseMapTypes';
+import { drawMobileMoveArrow, shouldShowMobileControls } from './baseMapHud';
 
 const WORLD_BACKDROP_COLOR = 0x0a0806;
-
-interface RevealTarget {
-  x: number;
-  y: number;
-  depth: number;
-  radius: number;
-}
-
-interface RevealMaskState {
-  sprite: Phaser.GameObjects.Image;
-  bounds: Phaser.Geom.Rectangle;
-  staticReveals: RevealTarget[];
-  textureKey?: string;
-  texture?: Phaser.Textures.CanvasTexture;
-  context?: CanvasRenderingContext2D;
-  maskObject?: Phaser.GameObjects.Image;
-  maskShape?: Phaser.GameObjects.Graphics;
-}
 
 /**
  * Shared logic for any walkable map scene: iso rendering, grid movement,
@@ -385,7 +377,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     for (const sprite of this.occludableSprites) {
       const bounds = sprite.getBounds();
       const staticReveals = revealTargets.filter((reveal) =>
-        sprite.depth > reveal.depth && this.circleIntersectsRect(reveal.x, reveal.y, reveal.radius, bounds));
+        sprite.depth > reveal.depth && circleIntersectsRect(reveal.x, reveal.y, reveal.radius, bounds));
 
       if (this.game.renderer.type === Phaser.WEBGL) {
         this.createSoftRevealMask(sprite, bounds, staticReveals);
@@ -400,25 +392,11 @@ export abstract class BaseMapScene extends Phaser.Scene {
     return this.interactables
       .map((interactable) => interactable.sprite)
       .filter((sprite): sprite is Phaser.GameObjects.Image => Boolean(sprite))
-      .map((sprite) => {
-        const bounds = sprite.getBounds();
-        return {
-          x: bounds.centerX,
-          y: bounds.centerY,
-          depth: sprite.depth,
-          radius: Phaser.Math.Clamp(Math.max(bounds.width, bounds.height) * 0.62, 34, 54),
-        };
-      });
+      .map((sprite) => revealTargetForSprite(sprite, 0.62, 34, 54));
   }
 
   private playerRevealTarget(): RevealTarget {
-    const bounds = this.player.getBounds();
-    return {
-      x: bounds.centerX,
-      y: bounds.centerY,
-      depth: this.player.depth,
-      radius: Phaser.Math.Clamp(Math.max(bounds.width, bounds.height) * 0.68, 38, 60),
-    };
+    return revealTargetForSprite(this.player, 0.68, 38, 60);
   }
 
   private createSoftRevealMask(
@@ -426,44 +404,9 @@ export abstract class BaseMapScene extends Phaser.Scene {
     bounds: Phaser.Geom.Rectangle,
     staticReveals: RevealTarget[],
   ): void {
-    const width = Math.max(1, Math.ceil(bounds.width));
-    const height = Math.max(1, Math.ceil(bounds.height));
     const textureKey = `${this.scene.key}-reveal-mask-${this.revealMaskStates.length}`;
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      console.warn('Could not create interactable reveal mask canvas context');
-      return;
-    }
-
-    const texture = this.textures.addCanvas(textureKey, canvas);
-    if (!texture) {
-      console.warn(`Could not create interactable reveal mask texture: ${textureKey}`);
-      return;
-    }
-
-    const maskObject = this.make.image({
-      x: bounds.centerX,
-      y: bounds.centerY,
-      key: textureKey,
-      add: false,
-    }).setOrigin(0.5);
-
-    const mask = maskObject.createBitmapMask();
-    mask.invertAlpha = true;
-    sprite.setMask(mask);
-    this.revealMaskStates.push({
-      sprite,
-      bounds,
-      staticReveals,
-      textureKey,
-      texture,
-      context: ctx,
-      maskObject,
-    });
+    const state = createSoftRevealMaskState(this, sprite, bounds, staticReveals, textureKey);
+    if (state) this.revealMaskStates.push(state);
   }
 
   private createHardRevealMask(
@@ -471,16 +414,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     bounds: Phaser.Geom.Rectangle,
     staticReveals: RevealTarget[],
   ): void {
-    const maskShape = this.add.graphics().setVisible(false);
-    const mask = maskShape.createGeometryMask();
-    mask.setInvertAlpha(true);
-    sprite.setMask(mask);
-    this.revealMaskStates.push({
-      sprite,
-      bounds,
-      staticReveals,
-      maskShape,
-    });
+    this.revealMaskStates.push(createHardRevealMaskState(this, sprite, bounds, staticReveals));
   }
 
   private updatePlayerRevealMasks(force = false): void {
@@ -497,7 +431,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     for (const state of this.revealMaskStates) {
       const reveals = [...state.staticReveals];
       if (state.sprite.depth > playerReveal.depth
-        && this.circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds)) {
+        && circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds)) {
         reveals.push(playerReveal);
       }
       this.redrawRevealMask(state, reveals);
@@ -506,40 +440,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
   }
 
   private redrawRevealMask(state: RevealMaskState, reveals: RevealTarget[]): void {
-    if (state.context && state.texture) {
-      state.context.clearRect(0, 0, state.context.canvas.width, state.context.canvas.height);
-      for (const reveal of reveals) {
-        this.drawSoftRevealCircle(state.context, state.bounds, reveal);
-      }
-      state.texture.refresh();
-      return;
-    }
-
-    state.maskShape?.clear();
-    state.maskShape?.fillStyle(0xffffff, 1);
-    for (const reveal of reveals) {
-      state.maskShape?.fillCircle(reveal.x, reveal.y, reveal.radius);
-    }
-  }
-
-  private drawSoftRevealCircle(
-    ctx: CanvasRenderingContext2D,
-    bounds: Phaser.Geom.Rectangle,
-    reveal: RevealTarget,
-  ): void {
-    const localX = reveal.x - bounds.left;
-    const localY = reveal.y - bounds.top;
-    const gradient = ctx.createRadialGradient(localX, localY, 0, localX, localY, reveal.radius);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.96)');
-    gradient.addColorStop(0.52, 'rgba(255, 255, 255, 0.82)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(
-      Math.floor(localX - reveal.radius),
-      Math.floor(localY - reveal.radius),
-      Math.ceil(reveal.radius * 2),
-      Math.ceil(reveal.radius * 2),
-    );
+    redrawRevealMaskState(state, reveals);
   }
 
   private destroyInteractableRevealMasks(): void {
@@ -553,19 +454,6 @@ export abstract class BaseMapScene extends Phaser.Scene {
     }
     this.revealMaskStates = [];
     this.lastPlayerReveal = undefined;
-  }
-
-  private circleIntersectsRect(
-    circleX: number,
-    circleY: number,
-    radius: number,
-    rect: Phaser.Geom.Rectangle,
-  ): boolean {
-    const nearestX = Phaser.Math.Clamp(circleX, rect.left, rect.right);
-    const nearestY = Phaser.Math.Clamp(circleY, rect.top, rect.bottom);
-    const dx = circleX - nearestX;
-    const dy = circleY - nearestY;
-    return dx * dx + dy * dy <= radius * radius;
   }
 
   private setupInteractableHighlights(): void {
@@ -748,7 +636,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     const buttonGap = narrow ? 5 : 8;
     const buttonBlockW = buttonSize * 3 + buttonGap * 2;
     const titleW = narrow ? Math.max(72, safe.width - buttonBlockW - 12) : safe.width * 0.42;
-    const mobileControls = this.shouldShowMobileControls(size);
+    const mobileControls = shouldShowMobileControls(size);
     const mobileControlSize = touchSize(width <= 380 ? 48 : 52);
     const mobileControlsTop = safe.bottom - mobileControlSize * 3 - 12;
     const promptY = mobileControls ? Math.max(safe.y + 140, mobileControlsTop - 24) : safe.bottom - 22;
@@ -790,10 +678,6 @@ export abstract class BaseMapScene extends Phaser.Scene {
     }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setAlpha(0);
 
     if (mobileControls) this.setupMobileControls(width, height, UI_DEPTH + 5);
-  }
-
-  private shouldShowMobileControls({ width, height }: { width: number; height: number }): boolean {
-    return width <= 640 || (width <= 760 && height <= 520);
   }
 
   protected makeHudIconButton(
@@ -918,7 +802,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
         this.mobileMoveDirection = direction;
         ring.setFillStyle(0x2a1c10, 0.72);
         ring.setStrokeStyle(2, 0xf3d98a, 0.95);
-        this.drawMobileArrow(arrow, 0xfff1c0);
+        drawMobileMoveArrow(arrow, 0xfff1c0);
       })
       .on('pointerup', () => this.clearMobileMove(direction, button, ring, arrow))
       .on('pointerout', () => this.clearMobileMove(direction, button, ring, arrow))
@@ -931,20 +815,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
       .setAngle(angle)
       .setScrollFactor(0)
       .setDepth(depth + 2);
-    this.drawMobileArrow(arrow, 0xf3d98a);
+    drawMobileMoveArrow(arrow, 0xf3d98a);
     if (this.mobileControls) this.mobileControls.add([button, ring, arrow]);
-  }
-
-  private drawMobileArrow(arrow: Phaser.GameObjects.Graphics, color: number): void {
-    arrow.clear();
-    arrow.fillStyle(color, 1);
-    arrow.beginPath();
-    arrow.moveTo(0, -11);
-    arrow.lineTo(9, 9);
-    arrow.lineTo(0, 5);
-    arrow.lineTo(-9, 9);
-    arrow.closePath();
-    arrow.fillPath();
   }
 
   private clearMobileMove(
@@ -957,7 +829,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     button.setFillStyle(0x000000, 0);
     ring.setFillStyle(0x1a120a, 0.48);
     ring.setStrokeStyle(1.5, 0xc9a55c, 0.8);
-    this.drawMobileArrow(arrow, 0xf3d98a);
+    drawMobileMoveArrow(arrow, 0xf3d98a);
   }
 
   private setMobileControlsVisible(visible: boolean): void {

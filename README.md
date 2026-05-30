@@ -38,9 +38,12 @@ src/
   scenes/
     BaseMapScene.ts       # shared isometric scene behavior
     baseMapTypes.ts       # shared map, tile, geometry, and spawn types
+    baseMapReveal.ts      # interactable reveal mask helpers
     isoGeometry.ts        # shared isometric projection/drawing helpers
     MapEditorScene.ts     # in-game map editor
+    mapEditor*.ts         # editor storage, geometry, asset picker, and world helpers
     TitleScene.ts         # title card and chapter entry
+    titleControls.ts      # title screen button/dropdown helpers
     DialogueScene.ts      # overlay UI that renders a DialogueTree
     JournalScene.ts       # readable entries and chapter notes
   dialogue/

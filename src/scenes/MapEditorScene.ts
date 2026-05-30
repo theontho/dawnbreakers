@@ -1,111 +1,65 @@
 import Phaser from 'phaser';
 import {
-  CODE_TILE,
   ensureMapAssetTextures,
   ensureTileTextures,
   MAP_ASSET_CATEGORIES,
-  type MapAssetCategory,
   MAP_OBJECT_BY_ID,
   MAP_OBJECTS,
-  TILE_CODE,
   TILE_OPTIONS,
-  type MapObjectDefinition,
-  type MapObjectFootprint,
-  type MapObjectId,
-  type MapObjectKind,
 } from '../assets/mapAssetLibrary';
 import { TILE_H, TILE_W, type TileKind } from './baseMapTypes';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { addLanguageDropdown } from '../ui/languageDropdown';
 import { buttonFont, clamp, isNarrowLayout, isPortraitLayout, MIN_TOUCH_TARGET, responsiveFont, safeLayout } from '../ui/responsive';
+import {
+  assetPickerOffsetForAsset as getAssetPickerOffsetForAsset,
+  assetPickerRowHeight as getAssetPickerRowHeight,
+  assetPickerRows as buildAssetPickerRows,
+  clampedAssetPickerScrollY as clampAssetPickerScrollY,
+  firstAssetAfterScrollY as getFirstAssetAfterScrollY,
+  firstCategorizedAsset as getFirstCategorizedAsset,
+  totalCategorizedAssets as getTotalCategorizedAssets,
+} from './mapEditorAssetPicker';
+import {
+  editorGridToScreen,
+  footprintCells as getFootprintCells,
+  footprintInBounds as isFootprintInBounds,
+  objectTouchesCell as doesObjectTouchCell,
+  pointerToEditorGrid,
+  tileDiamond as getTileDiamond,
+} from './mapEditorGeometry';
+import {
+  ASSET_PICKER_MAX_WHEEL_DELTA,
+  ASSET_PICKER_WHEEL_SCALE,
+  EDITOR_TOP_BAR_H,
+  MAX_H,
+  MAX_W,
+  MIN_H,
+  MIN_W,
+  PALETTE_BUTTON_GAP,
+  PANEL_W,
+  STORAGE_KEY,
+  type AssetPickerGeometry,
+  type AssetPickerRow,
+  type EditorLayout,
+  type EditorMap,
+  type EditorObjectDefinition,
+  type EditorObjectId,
+  type EditorSceneData,
+  type EditorTool,
+  type ObjectFootprint,
+  type ObjectTool,
+  type SpecialToolIcon,
+} from './mapEditorTypes';
+import {
+  createDefaultEditorMap,
+  createEmptyEditorMap,
+  encodeEditorMap,
+  loadEditorMap,
+  saveEditorMap,
+} from './mapEditorStorage';
+import { drawEditorFootprintOutline, renderEditorWorld } from './mapEditorWorld';
 
-type EditorObjectKind = MapObjectKind;
-type EditorObjectId = MapObjectId;
-type ObjectTool = `object:${EditorObjectId}`;
-type EditorTool = TileKind | 'block' | 'open' | 'erase-object' | ObjectTool;
-type ObjectFootprint = MapObjectFootprint;
-type EditorObjectDefinition = MapObjectDefinition;
-
-interface EditorPlacedObject {
-  id: EditorObjectId;
-  x: number;
-  y: number;
-}
-
-interface EditorMap {
-  width: number;
-  height: number;
-  tiles: TileKind[][];
-  blocked: boolean[][];
-  objects: EditorPlacedObject[];
-}
-
-interface StoredEditorObject extends EditorPlacedObject {
-  texture?: string;
-  kind?: EditorObjectKind;
-  blocks?: boolean;
-  footprint?: ObjectFootprint;
-  isometric?: true;
-}
-
-interface StoredEditorMap {
-  width: number;
-  height: number;
-  tiles: string[];
-  blocked: string[];
-  objects?: StoredEditorObject[];
-}
-
-interface EditorLayout {
-  mode: 'side' | 'bottom';
-  panelX: number;
-  panelY: number;
-  panelW: number;
-  panelH: number;
-  mapX: number;
-  mapY: number;
-  mapW: number;
-  mapH: number;
-}
-
-interface AssetPickerGeometry {
-  overlayX: number;
-  overlayY: number;
-  overlayW: number;
-  overlayH: number;
-  gridX: number;
-  gridY: number;
-  gridW: number;
-  contentH: number;
-  previewX: number;
-  previewY: number;
-  previewW: number;
-  previewH: number;
-  gridCellW: number;
-  gridCellH: number;
-  gridGap: number;
-  gridColumns: number;
-}
-
-interface EditorSceneData {
-  from?: string;
-}
-
-type AssetPickerRow =
-  | { kind: 'header'; category: MapAssetCategory; count: number }
-  | { kind: 'assets'; category: MapAssetCategory; assets: EditorObjectDefinition[] };
-type SpecialToolIcon = 'block' | 'open' | 'erase';
-
-const STORAGE_KEY = 'dawnbreakers.mapEditor.v1';
-const PANEL_W = 300;
-const EDITOR_TOP_BAR_H = 72;
-const MIN_W = 6;
-const MAX_W = 30;
-const MIN_H = 6;
-const MAX_H = 20;
-const ASSET_PICKER_WHEEL_SCALE = 0.65;
-const ASSET_PICKER_MAX_WHEEL_DELTA = 90;
-const PALETTE_BUTTON_GAP = 6;
 const EDITOR_OBJECTS = MAP_OBJECTS;
 const OBJECT_BY_ID = MAP_OBJECT_BY_ID;
 
@@ -144,7 +98,11 @@ export class MapEditorScene extends Phaser.Scene {
   create(): void {
     this.validateObjectCatalog();
     this.ensureEditorObjectTextures();
-    this.editorMap = this.loadStoredMap() ?? this.createDefaultMap(18, 12);
+    try {
+      this.editorMap = loadEditorMap(localStorage, STORAGE_KEY, OBJECT_BY_ID) ?? createDefaultEditorMap(18, 12);
+    } catch {
+      this.editorMap = createDefaultEditorMap(18, 12);
+    }
     this.rebuildLayout(true);
     this.setupInput();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
@@ -797,20 +755,11 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private clampedAssetPickerScrollY(scrollY: number, rows: AssetPickerRow[], contentH: number): number {
-    return Phaser.Math.Clamp(scrollY, 0, Math.max(0, this.totalAssetPickerContentHeight(rows) - contentH));
+    return clampAssetPickerScrollY(scrollY, rows, contentH);
   }
 
   private assetPickerRows(gridColumns: number): AssetPickerRow[] {
-    const rows: AssetPickerRow[] = [];
-    for (const category of MAP_ASSET_CATEGORIES) {
-      const assets = this.assetsForCategory(category);
-      if (assets.length === 0) continue;
-      rows.push({ kind: 'header', category, count: assets.length });
-      for (let i = 0; i < assets.length; i += gridColumns) {
-        rows.push({ kind: 'assets', category, assets: assets.slice(i, i + gridColumns) });
-      }
-    }
-    return rows;
+    return buildAssetPickerRows(MAP_ASSET_CATEGORIES, OBJECT_BY_ID, gridColumns);
   }
 
   private drawAssetPickerRows(
@@ -894,48 +843,23 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private assetPickerRowHeight(row: AssetPickerRow): number {
-    return row.kind === 'header' ? 42 : 126;
-  }
-
-  private totalAssetPickerContentHeight(rows: AssetPickerRow[]): number {
-    return rows.reduce((sum, row) => sum + this.assetPickerRowHeight(row), 0);
+    return getAssetPickerRowHeight(row);
   }
 
   private assetPickerOffsetForAsset(rows: AssetPickerRow[], id: EditorObjectId): number {
-    let offsetY = 0;
-    for (const row of rows) {
-      if (row.kind === 'assets' && row.assets.some(asset => asset.id === id)) return offsetY;
-      offsetY += this.assetPickerRowHeight(row);
-    }
-    return 0;
+    return getAssetPickerOffsetForAsset(rows, id);
   }
 
   private firstAssetAfterScrollY(rows: AssetPickerRow[], scrollY: number): EditorObjectDefinition | undefined {
-    let offsetY = 0;
-    for (const row of rows) {
-      offsetY += this.assetPickerRowHeight(row);
-      if (offsetY < scrollY || row.kind !== 'assets') continue;
-      return row.assets[0];
-    }
-    return undefined;
+    return getFirstAssetAfterScrollY(rows, scrollY);
   }
 
   private firstCategorizedAsset(): EditorObjectDefinition | undefined {
-    for (const category of MAP_ASSET_CATEGORIES) {
-      const asset = this.assetsForCategory(category)[0];
-      if (asset) return asset;
-    }
-    return undefined;
+    return getFirstCategorizedAsset(MAP_ASSET_CATEGORIES, OBJECT_BY_ID);
   }
 
   private totalCategorizedAssets(): number {
-    return MAP_ASSET_CATEGORIES.reduce((sum, category) => sum + this.assetsForCategory(category).length, 0);
-  }
-
-  private assetsForCategory(category: MapAssetCategory): EditorObjectDefinition[] {
-    return category.objectIds
-      .map(id => OBJECT_BY_ID.get(id))
-      .filter((def): def is EditorObjectDefinition => def !== undefined);
+    return getTotalCategorizedAssets(MAP_ASSET_CATEGORIES, OBJECT_BY_ID);
   }
 
   private previewAsset(def: EditorObjectDefinition, x: number, y: number, w: number, h: number): void {
@@ -1094,55 +1018,7 @@ export class MapEditorScene extends Phaser.Scene {
 
   private renderWorld(): void {
     this.world?.destroy(true);
-    this.world = this.add.container(0, 0).setDepth(1);
-
-    for (let y = 0; y < this.editorMap.height; y++) {
-      for (let x = 0; x < this.editorMap.width; x++) {
-        const pos = this.gridToScreen(x, y);
-        const tile = this.add.image(pos.sx, pos.sy, 'tile-' + this.editorMap.tiles[y][x])
-          .setOrigin(0.5, 0.5);
-        this.world.add(tile);
-      }
-    }
-
-    const overlay = this.add.graphics();
-    for (let y = 0; y < this.editorMap.height; y++) {
-      for (let x = 0; x < this.editorMap.width; x++) {
-        if (!this.editorMap.blocked[y][x]) continue;
-        const pos = this.gridToScreen(x, y);
-        const diamond = this.tileDiamond(pos.sx, pos.sy);
-        overlay.fillStyle(0x7a1f1f, 0.38);
-        overlay.fillPoints(diamond, true);
-        overlay.lineStyle(2, 0x220909, 0.85);
-        overlay.lineBetween(pos.sx - 14, pos.sy - 7, pos.sx + 14, pos.sy + 7);
-        overlay.lineBetween(pos.sx + 14, pos.sy - 7, pos.sx - 14, pos.sy + 7);
-      }
-    }
-    this.world.add(overlay);
-
-    const objectOverlay = this.add.graphics();
-    const sortedObjects = [...this.editorMap.objects].sort((a, b) => {
-      const af = this.objectFrontCell(a);
-      const bf = this.objectFrontCell(b);
-      return (af.x + af.y) - (bf.x + bf.y);
-    });
-    for (const obj of sortedObjects) {
-      const def = OBJECT_BY_ID.get(obj.id);
-      if (!def) continue;
-
-      if (def.footprint) {
-        objectOverlay.lineStyle(1, def.isometric ? 0x76a56d : 0xb83232, 0.8);
-        this.drawFootprintOutline(objectOverlay, obj.x, obj.y, def.footprint);
-      }
-
-      const front = this.objectFrontCell(obj);
-      const pos = this.gridToScreen(front.x, front.y);
-      const sprite = this.add.image(pos.sx, pos.sy + TILE_H / 2, def.texture)
-        .setOrigin(0.5, 1)
-        .setDepth(pos.sy + 1);
-      this.world.add(sprite);
-    }
-    this.world.add(objectOverlay);
+    this.world = renderEditorWorld(this, this.editorMap, this.originX, this.originY, OBJECT_BY_ID);
   }
 
   private resizeMap(width: number, height: number): void {
@@ -1150,7 +1026,7 @@ export class MapEditorScene extends Phaser.Scene {
     const nextH = Phaser.Math.Clamp(height, MIN_H, MAX_H);
     if (nextW === this.editorMap.width && nextH === this.editorMap.height) return;
 
-    const next = this.createEmptyMap(nextW, nextH, 'grass');
+    const next = createEmptyEditorMap(nextW, nextH, 'grass');
     for (let y = 0; y < Math.min(nextH, this.editorMap.height); y++) {
       for (let x = 0; x < Math.min(nextW, this.editorMap.width); x++) {
         next.tiles[y][x] = this.editorMap.tiles[y][x];
@@ -1159,7 +1035,7 @@ export class MapEditorScene extends Phaser.Scene {
     }
     next.objects = this.editorMap.objects.filter(obj => {
       const def = OBJECT_BY_ID.get(obj.id);
-      return def !== undefined && this.footprintInBounds(obj.x, obj.y, def.footprint, nextW, nextH);
+      return def !== undefined && isFootprintInBounds(obj.x, obj.y, def.footprint, nextW, nextH);
     });
     this.editorMap = next;
     this.renderWorld();
@@ -1167,14 +1043,14 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private resetMap(): void {
-    this.editorMap = this.createDefaultMap(18, 12);
+    this.editorMap = createDefaultEditorMap(18, 12);
     this.renderWorld();
     this.updateStatus(t('Cleared to default map.'));
   }
 
   private saveMap(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.encodeMap()));
+      saveEditorMap(localStorage, STORAGE_KEY, this.editorMap, OBJECT_BY_ID);
       this.updateStatus(t('Saved in this browser.'));
     } catch (error) {
       this.updateStatus(t('Save failed: {message}', { message: this.errorMessage(error) }));
@@ -1182,7 +1058,13 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private loadMapIntoEditor(): void {
-    const loaded = this.loadStoredMap();
+    let loaded: EditorMap | undefined;
+    try {
+      loaded = loadEditorMap(localStorage, STORAGE_KEY, OBJECT_BY_ID);
+    } catch (error) {
+      this.updateStatus(t('Load failed: {message}', { message: this.errorMessage(error) }));
+      return;
+    }
     if (!loaded) {
       this.updateStatus(t('No saved editor map found.'));
       return;
@@ -1192,20 +1074,8 @@ export class MapEditorScene extends Phaser.Scene {
     this.updateStatus(t('Loaded saved editor map.'));
   }
 
-  private loadStoredMap(): EditorMap | undefined {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return undefined;
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      if (!this.isStoredMap(parsed)) return undefined;
-      return this.decodeMap(parsed);
-    } catch {
-      return undefined;
-    }
-  }
-
   private async copyExport(): Promise<void> {
-    const json = JSON.stringify(this.encodeMap(), null, 2);
+    const json = JSON.stringify(encodeEditorMap(this.editorMap, OBJECT_BY_ID), null, 2);
     this.exportText.setText(json.length > 420 ? json.slice(0, 420) + '\n...' : json);
 
     if (!navigator.clipboard) {
@@ -1219,111 +1089,6 @@ export class MapEditorScene extends Phaser.Scene {
     } catch (error) {
       this.updateStatus(t('Copy failed: {message}', { message: this.errorMessage(error) }));
     }
-  }
-
-  private encodeMap(): StoredEditorMap {
-    return {
-      width: this.editorMap.width,
-      height: this.editorMap.height,
-      tiles: this.editorMap.tiles.map(row => row.map(tile => TILE_CODE[tile]).join('')),
-      blocked: this.editorMap.blocked.map(row => row.map(blocked => blocked ? '#' : '.').join('')),
-      objects: this.editorMap.objects.map(obj => {
-        const def = OBJECT_BY_ID.get(obj.id);
-        return {
-          ...obj,
-          texture: def?.texture,
-          kind: def?.kind,
-          blocks: def?.blocks,
-          footprint: def?.footprint,
-          isometric: def?.isometric,
-        };
-      }),
-    };
-  }
-
-  private decodeMap(stored: StoredEditorMap): EditorMap {
-    const decoded = this.createEmptyMap(stored.width, stored.height, 'grass');
-    for (let y = 0; y < stored.height; y++) {
-      for (let x = 0; x < stored.width; x++) {
-        decoded.tiles[y][x] = CODE_TILE[stored.tiles[y][x]];
-        decoded.blocked[y][x] = stored.blocked[y][x] === '#';
-      }
-    }
-    decoded.objects = (stored.objects ?? [])
-      .filter(obj => OBJECT_BY_ID.has(obj.id))
-      .map(obj => ({ id: obj.id, x: obj.x, y: obj.y }));
-    return decoded;
-  }
-
-  private isStoredMap(value: unknown): value is StoredEditorMap {
-    if (!value || typeof value !== 'object') return false;
-    const record = value as Record<string, unknown>;
-    if (!Number.isInteger(record.width) || !Number.isInteger(record.height)) return false;
-    if (!Array.isArray(record.tiles) || !Array.isArray(record.blocked)) return false;
-
-    const width = record.width as number;
-    const height = record.height as number;
-    if (width < MIN_W || width > MAX_W || height < MIN_H || height > MAX_H) return false;
-    if (record.tiles.length !== height || record.blocked.length !== height) return false;
-
-    const validTiles = record.tiles.every(row =>
-      typeof row === 'string' &&
-      row.length === width &&
-      [...row].every(code => CODE_TILE[code] !== undefined),
-    );
-    const validBlocked = record.blocked.every(row =>
-      typeof row === 'string' &&
-      row.length === width &&
-      [...row].every(code => code === '#' || code === '.'),
-    );
-    if (!validTiles || !validBlocked) return false;
-
-    if (record.objects === undefined) return true;
-    if (!Array.isArray(record.objects)) return false;
-    return record.objects.every(obj => {
-      if (!obj || typeof obj !== 'object') return false;
-      const candidate = obj as Record<string, unknown>;
-      if (typeof candidate.id !== 'string' || !OBJECT_BY_ID.has(candidate.id as EditorObjectId)) return false;
-      if (!Number.isInteger(candidate.x) || !Number.isInteger(candidate.y)) return false;
-      const def = OBJECT_BY_ID.get(candidate.id as EditorObjectId);
-      return def !== undefined && this.footprintInBounds(
-        candidate.x as number,
-        candidate.y as number,
-        def.footprint,
-        width,
-        height,
-      );
-    });
-  }
-
-  private createDefaultMap(width: number, height: number): EditorMap {
-    const map = this.createEmptyMap(width, height, 'grass');
-    const midY = Math.floor(height / 2);
-    const midX = Math.floor(width / 2);
-    for (let x = 0; x < width; x++) map.tiles[midY][x] = 'path';
-    for (let y = 0; y < height; y++) map.tiles[y][midX] = 'path';
-    for (let x = 0; x < width; x++) {
-      map.tiles[0][x] = 'sand';
-      map.tiles[height - 1][x] = 'sand';
-    }
-    for (let y = 0; y < height; y++) {
-      map.tiles[y][0] = 'sand';
-      map.tiles[y][width - 1] = 'sand';
-    }
-    map.objects.push({ id: 'house', x: 3, y: 3 });
-    map.objects.push({ id: 'cypress', x: width - 4, y: 3 });
-    map.objects.push({ id: 'traveller', x: midX + 2, y: midY });
-    return map;
-  }
-
-  private createEmptyMap(width: number, height: number, fill: TileKind): EditorMap {
-    const tiles: TileKind[][] = [];
-    const blocked: boolean[][] = [];
-    for (let y = 0; y < height; y++) {
-      tiles.push(Array.from({ length: width }, () => fill));
-      blocked.push(Array.from({ length: width }, () => false));
-    }
-    return { width, height, tiles, blocked, objects: [] };
   }
 
   private startPanning(pointer: Phaser.Input.Pointer): void {
@@ -1355,27 +1120,15 @@ export class MapEditorScene extends Phaser.Scene {
   }
 
   private gridFromPointer(pointer: Phaser.Input.Pointer): { x: number; y: number } | undefined {
-    const a = (pointer.x - this.originX) / (TILE_W / 2);
-    const b = (pointer.y - this.originY) / (TILE_H / 2);
-    const x = Math.round((a + b) / 2);
-    const y = Math.round((b - a) / 2);
-    return this.inBounds(x, y) ? { x, y } : undefined;
+    return pointerToEditorGrid(pointer, this.originX, this.originY, this.editorMap.width, this.editorMap.height);
   }
 
   private gridToScreen(gx: number, gy: number): { sx: number; sy: number } {
-    return {
-      sx: this.originX + (gx - gy) * (TILE_W / 2),
-      sy: this.originY + (gx + gy) * (TILE_H / 2),
-    };
+    return editorGridToScreen(this.originX, this.originY, gx, gy);
   }
 
   private tileDiamond(sx: number, sy: number): Phaser.Types.Math.Vector2Like[] {
-    return [
-      { x: sx, y: sy - TILE_H / 2 },
-      { x: sx + TILE_W / 2, y: sy },
-      { x: sx, y: sy + TILE_H / 2 },
-      { x: sx - TILE_W / 2, y: sy },
-    ];
+    return getTileDiamond(sx, sy);
   }
 
   private drawFootprintOutline(
@@ -1384,38 +1137,15 @@ export class MapEditorScene extends Phaser.Scene {
     y: number,
     footprint: ObjectFootprint = { w: 1, h: 1 },
   ): void {
-    for (let dy = 0; dy < footprint.h; dy++) {
-      for (let dx = 0; dx < footprint.w; dx++) {
-        if (!this.inBounds(x + dx, y + dy)) continue;
-        const pos = this.gridToScreen(x + dx, y + dy);
-        g.strokePoints(this.tileDiamond(pos.sx, pos.sy), true);
-      }
-    }
+    drawEditorFootprintOutline(g, this.originX, this.originY, this.editorMap, x, y, footprint);
   }
 
-  private objectFrontCell(obj: EditorPlacedObject): { x: number; y: number } {
-    const def = OBJECT_BY_ID.get(obj.id);
-    const footprint = def?.footprint ?? { w: 1, h: 1 };
-    return {
-      x: obj.x + footprint.w - 1,
-      y: obj.y + footprint.h - 1,
-    };
-  }
-
-  private objectTouchesCell(obj: EditorPlacedObject, x: number, y: number): boolean {
-    const def = OBJECT_BY_ID.get(obj.id);
-    const footprint = def?.footprint ?? { w: 1, h: 1 };
-    return x >= obj.x && y >= obj.y && x < obj.x + footprint.w && y < obj.y + footprint.h;
+  private objectTouchesCell(obj: { id: EditorObjectId; x: number; y: number }, x: number, y: number): boolean {
+    return doesObjectTouchCell(obj, x, y, OBJECT_BY_ID.get(obj.id)?.footprint);
   }
 
   private footprintCells(x: number, y: number, footprint: ObjectFootprint = { w: 1, h: 1 }): Array<{ x: number; y: number }> {
-    const cells: Array<{ x: number; y: number }> = [];
-    for (let dy = 0; dy < footprint.h; dy++) {
-      for (let dx = 0; dx < footprint.w; dx++) {
-        cells.push({ x: x + dx, y: y + dy });
-      }
-    }
-    return cells;
+    return getFootprintCells(x, y, footprint);
   }
 
   private footprintInBounds(
@@ -1425,16 +1155,7 @@ export class MapEditorScene extends Phaser.Scene {
     width = this.editorMap?.width,
     height = this.editorMap?.height,
   ): boolean {
-    return width !== undefined &&
-      height !== undefined &&
-      x >= 0 &&
-      y >= 0 &&
-      x + footprint.w <= width &&
-      y + footprint.h <= height;
-  }
-
-  private inBounds(x: number, y: number): boolean {
-    return x >= 0 && y >= 0 && x < this.editorMap.width && y < this.editorMap.height;
+    return isFootprintInBounds(x, y, footprint, width, height);
   }
 
   private isUIPointer(pointer: Phaser.Input.Pointer): boolean {
