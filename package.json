@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "demo:build": "tsc --noEmit && vite build --outDir dist-demo",
     "demo:serve": "vite preview --host 0.0.0.0 --port 4173 --strictPort --outDir dist-demo",
+    "lint:localization": "node scripts/lint-localization.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

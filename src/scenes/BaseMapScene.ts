@@ -1,16 +1,19 @@
 import Phaser from 'phaser';
 import { dialogues, babTreeFor } from '../data/dialogues';
-import { getFlags, resetFlags, applyEffect } from '../dialogue/flags';
+import { getFlags, applyEffect } from '../dialogue/flags';
 import { chapterByScene } from '../data/chapters';
 import type { DialogueLaunch } from './DialogueScene';
 import type { DialogueTree } from '../dialogue/types';
 import { makeCharacterTexture, type CharacterTextureOptions } from './characterTexture';
-import { buttonFont, isNarrowLayout, MIN_TOUCH_TARGET, responsiveFont, responsiveMargin, restartSceneOnResize, touchSize } from '../ui/responsive';
+import { buttonFont, isNarrowLayout, MIN_TOUCH_TARGET, responsiveFont, responsiveMargin, restartSceneOnResize, safeLayout, touchSize } from '../ui/responsive';
+import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 
 export const TILE_W = 64;
 export const TILE_H = 32;
 
 export type TileKind = 'grass' | 'path' | 'stone' | 'water' | 'sand';
+
+const WORLD_BACKDROP_COLOR = 0x0a0806;
 
 export interface IsoPoint {
   x: number;
@@ -126,10 +129,9 @@ export abstract class BaseMapScene extends Phaser.Scene {
   protected cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   protected interactKey!: Phaser.Input.Keyboard.Key;
   protected journalKey!: Phaser.Input.Keyboard.Key;
-  protected chapterKey!: Phaser.Input.Keyboard.Key;
   protected highlightKey!: Phaser.Input.Keyboard.Key;
   protected tabHighlightKey!: Phaser.Input.Keyboard.Key;
-  protected restartKey!: Phaser.Input.Keyboard.Key;
+  protected settingsKey!: Phaser.Input.Keyboard.Key;
   protected wasdKeys!: {
     W: Phaser.Input.Keyboard.Key;
     A: Phaser.Input.Keyboard.Key;
@@ -183,6 +185,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
 
     this.initEmptyMap();
     this.buildMap();
+    this.cameras.main.setBackgroundColor(WORLD_BACKDROP_COLOR);
     this.placeBuildings();
     this.placeDecor();
     this.setupExits();
@@ -247,6 +250,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
   // ---------- drawing ----------
 
   protected drawWorld(): void {
+    this.drawWorldBackdrop();
+
     for (let y = 0; y < this.mapHeight; y++) {
       for (let x = 0; x < this.mapWidth; x++) {
         const { sx, sy } = this.gridToScreen(x, y);
@@ -283,6 +288,13 @@ export abstract class BaseMapScene extends Phaser.Scene {
     }
   }
 
+  private drawWorldBackdrop(): void {
+    const bounds = this.getTileWorldBounds(this.scale.width, this.scale.height);
+    this.add.rectangle(bounds.x, bounds.y, bounds.width, bounds.height, WORLD_BACKDROP_COLOR, 1)
+      .setOrigin(0)
+      .setDepth(-100000);
+  }
+
   protected gridToScreen(gx: number, gy: number): { sx: number; sy: number } {
     const sx = this.originX + (gx - gy) * (TILE_W / 2);
     const sy = this.originY + (gx + gy) * (TILE_H / 2);
@@ -302,6 +314,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
   }
 
   private getMapWorldBounds(width: number, height: number): Phaser.Geom.Rectangle {
+    const tileBounds = this.getTileWorldBounds(width, height);
     let minX = Number.POSITIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
@@ -326,12 +339,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
       includeBounds(x - frame.width * originX, y - frame.height * originY, frame.width, frame.height);
     };
 
-    for (let y = 0; y < this.mapHeight; y++) {
-      for (let x = 0; x < this.mapWidth; x++) {
-        const pos = this.gridToScreen(x, y);
-        includeBounds(pos.sx - TILE_W / 2, pos.sy - TILE_H / 2, TILE_W, TILE_H);
-      }
-    }
+    includeBounds(tileBounds.x, tileBounds.y, tileBounds.width, tileBounds.height);
 
     for (const building of this.buildings) {
       const front = this.gridToScreen(building.gridX + building.w - 1, building.gridY + building.h - 1);
@@ -355,6 +363,32 @@ export abstract class BaseMapScene extends Phaser.Scene {
 
     const padX = Math.max(width / 2, TILE_W * 2);
     const padY = Math.max(height / 2, TILE_H * 4);
+    return new Phaser.Geom.Rectangle(
+      minX - padX,
+      minY - padY,
+      maxX - minX + padX * 2,
+      maxY - minY + padY * 2,
+    );
+  }
+
+  private getTileWorldBounds(width: number, height: number): Phaser.Geom.Rectangle {
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (let y = 0; y < this.mapHeight; y++) {
+      for (let x = 0; x < this.mapWidth; x++) {
+        const pos = this.gridToScreen(x, y);
+        minX = Math.min(minX, pos.sx - TILE_W / 2);
+        minY = Math.min(minY, pos.sy - TILE_H / 2);
+        maxX = Math.max(maxX, pos.sx + TILE_W / 2);
+        maxY = Math.max(maxY, pos.sy + TILE_H / 2);
+      }
+    }
+
+    const padX = Math.max(width, TILE_W * 4);
+    const padY = Math.max(height, TILE_H * 8);
     return new Phaser.Geom.Rectangle(
       minX - padX,
       minY - padY,
@@ -787,8 +821,8 @@ export abstract class BaseMapScene extends Phaser.Scene {
 
   protected endingBannerText(ending: string): string {
     return ending === 'firstLetter'
-      ? '— The First Letter of the Living —'
-      : '— You walk on into the night —';
+      ? t('— The First Letter of the Living —')
+      : t('— You walk on into the night —');
   }
 
   // ---------- HUD ----------
@@ -797,10 +831,9 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.journalKey  = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.J);
-    this.chapterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
     this.highlightKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.tabHighlightKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.TAB, true);
-    this.restartKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+    this.settingsKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.wasdKeys = {
       W: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W),
       A: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A),
@@ -812,55 +845,53 @@ export abstract class BaseMapScene extends Phaser.Scene {
   protected setupHUD(width: number, height: number): void {
     const UI_DEPTH = 10000;
     const size = { width, height };
-    const margin = responsiveMargin(size);
+    const safe = safeLayout(size);
     const narrow = isNarrowLayout(size);
-    const buttonY = narrow ? 10 : 14;
+    const buttonY = safe.y;
     const buttonSize = MIN_TOUCH_TARGET;
     const buttonGap = narrow ? 5 : 8;
-    const buttonBlockW = buttonSize * 4 + buttonGap * 3;
-    const titleW = narrow ? Math.max(72, width - margin * 2 - buttonBlockW - 12) : width * 0.42;
+    const buttonBlockW = buttonSize * 3 + buttonGap * 2;
+    const titleW = narrow ? Math.max(72, safe.width - buttonBlockW - 12) : safe.width * 0.42;
     const mobileControls = this.shouldShowMobileControls(size);
     const mobileControlSize = touchSize(width <= 380 ? 48 : 52);
-    const mobileControlsTop = height - margin - mobileControlSize * 3 - 12;
-    const promptY = mobileControls ? Math.max(150, mobileControlsTop - 24) : height - 36;
+    const mobileControlsTop = safe.bottom - mobileControlSize * 3 - 12;
+    const promptY = mobileControls ? Math.max(safe.y + 140, mobileControlsTop - 24) : safe.bottom - 22;
+    const centerX = safe.x + safe.width / 2;
 
-    this.add.text(margin, narrow ? 10 : 14, this.sceneTitle, {
+    const titleX = rtl ? safe.right : safe.x;
+    const titleOrigin = textOriginX(0);
+    this.add.text(titleX, safe.y, t(this.sceneTitle), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(narrow ? 16 : 18, size), color: '#e8d9b0',
       wordWrap: { width: titleW },
-    }).setScrollFactor(0).setDepth(UI_DEPTH);
-    this.add.text(margin, narrow ? 31 : 38, narrow ? 'WASD/Arrows • E Speak • Tab Highlight' : 'Arrows / WASD walk  •  E speak  •  H toggle / Tab hold highlight  •  J journal', {
-      fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, size), color: '#9c8458',
-      wordWrap: { width: titleW },
-    }).setScrollFactor(0).setDepth(UI_DEPTH);
+    })).setOrigin(titleOrigin, 0).setScrollFactor(0).setDepth(UI_DEPTH);
+    const buttonStart = rtl ? safe.x : safe.right - buttonSize;
+    const buttonStep = rtl ? buttonSize + buttonGap : -(buttonSize + buttonGap);
+    this.makeHudIconButton(buttonStart, buttonY, buttonSize, '⚙︎', 'Esc', 'Settings', () => this.openSettings()).setScrollFactor(0).setDepth(UI_DEPTH);
+    this.makeHudIconButton(buttonStart + buttonStep, buttonY, buttonSize, '◫', 'J', 'Journal', () => this.openJournal()).setScrollFactor(0).setDepth(UI_DEPTH);
+    this.makeHudIconButton(buttonStart + buttonStep * 2, buttonY, buttonSize, '◎', 'H / Tab', 'Highlight', () => this.toggleInteractableHighlights()).setScrollFactor(0).setDepth(UI_DEPTH);
 
-    const right = width - margin;
-    this.makeHudIconButton(right - buttonSize, buttonY, buttonSize, '⟲', 'R', 'Restart', () => this.restart()).setScrollFactor(0).setDepth(UI_DEPTH);
-    this.makeHudIconButton(right - (buttonSize + buttonGap) * 2 + buttonGap, buttonY, buttonSize, '◫', 'J', 'Journal', () => this.openJournal()).setScrollFactor(0).setDepth(UI_DEPTH);
-    this.makeHudIconButton(right - (buttonSize + buttonGap) * 3 + buttonGap, buttonY, buttonSize, '☰', 'C', 'Chapters', () => this.openChapterSelect()).setScrollFactor(0).setDepth(UI_DEPTH);
-    this.makeHudIconButton(right - (buttonSize + buttonGap) * 4 + buttonGap, buttonY, buttonSize, '◎', 'H / Tab', 'Highlight', () => this.toggleInteractableHighlights()).setScrollFactor(0).setDepth(UI_DEPTH);
-
-    this.promptText = this.add.text(width / 2, promptY, '', {
+    this.promptText = this.add.text(centerX, promptY, '', localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(18, size, 13), color: '#f3d98a',
       backgroundColor: '#00000099',
       padding: { x: 12, y: 7 },
       align: 'center',
-      wordWrap: { width: width - margin * 2 },
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setVisible(false);
+      wordWrap: { width: safe.width },
+    }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setVisible(false);
 
-    this.exitPromptText = this.add.text(width / 2, promptY - 28, '', {
+    this.exitPromptText = this.add.text(centerX, promptY - 28, '', localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(15, size, 12), color: '#c9a55c', fontStyle: 'italic',
       backgroundColor: '#00000088',
       padding: { x: 10, y: 6 },
       align: 'center',
-      wordWrap: { width: width - margin * 2 },
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setVisible(false);
+      wordWrap: { width: safe.width },
+    }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setVisible(false);
 
-    this.banner = this.add.text(width / 2, narrow ? 104 : 72, '', {
+    this.banner = this.add.text(centerX, safe.y + (narrow ? 94 : 58), '', localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(22, size, 15), color: '#f3e2b5',
       fontStyle: 'italic', backgroundColor: '#00000088', padding: { x: 12, y: 6 },
       align: 'center',
-      wordWrap: { width: width - margin * 2 },
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setAlpha(0);
+      wordWrap: { width: safe.width },
+    }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setAlpha(0);
 
     if (mobileControls) this.setupMobileControls(width, height, UI_DEPTH + 5);
   }
@@ -886,7 +917,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
       .on('pointerover', () => {
         rect.setStrokeStyle(1, 0xf3d98a, 1);
         text.setColor('#fff1c0');
-        this.showHudTooltip(x + size, y + size + 6, `${hotkey}: ${label}`);
+        this.showHudTooltip(x + size, y + size + 6, `${hotkey}: ${t(label)}`);
       })
       .on('pointerout',  () => {
         rect.setStrokeStyle(1, 0x5a4428, 1);
@@ -894,28 +925,28 @@ export abstract class BaseMapScene extends Phaser.Scene {
         this.hideHudTooltip();
       })
       .on('pointerdown', onClick);
-    const text = this.add.text(x + size / 2, y + size / 2 - 1, icon, {
+    const text = this.add.text(x + size / 2, y + size / 2 - 1, icon, localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: buttonFont(Math.round(size * 0.62), this.scale),
       color: '#f3d98a',
-    }).setOrigin(0.5).setScrollFactor(0);
+    }, 'center')).setOrigin(0.5).setScrollFactor(0);
     return this.add.container(0, 0, [rect, text]).setScrollFactor(0);
   }
 
   private showHudTooltip(x: number, y: number, label: string): void {
     this.hideHudTooltip();
-    const margin = responsiveMargin(this.scale);
-    const text = this.add.text(0, 0, label, {
+    const safe = safeLayout(this.scale);
+    const text = this.add.text(0, 0, label, localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: responsiveFont(13, this.scale),
       color: '#f3e2b5',
-    }).setScrollFactor(0);
+    })).setScrollFactor(0);
     const bounds = text.getBounds();
     const w = bounds.width + 18;
     const h = bounds.height + 10;
-    const tooltipX = Phaser.Math.Clamp(x - w, margin, this.scale.width - margin - w);
-    const tooltipY = Phaser.Math.Clamp(y, margin, this.scale.height - margin - h);
-    text.setPosition(tooltipX + 9, tooltipY + 5);
+    const tooltipX = Phaser.Math.Clamp(x - w, safe.x, safe.right - w);
+    const tooltipY = Phaser.Math.Clamp(y, safe.y, safe.bottom - h);
+    text.setPosition(rtl ? tooltipX + w - 9 : tooltipX + 9, tooltipY + 5).setOrigin(textOriginX(0), 0);
     const bg = this.add.rectangle(tooltipX, tooltipY, w, h, 0x0a0806, 0.96)
       .setOrigin(0)
       .setScrollFactor(0)
@@ -929,29 +960,25 @@ export abstract class BaseMapScene extends Phaser.Scene {
   }
 
   private setupMobileControls(width: number, height: number, depth: number): void {
-    const margin = responsiveMargin(this.scale);
+    const safe = safeLayout({ width, height });
     const size = touchSize(width <= 380 ? 48 : 52);
     const gap = 6;
-    const top = height - margin - size * 3 - gap * 2;
-    const left = margin;
-    const centerX = left + size + gap;
+    const top = safe.bottom - size * 3 - gap * 2;
+    const left = rtl ? safe.right - (size * 3 + gap * 2) : safe.x;
     const centerY = top + size + gap;
 
-    const bg = this.add.rectangle(left - 6, top - 6, size * 3 + gap * 2 + 12, size * 3 + gap * 2 + 12, 0x0a0806, 0.32)
-      .setOrigin(0)
-      .setScrollFactor(0)
-      .setDepth(depth);
-    bg.setStrokeStyle(1, 0x5a4428, 0.5);
-    this.mobileControls = this.add.container(0, 0, [bg]).setScrollFactor(0).setDepth(depth);
+    this.mobileControls = this.add.container(0, 0).setScrollFactor(0).setDepth(depth);
 
-    this.makeMobileMoveButton(centerX, top, size, '▲', { dx: 0, dy: -1 }, depth + 1);
-    this.makeMobileMoveButton(left, centerY, size, '◀', { dx: -1, dy: 0 }, depth + 1);
-    this.makeMobileMoveButton(left + (size + gap) * 2, centerY, size, '▶', { dx: 1, dy: 0 }, depth + 1);
-    this.makeMobileMoveButton(centerX, top + (size + gap) * 2, size, '▼', { dx: 0, dy: 1 }, depth + 1);
+    const right = left + (size + gap) * 2;
+    const bottom = top + (size + gap) * 2;
+    this.makeMobileMoveButton(right, top, size, 45, { dx: 0, dy: -1 }, depth + 1);
+    this.makeMobileMoveButton(left, top, size, -45, { dx: -1, dy: 0 }, depth + 1);
+    this.makeMobileMoveButton(right, bottom, size, 135, { dx: 1, dy: 0 }, depth + 1);
+    this.makeMobileMoveButton(left, bottom, size, -135, { dx: 0, dy: 1 }, depth + 1);
 
     const actionW = Math.max(MIN_TOUCH_TARGET, Math.round(size * 1.45));
     const actionH = Math.max(MIN_TOUCH_TARGET, size);
-    const actionX = width - margin - actionW;
+    const actionX = rtl ? safe.x : safe.right - actionW;
     const actionY = centerY;
     this.mobileActionButton = this.add.rectangle(actionX, actionY, actionW, actionH, 0x2a1c10, 0.92)
       .setOrigin(0)
@@ -968,11 +995,11 @@ export abstract class BaseMapScene extends Phaser.Scene {
         this.mobileActionLabel?.setColor('#f3d98a');
       })
       .on('pointerdown', () => this.triggerInteraction());
-    this.mobileActionLabel = this.add.text(actionX + actionW / 2, actionY + actionH / 2, 'ACT', {
+    this.mobileActionLabel = this.add.text(actionX + actionW / 2, actionY + actionH / 2, t('ACT'), localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: buttonFont(17, this.scale),
       color: '#f3d98a',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 2);
+    }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 2);
     this.mobileControls.add([this.mobileActionButton, this.mobileActionLabel]);
   }
 
@@ -980,40 +1007,61 @@ export abstract class BaseMapScene extends Phaser.Scene {
     x: number,
     y: number,
     size: number,
-    icon: string,
+    angle: number,
     direction: { dx: number; dy: number },
     depth: number,
   ): void {
-    const button = this.add.rectangle(x, y, size, size, 0x1a120a, 0.9)
+    const centerX = x + size / 2;
+    const centerY = y + size / 2;
+    const button = this.add.rectangle(x, y, size, size, 0x000000, 0)
       .setOrigin(0)
       .setScrollFactor(0)
-      .setStrokeStyle(1, 0x5a4428, 1)
       .setInteractive({ useHandCursor: true })
       .setDepth(depth)
       .on('pointerdown', () => {
         this.mobileMoveDirection = direction;
-        button.setStrokeStyle(2, 0xf3d98a, 1);
-        text.setColor('#fff1c0');
+        ring.setFillStyle(0x2a1c10, 0.72);
+        ring.setStrokeStyle(2, 0xf3d98a, 0.95);
+        this.drawMobileArrow(arrow, 0xfff1c0);
       })
-      .on('pointerup', () => this.clearMobileMove(direction, button, text))
-      .on('pointerout', () => this.clearMobileMove(direction, button, text))
-      .on('pointerupoutside', () => this.clearMobileMove(direction, button, text));
-    const text = this.add.text(x + size / 2, y + size / 2 - 1, icon, {
-      fontFamily: 'Georgia, serif',
-      fontSize: buttonFont(Math.round(size * 0.52), this.scale),
-      color: '#f3d98a',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
-    if (this.mobileControls) this.mobileControls.add([button, text]);
+      .on('pointerup', () => this.clearMobileMove(direction, button, ring, arrow))
+      .on('pointerout', () => this.clearMobileMove(direction, button, ring, arrow))
+      .on('pointerupoutside', () => this.clearMobileMove(direction, button, ring, arrow));
+    const ring = this.add.circle(centerX, centerY, MIN_TOUCH_TARGET / 2, 0x1a120a, 0.48)
+      .setScrollFactor(0)
+      .setStrokeStyle(1.5, 0xc9a55c, 0.8)
+      .setDepth(depth + 1);
+    const arrow = this.add.graphics({ x: centerX, y: centerY })
+      .setAngle(angle)
+      .setScrollFactor(0)
+      .setDepth(depth + 2);
+    this.drawMobileArrow(arrow, 0xf3d98a);
+    if (this.mobileControls) this.mobileControls.add([button, ring, arrow]);
+  }
+
+  private drawMobileArrow(arrow: Phaser.GameObjects.Graphics, color: number): void {
+    arrow.clear();
+    arrow.fillStyle(color, 1);
+    arrow.beginPath();
+    arrow.moveTo(0, -11);
+    arrow.lineTo(9, 9);
+    arrow.lineTo(0, 5);
+    arrow.lineTo(-9, 9);
+    arrow.closePath();
+    arrow.fillPath();
   }
 
   private clearMobileMove(
     direction: { dx: number; dy: number },
     button: Phaser.GameObjects.Rectangle,
-    text: Phaser.GameObjects.Text,
+    ring: Phaser.GameObjects.Arc,
+    arrow: Phaser.GameObjects.Graphics,
   ): void {
     if (this.mobileMoveDirection === direction) this.mobileMoveDirection = undefined;
-    button.setStrokeStyle(1, 0x5a4428, 1);
-    text.setColor('#f3d98a');
+    button.setFillStyle(0x000000, 0);
+    ring.setFillStyle(0x1a120a, 0.48);
+    ring.setStrokeStyle(1.5, 0xc9a55c, 0.8);
+    this.drawMobileArrow(arrow, 0xf3d98a);
   }
 
   private setMobileControlsVisible(visible: boolean): void {
@@ -1032,20 +1080,15 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.scene.pause();
   }
 
-  protected openChapterSelect(): void {
-    this.cameras.main.fadeOut(280, 0, 0, 0);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.stop('Dialogue');
-      this.scene.stop('Journal');
-      this.scene.start('ChapterSelect');
+  protected openSettings(): void {
+    if (this.scene.isActive('Settings')) return;
+    this.setMobileControlsVisible(false);
+    this.scene.launch('Settings', {
+      from: this.scene.key,
+      spawnX: this.playerGrid.x,
+      spawnY: this.playerGrid.y,
     });
-  }
-
-  protected restart(): void {
-    resetFlags();
-    this.scene.stop('Dialogue');
-    this.scene.stop('Journal');
-    this.scene.start('Title');
+    this.scene.pause();
   }
 
   // ---------- update / movement ----------
@@ -1056,11 +1099,10 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.updatePlayerRevealMasks();
     this.handleInteractionPrompt();
     if (Phaser.Input.Keyboard.JustDown(this.journalKey)) this.openJournal();
-    if (Phaser.Input.Keyboard.JustDown(this.chapterKey)) this.openChapterSelect();
     if (Phaser.Input.Keyboard.JustDown(this.highlightKey)) this.toggleInteractableHighlights();
     if (Phaser.Input.Keyboard.JustDown(this.tabHighlightKey)) this.holdInteractableHighlights(true);
     if (Phaser.Input.Keyboard.JustUp(this.tabHighlightKey)) this.holdInteractableHighlights(false);
-    if (Phaser.Input.Keyboard.JustDown(this.restartKey)) this.restart();
+    if (Phaser.Input.Keyboard.JustDown(this.settingsKey)) this.openSettings();
   }
 
   protected handleMovement(): void {
@@ -1132,7 +1174,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
   protected handleInteractionPrompt(): void {
     const near = this.nearestInteractable();
     if (near) {
-      this.promptText.setText(near.prompt).setVisible(true);
+      this.promptText.setText(t(near.prompt)).setVisible(true);
       this.mobileActionButton?.setAlpha(1);
       this.mobileActionLabel?.setAlpha(1);
       if (Phaser.Input.Keyboard.JustDown(this.interactKey)) this.triggerInteraction();
@@ -1144,7 +1186,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     // Exit-tile prompt
     const onExit = this.exits.find(e =>
       e.fromX === this.playerGrid.x && e.fromY === this.playerGrid.y);
-    this.exitPromptText.setText(onExit ? onExit.label : '').setVisible(Boolean(onExit));
+    this.exitPromptText.setText(onExit ? t(onExit.label) : '').setVisible(Boolean(onExit));
   }
 
   private triggerInteraction(): void {

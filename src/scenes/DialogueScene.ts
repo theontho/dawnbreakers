@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import type { DialogueTree, DialogueNode, DialogueChoice } from '../dialogue/types';
+import type { DialogueTree, DialogueChoice } from '../dialogue/types';
 import { applyEffect, getFlags } from '../dialogue/flags';
-import { buttonFont, clamp, MIN_TOUCH_TARGET, responsiveFont, responsiveMargin } from '../ui/responsive';
+import { formatNumber, localizedStyle, rtl, t, tName } from '../i18n';
+import { buttonFont, clamp, MIN_TOUCH_TARGET, responsiveFont, safeLayout } from '../ui/responsive';
 
 export interface DialogueLaunch {
   tree: DialogueTree;
@@ -44,80 +45,103 @@ export class DialogueScene extends Phaser.Scene {
   private rebuildLayout(applyOnEnter: boolean): void {
     const { width, height } = this.scale;
     const size = { width, height };
-    const margin = responsiveMargin(size);
+    const safe = safeLayout(size);
+    const node = this.tree.nodes[this.currentId];
+    if (!node) {
+      console.warn(`Dialogue node not found: ${this.currentId}`);
+      this.finish();
+      return;
+    }
+    if (applyOnEnter && node.onEnter) applyEffect(node.onEnter);
 
     this.children.removeAll(true);
     this.choiceObjects = [];
 
     this.add.rectangle(0, 0, width, height, 0x000000, 0.35).setOrigin(0);
 
-    const panelH = clamp(height * 0.42, 240, Math.min(360, height - margin * 2));
-    const panelY = height - panelH - margin;
-    this.add.rectangle(margin, panelY, width - margin * 2, panelH, 0x1a120a, 0.94)
-      .setOrigin(0)
-      .setStrokeStyle(2, 0xc9a55c, 1);
-
-    this.speakerText = this.add.text(margin + 20, panelY + 16, '', {
-      fontFamily: 'Georgia, serif',
-      fontSize: responsiveFont(22, size, 15),
-      color: '#f3d98a',
-      fontStyle: 'italic',
-    });
-
-    this.bodyText = this.add.text(margin + 20, panelY + 52, '', {
-      fontFamily: 'Georgia, serif',
-      fontSize: responsiveFont(20, size, 15),
-      color: '#f0e4c8',
-      wordWrap: { width: width - margin * 2 - 40 },
-      lineSpacing: 4,
-    });
-
-    this.renderNode(this.tree.nodes[this.currentId], applyOnEnter);
-  }
-
-  private renderNode(node: DialogueNode, applyOnEnter = true): void {
-    if (applyOnEnter && node.onEnter) applyEffect(node.onEnter);
-
-    this.speakerText.setText(node.speaker);
-    this.bodyText.setText(node.text);
-
-    this.choiceObjects.forEach(t => t.destroy());
-    this.choiceObjects = [];
-
     const flags = getFlags();
     const choices: DialogueChoice[] = node.choices && node.choices.length > 0
       ? node.choices.filter(c => !c.requires || c.requires(flags))
       : [{ text: '(Continue)', next: undefined }];
-
-    const startY = this.bodyText.y + this.bodyText.height + 18;
-    const rowW = this.scale.width - this.bodyText.x * 2;
-    const rowH = MIN_TOUCH_TARGET;
+    const panelW = safe.width;
+    const padX = width <= 480 ? 14 : 20;
+    const topPad = width <= 480 ? 12 : 16;
+    const bottomPad = width <= 480 ? 12 : 16;
+    const contentW = panelW - padX * 2;
+    const speakerBodyGap = 8;
+    const bodyChoicesGap = 14;
     const rowGap = 6;
+    const speakerValue = tName(node.speaker);
+    const bodyValue = t(node.text);
+    const speakerStyle = localizedStyle({
+      fontFamily: 'Georgia, serif',
+      fontSize: responsiveFont(22, size, 15),
+      color: '#f3d98a',
+      fontStyle: 'italic',
+      wordWrap: { width: contentW },
+    });
+    const bodyStyle = localizedStyle({
+      fontFamily: 'Georgia, serif',
+      fontSize: responsiveFont(20, size, 15),
+      color: '#f0e4c8',
+      wordWrap: { width: contentW },
+      lineSpacing: 4,
+    });
+    const choiceStyle = localizedStyle({
+      fontFamily: 'Georgia, serif',
+      fontSize: buttonFont(18, size),
+      color: '#c9b07a',
+      wordWrap: { width: contentW - 24 },
+    });
+    const speakerH = this.measureTextHeight(speakerValue, speakerStyle);
+    const bodyH = this.measureTextHeight(bodyValue, bodyStyle);
+    const choiceLabels = choices.map((choice, i) => `${formatNumber(i + 1)}. ${t(choice.text)}`);
+    const choiceHeights = choiceLabels.map(label =>
+      Math.max(MIN_TOUCH_TARGET, Math.ceil(this.measureTextHeight(label, choiceStyle) + 16)),
+    );
+    const choicesH = choiceHeights.reduce((sum, rowH) => sum + rowH, 0)
+      + Math.max(0, choiceHeights.length - 1) * rowGap;
+    const requiredH = Math.ceil(topPad + speakerH + speakerBodyGap + bodyH + bodyChoicesGap + choicesH + bottomPad);
+    const maxPanelH = Math.max(MIN_TOUCH_TARGET * 3, safe.height);
+    const minPanelH = Math.min(240, maxPanelH);
+    const panelH = clamp(requiredH, minPanelH, maxPanelH);
+    const panelY = safe.bottom - panelH;
+    this.add.rectangle(safe.x, panelY, panelW, panelH, 0x1a120a, 0.94)
+      .setOrigin(0)
+      .setStrokeStyle(2, 0xc9a55c, 1);
+
+    const textX = rtl ? safe.right - padX : safe.x + padX;
+    const textOrigin = rtl ? 1 : 0;
+    this.speakerText = this.add.text(textX, panelY + topPad, speakerValue, speakerStyle).setOrigin(textOrigin, 0);
+
+    this.bodyText = this.add.text(textX, this.speakerText.y + speakerH + speakerBodyGap, bodyValue, bodyStyle)
+      .setOrigin(textOrigin, 0);
+
+    let rowY = this.bodyText.y + bodyH + bodyChoicesGap;
+    const rowX = safe.x + padX;
+    const rowW = contentW;
 
     choices.forEach((choice, i) => {
-      const label = `${i + 1}. ${choice.text}`;
-      const rowY = startY + i * (rowH + rowGap);
-      const bg = this.add.rectangle(this.bodyText.x, rowY, rowW, rowH, 0x2a1c10, 0.45)
+      const label = choiceLabels[i];
+      const rowH = choiceHeights[i];
+      const bg = this.add.rectangle(rowX, rowY, rowW, rowH, 0x2a1c10, 0.45)
         .setOrigin(0)
         .setStrokeStyle(1, 0x4a3a22, 0.75)
         .setInteractive({ useHandCursor: true });
-      const t = this.add.text(this.bodyText.x + 12, rowY + rowH / 2, label, {
-        fontFamily: 'Georgia, serif',
-        fontSize: buttonFont(18, this.scale),
-        color: '#c9b07a',
-        wordWrap: { width: rowW - 24 },
-      }).setOrigin(0, 0.5);
+      const choiceText = this.add.text(rtl ? rowX + rowW - 12 : rowX + 12, rowY + rowH / 2, label, choiceStyle)
+        .setOrigin(rtl ? 1 : 0, 0.5);
       bg
         .on('pointerover', () => {
           bg.setStrokeStyle(1, 0xf3d98a, 1);
-          t.setColor('#fff1c0');
+          choiceText.setColor('#fff1c0');
         })
         .on('pointerout',  () => {
           bg.setStrokeStyle(1, 0x4a3a22, 0.75);
-          t.setColor('#c9b07a');
+          choiceText.setColor('#c9b07a');
         })
         .on('pointerdown', () => this.choose(choice));
-      this.choiceObjects.push(bg, t);
+      this.choiceObjects.push(bg, choiceText);
+      rowY += rowH + rowGap;
     });
 
     // keyboard 1-9
@@ -144,7 +168,14 @@ export class DialogueScene extends Phaser.Scene {
       return;
     }
     this.currentId = nextNode.id;
-    this.renderNode(nextNode);
+    this.rebuildLayout(true);
+  }
+
+  private measureTextHeight(text: string, style: Phaser.Types.GameObjects.Text.TextStyle): number {
+    const measure = this.add.text(0, 0, text, style).setVisible(false);
+    const height = measure.height;
+    measure.destroy();
+    return height;
   }
 
   private finish(): void {
