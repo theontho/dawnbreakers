@@ -1,7 +1,47 @@
 import type { FlagState } from '../dialogue/types';
 
+export type ChapterId =
+  | 'shiraz'
+  | 'road'
+  | 'mecca'
+  | 'shiraz-return'
+  | 'isfahan'
+  | 'mountain-prisons'
+  | 'badasht'
+  | 'tabarsi'
+  | 'tabriz'
+  | 'siyah-chal';
+
+/**
+ * Flag name that, when truthy, marks the corresponding chapter "complete".
+ * Centralised so chapter predicates and dialogue effects can't drift apart:
+ * if you add a chapter, add its completion flag here, and the dialogue lint
+ * script will check that some `effect.set` actually produces it.
+ *
+ * Chapter 1 is special: completion is signalled by an `ending` flag that
+ * holds a string variant (which ending was reached), so it has no entry
+ * here. See `chapterIsComplete` for its custom predicate.
+ */
+export const CHAPTER_COMPLETION_FLAGS: Partial<Record<ChapterId, string>> = {
+  road: 'roadComplete',
+  mecca: 'meccaComplete',
+  'shiraz-return': 'houseArrestComplete',
+  isfahan: 'isfahanComplete',
+  'mountain-prisons': 'bayanComplete',
+  badasht: 'badashtComplete',
+  tabarsi: 'tabarsiComplete',
+  tabriz: 'martyrdomComplete',
+  'siyah-chal': 'dawnComplete',
+};
+
+function chapterIsComplete(id: ChapterId, flags: FlagState): boolean {
+  if (id === 'shiraz') return flags.ending !== undefined;
+  const flag = CHAPTER_COMPLETION_FLAGS[id];
+  return flag !== undefined && !!flags[flag];
+}
+
 export interface Chapter {
-  id: string;
+  id: ChapterId;
   number: number;
   title: string;
   subtitle: string;
@@ -16,7 +56,9 @@ export interface Chapter {
   isComplete: (flags: FlagState) => boolean;
 }
 
-export const chapters: Chapter[] = [
+interface ChapterSpec extends Omit<Chapter, 'isComplete'> {}
+
+const SPECS: ChapterSpec[] = [
   {
     id: 'shiraz',
     number: 1,
@@ -25,7 +67,6 @@ export const chapters: Chapter[] = [
     description: 'A young seeker arrives in Shíráz, hears rumours of a Promised One, and finds himself at the threshold of a house at dusk.',
     startScene: 'City',
     scenes: ['City', 'HouseQuarter'],
-    isComplete: f => f.ending !== undefined,
   },
   {
     id: 'road',
@@ -35,7 +76,6 @@ export const chapters: Chapter[] = [
     description: 'The first to recognise Him are sent forth in eighteen directions. On a dusty road north, a fellow seeker greets you.',
     startScene: 'Road',
     scenes: ['Road'],
-    isComplete: f => !!f.roadComplete,
   },
   {
     id: 'mecca',
@@ -45,7 +85,6 @@ export const chapters: Chapter[] = [
     description: 'A sea passage and a reverent proclamation before the Kaʿba carry the Cause beyond Shíráz.',
     startScene: 'Ch3Ship',
     scenes: ['Ch3Ship', 'Ch3Mecca'],
-    isComplete: f => !!f.meccaComplete,
   },
   {
     id: 'shiraz-return',
@@ -55,7 +94,6 @@ export const chapters: Chapter[] = [
     description: 'The city changes around the returning believers as officials, witnesses, and the mosque become stages of trial.',
     startScene: 'Ch4ShirazReturn',
     scenes: ['Ch4ShirazReturn', 'Ch4VakilMosque'],
-    isComplete: f => !!f.houseArrestComplete,
   },
   {
     id: 'isfahan',
@@ -65,7 +103,6 @@ export const chapters: Chapter[] = [
     description: 'Bridge, palace, and learned council frame the Báb’s stay under Manúchihr Khán’s protection.',
     startScene: 'Ch5IsfahanBridge',
     scenes: ['Ch5IsfahanBridge', 'Ch5MutamidPalace'],
-    isComplete: f => !!f.isfahanComplete,
   },
   {
     id: 'mountain-prisons',
@@ -75,7 +112,6 @@ export const chapters: Chapter[] = [
     description: 'Cold fortresses, softened wardens, and hidden revelation mark the years of confinement.',
     startScene: 'Ch6Maku',
     scenes: ['Ch6Maku', 'Ch6Chihriq'],
-    isComplete: f => !!f.bayanComplete,
   },
   {
     id: 'badasht',
@@ -85,7 +121,6 @@ export const chapters: Chapter[] = [
     description: 'Three camps, a shocking proclamation, and Bahá’u’lláh’s reconciling presence reshape the community.',
     startScene: 'Ch7BadashtCamp',
     scenes: ['Ch7BadashtCamp'],
-    isComplete: f => !!f.badashtComplete,
   },
   {
     id: 'tabarsi',
@@ -95,7 +130,6 @@ export const chapters: Chapter[] = [
     description: 'Forest road and shrine-fort tell a story of steadfastness through counsel, truce, and betrayal.',
     startScene: 'Ch8ForestRoad',
     scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort'],
-    isComplete: f => !!f.tabarsiComplete,
   },
   {
     id: 'tabriz',
@@ -105,7 +139,6 @@ export const chapters: Chapter[] = [
     description: 'Sám Khán, the gathered witnesses, and a grave final testimony frame the martyrdom of the Báb.',
     startScene: 'Ch9TabrizSquare',
     scenes: ['Ch9TabrizSquare', 'Ch9BarrackRoof'],
-    isComplete: f => !!f.martyrdomComplete,
   },
   {
     id: 'siyah-chal',
@@ -115,15 +148,19 @@ export const chapters: Chapter[] = [
     description: 'A descent into darkness becomes the hidden dawn of Bahá’u’lláh’s mission.',
     startScene: 'Ch10TehranStreet',
     scenes: ['Ch10TehranStreet', 'Ch10SiyahChal'],
-    isComplete: f => !!f.dawnComplete,
   },
 ];
+
+export const chapters: Chapter[] = SPECS.map(spec => ({
+  ...spec,
+  isComplete: (flags: FlagState) => chapterIsComplete(spec.id, flags),
+}));
 
 export function chapterByScene(sceneKey: string): Chapter | undefined {
   return chapters.find(c => c.scenes.includes(sceneKey));
 }
 
-export function chapterById(id: string): Chapter | undefined {
+export function chapterById(id: ChapterId): Chapter | undefined {
   return chapters.find(c => c.id === id);
 }
 

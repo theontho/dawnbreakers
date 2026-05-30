@@ -17,6 +17,10 @@ import { chapter10Dialogues } from './dialogues_ch/chapter10_siyah_chal';
  *
  * To add a chapter: create src/data/dialogues_ch/chapterNN_<name>.ts, export
  * a `chapterNNDialogues` record, then import + spread it below.
+ *
+ * Only the merged `dialogues` map and the chapter 1 helpers (`babTreeFor`,
+ * `rumourCount`) are exported. Individual node trees are an implementation
+ * detail of each chapter file.
  */
 export const dialogues: Record<string, DialogueTree> = {
   ...chapter01Dialogues,
@@ -32,13 +36,3 @@ export const dialogues: Record<string, DialogueTree> = {
 };
 
 export { babTreeFor, rumourCount };
-export * from './dialogues_ch/chapter01_shiraz';
-export * from './dialogues_ch/chapter02_road';
-export * from './dialogues_ch/chapter03_mecca';
-export * from './dialogues_ch/chapter04_shiraz_return';
-export * from './dialogues_ch/chapter05_isfahan';
-export * from './dialogues_ch/chapter06_mountain_prisons';
-export * from './dialogues_ch/chapter07_badasht';
-export * from './dialogues_ch/chapter08_tabarsi';
-export * from './dialogues_ch/chapter09_tabriz';
-export * from './dialogues_ch/chapter10_siyah_chal';

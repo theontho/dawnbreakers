@@ -5,7 +5,6 @@ export const ch10Guard: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Guard',
       text: 'Keep moving. Tihrán has filled its alleys with accusation, and the pit below the city has room for every rumour men are afraid to examine.',
       choices: [
@@ -27,17 +26,14 @@ export const ch10Guard: DialogueTree = {
       ],
     },
     proved: {
-      id: 'proved',
       speaker: 'Guard',
       text: 'Proof? In such days, fear calls itself proof. I repeat orders; I do not weigh souls.',
     },
     chains: {
-      id: 'chains',
       speaker: 'Guard',
       text: 'A chain is a crude witness. It tells you only who has power, not who has truth.',
     },
     silence: {
-      id: 'silence',
       speaker: 'Narrator',
       text: 'The street answers with hostile whispers. Above them all, Bahá\'u\'lláh walks with a calm that accusation cannot imitate.',
     },
@@ -49,7 +45,6 @@ export const ch10Prisoner: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Fellow Prisoner',
       text: 'The air is close, the stones sweat, and the chain bites whenever one man turns in sleep. Yet when He speaks, this place forgets its own name for a moment.',
       choices: [
@@ -71,17 +66,14 @@ export const ch10Prisoner: DialogueTree = {
       ],
     },
     afraid: {
-      id: 'afraid',
       speaker: 'Fellow Prisoner',
       text: 'I am afraid. Hope is not the absence of fear; it is the lamp that makes fear cast a smaller shadow.',
     },
     words: {
-      id: 'words',
       speaker: 'Fellow Prisoner',
       text: 'He gives no boast, no call to vengeance. He speaks as though mercy were already descending by a stair we cannot see.',
     },
     beside: {
-      id: 'beside',
       speaker: 'Narrator',
       text: 'Your silence joins his. Somewhere in the pit, a chain settles, and the sound passes like a question through the dark.',
     },
@@ -93,7 +85,6 @@ export const ch10Vision: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Narrator',
       text: 'In this pit, beneath the feet of Tihrán, the outward world has narrowed to stone, darkness, and iron. Yet the worlds of God are not narrowed.',
       choices: [
@@ -115,31 +106,26 @@ export const ch10Vision: DialogueTree = {
       ],
     },
     compassion: {
-      id: 'compassion',
       speaker: 'Recollected Voice',
       text: 'Let the trembling heart become spacious. The wrongs of men cannot exhaust the mercy of God.',
       choices: [{ text: '(Listen as the darkness grows still.)', next: 'light' }],
     },
     wonder: {
-      id: 'wonder',
       speaker: 'Recollected Voice',
       text: 'Men look for dawn on the horizon. God may kindle it where no horizon can be seen.',
       choices: [{ text: '(Listen as the darkness grows still.)', next: 'light' }],
     },
     attend: {
-      id: 'attend',
       speaker: 'Narrator',
       text: 'The lamp is small, almost spent. Still, its glow gathers upon the stone as if answering a command too gentle for the ear.',
       choices: [{ text: '(Remain with the light.)', next: 'light' }],
     },
     light: {
-      id: 'light',
       speaker: 'Narrator',
       text: 'No spectacle breaks the pit. Only a suggestion of radiance: a shaft of light, a stillness around Bahá\'u\'lláh, and the intimation of a Voice summoning Him to arise.',
       choices: [{ text: '(Receive the hidden dawn.)', next: 'end' }],
     },
     end: {
-      id: 'end',
       speaker: 'Narrator',
       onEnter: { set: { dawnComplete: true } },
       text: 'From the night of Shíráz to the blackness beneath Tihrán, the story has come to another dawn — unseen by the city above, yet destined to illumine what follows.',

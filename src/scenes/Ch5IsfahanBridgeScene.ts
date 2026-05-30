@@ -7,11 +7,6 @@ export class Ch5IsfahanBridgeScene extends BaseMapScene {
 
   constructor() { super('Ch5IsfahanBridge'); }
 
-  create(): void {
-    this.ensureTextures();
-    super.create();
-  }
-
   protected getDefaultSpawn(): { x: number; y: number } {
     return { x: 1, y: 7 };
   }
@@ -87,71 +82,5 @@ export class Ch5IsfahanBridgeScene extends BaseMapScene {
       targetSpawnX: 1, targetSpawnY: 7,
       label: '→ Go to the Muʿtamid\'s palace',
     });
-  }
-
-  private ensureTextures(): void {
-    if (!this.textures.exists('ch5-bridge-span')) {
-      const geo = this.isoPrism(5, 2, 18, 16);
-      const g = this.add.graphics();
-      this.drawIsoPrism(g, geo, {
-        right: 0x8a7552,
-        left: 0x5e4b36,
-        top: 0xb9a16e,
-        edge: 0x3e2c1c,
-      });
-      g.lineStyle(3, 0xd0bb82, 1);
-      g.lineBetween(geo.leftR.x + 8, geo.leftR.y - 8, geo.bottomR.x, geo.bottomR.y - 8);
-      g.lineBetween(geo.bottomR.x, geo.bottomR.y - 8, geo.rightR.x - 8, geo.rightR.y - 8);
-      g.lineStyle(2, 0x3e2c1c, 1);
-      for (let t = 0.15; t <= 0.85; t += 0.175) {
-        const x = geo.leftR.x + (geo.bottomR.x - geo.leftR.x) * t;
-        const y = geo.leftR.y + (geo.bottomR.y - geo.leftR.y) * t;
-        g.lineBetween(x, y - 14, x, y + 3);
-      }
-      for (let t = 0.18; t <= 0.82; t += 0.16) {
-        const x = geo.right.x + (geo.bottom.x - geo.right.x) * t;
-        const y = geo.right.y + (geo.bottom.y - geo.right.y) * t;
-        g.strokeEllipse(x, y - 5, 24, 12);
-      }
-      g.generateTexture('ch5-bridge-span', geo.texW, geo.texH);
-      g.destroy();
-    }
-
-    if (!this.textures.exists('ch5-market-awning')) {
-      const geo = this.isoPrism(1, 1, 24, 22);
-      const g = this.add.graphics();
-      this.drawIsoPrism(g, geo, {
-        right: 0x73512e,
-        left: 0x5b3f24,
-        top: 0x315f68,
-        edge: 0x2a1a0a,
-      });
-      const peak = { x: geo.bottomR.x, y: geo.topR.y - 20 };
-      g.fillStyle(0x315f68, 1);
-      g.fillPoints([geo.leftR, peak, geo.bottomR], true);
-      g.fillStyle(0x2a5159, 1);
-      g.fillPoints([geo.bottomR, peak, geo.rightR], true);
-      g.lineStyle(1, 0x2a1a0a, 1);
-      g.strokePoints([geo.leftR, peak, geo.rightR, geo.bottomR], true);
-      g.lineStyle(2, 0xc9a55c, 1);
-      g.lineBetween(geo.bottomR.x, geo.bottomR.y, peak.x, peak.y);
-      g.generateTexture('ch5-market-awning', geo.texW, geo.texH);
-      g.destroy();
-    }
-
-    if (!this.textures.exists('ch5-river-reeds')) {
-      const g = this.add.graphics();
-      g.fillStyle(0x2c4a6b, 0.8);
-      g.fillEllipse(24, 38, 42, 14);
-      g.lineStyle(2, 0x516b38, 1);
-      for (let x = 10; x <= 38; x += 7) {
-        g.lineBetween(x, 38, x + 3, 14);
-      }
-      g.fillStyle(0x8b6a3a, 1);
-      g.fillEllipse(18, 18, 5, 10);
-      g.fillEllipse(33, 20, 5, 10);
-      g.generateTexture('ch5-river-reeds', 48, 44);
-      g.destroy();
-    }
   }
 }

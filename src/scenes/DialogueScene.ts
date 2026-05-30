@@ -167,7 +167,7 @@ export class DialogueScene extends Phaser.Scene {
       this.finish();
       return;
     }
-    this.currentId = nextNode.id;
+    this.currentId = choice.next;
     this.rebuildLayout(true);
   }
 

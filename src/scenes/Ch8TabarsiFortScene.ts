@@ -1,5 +1,4 @@
 import { BaseMapScene } from './BaseMapScene';
-import { makeTextureGraphics } from './graphicsFactory';
 
 export class Ch8TabarsiFortScene extends BaseMapScene {
   protected mapWidth = 16;
@@ -7,65 +6,6 @@ export class Ch8TabarsiFortScene extends BaseMapScene {
   protected sceneTitle = 'Fort Shaykh Ṭabarsí';
 
   constructor() { super('Ch8TabarsiFort'); }
-
-  create(): void {
-    this.ensureTextures();
-    super.create();
-  }
-
-  private ensureTextures(): void {
-    if (!this.textures.exists('ch8-palisade')) {
-      const geo = this.isoPrism(1, 1, 20, 4);
-      const g = this.add.graphics();
-      this.drawIsoPrism(g, geo, {
-        right: 0x563820,
-        left: 0x3a2515,
-        top: 0x7a5430,
-        edge: 0x2b1c10,
-      });
-      g.lineStyle(3, 0x2b1c10, 1);
-      for (const [start, end] of [[geo.left, geo.bottom], [geo.right, geo.bottom]] as const) {
-        g.lineBetween(start.x, start.y - 14, end.x, end.y - 14);
-        g.lineBetween(start.x, start.y - 6, end.x, end.y - 6);
-        for (const t of [0.18, 0.42, 0.66, 0.9]) {
-          const x = start.x + (end.x - start.x) * t;
-          const y = start.y + (end.y - start.y) * t;
-          g.lineBetween(x, y + 2, x, y - 26);
-        }
-      }
-      g.generateTexture('ch8-palisade', geo.texW, geo.texH);
-      g.destroy();
-    }
-
-    if (!this.textures.exists('ch8-shrine')) {
-      const geo = this.isoPrism(3, 3, 56, 24);
-      const g = makeTextureGraphics(this);
-      this.drawIsoPrism(g, geo, {
-        right: 0x8d7a57,
-        left: 0x5b5140,
-        top: 0xb8aa78,
-        edge: 0x2d261c,
-      });
-      g.fillStyle(0xb8aa78, 1);
-      g.fillCircle(geo.bottomR.x, geo.topR.y - 12, 15);
-      g.fillStyle(0x2c251c, 1);
-      g.fillPoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.56, 30), true);
-      g.lineStyle(3, 0x2d261c, 1);
-      g.strokePoints(this.wallInset(geo.right, geo.bottom, 0.42, 0.56, 30), true);
-      g.generateTexture('ch8-shrine', geo.texW, geo.texH);
-      g.destroy();
-    }
-
-    if (!this.textures.exists('ch8-truce-flag')) {
-      const g = makeTextureGraphics(this);
-      g.lineStyle(4, 0x3b2a16, 1);
-      g.lineBetween(22, 8, 22, 58);
-      g.fillStyle(0xe8dec1, 1);
-      g.fillTriangle(24, 10, 56, 20, 24, 30);
-      g.generateTexture('ch8-truce-flag', 64, 64);
-      g.destroy();
-    }
-  }
 
   protected getDefaultSpawn(): { x: number; y: number } {
     return { x: 1, y: 6 };

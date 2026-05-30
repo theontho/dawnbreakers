@@ -98,34 +98,78 @@ export const MAP_OBJECTS: MapObjectDefinition[] = [
   { id: 'npc-merchant', label: 'Merchant', texture: 'npc-merchant', kind: 'character', color: 0x8a5a2a, blocks: true },
   { id: 'npc-mulla', label: 'Mulla', texture: 'npc-mulla', kind: 'character', color: 0x1a1a1a, blocks: true },
   { id: 'player', label: 'Player', texture: 'player', kind: 'character', color: 0x6a3a3a, blocks: true },
-  { id: 'ch1-npc-water-carrier', label: 'Water-Carrier', texture: 'ch1-npc-water-carrier', kind: 'character', color: 0x2d5f73, blocks: true },
-  { id: 'ch1-npc-guard', label: 'Gate Guard', texture: 'ch1-npc-guard', kind: 'character', color: 0x5a4630, blocks: true },
-  { id: 'ch1-npc-calligrapher', label: 'Calligrapher', texture: 'ch1-npc-calligrapher', kind: 'character', color: 0x46345f, blocks: true },
-  { id: 'ch1-npc-beggar', label: 'Mosque Orphan', texture: 'ch1-npc-beggar', kind: 'character', color: 0x6b5a44, blocks: true },
-  { id: 'ch1-npc-servant', label: 'House Servant', texture: 'ch1-npc-servant', kind: 'character', color: 0x7a5a3a, blocks: true },
-  { id: 'ch3-muhit', label: 'Muhit', texture: 'ch3-muhit', kind: 'character', color: 0x5a3a2a, blocks: true },
-  { id: 'ch3-pilgrim', label: 'Pilgrim', texture: 'ch3-pilgrim', kind: 'character', color: 0xf2ead6, blocks: true },
-  { id: 'ch3-quddus', label: 'Quddus', texture: 'ch3-quddus', kind: 'character', color: 0x5a3a2a, blocks: true },
-  { id: 'ch3-sailor', label: 'Sailor', texture: 'ch3-sailor', kind: 'character', color: 0x2f4a5f, blocks: true },
-  { id: 'ch3-ship-pilgrim', label: 'Ship Pilgrim', texture: 'ch3-ship-pilgrim', kind: 'character', color: 0x8f5a2f, blocks: true },
-  { id: 'ch4-officer', label: 'Officer', texture: 'ch4-officer', kind: 'character', color: 0x39404a, blocks: true },
-  { id: 'ch4-witness', label: 'Witness', texture: 'ch4-witness', kind: 'character', color: 0x6b5a44, blocks: true },
-  { id: 'ch4-quddus', label: 'Quddus', texture: 'ch4-quddus', kind: 'character', color: 0x5a3a2a, blocks: true },
-  { id: 'ch4-townsman', label: 'Townsman', texture: 'ch4-townsman', kind: 'character', color: 0x8a5a2a, blocks: true },
+
+  // Chapter 1 — Shíráz residents
+  { id: 'ch1-npc-water-carrier', label: 'Water-Carrier', texture: 'ch1-npc-water-carrier', kind: 'character', color: 0x2d5f73, blocks: true,
+    character: { body: 0x2d5f73, skin: 0xd9c79a, clothing: { style: 'wrap', secondary: 0xd8c7a0, accent: 0x9fb8c4 }, hat: { style: 'headscarf', color: 0xbfc5aa }, shadow: true } },
+  { id: 'ch1-npc-guard', label: 'Gate Guard', texture: 'ch1-npc-guard', kind: 'character', color: 0x5a4630, blocks: true,
+    character: { body: 0x5a4630, skin: 0xe0c08a, clothing: { style: 'uniform', secondary: 0x2f3f48, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x2f2a22 }, shadow: true } },
+  { id: 'ch1-npc-calligrapher', label: 'Calligrapher', texture: 'ch1-npc-calligrapher', kind: 'character', color: 0x46345f, blocks: true,
+    character: { body: 0x46345f, skin: 0xe6c89a, clothing: { style: 'vest', secondary: 0xe8d8b0, accent: 0x6f5636 }, hat: { style: 'cap', color: 0x5f4a72 }, shadow: true } },
+  { id: 'ch1-npc-beggar', label: 'Mosque Orphan', texture: 'ch1-npc-beggar', kind: 'character', color: 0x6b5a44, blocks: true,
+    character: { body: 0x6b5a44, skin: 0xcaa978, clothing: { style: 'cloak', secondary: 0x4a3a2a, accent: 0x8a7450 }, hat: { style: 'hood', color: 0x4a3a2a }, shadow: true } },
+  { id: 'ch1-npc-servant', label: 'House Servant', texture: 'ch1-npc-servant', kind: 'character', color: 0x7a5a3a, blocks: true,
+    character: { body: 0x5f4a2d, skin: 0xe0c08a, clothing: { style: 'apron', secondary: 0xd8c7a0, accent: 0x8a6f4d }, hat: { style: 'headscarf', color: 0xead8aa }, shadow: true } },
+
+  // Chapter 3 — Mecca pilgrimage and the ship at sea
+  { id: 'ch3-muhit', label: 'Muhit', texture: 'ch3-muhit', kind: 'character', color: 0x5a3a2a, blocks: true,
+    character: { body: 0x2a2520, skin: 0xdfc28f, clothing: { style: 'robe', secondary: 0xf2ead6, accent: 0xc9a55c }, hat: { style: 'turban', color: 0xf2ead6, accent: 0x2a2520 }, shadow: true } },
+  { id: 'ch3-pilgrim', label: 'Pilgrim', texture: 'ch3-pilgrim', kind: 'character', color: 0xf2ead6, blocks: true,
+    character: { body: 0x6b5a44, skin: 0xe2c997, clothing: { style: 'wrap', secondary: 0xf7f0dc, accent: 0x9c8458 }, hat: { style: 'veil', color: 0xf7f0dc }, shadow: true } },
+  { id: 'ch3-quddus', label: 'Quddus', texture: 'ch3-quddus', kind: 'character', color: 0x5a3a2a, blocks: true,
+    character: { body: 0x263d4f, skin: 0xe8d8b0, clothing: { style: 'robe', secondary: 0xf2ead6, accent: 0xc9a55c }, hat: { style: 'turban', color: 0xf2ead6, accent: 0x263d4f }, shadow: true } },
+  { id: 'ch3-sailor', label: 'Sailor', texture: 'ch3-sailor', kind: 'character', color: 0x2f4a5f, blocks: true,
+    character: { body: 0x5b3a24, skin: 0xd8bd8a, clothing: { style: 'vest', secondary: 0x2f5f73, accent: 0xd8c7a0 }, hat: { style: 'cap', color: 0x3f5f73 }, shadow: true } },
+  { id: 'ch3-ship-pilgrim', label: 'Ship Pilgrim', texture: 'ch3-ship-pilgrim', kind: 'character', color: 0x8f5a2f, blocks: true,
+    character: { body: 0x6b5a44, skin: 0xe2c997, clothing: { style: 'wrap', secondary: 0xf2ead6, accent: 0x9c8458 }, hat: { style: 'headscarf', color: 0xf2ead6 }, shadow: true } },
+
+  // Chapter 4 — confrontation in Shíráz
+  { id: 'ch4-officer', label: 'Officer', texture: 'ch4-officer', kind: 'character', color: 0x39404a, blocks: true,
+    character: { body: 0x31424a, skin: 0xd9c79a, clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x6f2222 }, shadow: true } },
+  { id: 'ch4-witness', label: 'Witness', texture: 'ch4-witness', kind: 'character', color: 0x6b5a44, blocks: true,
+    character: { body: 0x5b4936, skin: 0xd1b37c, clothing: { style: 'robe', secondary: 0x7a5a3a, accent: 0xd8c7a0 }, hat: { style: 'turban', color: 0xd8c7a0, accent: 0x7a5a3a }, shadow: true } },
+  { id: 'ch4-quddus', label: 'Quddus', texture: 'ch4-quddus', kind: 'character', color: 0x5a3a2a, blocks: true,
+    character: { body: 0xead9ad, skin: 0xe6c89a, clothing: { style: 'cloak', secondary: 0x2d2d2d, accent: 0xc9a55c }, hat: { style: 'turban', color: 0xf2ead6, accent: 0x2d2d2d }, shadow: true } },
+  { id: 'ch4-townsman', label: 'Townsman', texture: 'ch4-townsman', kind: 'character', color: 0x8a5a2a, blocks: true,
+    character: { body: 0x5b4936, skin: 0xd1b37c, clothing: { style: 'vest', secondary: 0x7a5a3a, accent: 0xd8c7a0 }, hat: { style: 'cap', color: 0x7a5a3a }, shadow: true } },
+
+  // Chapter 5 — the Mu'tamid's palace (no bespoke options yet; falls through to generic)
   { id: 'ch5-mutamid', label: 'Mutamid', texture: 'ch5-mutamid', kind: 'character', color: 0x5f4a72, blocks: true },
-  { id: 'ch6-warden', label: 'Warden', texture: 'ch6-warden', kind: 'character', color: 0x39404a, blocks: true },
-  { id: 'ch6-courier', label: 'Courier', texture: 'ch6-courier', kind: 'character', color: 0x8f5a2f, blocks: true },
-  { id: 'ch6-mulla-husayn', label: 'Mulla Husayn', texture: 'ch6-mulla-husayn', kind: 'character', color: 0x2f4a5f, blocks: true },
-  { id: 'ch7-npc-tahirih', label: 'Tahirih', texture: 'ch7-npc-tahirih', kind: 'character', color: 0x6f2236, blocks: true },
-  { id: 'ch7-npc-quddus', label: 'Quddus', texture: 'ch7-npc-quddus', kind: 'character', color: 0x5a3a2a, blocks: true },
-  { id: 'ch7-npc-believer', label: 'Believer', texture: 'ch7-npc-believer', kind: 'character', color: 0x7a5a3a, blocks: true },
+
+  // Chapter 6 — the mountain prisons
+  { id: 'ch6-warden', label: 'Warden', texture: 'ch6-warden', kind: 'character', color: 0x39404a, blocks: true,
+    character: { body: 0x263241, skin: 0xd8c7a0, clothing: { style: 'cloak', secondary: 0xd8dce0, accent: 0x87919a }, hat: { style: 'tallHat', color: 0x1f252d }, shadow: true } },
+  { id: 'ch6-courier', label: 'Courier', texture: 'ch6-courier', kind: 'character', color: 0x8f5a2f, blocks: true,
+    character: { body: 0x4b463f, skin: 0xd6c09a, clothing: { style: 'sash', secondary: 0xb88a3b, accent: 0xe8d8b0 }, hat: { style: 'cap', color: 0x5f4a2d }, shadow: true } },
+  { id: 'ch6-mulla-husayn', label: 'Mulla Husayn', texture: 'ch6-mulla-husayn', kind: 'character', color: 0x2f4a5f, blocks: true,
+    character: { body: 0x22211f, skin: 0xe2d1aa, clothing: { style: 'robe', secondary: 0xe8e5dc, accent: 0x6f6048 }, hat: { style: 'turban', color: 0xe8e5dc, accent: 0x22211f }, shadow: true } },
+
+  // Chapter 7 — the Conference of Badasht
+  { id: 'ch7-npc-tahirih', label: 'Tahirih', texture: 'ch7-npc-tahirih', kind: 'character', color: 0x6f2236, blocks: true,
+    character: { body: 0xf0d9a4, skin: 0xd8b98a, clothing: { style: 'cloak', secondary: 0x6f3b5c, accent: 0xf7ecd0 }, hat: { style: 'veil', color: 0xf7ecd0, accent: 0x6f3b5c }, shadow: true } },
+  { id: 'ch7-npc-quddus', label: 'Quddus', texture: 'ch7-npc-quddus', kind: 'character', color: 0x5a3a2a, blocks: true,
+    character: { body: 0x506b45, skin: 0xe0c38a, clothing: { style: 'robe', secondary: 0x2f3b2f, accent: 0xc9a55c }, hat: { style: 'turban', color: 0xe0c38a, accent: 0x506b45 }, shadow: true } },
+  { id: 'ch7-npc-believer', label: 'Believer', texture: 'ch7-npc-believer', kind: 'character', color: 0x7a5a3a, blocks: true,
+    character: { body: 0x8a6f4d, skin: 0xd6c0a0, clothing: { style: 'sash', secondary: 0x5b4632, accent: 0xd6c0a0 }, hat: { style: 'headscarf', color: 0xd6c0a0 }, shadow: true } },
+
+  // Chapter 8 — Mazandaran (uses generic npc-mulla / npc-merchant / npc-traveller; no bespoke entries)
   { id: 'ch8-mulla-husayn', label: 'Mulla Husayn', texture: 'ch8-mulla-husayn', kind: 'character', color: 0x2f4a5f, blocks: true },
-  { id: 'ch9-witness', label: 'Witness', texture: 'ch9-witness', kind: 'character', color: 0x6b5a44, blocks: true },
-  { id: 'ch9-soldier', label: 'Soldier', texture: 'ch9-soldier', kind: 'character', color: 0x39404a, blocks: true },
-  { id: 'ch9-final-witness', label: 'Final Witness', texture: 'ch9-final-witness', kind: 'character', color: 0xf2ead6, blocks: true },
-  { id: 'ch9-sam-khan', label: 'Sam Khan', texture: 'ch9-sam-khan', kind: 'character', color: 0x59606a, blocks: true },
-  { id: 'ch10-guard', label: 'Tehran Guard', texture: 'ch10-guard', kind: 'character', color: 0x39404a, blocks: true },
-  { id: 'ch10-prisoner', label: 'Prisoner', texture: 'ch10-prisoner', kind: 'character', color: 0x6b6258, blocks: true },
+
+  // Chapter 9 — Tabríz square and barrack roof
+  { id: 'ch9-witness', label: 'Witness', texture: 'ch9-witness', kind: 'character', color: 0x6b5a44, blocks: true,
+    character: { body: 0x4b3b34, skin: 0xd8c6a0, clothing: { style: 'vest', secondary: 0x7a5a3a, accent: 0xd8c7a0 }, hat: { style: 'cap', color: 0x7a5a3a }, shadow: true } },
+  { id: 'ch9-soldier', label: 'Soldier', texture: 'ch9-soldier', kind: 'character', color: 0x39404a, blocks: true,
+    character: { body: 0x4c5360, skin: 0xd6c09a, clothing: { style: 'uniform', secondary: 0x2e3742, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x2e3742 }, shadow: true } },
+  { id: 'ch9-final-witness', label: 'Final Witness', texture: 'ch9-final-witness', kind: 'character', color: 0xf2ead6, blocks: true,
+    character: { body: 0x2f2b2a, skin: 0xcdbb94, clothing: { style: 'cloak', secondary: 0x1f1b1a, accent: 0x8a7450 }, hat: { style: 'hood', color: 0x1f1b1a }, shadow: true } },
+  { id: 'ch9-sam-khan', label: 'Sam Khan', texture: 'ch9-sam-khan', kind: 'character', color: 0x59606a, blocks: true,
+    character: { body: 0x59606a, skin: 0xd8c6a0, clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x3b4048, accent: 0xc9a55c }, shadow: true } },
+
+  // Chapter 10 — Tihrán and the Síyáh-Chál
+  { id: 'ch10-guard', label: 'Tehran Guard', texture: 'ch10-guard', kind: 'character', color: 0x39404a, blocks: true,
+    character: { body: 0x39404a, skin: 0xc8b48d, clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x242932 }, shadow: true } },
+  { id: 'ch10-prisoner', label: 'Prisoner', texture: 'ch10-prisoner', kind: 'character', color: 0x6b6258, blocks: true,
+    character: { body: 0x3a3836, skin: 0xbda982, clothing: { style: 'robe', secondary: 0x5b554e, accent: 0x8a867d }, hat: { style: 'none' }, hair: 0x1f1b18, shadow: true } },
 ];
 
 export const MAP_OBJECT_BY_ID: ReadonlyMap<MapObjectId, MapObjectDefinition> =

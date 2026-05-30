@@ -5,7 +5,6 @@ export const mullaHusaynAftermath: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'A Wounded Believer',
       text: 'The forest is hushed now. Rain gathers in the ruts, and every branch seems to hold its breath for the name of Mullá Ḥusayn.',
       choices: [
@@ -14,7 +13,6 @@ export const mullaHusaynAftermath: DialogueTree = {
       ],
     },
     mercy: {
-      id: 'mercy',
       speaker: 'A Wounded Believer',
       text: 'May God reward your gentleness. He taught us the same courage: not fury, but a heart steady enough to spend itself.',
       choices: [
@@ -22,7 +20,6 @@ export const mullaHusaynAftermath: DialogueTree = {
       ],
     },
     memory: {
-      id: 'memory',
       speaker: 'A Wounded Believer',
       onEnter: { set: { ch8HeardMullaHusayn: true } },
       text: 'Mullá Ḥusayn has fallen near the shrine gate. We did not see defeat in his face — only the peace of one who had already offered everything.',
@@ -35,7 +32,6 @@ export const tabarsiTruce: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'A Royal Officer',
       text: 'I come beneath a white flag and a pledge sworn upon the Qur’án. Lay down your guard, and the survivors of Ṭabarsí shall be spared.',
       choices: [
@@ -44,7 +40,6 @@ export const tabarsiTruce: DialogueTree = {
       ],
     },
     trust: {
-      id: 'trust',
       speaker: 'A Royal Officer',
       text: 'Then let your courtesy stand witness against any man who breaks it. The gate will open without a blade drawn.',
       choices: [
@@ -52,7 +47,6 @@ export const tabarsiTruce: DialogueTree = {
       ],
     },
     caution: {
-      id: 'caution',
       speaker: 'A Royal Officer',
       text: 'Your caution is not without cause. Still, hunger and grief have narrowed every road. Choose the path that leaves no stain upon your soul.',
       choices: [
@@ -60,13 +54,11 @@ export const tabarsiTruce: DialogueTree = {
       ],
     },
     endTrust: {
-      id: 'endTrust',
       speaker: 'Narrator',
       onEnter: { set: { tabarsiComplete: true, ch8TruceResolved: true } },
       text: 'The palisade falls silent. No combat is shown — only the fragile mercy of a promise, and the shadow of what men may do after making it.',
     },
     endCaution: {
-      id: 'endCaution',
       speaker: 'Narrator',
       onEnter: { set: { tabarsiComplete: true, ch8TruceResolved: true } },
       text: 'You return through the gate with eyes open. The friends meet treachery without surrendering their dignity, and Ṭabarsí becomes a trust for memory.',
@@ -79,7 +71,6 @@ export const quddusCounsel: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Quddús',
       text: 'This shrine was built for prayer, not siege. Yet every hardship can become a miḥráb if the heart turns wholly toward God.',
       choices: [
@@ -88,13 +79,11 @@ export const quddusCounsel: DialogueTree = {
       ],
     },
     endure: {
-      id: 'endure',
       speaker: 'Quddús',
       onEnter: { set: { ch8QuddusCounsel: true } },
       text: 'Remember Mullá Ḥusayn with deeds worthy of him. Let grief sharpen compassion, not anger.',
     },
     watch: {
-      id: 'watch',
       speaker: 'Quddús',
       onEnter: { set: { ch8QuddusCounsel: true } },
       text: 'Carry patience. Carry truth. If a flag of truce approaches, meet it as servants of God — clear-eyed, but without malice.',

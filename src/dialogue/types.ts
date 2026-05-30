@@ -8,7 +8,6 @@ export interface DialogueChoice {
 }
 
 export interface DialogueNode {
-  id: string;
   speaker: string;
   text: string;
   onEnter?: FlagOp;

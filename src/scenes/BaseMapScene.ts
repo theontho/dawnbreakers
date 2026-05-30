@@ -2,9 +2,8 @@ import Phaser from 'phaser';
 import { dialogues, babTreeFor } from '../data/dialogues';
 import { getFlags } from '../dialogue/flags';
 import type { DialogueTree } from '../dialogue/types';
-import { makeCharacterTexture, type CharacterTextureOptions } from './characterTexture';
 import { isNarrowLayout, responsiveMargin, restartSceneOnResize } from '../ui/responsive';
-import { createIsoPrism, drawIsoPrismShape, gridToIsoScreen, wallInsetPoints } from './isoGeometry';
+import { gridToIsoScreen } from './isoGeometry';
 import {
   circleIntersectsRect,
   createHardRevealMaskState,
@@ -19,8 +18,6 @@ import {
   type Building,
   type Decor,
   type Interactable,
-  type IsoPoint,
-  type IsoPrism,
   type MapExit,
   type SceneSpawnData,
   type TileKind,
@@ -229,26 +226,6 @@ export abstract class BaseMapScene extends Phaser.Scene {
       decor: this.decor,
       exits: this.exits,
     };
-  }
-
-  protected isoPrism(widthCells: number, heightCells: number, wallH: number, topPad = 0): IsoPrism {
-    return createIsoPrism(widthCells, heightCells, wallH, topPad);
-  }
-
-  protected wallInset(start: IsoPoint, end: IsoPoint, from: number, to: number, height: number): IsoPoint[] {
-    return wallInsetPoints(start, end, from, to, height);
-  }
-
-  protected drawIsoPrism(
-    g: Phaser.GameObjects.Graphics,
-    geo: IsoPrism,
-    colors: { right: number; left: number; top: number; edge?: number; alpha?: number },
-  ): void {
-    drawIsoPrismShape(g, geo, colors);
-  }
-
-  protected makePersonTexture(key: string, options: CharacterTextureOptions): void {
-    makeCharacterTexture(this, key, options);
   }
 
   // ---------- NPCs ----------

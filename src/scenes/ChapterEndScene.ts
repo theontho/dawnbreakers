@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { chapterById, nextChapter } from '../data/chapters';
+import { chapterById, nextChapter, type ChapterId } from '../data/chapters';
 import { localizedStyle, t } from '../i18n';
 import { buttonFont, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 
@@ -9,12 +9,12 @@ import { buttonFont, responsiveFont, restartSceneOnResize, safeLayout } from '..
  * where they are.
  */
 export class ChapterEndScene extends Phaser.Scene {
-  private chapterId!: string;
+  private chapterId!: ChapterId;
   private fromKey = 'City';
 
   constructor() { super('ChapterEnd'); }
 
-  init(data: { chapterId: string; from?: string }): void {
+  init(data: { chapterId: ChapterId; from?: string }): void {
     this.chapterId = data.chapterId;
     this.fromKey = data.from ?? 'City';
   }

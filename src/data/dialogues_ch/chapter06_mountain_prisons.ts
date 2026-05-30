@@ -5,7 +5,6 @@ export const ch6WardenSoftens: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'ʿAlí Khán, Warden of Mákú',
       text: 'The order is plain: few may approach the Prisoner. These mountains keep silence better than men do.',
       choices: [
@@ -22,7 +21,6 @@ export const ch6WardenSoftens: DialogueTree = {
       ],
     },
     soften: {
-      id: 'soften',
       speaker: 'ʿAlí Khán',
       onEnter: { set: { ch6WardenSoftened: true } },
       text: 'At first I thought severity was obedience. Yet His patience has made my own command seem small. Speak quietly, and pass.',
@@ -31,7 +29,6 @@ export const ch6WardenSoftens: DialogueTree = {
       ],
     },
     tested: {
-      id: 'tested',
       speaker: 'ʿAlí Khán',
       onEnter: { set: { ch6WardenSoftened: true } },
       text: 'Bold words for a narrow pass. Still... I have seen His enemies grow loud while He remains serene. Go, then — but carry no rumor carelessly.',
@@ -47,7 +44,6 @@ export const ch6CourierWitness: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'A Mountain Courier',
       onEnter: { set: { ch6HeardTransfer: true } },
       text: 'Snow closes the track by dusk. Still the letters go out — hidden under wool, memorised in the heart, carried from Mákú toward Chihríq.',
@@ -57,7 +53,6 @@ export const ch6CourierWitness: DialogueTree = {
       ],
     },
     witness: {
-      id: 'witness',
       speaker: 'A Mountain Courier',
       text: 'No prison is an ending while a single line can be borne away. Men call these places remote; I have never seen news travel faster.',
       choices: [
@@ -72,7 +67,6 @@ export const ch6MullaHusaynVisit: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Mullá Ḥusayn',
       text: 'I have crossed long roads for one more glimpse of my Beloved. The mountain wind is bitter, but it cannot chill recognition.',
       choices: [
@@ -90,7 +84,6 @@ export const ch6MullaHusaynVisit: DialogueTree = {
       ],
     },
     memory: {
-      id: 'memory',
       speaker: 'Mullá Ḥusayn',
       text: 'Then you know: a lamp once kindled does not become night again. These fortresses are only shadows around that flame.',
       choices: [
@@ -98,7 +91,6 @@ export const ch6MullaHusaynVisit: DialogueTree = {
       ],
     },
     steadfast: {
-      id: 'steadfast',
       speaker: 'Mullá Ḥusayn',
       text: 'The first word I heard from Him still travels ahead of me. I follow it, whether the path leads to a garden or a prison gate.',
       choices: [
@@ -113,7 +105,6 @@ export const ch6Bayan: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'The Writing Desk',
       text: 'In the barred stillness of Chihríq, pages gather beneath the reed pen. The Persian Bayán is being revealed — law, symbol, summons, and promise.',
       choices: [
@@ -135,7 +126,6 @@ export const ch6Bayan: DialogueTree = {
       ],
     },
     awe: {
-      id: 'awe',
       speaker: 'Narrator',
       text: 'The cold room seems to widen. What was meant as confinement becomes a chamber of revelation.',
       choices: [
@@ -143,7 +133,6 @@ export const ch6Bayan: DialogueTree = {
       ],
     },
     study: {
-      id: 'study',
       speaker: 'Narrator',
       text: 'You trace the careful architecture of meaning: each line answering old expectation while opening a future no prison can measure.',
       choices: [
@@ -151,7 +140,6 @@ export const ch6Bayan: DialogueTree = {
       ],
     },
     grief: {
-      id: 'grief',
       speaker: 'Narrator',
       text: 'Your sorrow does not lessen the light. The ink dries beside iron bars, and the contrast makes the testimony sharper.',
       choices: [
@@ -159,7 +147,6 @@ export const ch6Bayan: DialogueTree = {
       ],
     },
     complete: {
-      id: 'complete',
       speaker: 'Narrator',
       onEnter: { set: { bayanComplete: true } },
       text: 'From Mákú to Chihríq, isolation has failed its purpose. Wardens soften, visitors are strengthened, and the Bayán leaves the mountain prison as a sign for a new age.',

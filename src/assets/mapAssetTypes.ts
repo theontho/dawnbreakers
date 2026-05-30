@@ -1,3 +1,4 @@
+import type Phaser from 'phaser';
 import type { TileKind } from '../scenes/baseMapTypes';
 import type { CharacterTextureOptions } from '../scenes/characterTexture';
 
@@ -47,3 +48,5 @@ export interface MapAssetCategory {
   description: string;
   objectIds: MapObjectId[];
 }
+
+export type TextureGenerator = (scene: Phaser.Scene, def: MapObjectDefinition) => void;

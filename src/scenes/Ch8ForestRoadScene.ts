@@ -1,5 +1,4 @@
 import { BaseMapScene } from './BaseMapScene';
-import { makeTextureGraphics } from './graphicsFactory';
 
 export class Ch8ForestRoadScene extends BaseMapScene {
   protected mapWidth = 18;
@@ -7,35 +6,6 @@ export class Ch8ForestRoadScene extends BaseMapScene {
   protected sceneTitle = 'Mazandaran Forest Road';
 
   constructor() { super('Ch8ForestRoad'); }
-
-  create(): void {
-    this.ensureTextures();
-    super.create();
-  }
-
-  private ensureTextures(): void {
-    if (!this.textures.exists('ch8-shrine-glimpse')) {
-      const geo = this.isoPrism(2, 2, 44, 24);
-      const g = makeTextureGraphics(this);
-      this.drawIsoPrism(g, geo, {
-        right: 0x756342,
-        left: 0x3b3426,
-        top: 0x8d7a57,
-        edge: 0x2d261c,
-      });
-      g.fillStyle(0xb9aa79, 0.9);
-      g.fillCircle(geo.bottomR.x, geo.topR.y - 8, 10);
-      g.fillStyle(0x1d2d24, 0.8);
-      g.fillPoints([
-        { x: geo.left.x, y: geo.left.y + 8 },
-        { x: geo.right.x, y: geo.right.y + 8 },
-        geo.bottom,
-        { x: geo.bottom.x, y: geo.bottom.y + 10 },
-      ], true);
-      g.generateTexture('ch8-shrine-glimpse', geo.texW, geo.texH);
-      g.destroy();
-    }
-  }
 
   protected getDefaultSpawn(): { x: number; y: number } {
     return { x: 1, y: 5 };

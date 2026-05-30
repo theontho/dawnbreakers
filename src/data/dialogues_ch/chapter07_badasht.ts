@@ -5,7 +5,6 @@ export const unveiling: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Ṭáhirih',
       text: 'Friend, the garden has grown still because a sign has been made plain. I have not come to be gazed upon; I have come to summon hearts from imitation to recognition.',
       choices: [
@@ -16,7 +15,6 @@ export const unveiling: DialogueTree = {
       ],
     },
     shock: {
-      id: 'shock',
       speaker: 'Ṭáhirih',
       text: 'Then let your shock become a doorway, not a chain. The old order taught fear before truth; the new summons conscience, learning, and courage before God.',
       choices: [
@@ -24,7 +22,6 @@ export const unveiling: DialogueTree = {
       ],
     },
     defence: {
-      id: 'defence',
       speaker: 'Ṭáhirih',
       text: 'Courage belongs to the Cause, not to me alone. If a woman must speak so the sleepers awaken, then let my voice be clear and accountable.',
       choices: [
@@ -32,7 +29,6 @@ export const unveiling: DialogueTree = {
       ],
     },
     silence: {
-      id: 'silence',
       speaker: 'Ṭáhirih',
       text: 'Silence can be reverence, or it can be retreat. Search your heart, and let it become witness rather than hiding place.',
       choices: [
@@ -40,7 +36,6 @@ export const unveiling: DialogueTree = {
       ],
     },
     explain: {
-      id: 'explain',
       speaker: 'Ṭáhirih',
       text: 'Badasht is not a camp of novelty. It is the place where what was hidden is declared: the Primal Point has opened a new day, and borrowed veils cannot govern its sun.',
       choices: [
@@ -48,7 +43,6 @@ export const unveiling: DialogueTree = {
       ],
     },
     call: {
-      id: 'call',
       speaker: 'Ṭáhirih',
       text: 'Go now among the tents. Some hearts tremble; some resist; some are already aflame. Let them hear that dignity and truth have walked together in this garden.',
       choices: [
@@ -56,7 +50,6 @@ export const unveiling: DialogueTree = {
       ],
     },
     reconciliation: {
-      id: 'reconciliation',
       speaker: 'Narrator',
       onEnter: { set: { badashtComplete: true } },
       text: 'As the evening lamps are lit, Bahá\'u\'lláh names the new dispensation, gives new names, steadies wounded hearts, and draws the camps back into one purpose. Badasht has made visible the break between yesterday and the dawn now rising.',
@@ -69,7 +62,6 @@ export const quddusTension: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Quddús',
       text: 'The friends whisper as though the garden itself has been overturned. A new Revelation must be proclaimed, yet proclamation can wound those who have only just learned to stand.',
       choices: [
@@ -78,7 +70,6 @@ export const quddusTension: DialogueTree = {
       ],
     },
     caution: {
-      id: 'caution',
       speaker: 'Quddús',
       text: 'Mercy is not delay for its own sake. It is the art of guiding a soul to the threshold without breaking what must be strengthened.',
       choices: [
@@ -86,7 +77,6 @@ export const quddusTension: DialogueTree = {
       ],
     },
     boldness: {
-      id: 'boldness',
       speaker: 'Quddús',
       text: 'Boldness is required, yes — but not vanity. The Cause asks for obedience to truth, and truth is larger than any one temperament in this camp.',
       choices: [
@@ -94,7 +84,6 @@ export const quddusTension: DialogueTree = {
       ],
     },
     end: {
-      id: 'end',
       speaker: 'Narrator',
       text: 'Quddús turns toward the central path. Around him the conference breathes with tension: a necessary wound, awaiting the hand that will bind it.',
     },
@@ -106,7 +95,6 @@ export const bahaullahReconcile: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'Messenger at the Central Tent',
       text: 'Come in peace. Counsel from the central tent is passing through the camp: no soul gathered here is served by scorn — not the one who trembles, not the one who proclaims, not the one who has misunderstood both.',
       choices: [
@@ -115,7 +103,6 @@ export const bahaullahReconcile: DialogueTree = {
       ],
     },
     fear: {
-      id: 'fear',
       speaker: 'Messenger at the Central Tent',
       text: 'The reply is carried gently: a storm may scatter dry leaves, but it also clears the air. Let this day be remembered not for confusion, but for the meanings it forced into the open.',
       choices: [
@@ -123,7 +110,6 @@ export const bahaullahReconcile: DialogueTree = {
       ],
     },
     names: {
-      id: 'names',
       speaker: 'Narrator',
       text: 'Within the central tent, new names are given, and with them a charge: to arise as servants of a new Day. Ṭáhirih has spoken with agency; Quddús has guarded the friends; now unity must deepen, not erase, what has been revealed.',
       choices: [
@@ -131,7 +117,6 @@ export const bahaullahReconcile: DialogueTree = {
       ],
     },
     complete: {
-      id: 'complete',
       speaker: 'Narrator',
       onEnter: { set: { badashtComplete: true } },
       text: 'By nightfall, the three camps are no longer merely separate places on the garden paths. They have become witnesses to one turning point: the old dispensation has been left behind, and the believers must learn how to walk forward together.',
@@ -144,7 +129,6 @@ export const shakenBeliever: DialogueTree = {
   startId: 'g',
   nodes: {
     g: {
-      id: 'g',
       speaker: 'A Shaken Believer',
       text: 'I came to Badasht seeking counsel, and now the very ground beneath counsel has moved. Was this unveiling a rupture, or a mercy I am too frightened to understand?',
       choices: [
@@ -153,7 +137,6 @@ export const shakenBeliever: DialogueTree = {
       ],
     },
     steady: {
-      id: 'steady',
       speaker: 'A Shaken Believer',
       text: 'Then I will breathe, and listen. If this is truly a new Day, perhaps my first service is not to master it, but to cease speaking against the light before I have seen it clearly.',
     },

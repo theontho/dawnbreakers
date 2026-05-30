@@ -4,6 +4,7 @@ import { createIsoPrism, drawIsoPrismShape, wallInsetPoints } from '../scenes/is
 import type { IsoPoint, IsoPrism } from '../scenes/baseMapTypes';
 import type { MapObjectDefinition } from './mapAssetTypes';
 import { MAP_OBJECTS, TILE_OPTIONS } from './mapAssetDefinitions';
+import { CUSTOM_TEXTURE_GENERATORS } from './textureGenerators';
 
 const TILE_W = 64;
 const TILE_H = 32;
@@ -20,6 +21,11 @@ export function ensureMapAssetTextures(scene: Phaser.Scene): void {
 
 export function ensureMapAssetTexture(scene: Phaser.Scene, def: MapObjectDefinition): void {
   if (scene.textures.exists(def.texture)) return;
+  const custom = CUSTOM_TEXTURE_GENERATORS[def.id];
+  if (custom) {
+    custom(scene, def);
+    return;
+  }
   if (def.character || def.kind === 'character') {
     makeCharacterTexture(scene, def.texture, def.character ?? genericCharacterOptions(def));
     return;
