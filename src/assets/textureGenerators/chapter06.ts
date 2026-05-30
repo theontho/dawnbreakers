@@ -68,8 +68,8 @@ function makeFortress(
   if (variant === 'chihriq') {
     g.lineStyle(2, 0xb9c4cc, 0.85);
     const leftBars = wallInsetPoints(geo.left, geo.bottom, 0.43, 0.53, 18);
-    g.lineBetween(leftBars[0].x + 3, leftBars[0].y, leftBars[3].x + 3, leftBars[3].y);
-    g.lineBetween(leftBars[1].x - 3, leftBars[1].y, leftBars[2].x - 3, leftBars[2].y);
+    g.lineBetween(leftBars[0]!.x + 3, leftBars[0]!.y, leftBars[3]!.x + 3, leftBars[3]!.y);
+    g.lineBetween(leftBars[1]!.x - 3, leftBars[1]!.y, leftBars[2]!.x - 3, leftBars[2]!.y);
   }
 
   g.generateTexture(key, geo.texW, geo.texH);
@@ -124,8 +124,8 @@ export const CH06_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     g.fillStyle(0x12161b, 1);
     g.fillPoints(opening, true);
     g.lineStyle(2, 0xb9c4cc, 1);
-    g.lineBetween(opening[0].x + 4, opening[0].y - 1, opening[3].x + 4, opening[3].y + 1);
-    g.lineBetween(opening[1].x - 4, opening[1].y - 1, opening[2].x - 4, opening[2].y + 1);
+    g.lineBetween(opening[0]!.x + 4, opening[0]!.y - 1, opening[3]!.x + 4, opening[3]!.y + 1);
+    g.lineBetween(opening[1]!.x - 4, opening[1]!.y - 1, opening[2]!.x - 4, opening[2]!.y + 1);
     g.lineStyle(1, 0x101418, 1);
     g.strokePoints(opening, true);
     g.generateTexture('ch6-barred-marker', geo.texW, geo.texH);

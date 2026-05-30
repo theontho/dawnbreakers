@@ -27,13 +27,13 @@ export function applyEditorTool(
   objectById: ReadonlyMap<EditorObjectId, EditorObjectDefinition>,
 ): EditorToolResult {
   if (activeTool === 'block') {
-    if (map.blocked[y][x]) return { changed: false };
-    map.blocked[y][x] = true;
+    if (map.blocked[y]![x]) return { changed: false };
+    map.blocked[y]![x] = true;
     return { changed: true };
   }
   if (activeTool === 'open') {
-    if (!map.blocked[y][x]) return { changed: false };
-    map.blocked[y][x] = false;
+    if (!map.blocked[y]![x]) return { changed: false };
+    map.blocked[y]![x] = false;
     return { changed: true };
   }
   if (activeTool === 'erase-object') {
@@ -42,8 +42,8 @@ export function applyEditorTool(
   if (isEditorObjectTool(activeTool)) {
     return placeEditorObject(map, objectById, editorObjectIdFromTool(activeTool), x, y);
   }
-  if (map.tiles[y][x] === activeTool) return { changed: false };
-  map.tiles[y][x] = activeTool;
+  if (map.tiles[y]![x] === activeTool) return { changed: false };
+  map.tiles[y]![x] = activeTool;
   return { changed: true };
 }
 
@@ -60,8 +60,8 @@ export function resizeEditorMap(
   const next = createEmptyEditorMap(nextW, nextH, 'grass');
   for (let y = 0; y < Math.min(nextH, map.height); y++) {
     for (let x = 0; x < Math.min(nextW, map.width); x++) {
-      next.tiles[y][x] = map.tiles[y][x];
-      next.blocked[y][x] = map.blocked[y][x];
+      next.tiles[y]![x] = map.tiles[y]![x]!;
+      next.blocked[y]![x] = map.blocked[y]![x]!;
     }
   }
   next.objects = map.objects.filter(obj => {
@@ -104,7 +104,7 @@ function eraseEditorObjectAt(
   y: number,
 ): boolean {
   for (let index = map.objects.length - 1; index >= 0; index--) {
-    const obj = map.objects[index];
+    const obj = map.objects[index]!;
     if (!objectTouchesCell(obj, x, y, objectById.get(obj.id)?.footprint)) continue;
     map.objects.splice(index, 1);
     return true;

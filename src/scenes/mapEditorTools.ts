@@ -30,11 +30,11 @@ export function editorToolLabel(
   if (tool === 'block') return t('Block');
   if (tool === 'open') return t('Open');
   if (tool === 'erase-object') return t('Erase Object');
-  return t(tool[0].toUpperCase() + tool.slice(1));
+  return t(tool[0]!.toUpperCase() + tool.slice(1));
 }
 
 export function editorKindLabel(kind: EditorObjectDefinition['kind']): string {
-  return t(kind[0].toUpperCase() + kind.slice(1));
+  return t(kind[0]!.toUpperCase() + kind.slice(1));
 }
 
 export function editorStatusText(

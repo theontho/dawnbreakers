@@ -78,13 +78,13 @@ export const SHARED_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
     g.strokePoints(door, true);
     g.lineStyle(1, 0xc9a55c, 0.7);
     g.lineBetween(
-      (door[0].x + door[1].x) / 2,
-      (door[0].y + door[1].y) / 2,
-      (door[2].x + door[3].x) / 2,
-      (door[2].y + door[3].y) / 2,
+      (door[0]!.x + door[1]!.x) / 2,
+      (door[0]!.y + door[1]!.y) / 2,
+      (door[2]!.x + door[3]!.x) / 2,
+      (door[2]!.y + door[3]!.y) / 2,
     );
     g.fillStyle(0xc9a55c, 1);
-    g.fillCircle(door[1].x - 4, door[1].y - 16, 2);
+    g.fillCircle(door[1]!.x - 4, door[1]!.y - 16, 2);
     g.generateTexture('closed-door', geo.texW, geo.texH);
     g.destroy();
   },
@@ -95,7 +95,7 @@ export const SHARED_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
     const robes = [0x3f3328, 0x6a5030, 0x2f3b44, 0x574027];
     for (let i = 0; i < robes.length; i += 1) {
       const x = 8 + i * 10;
-      g.fillStyle(robes[i], 1);
+      g.fillStyle(robes[i]!, 1);
       g.fillRoundedRect(x - 4, 16, 8, 16, 2);
       g.fillStyle(0xd1b37c, 1);
       g.fillCircle(x, 11, 4);
@@ -126,8 +126,8 @@ export const SHARED_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
     g.lineStyle(1, 0x2a1a0f, 1);
     g.strokePoints(paper, true);
     g.lineStyle(1, 0x6f6048, 1);
-    g.lineBetween(paper[3].x + 4, paper[3].y + 1, paper[1].x - 4, paper[1].y + 1);
-    g.lineBetween(paper[3].x + 6, paper[3].y + 5, paper[1].x - 6, paper[1].y + 5);
+    g.lineBetween(paper[3]!.x + 4, paper[3]!.y + 1, paper[1]!.x - 4, paper[1]!.y + 1);
+    g.lineBetween(paper[3]!.x + 6, paper[3]!.y + 5, paper[1]!.x - 6, paper[1]!.y + 5);
     g.generateTexture('writing-desk', geo.texW, geo.texH);
     g.destroy();
   },

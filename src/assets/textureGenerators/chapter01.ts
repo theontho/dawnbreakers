@@ -40,7 +40,7 @@ export const CH01_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     g.lineStyle(2, 0x1a0f08, 0.85);
     g.strokePoints(door, true);
     g.fillStyle(0xe5c36e, 0.7);
-    g.fillCircle(door[1].x - 3, door[1].y - 10, 4);
+    g.fillCircle(door[1]!.x - 3, door[1]!.y - 10, 4);
     g.generateTexture('ch1-house-threshold', geo.texW, geo.texH);
     g.destroy();
   },

@@ -16,7 +16,7 @@ export function renderEditorWorld(
   for (let y = 0; y < map.height; y++) {
     for (let x = 0; x < map.width; x++) {
       const pos = editorGridToScreen(originX, originY, x, y);
-      const tile = scene.add.image(pos.sx, pos.sy, 'tile-' + map.tiles[y][x])
+      const tile = scene.add.image(pos.sx, pos.sy, 'tile-' + map.tiles[y]![x])
         .setOrigin(0.5, 0.5);
       world.add(tile);
     }
@@ -25,7 +25,7 @@ export function renderEditorWorld(
   const overlay = scene.add.graphics();
   for (let y = 0; y < map.height; y++) {
     for (let x = 0; x < map.width; x++) {
-      if (!map.blocked[y][x]) continue;
+      if (!map.blocked[y]![x]) continue;
       const pos = editorGridToScreen(originX, originY, x, y);
       const diamond = tileDiamond(pos.sx, pos.sy);
       overlay.fillStyle(0x7a1f1f, 0.38);

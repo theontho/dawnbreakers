@@ -89,7 +89,7 @@ export function renderEditorPalette(options: PaletteRenderOptions): PaletteRende
   const paletteStep = MIN_TOUCH_TARGET + PALETTE_BUTTON_GAP;
   const tileColumns = Math.max(1, Math.floor((paletteW + PALETTE_BUTTON_GAP) / paletteStep));
   for (let i = 0; i < TILE_OPTIONS.length; i++) {
-    const option = TILE_OPTIONS[i];
+    const option = TILE_OPTIONS[i]!;
     makeTileSwatchButton(
       scene,
       ui,
@@ -114,7 +114,7 @@ export function renderEditorPalette(options: PaletteRenderOptions): PaletteRende
   const specialColumns = Math.max(1, Math.min(specialTools.length, Math.floor((paletteW + PALETTE_BUTTON_GAP) / paletteStep)));
   const specialY = y + tileRows * paletteStep;
   for (let i = 0; i < specialTools.length; i++) {
-    const option = specialTools[i];
+    const option = specialTools[i]!;
     makeSpecialToolButton(
       scene,
       ui,

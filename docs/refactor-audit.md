@@ -76,11 +76,15 @@ Sized in three buckets:
   `scripts/lint-content-baseline.json` grandfathers 526 legacy entries
   with `--update-baseline`. Wired as `npm run lint:content` and
   aggregated in `npm run lint`.
-- **Item 7 — partial.** `package.json`: removed dead `"main": "index.js"`
-  and placeholder `"test"` script; added `lint:content` and aggregate
-  `lint`. `tsconfig.json`: `target` and `lib` bumped to ES2022. Still
-  pending: `noUncheckedIndexedAccess` (133 fallout errors), `@/` path
-  alias, ESLint + `@typescript-eslint`, evaluate `@types/node` necessity.
+- **Item 7 — done.** `package.json`: removed dead `"main": "index.js"`,
+  placeholder `"test"` script, and `@types/node` (no node types are
+  imported in `src/`). Added `lint:content`, `lint:eslint`, and
+  aggregated `lint`. `tsconfig.json`: `target`/`lib` bumped to ES2022;
+  `noUncheckedIndexedAccess` enabled (133 fallout errors fixed across
+  17 files via non-null assertions on safe literal/loop-bounded indices);
+  `@/*` path alias added (mirrored in `vite.config.ts` via
+  `resolve.alias`). New `eslint.config.js` flat config wires
+  `@typescript-eslint` recommended rules; `npm run lint:eslint` clean.
 
 ---
 

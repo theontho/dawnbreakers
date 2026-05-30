@@ -189,16 +189,16 @@ function drawBook3D(
     const rotPts = pts.map(rotateX);
     
     // Calculate normal from rotated points
-    const u = { x: rotPts[1].x - rotPts[0].x, y: rotPts[1].y - rotPts[0].y, z: rotPts[1].z - rotPts[0].z };
-    const v = { x: rotPts[2].x - rotPts[0].x, y: rotPts[2].y - rotPts[0].y, z: rotPts[2].z - rotPts[0].z };
+    const u = { x: rotPts[1]!.x - rotPts[0]!.x, y: rotPts[1]!.y - rotPts[0]!.y, z: rotPts[1]!.z - rotPts[0]!.z };
+    const v = { x: rotPts[2]!.x - rotPts[0]!.x, y: rotPts[2]!.y - rotPts[0]!.y, z: rotPts[2]!.z - rotPts[0]!.z };
     const nx = u.y * v.z - u.z * v.y;
     const ny = u.z * v.x - u.x * v.z;
     const nz = u.x * v.y - u.y * v.x;
 
     // View vector from rotated point
-    const cx = camX - rotPts[0].x;
-    const cy = camY - rotPts[0].y;
-    const cz = camZ - rotPts[0].z;
+    const cx = camX - rotPts[0]!.x;
+    const cy = camY - rotPts[0]!.y;
+    const cz = camZ - rotPts[0]!.z;
 
     const dot = nx * cx + ny * cy + nz * cz;
     if (dot > 0) {

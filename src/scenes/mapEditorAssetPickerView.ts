@@ -144,7 +144,7 @@ function drawAssetPickerRows(
     }
 
     for (let i = 0; i < row.assets.length; i++) {
-      const option = row.assets[i];
+      const option = row.assets[i]!;
       const optionX = x + i * (picker.gridCellW + picker.gridGap);
       const selected = options.activeTool === editorObjectTool(option.id);
       const isPreview = option.id === options.previewId;

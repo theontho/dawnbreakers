@@ -73,7 +73,7 @@ function drawCityBuildings(
     const h = 54 + (i % 4) * 14;
     const roofY = buildingBase - h;
 
-    g.fillStyle(palette[Math.abs(i) % palette.length], alpha);
+    g.fillStyle(palette[Math.abs(i) % palette.length]!, alpha);
     g.fillRect(x, roofY, w, h);
 
     if (addHighlights) {

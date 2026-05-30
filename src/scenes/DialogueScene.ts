@@ -122,8 +122,8 @@ export class DialogueScene extends Phaser.Scene {
     const rowW = contentW;
 
     choices.forEach((choice, i) => {
-      const label = choiceLabels[i];
-      const rowH = choiceHeights[i];
+      const label = choiceLabels[i]!;
+      const rowH = choiceHeights[i]!;
       const bg = this.add.rectangle(rowX, rowY, rowW, rowH, 0x2a1c10, 0.45)
         .setOrigin(0)
         .setStrokeStyle(1, 0x4a3a22, 0.75)
@@ -149,7 +149,7 @@ export class DialogueScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       const n = parseInt(e.key, 10);
       if (!isNaN(n) && n >= 1 && n <= choices.length) {
-        this.choose(choices[n - 1]);
+        this.choose(choices[n - 1]!);
       }
     });
   }

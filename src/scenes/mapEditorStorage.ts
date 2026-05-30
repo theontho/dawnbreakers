@@ -63,8 +63,8 @@ export function decodeEditorMap(
   const decoded = createEmptyEditorMap(stored.width, stored.height, 'grass');
   for (let y = 0; y < stored.height; y++) {
     for (let x = 0; x < stored.width; x++) {
-      decoded.tiles[y][x] = CODE_TILE[stored.tiles[y][x]];
-      decoded.blocked[y][x] = stored.blocked[y][x] === '#';
+      decoded.tiles[y]![x] = CODE_TILE[stored.tiles[y]![x]!]!;
+      decoded.blocked[y]![x] = stored.blocked[y]![x] === '#';
     }
   }
   decoded.objects = (stored.objects ?? [])
@@ -121,15 +121,15 @@ export function createDefaultEditorMap(width: number, height: number): EditorMap
   const map = createEmptyEditorMap(width, height, 'grass');
   const midY = Math.floor(height / 2);
   const midX = Math.floor(width / 2);
-  for (let x = 0; x < width; x++) map.tiles[midY][x] = 'path';
-  for (let y = 0; y < height; y++) map.tiles[y][midX] = 'path';
+  for (let x = 0; x < width; x++) map.tiles[midY]![x] = 'path';
+  for (let y = 0; y < height; y++) map.tiles[y]![midX] = 'path';
   for (let x = 0; x < width; x++) {
-    map.tiles[0][x] = 'sand';
-    map.tiles[height - 1][x] = 'sand';
+    map.tiles[0]![x] = 'sand';
+    map.tiles[height - 1]![x] = 'sand';
   }
   for (let y = 0; y < height; y++) {
-    map.tiles[y][0] = 'sand';
-    map.tiles[y][width - 1] = 'sand';
+    map.tiles[y]![0] = 'sand';
+    map.tiles[y]![width - 1] = 'sand';
   }
   map.objects.push({ id: 'house', x: 3, y: 3 });
   map.objects.push({ id: 'cypress', x: width - 4, y: 3 });

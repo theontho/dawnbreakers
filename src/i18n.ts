@@ -74,12 +74,12 @@ export function setLocale(locale: Locale): Locale {
 
 export function toggleLocale(): Locale {
   const index = SUPPORTED_LOCALES.indexOf(activeLocale);
-  return setLocale(SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length]);
+  return setLocale(SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length]!);
 }
 
 export function languageButtonLabel(): string {
   const index = SUPPORTED_LOCALES.indexOf(activeLocale);
-  const nextLocale = SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length];
+  const nextLocale = SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length]!;
   return LOCALE_CONFIGS[nextLocale].shortName;
 }
 
@@ -168,7 +168,7 @@ export function t(key: string, params?: Params): string {
   if (speakMatch) {
     return interpolate(speakWithTemplates[activeLocale], {
       ...params,
-      name: tName(speakMatch[1]),
+      name: tName(speakMatch[1]!),
     });
   }
 

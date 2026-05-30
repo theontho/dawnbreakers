@@ -44,14 +44,14 @@ function genericCharacterOptions(def: MapObjectDefinition): CharacterTextureOpti
   const hash = stringHash(def.id);
   return {
     body: def.color,
-    skin: skin[hash % skin.length],
+    skin: skin[hash % skin.length]!,
     clothing: {
-      style: styles[hash % styles.length],
+      style: styles[hash % styles.length]!,
       secondary: lighten(def.color, 18),
       accent: 0xc9a55c,
     },
     hat: {
-      style: hats[hash % hats.length],
+      style: hats[hash % hats.length]!,
       color: darken(def.color, 18),
     },
     hair: 0x2d1b10,
@@ -152,8 +152,8 @@ function makeGenericPropTexture(scene: Phaser.Scene, def: MapObjectDefinition): 
     g.fillPoints(paper, true);
     g.lineStyle(1, 0x1a1a1a, 0.75);
     g.strokePoints(paper, true);
-    g.lineBetween(paper[3].x + 4, paper[3].y + 1, paper[1].x - 4, paper[1].y + 1);
-    g.lineBetween(paper[3].x + 6, paper[3].y + 5, paper[1].x - 6, paper[1].y + 5);
+    g.lineBetween(paper[3]!.x + 4, paper[3]!.y + 1, paper[1]!.x - 4, paper[1]!.y + 1);
+    g.lineBetween(paper[3]!.x + 6, paper[3]!.y + 5, paper[1]!.x - 6, paper[1]!.y + 5);
     g.generateTexture(def.texture, geo.texW, geo.texH);
   } else if (label.includes('lamp') || label.includes('light')) {
     g.fillStyle(0xf3d98a, label.includes('light') ? 0.35 : 1);
@@ -223,13 +223,13 @@ function makeGenericPropTexture(scene: Phaser.Scene, def: MapObjectDefinition): 
     if (label.includes('door')) {
       g.lineStyle(1, 0xc9a55c, 0.75);
       g.lineBetween(
-        (opening[0].x + opening[1].x) / 2,
-        (opening[0].y + opening[1].y) / 2,
-        (opening[2].x + opening[3].x) / 2,
-        (opening[2].y + opening[3].y) / 2,
+        (opening[0]!.x + opening[1]!.x) / 2,
+        (opening[0]!.y + opening[1]!.y) / 2,
+        (opening[2]!.x + opening[3]!.x) / 2,
+        (opening[2]!.y + opening[3]!.y) / 2,
       );
       g.fillStyle(0xc9a55c, 1);
-      g.fillCircle(opening[1].x - 4, opening[1].y - 16, 2);
+      g.fillCircle(opening[1]!.x - 4, opening[1]!.y - 16, 2);
     }
     g.generateTexture(def.texture, geo.texW, geo.texH);
   } else if (label.includes('stream') || label.includes('carpet') || label.includes('rug') || label.includes('space')) {
@@ -251,7 +251,7 @@ function makeGenericPropTexture(scene: Phaser.Scene, def: MapObjectDefinition): 
     for (let i = 0; i < 7; i++) {
       const x = 8 + (i % 4) * 11;
       const y = 10 + Math.floor(i / 4) * 14;
-      g.fillStyle([0x4a3a2a, 0x6f2236, 0x2f4a5f, 0x8a5a2a][i % 4], 1);
+      g.fillStyle([0x4a3a2a, 0x6f2236, 0x2f4a5f, 0x8a5a2a][i % 4]!, 1);
       g.fillCircle(x, y, 5);
       g.fillRect(x - 4, y + 5, 8, 12);
     }

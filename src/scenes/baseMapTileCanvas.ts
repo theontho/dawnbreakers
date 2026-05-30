@@ -39,7 +39,7 @@ export function paintRectInto(
 ): void {
   for (let y = y0; y < y0 + h; y += 1) {
     for (let x = x0; x < x0 + w; x += 1) {
-      if (inBounds(width, height, x, y)) map[y][x] = kind;
+      if (inBounds(width, height, x, y)) map[y]![x] = kind;
     }
   }
 }
@@ -51,7 +51,7 @@ export function paintPathInto(
   pts: ReadonlyArray<readonly [number, number]>,
 ): void {
   for (const [x, y] of pts) {
-    if (inBounds(width, height, x, y)) map[y][x] = 'path';
+    if (inBounds(width, height, x, y)) map[y]![x] = 'path';
   }
 }
 
@@ -66,7 +66,7 @@ export function blockFootprintInto(
 ): void {
   for (let dy = 0; dy < h; dy += 1) {
     for (let dx = 0; dx < w; dx += 1) {
-      if (inBounds(width, height, x + dx, y + dy)) blocked[y + dy][x + dx] = true;
+      if (inBounds(width, height, x + dx, y + dy)) blocked[y + dy]![x + dx] = true;
     }
   }
 }
@@ -85,9 +85,9 @@ export function makeTileCanvas(
     blocked,
     paintRect: (x, y, w, h, kind) => paintRectInto(map, width, height, x, y, w, h, kind),
     paintPath: (cells) => paintPathInto(map, width, height, cells),
-    setTile: (x, y, kind) => { if (inBounds(width, height, x, y)) map[y][x] = kind; },
-    block: (x, y) => { if (inBounds(width, height, x, y)) blocked[y][x] = true; },
-    unblock: (x, y) => { if (inBounds(width, height, x, y)) blocked[y][x] = false; },
+    setTile: (x, y, kind) => { if (inBounds(width, height, x, y)) map[y]![x] = kind; },
+    block: (x, y) => { if (inBounds(width, height, x, y)) blocked[y]![x] = true; },
+    unblock: (x, y) => { if (inBounds(width, height, x, y)) blocked[y]![x] = false; },
     inBounds: (x, y) => inBounds(width, height, x, y),
   };
 }

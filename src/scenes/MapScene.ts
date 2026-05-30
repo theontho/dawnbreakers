@@ -172,7 +172,7 @@ export class MapScene extends Phaser.Scene {
   }
 
   private blockTile(x: number, y: number): void {
-    if (this.inBounds(x, y)) this.blocked[y][x] = true;
+    if (this.inBounds(x, y)) this.blocked[y]![x] = true;
   }
 
   private inBounds(x: number, y: number): boolean {
@@ -251,7 +251,7 @@ export class MapScene extends Phaser.Scene {
     const pos = this.gridToScreen(spec.gridX, spec.gridY);
     const sprite = this.add.image(pos.sx, pos.sy + TILE_H / 2, spec.texture)
       .setOrigin(0.5, 1).setDepth(pos.sy + 1);
-    this.blocked[spec.gridY][spec.gridX] = true;
+    this.blocked[spec.gridY]![spec.gridX] = true;
     const action = this.resolveNpcAction(spec.action);
     this.interactables.push({
       gridX: spec.gridX,

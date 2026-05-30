@@ -34,7 +34,7 @@ export function renderBaseMapWorld(
   for (let y = 0; y < state.mapHeight; y++) {
     for (let x = 0; x < state.mapWidth; x++) {
       const { sx, sy } = gridToIsoScreen(state.originX, state.originY, x, y);
-      scene.add.image(sx, sy, 'tile-' + state.map[y][x])
+      scene.add.image(sx, sy, 'tile-' + state.map[y]![x])
         .setOrigin(0.5, 0.5).setDepth(sy);
     }
   }
@@ -55,7 +55,7 @@ export function renderBaseMapWorld(
       .setOrigin(0.5, 1)
       .setDepth(pos.sy + 1);
     occludableSprites.push(sprite);
-    if (item.blocks && inBounds(state, item.gridX, item.gridY)) state.blocked[item.gridY][item.gridX] = true;
+    if (item.blocks && inBounds(state, item.gridX, item.gridY)) state.blocked[item.gridY]![item.gridX] = true;
   }
 
   for (const exit of state.exits) {

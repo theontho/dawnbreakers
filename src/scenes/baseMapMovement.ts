@@ -75,7 +75,7 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
     return state.moveCooldown;
   }
 
-  if (state.blocked[ny][nx]) return state.moveCooldown;
+  if (state.blocked[ny]![nx]) return state.moveCooldown;
 
   state.playerGrid.x = nx;
   state.playerGrid.y = ny;

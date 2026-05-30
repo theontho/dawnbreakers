@@ -56,7 +56,7 @@ export interface Chapter {
   isComplete: (flags: FlagState) => boolean;
 }
 
-interface ChapterSpec extends Omit<Chapter, 'isComplete'> {}
+type ChapterSpec = Omit<Chapter, 'isComplete'>;
 
 const SPECS: ChapterSpec[] = [
   {

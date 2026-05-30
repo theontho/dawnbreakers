@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "demo:build": "tsc --noEmit && vite build --outDir dist-demo",
     "demo:serve": "vite preview --host 0.0.0.0 --port 4173 --strictPort --outDir dist-demo",
-    "lint": "npm run lint:localization && npm run lint:dialogues && npm run lint:content",
+    "lint": "npm run lint:eslint && npm run lint:localization && npm run lint:dialogues && npm run lint:content",
+    "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:localization": "node scripts/lint-localization.mjs",
     "lint:dialogues": "node scripts/lint-dialogues.mjs",
     "lint:content": "node scripts/lint-content.mjs",
@@ -24,9 +25,11 @@
     "phaser": "^3.90.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
     "jscpd": "^4.2.4",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.60.0",
     "vite": "^5.4.21"
   }
 }
