@@ -44,6 +44,16 @@ interface InteractionPromptState {
   triggerInteraction: () => void;
 }
 
+interface VisibleGameObject {
+  visible: boolean;
+  setVisible(visible: boolean): unknown;
+}
+
+interface AlphaGameObject {
+  alpha: number;
+  setAlpha(alpha: number): unknown;
+}
+
 export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState): number {
   if (state.moveCooldown > 0) return state.moveCooldown;
   const { W, A, S, D } = state.wasdKeys;
@@ -86,7 +96,6 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
     duration: 140, ease: 'Sine.easeInOut',
     onUpdate: () => {
       state.player.setDepth(state.player.y + 2);
-      state.updatePlayerRevealMasks();
     },
     onComplete: () => state.updatePlayerRevealMasks(true),
   });
@@ -107,17 +116,36 @@ export function nearestInteractable(
 export function updateInteractionPrompt(state: InteractionPromptState): void {
   const near = nearestInteractable(state.interactables, state.playerGrid);
   if (near) {
-    state.promptText.setText(t(near.prompt)).setVisible(true);
-    state.mobileActionButton?.setAlpha(1);
-    state.mobileActionLabel?.setAlpha(1);
+    setTextIfChanged(state.promptText, t(near.prompt));
+    setVisibleIfChanged(state.promptText, true);
+    setAlphaIfChanged(state.mobileActionButton, 1);
+    setAlphaIfChanged(state.mobileActionLabel, 1);
     if (Phaser.Input.Keyboard.JustDown(state.interactKey)) state.triggerInteraction();
   } else {
-    state.promptText.setText('').setVisible(false);
-    state.mobileActionButton?.setAlpha(0.62);
-    state.mobileActionLabel?.setAlpha(0.62);
+    setTextIfChanged(state.promptText, '');
+    setVisibleIfChanged(state.promptText, false);
+    setAlphaIfChanged(state.mobileActionButton, 0.62);
+    setAlphaIfChanged(state.mobileActionLabel, 0.62);
   }
 
   const onExit = state.exits.find(e =>
     e.fromX === state.playerGrid.x && e.fromY === state.playerGrid.y);
-  state.exitPromptText.setText(onExit ? t(onExit.label) : '').setVisible(Boolean(onExit));
+  const exitText = onExit ? t(onExit.label) : '';
+  setTextIfChanged(state.exitPromptText, exitText);
+  setVisibleIfChanged(state.exitPromptText, Boolean(onExit));
+}
+
+function setTextIfChanged(text: Phaser.GameObjects.Text, value: string): void {
+  if (text.text !== value) text.setText(value);
+}
+
+function setVisibleIfChanged(object: VisibleGameObject, visible: boolean): void {
+  if (object.visible !== visible) object.setVisible(visible);
+}
+
+function setAlphaIfChanged(
+  object: AlphaGameObject | undefined,
+  alpha: number,
+): void {
+  if (object && object.alpha !== alpha) object.setAlpha(alpha);
 }

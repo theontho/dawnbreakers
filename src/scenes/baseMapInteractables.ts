@@ -71,22 +71,32 @@ export function updatePlayerRevealMasks(
   if (handle.states.length === 0) return;
   const playerReveal = playerRevealTarget(player);
   const last = handle.lastPlayerReveal;
-  if (!force && last
-    && Math.abs(last.x - playerReveal.x) < 0.5
-    && Math.abs(last.y - playerReveal.y) < 0.5
-    && Math.abs(last.depth - playerReveal.depth) < 0.5) {
+  if (!force && last && revealTargetsClose(last, playerReveal)) {
     return;
   }
 
   for (const state of handle.states) {
-    const reveals = [...state.staticReveals];
-    if (state.sprite.depth > playerReveal.depth
-      && circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds)) {
-      reveals.push(playerReveal);
+    const playerRevealsState = state.sprite.depth > playerReveal.depth
+      && circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds);
+
+    if (playerRevealsState) {
+      if (force || !state.dynamicReveal || !revealTargetsClose(state.dynamicReveal, playerReveal)) {
+        redrawRevealMaskState(state, [...state.staticReveals, playerReveal]);
+        state.dynamicReveal = playerReveal;
+      }
+    } else if (force || state.dynamicReveal) {
+      redrawRevealMaskState(state, state.staticReveals);
+      state.dynamicReveal = undefined;
     }
-    redrawRevealMaskState(state, reveals);
   }
   handle.lastPlayerReveal = playerReveal;
+}
+
+function revealTargetsClose(a: RevealTarget, b: RevealTarget): boolean {
+  return Math.abs(a.x - b.x) < 0.5
+    && Math.abs(a.y - b.y) < 0.5
+    && Math.abs(a.depth - b.depth) < 0.5
+    && Math.abs(a.radius - b.radius) < 0.5;
 }
 
 export function destroyInteractableRevealMasks(
@@ -106,6 +116,7 @@ export function destroyInteractableRevealMasks(
 
 export interface InteractableHighlightHandle {
   graphics: Phaser.GameObjects.Graphics[];
+  tween?: Phaser.Tweens.Tween;
   toggled: boolean;
   held: boolean;
 }
@@ -145,7 +156,7 @@ export function setupInteractableHighlights(
   }
 
   if (handle.graphics.length > 0) {
-    scene.tweens.add({
+    handle.tween = scene.tweens.add({
       targets: handle.graphics,
       alpha: 0.52,
       duration: 720,
@@ -153,10 +164,15 @@ export function setupInteractableHighlights(
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
+    handle.tween.pause();
   }
 }
 
 export function applyInteractableHighlightVisibility(handle: InteractableHighlightHandle): void {
   const visible = handle.toggled || handle.held;
-  for (const highlight of handle.graphics) highlight.setVisible(visible);
+  for (const highlight of handle.graphics) {
+    if (highlight.visible !== visible) highlight.setVisible(visible);
+  }
+  if (visible) handle.tween?.resume();
+  else handle.tween?.pause();
 }

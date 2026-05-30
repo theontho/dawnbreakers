@@ -16,6 +16,7 @@ export interface RevealMaskState {
   context?: CanvasRenderingContext2D;
   maskObject?: Phaser.GameObjects.Image;
   maskShape?: Phaser.GameObjects.Graphics;
+  dynamicReveal?: RevealTarget;
 }
 
 export function revealTargetForSprite(

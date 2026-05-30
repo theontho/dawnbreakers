@@ -46,20 +46,36 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const game = new Phaser.Game(config);
+attachFpsLabel(game);
 if (import.meta.env.DEV) {
   // Dev-only escape hatch for headless smoke tests; not shipped.
   (window as unknown as { __game: Phaser.Game }).__game = game;
 }
-const resizeGame = (): void => {
+let resizeFrame: number | undefined;
+let lastGameWidth = initialWidth;
+let lastGameHeight = initialHeight;
+
+const resizeGameNow = (): void => {
+  resizeFrame = undefined;
   syncGameViewportHeight(gameElement);
   if (!gameElement) return;
-  game.scale.resize(gameElement.clientWidth, gameElement.clientHeight);
+  const width = Math.round(gameElement.clientWidth);
+  const height = Math.round(gameElement.clientHeight);
+  if (width === lastGameWidth && height === lastGameHeight) return;
+
+  lastGameWidth = width;
+  lastGameHeight = height;
+  game.scale.resize(width, height);
+};
+
+const resizeGame = (): void => {
+  if (resizeFrame !== undefined) return;
+  resizeFrame = window.requestAnimationFrame(resizeGameNow);
 };
 
 window.addEventListener('resize', resizeGame);
 window.addEventListener('orientationchange', () => scheduleViewportSync([100, 300, 600]));
 window.visualViewport?.addEventListener('resize', resizeGame);
-window.visualViewport?.addEventListener('scroll', resizeGame);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) scheduleViewportSync([50, 200, 500]);
 });
@@ -100,4 +116,45 @@ function isStandaloneDisplay(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches ||
     window.matchMedia('(display-mode: fullscreen)').matches ||
     standaloneNavigator.standalone === true;
+}
+
+function attachFpsLabel(game: Phaser.Game): void {
+  const label = document.createElement('div');
+  label.setAttribute('aria-hidden', 'true');
+  label.textContent = 'FPS --';
+  Object.assign(label.style, {
+    position: 'fixed',
+    top: '2px',
+    right: '6px',
+    zIndex: '2147483647',
+    pointerEvents: 'none',
+    userSelect: 'none',
+    padding: '2px 5px',
+    borderRadius: '5px',
+    background: 'rgba(5, 4, 3, 0.58)',
+    color: '#f3d98a',
+    font: '11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+    letterSpacing: '0.02em',
+    textShadow: '0 1px 2px #000',
+  });
+  document.body.appendChild(label);
+  positionFpsLabel(label);
+  window.addEventListener('resize', () => positionFpsLabel(label));
+  window.addEventListener('orientationchange', () => {
+    window.setTimeout(() => positionFpsLabel(label), 100);
+    window.setTimeout(() => positionFpsLabel(label), 300);
+  });
+  window.visualViewport?.addEventListener('resize', () => positionFpsLabel(label));
+
+  window.setInterval(() => {
+    label.textContent = `FPS ${Math.round(game.loop.actualFps)}`;
+  }, 250);
+}
+
+function positionFpsLabel(label: HTMLElement): void {
+  const insets = measuredSafeAreaInsets();
+  const topInset = isPortraitDisplay() ? insets.top : 0;
+  const unsafeTopOffset = topInset > 0 ? Math.round(Math.min(16, Math.max(4, topInset * 0.18))) : 2;
+  label.style.top = `${unsafeTopOffset}px`;
+  label.style.right = `${Math.max(6, insets.right + 6)}px`;
 }
