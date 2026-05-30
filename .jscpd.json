@@ -1,0 +1,17 @@
+{
+  "threshold": 5,
+  "minLines": 8,
+  "minTokens": 50,
+  "reporters": ["console"],
+  "gitignore": true,
+  "noTips": true,
+  "ignore": [
+    "node_modules/**",
+    "dist/**",
+    "dist-demo/**",
+    "report/**",
+    "src/data/dialogues_ch/**",
+    "src/i18n/locales/**"
+  ],
+  "formats": ["typescript", "javascript"]
+}

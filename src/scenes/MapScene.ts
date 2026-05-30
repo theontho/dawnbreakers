@@ -36,28 +36,30 @@ import {
   nearestInteractable as getNearestInteractable,
   updateInteractionPrompt,
 } from './baseMapMovement';
+import type { MapDefinition, NpcAction, NpcSpec, TileCanvas } from '../data/maps/types';
 
 /**
- * Shared logic for any walkable map scene: iso rendering, grid movement,
+ * Concrete walkable map scene driven by a `MapDefinition` (data). One Phaser
+ * scene instance per chapter location. Handles iso rendering, grid movement,
  * NPC interaction, dialogue/journal/restart HUD, and edge-of-map exits.
  *
- * Subclasses configure `mapWidth`, `mapHeight`, `sceneTitle`, and override
- * `getDefaultSpawn`, `buildMap`, `placeBuildings`, `placeDecor`,
- * `spawnNPCs`, and `setupExits`.
+ * To add a new map: add a `MapDefinition` under `src/data/maps/` and register
+ * it in `src/data/maps/index.ts`. `main.ts` does the rest.
  */
-export abstract class BaseMapScene extends Phaser.Scene {
-  protected abstract mapWidth: number;
-  protected abstract mapHeight: number;
-  protected abstract sceneTitle: string;
+export class MapScene extends Phaser.Scene {
+  private readonly definition: MapDefinition;
+  private readonly mapWidth: number;
+  private readonly mapHeight: number;
+  private readonly sceneTitle: string;
 
-  protected player!: Phaser.GameObjects.Image;
-  protected playerGrid = { x: 0, y: 0 };
-  protected map: TileKind[][] = [];
-  protected blocked: boolean[][] = [];
-  protected interactables: Interactable[] = [];
-  protected buildings: Building[] = [];
-  protected decor: Decor[] = [];
-  protected exits: MapExit[] = [];
+  private player!: Phaser.GameObjects.Image;
+  private playerGrid = { x: 0, y: 0 };
+  private map: TileKind[][] = [];
+  private blocked: boolean[][] = [];
+  private interactables: Interactable[] = [];
+  private buildings: Building[] = [];
+  private decor: Decor[] = [];
+  private exits: MapExit[] = [];
   private occludableSprites: Phaser.GameObjects.Image[] = [];
   private revealMaskStates: RevealMaskState[] = [];
   private lastPlayerReveal?: RevealTarget;
@@ -65,42 +67,42 @@ export abstract class BaseMapScene extends Phaser.Scene {
   private interactableHighlightsToggled = false;
   private interactableHighlightsHeld = false;
 
-  protected promptText!: Phaser.GameObjects.Text;
-  protected exitPromptText!: Phaser.GameObjects.Text;
-  protected banner!: Phaser.GameObjects.Text;
+  private promptText!: Phaser.GameObjects.Text;
+  private exitPromptText!: Phaser.GameObjects.Text;
+  private banner!: Phaser.GameObjects.Text;
   private mobileControls?: Phaser.GameObjects.Container;
-  protected endingShown = false;
+  private endingShown = false;
 
-  protected cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  protected interactKey!: Phaser.Input.Keyboard.Key;
-  protected journalKey!: Phaser.Input.Keyboard.Key;
-  protected highlightKey!: Phaser.Input.Keyboard.Key;
-  protected tabHighlightKey!: Phaser.Input.Keyboard.Key;
-  protected settingsKey!: Phaser.Input.Keyboard.Key;
-  protected wasdKeys!: {
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private interactKey!: Phaser.Input.Keyboard.Key;
+  private journalKey!: Phaser.Input.Keyboard.Key;
+  private highlightKey!: Phaser.Input.Keyboard.Key;
+  private tabHighlightKey!: Phaser.Input.Keyboard.Key;
+  private settingsKey!: Phaser.Input.Keyboard.Key;
+  private wasdKeys!: {
     W: Phaser.Input.Keyboard.Key;
     A: Phaser.Input.Keyboard.Key;
     S: Phaser.Input.Keyboard.Key;
     D: Phaser.Input.Keyboard.Key;
   };
-  protected moveCooldown = 0;
+  private moveCooldown = 0;
   private mobileMoveDirection?: { dx: number; dy: number };
   private mobileActionButton?: Phaser.GameObjects.Rectangle;
   private mobileActionLabel?: Phaser.GameObjects.Text;
 
-  protected originX = 0;
-  protected originY = 90;
-  protected cameraFollowsPlayer = true;
+  private originX = 0;
+  private originY = 90;
 
-  protected abstract getDefaultSpawn(): { x: number; y: number };
-  protected abstract buildMap(): void;
-  protected abstract placeBuildings(): void;
-  protected abstract placeDecor(): void;
-  protected abstract spawnNPCs(): void;
-  protected abstract setupExits(): void;
+  constructor(definition: MapDefinition) {
+    super(definition.key);
+    this.definition = definition;
+    this.mapWidth = definition.width;
+    this.mapHeight = definition.height;
+    this.sceneTitle = definition.title;
+  }
 
   init(data: SceneSpawnData): void {
-    const spawn = this.getDefaultSpawn();
+    const spawn = this.definition.spawn;
     this.playerGrid = { x: data.spawnX ?? spawn.x, y: data.spawnY ?? spawn.y };
     this.map = [];
     this.blocked = [];
@@ -129,11 +131,11 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.originY = responsiveMargin(size) + (isNarrowLayout(size) ? 62 : 58);
 
     this.initEmptyMap();
-    this.buildMap();
+    this.definition.build(this.tileCanvas());
     this.cameras.main.setBackgroundColor(WORLD_BACKDROP_COLOR);
     this.placeBuildings();
     this.placeDecor();
-    this.setupExits();
+    this.installExits();
     this.drawWorld();
     this.spawnNPCs();
     this.spawnPlayer();
@@ -148,14 +150,12 @@ export abstract class BaseMapScene extends Phaser.Scene {
       this.destroyInteractableRevealMasks();
     });
 
-    // Camera fade-in on scene entry
     this.cameras.main.fadeIn(300, 0, 0, 0);
-
   }
 
   // ---------- map ----------
 
-  protected initEmptyMap(): void {
+  private initEmptyMap(): void {
     for (let y = 0; y < this.mapHeight; y++) {
       const row: TileKind[] = [];
       const brow: boolean[] = [];
@@ -168,47 +168,93 @@ export abstract class BaseMapScene extends Phaser.Scene {
     }
   }
 
-  protected paintRect(x0: number, y0: number, w: number, h: number, kind: TileKind): void {
+  /** Adapter exposed to `MapDefinition.build` for tile painting. */
+  private tileCanvas(): TileCanvas {
+    return {
+      width: this.mapWidth,
+      height: this.mapHeight,
+      map: this.map,
+      blocked: this.blocked,
+      paintRect: (x, y, w, h, kind) => this.paintRect(x, y, w, h, kind),
+      paintPath: cells => this.paintPath(cells),
+      setTile: (x, y, kind) => { if (this.inBounds(x, y)) this.map[y][x] = kind; },
+      block: (x, y) => this.blockTile(x, y),
+      unblock: (x, y) => { if (this.inBounds(x, y)) this.blocked[y][x] = false; },
+      inBounds: (x, y) => this.inBounds(x, y),
+    };
+  }
+
+  private paintRect(x0: number, y0: number, w: number, h: number, kind: TileKind): void {
     for (let y = y0; y < y0 + h; y++)
       for (let x = x0; x < x0 + w; x++)
         if (this.inBounds(x, y)) this.map[y][x] = kind;
   }
 
-  protected paintPath(pts: [number, number][]): void {
+  private paintPath(pts: ReadonlyArray<readonly [number, number]>): void {
     for (const [x, y] of pts) if (this.inBounds(x, y)) this.map[y][x] = 'path';
   }
 
-  protected blockFootprint(x: number, y: number, w: number, h: number): void {
+  private blockFootprint(x: number, y: number, w: number, h: number): void {
     for (let dy = 0; dy < h; dy++)
       for (let dx = 0; dx < w; dx++)
         if (this.inBounds(x + dx, y + dy)) this.blocked[y + dy][x + dx] = true;
   }
 
-  protected blockTile(x: number, y: number): void {
+  private blockTile(x: number, y: number): void {
     if (this.inBounds(x, y)) this.blocked[y][x] = true;
   }
 
-  protected inBounds(x: number, y: number): boolean {
+  private inBounds(x: number, y: number): boolean {
     return x >= 0 && y >= 0 && x < this.mapWidth && y < this.mapHeight;
+  }
+
+  // ---------- placements from definition ----------
+
+  private placeBuildings(): void {
+    for (const spec of this.definition.buildings) {
+      this.buildings.push({
+        gridX: spec.gridX,
+        gridY: spec.gridY,
+        w: spec.w,
+        h: spec.h,
+        texture: spec.texture,
+      });
+      if (spec.blocks !== false) {
+        this.blockFootprint(spec.gridX, spec.gridY, spec.w, spec.h);
+      }
+    }
+  }
+
+  private placeDecor(): void {
+    for (const spec of this.definition.decor) {
+      this.decor.push({ ...spec });
+      if (spec.blocks) this.blockTile(spec.gridX, spec.gridY);
+    }
+  }
+
+  private installExits(): void {
+    for (const exit of this.definition.exits) this.exits.push({ ...exit });
+  }
+
+  private spawnNPCs(): void {
+    for (const npc of this.definition.npcs) this.addNPC(npc);
   }
 
   // ---------- drawing ----------
 
-  protected drawWorld(): void {
+  private drawWorld(): void {
     this.occludableSprites = renderBaseMapWorld(this, this.worldState());
   }
 
-  protected gridToScreen(gx: number, gy: number): { sx: number; sy: number } {
+  private gridToScreen(gx: number, gy: number): { sx: number; sy: number } {
     return gridToIsoScreen(this.originX, this.originY, gx, gy);
   }
 
-  protected setupCameraFollow(width: number, height: number): void {
+  private setupCameraFollow(width: number, height: number): void {
     const bounds = getBaseMapWorldBounds(this, this.worldState(), this.player, this.interactables, width, height);
     this.cameras.main
       .setRoundPixels(true)
       .setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
-
-    if (!this.cameraFollowsPlayer) return;
 
     this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
     this.cameras.main.centerOn(this.player.x, this.player.y);
@@ -230,15 +276,27 @@ export abstract class BaseMapScene extends Phaser.Scene {
 
   // ---------- NPCs ----------
 
-  protected addNPC(gx: number, gy: number, texture: string,
-                   promptFn: () => string, action: () => void): void {
-    const pos = this.gridToScreen(gx, gy);
-    const sprite = this.add.image(pos.sx, pos.sy + TILE_H / 2, texture)
+  private addNPC(spec: NpcSpec): void {
+    const pos = this.gridToScreen(spec.gridX, spec.gridY);
+    const sprite = this.add.image(pos.sx, pos.sy + TILE_H / 2, spec.texture)
       .setOrigin(0.5, 1).setDepth(pos.sy + 1);
-    this.blocked[gy][gx] = true;
+    this.blocked[spec.gridY][spec.gridX] = true;
+    const action = this.resolveNpcAction(spec.action);
     this.interactables.push({
-      gridX: gx, gridY: gy, texture, prompt: promptFn(), sprite, action,
+      gridX: spec.gridX,
+      gridY: spec.gridY,
+      texture: spec.texture,
+      prompt: spec.prompt,
+      sprite,
+      action,
     });
+  }
+
+  private resolveNpcAction(action: NpcAction): () => void {
+    switch (action.kind) {
+      case 'dialogue': return () => this.startSimpleDialogue(action.id);
+      case 'bab': return () => this.startBabDialogue();
+    }
   }
 
   private setupInteractableRevealMask(): void {
@@ -305,13 +363,9 @@ export abstract class BaseMapScene extends Phaser.Scene {
         && circleIntersectsRect(playerReveal.x, playerReveal.y, playerReveal.radius, state.bounds)) {
         reveals.push(playerReveal);
       }
-      this.redrawRevealMask(state, reveals);
+      redrawRevealMaskState(state, reveals);
     }
     this.lastPlayerReveal = playerReveal;
-  }
-
-  private redrawRevealMask(state: RevealMaskState, reveals: RevealTarget[]): void {
-    redrawRevealMaskState(state, reveals);
   }
 
   private destroyInteractableRevealMasks(): void {
@@ -384,7 +438,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     }
   }
 
-  protected spawnPlayer(): void {
+  private spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
     this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, 'player')
       .setOrigin(0.5, 1).setDepth(pos.sy + 2);
@@ -392,16 +446,16 @@ export abstract class BaseMapScene extends Phaser.Scene {
 
   // ---------- dialogue ----------
 
-  protected startSimpleDialogue(id: string): void {
+  private startSimpleDialogue(id: string): void {
     const tree = dialogues[id];
     if (tree) this.startDialogueTree(tree);
   }
 
-  protected startBabDialogue(): void {
+  private startBabDialogue(): void {
     this.startDialogueTree(babTreeFor(getFlags()));
   }
 
-  protected startDialogueTree(tree: DialogueTree): void {
+  private startDialogueTree(tree: DialogueTree): void {
     launchBaseMapDialogue(
       this,
       tree,
@@ -410,7 +464,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     );
   }
 
-  protected handleEnding(): void {
+  private handleEnding(): void {
     this.endingShown = handleBaseMapEnding(
       this,
       this.endingShown,
@@ -419,21 +473,22 @@ export abstract class BaseMapScene extends Phaser.Scene {
     );
   }
 
-  protected openChapterEnd(chapterId: string): void {
+  private openChapterEnd(chapterId: string): void {
     openBaseMapChapterEnd(this, chapterId, visible => this.setMobileControlsVisible(visible));
   }
 
-  protected showBanner(text: string, opts: { holdMs?: number; onComplete?: () => void } = {}): void {
+  private showBanner(text: string, opts: { holdMs?: number; onComplete?: () => void } = {}): void {
     showBaseMapBanner(this, this.banner, text, opts);
   }
 
+  // unused locally but kept for parity with previous helper API
   protected endingBannerText(ending: string): string {
     return getEndingBannerText(ending);
   }
 
   // ---------- HUD ----------
 
-  protected setupInput(): void {
+  private setupInput(): void {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.journalKey  = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.J);
@@ -448,7 +503,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     };
   }
 
-  protected setupHUD(width: number, height: number): void {
+  private setupHUD(width: number, height: number): void {
     const hud = createBaseMapHud(this, width, height, this.sceneTitle, {
       openSettings: () => this.openSettings(),
       openJournal: () => this.openJournal(),
@@ -474,14 +529,14 @@ export abstract class BaseMapScene extends Phaser.Scene {
     this.setMobileControlsVisible(true);
   }
 
-  protected openJournal(): void {
+  private openJournal(): void {
     if (this.scene.isActive('Journal')) return;
     this.setMobileControlsVisible(false);
     this.scene.launch('Journal', { from: this.scene.key });
     this.scene.pause();
   }
 
-  protected openSettings(): void {
+  private openSettings(): void {
     if (this.scene.isActive('Settings')) return;
     this.setMobileControlsVisible(false);
     this.scene.launch('Settings', {
@@ -506,7 +561,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.settingsKey)) this.openSettings();
   }
 
-  protected handleMovement(): void {
+  private handleMovement(): void {
     this.moveCooldown = handleBaseMapMovement(this, {
       moveCooldown: this.moveCooldown,
       cursors: this.cursors,
@@ -523,7 +578,7 @@ export abstract class BaseMapScene extends Phaser.Scene {
     });
   }
 
-  protected transitionTo(exit: MapExit): void {
+  private transitionTo(exit: MapExit): void {
     this.moveCooldown = 600;
     this.cameras.main.fadeOut(280, 0, 0, 0);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
@@ -534,11 +589,11 @@ export abstract class BaseMapScene extends Phaser.Scene {
     });
   }
 
-  protected nearestInteractable(): Interactable | undefined {
+  private nearestInteractable(): Interactable | undefined {
     return getNearestInteractable(this.interactables, this.playerGrid);
   }
 
-  protected handleInteractionPrompt(): void {
+  private handleInteractionPrompt(): void {
     updateInteractionPrompt({
       interactables: this.interactables,
       playerGrid: this.playerGrid,

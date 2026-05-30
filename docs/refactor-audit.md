@@ -30,7 +30,20 @@ Sized in three buckets:
   string>>` centralises completion flags. New `scripts/lint-dialogues.mjs`
   validates `startId` and every `next:` reference; wired as
   `npm run lint:dialogues`.
-- Items 2, 3, 4, 6–10 — pending.
+- **Item 2 — done.** `BaseMapScene` deleted. All 21 chapter/city/road
+  subclasses replaced by a single concrete `src/scenes/MapScene.ts` that
+  consumes `MapDefinition` records. Polymorphic NPC `interact` calls
+  collapsed to a discriminated `NpcAction` union (`{kind:'dialogue'}` or
+  `{kind:'bab'}`).
+- **Item 3 — done.** Each scene's geometry now lives in
+  `src/data/maps/<key>.ts` as a `MapDefinition` (size, spawn, exits,
+  buildings, decor, npcs, plus an imperative `build(ctx)` for fills and
+  paths). `BuildingSpec.blocks?: false` opts out of collision for walkable
+  structures (Ch5 bridge span, Ch9 roof parapets). All 18 maps registered
+  via `src/data/maps/index.ts` → `MAP_DEFINITIONS`; `main.ts` iterates the
+  registry into Phaser's `scene` array. Headless smoke test confirms all
+  18 scenes boot without errors.
+- Items 4, 6–10 — pending.
 
 ---
 

@@ -12,6 +12,7 @@
     "demo:serve": "vite preview --host 0.0.0.0 --port 4173 --strictPort --outDir dist-demo",
     "lint:localization": "node scripts/lint-localization.mjs",
     "lint:dialogues": "node scripts/lint-dialogues.mjs",
+    "lint:duplicates": "jscpd --config .jscpd.json src scripts",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "jscpd": "^4.2.4",
     "typescript": "^5.9.3",
     "vite": "^5.4.21"
   }
