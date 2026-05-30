@@ -12,7 +12,8 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 - **Scenes:** Each new chapter owns scene files under `src/scenes/` with chapter-prefixed class names.
 - **Completion UI:** `ChapterEndScene` appears once when a chapter's completion predicate becomes true.
 - **Map assets:** Shared map asset definitions and procedural texture generation live under `src/assets/mapAsset*.ts`.
-- **Editor architecture:** `MapEditorScene` delegates storage, grid geometry, asset-picker calculations, and world rendering to `src/scenes/mapEditor*.ts` helpers.
+- **Editor architecture:** `MapEditorScene` delegates storage, input, palette rendering, grid geometry, asset-picker calculations, and world rendering to `src/scenes/mapEditor*.ts` helpers.
+- **Base map architecture:** `BaseMapScene` delegates HUD, chapter flow, movement, reveal-mask, and world rendering logic to focused `src/scenes/baseMap*.ts` helpers.
 - **Title architecture:** Title controls and the book-opening animation are split from `TitleScene`.
 - **Localization:** Current locale files remain as-is; the narrative localization model is intentionally deferred.
 
