@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { resetFlags } from '../dialogue/flags';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
+import { logGameEvent } from '../logging/gameLogger';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 import { activateTitleTextButton, addFastSunriseButton, addTitleLanguageButton } from './titleControls';
 import { playTitleBookOpening } from './titleBookOpening';
@@ -18,6 +19,7 @@ type SunriseBackground = {
   sunRays: Phaser.GameObjects.Graphics;
   sunCenterX: number;
   sunCenterY: number;
+  sunRadius: number;
   horizonY: number;
   stars: Phaser.GameObjects.Container;
   daySky: Phaser.GameObjects.Image;
@@ -28,15 +30,35 @@ type SunriseBackground = {
   cloudDrift: { fromX: number; toX: number };
 };
 
+const normalSunriseDurationMs = 210000;
+const acceleratedSunriseDurationMs = 10000;
+const fixedSunPeakingElapsedMs = 23675;
+const sunTargetYMultiplier = -1.45;
+const titleMusicKey = 'title-background-music';
+const titleMusicPath = 'dawnbreakers.mp3';
+const titleMusicConfig: Phaser.Types.Sound.SoundConfig = {
+  loop: true,
+  volume: 0.45,
+};
+
 export class TitleScene extends Phaser.Scene {
+  private titleStartedAtMs = 0;
+
   constructor() {
     super('Title');
+  }
+
+  preload(): void {
+    if (!this.cache.audio.exists(titleMusicKey)) {
+      this.load.audio(titleMusicKey, titleMusicPath);
+    }
   }
 
   create(): void {
     restartSceneOnResize(this);
 
     const { width, height } = this.scale;
+
     const size = { width, height };
     const safe = safeLayout(size);
     const centerX = safe.x + safe.width / 2;
@@ -63,7 +85,7 @@ export class TitleScene extends Phaser.Scene {
       wordWrap: { width: Math.min(safe.width, 720) },
     }, 'center')).setOrigin(0.5);
 
-    const startButton = this.add.text(centerX, safe.y + safe.height * 0.7, t('Start'), localizedStyle({
+    const startButton = this.add.text(centerX, safe.y + safe.height * 0.66, t('Start'), localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: buttonFont(22, size),
       color: '#e8d9b0',
@@ -75,12 +97,17 @@ export class TitleScene extends Phaser.Scene {
 
     const start = () => this.scene.start('City');
 
-    const chapters = this.add.text(centerX, safe.y + safe.height * 0.78, t('Chapters ›'), localizedStyle({
+    const chapters = this.add.text(centerX, safe.y + safe.height * 0.74, t('Chapters ›'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
     }, 'center')).setOrigin(0.5);
 
-    const editor = this.add.text(centerX, safe.y + safe.height * 0.86, t('Map Editor'), localizedStyle({
+    const skyRewind = this.add.text(centerX, safe.y + safe.height * 0.82, t('Sky Rewind'), localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
+      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
+    }, 'center')).setOrigin(0.5);
+
+    const editor = this.add.text(centerX, safe.y + safe.height * 0.9, t('Map Editor'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
     }, 'center')).setOrigin(0.5);
@@ -90,25 +117,35 @@ export class TitleScene extends Phaser.Scene {
       backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
     })).setOrigin(textOriginX(1), 1);
 
-    titleLayer.add([title, subtitle, startButton, chapters, editor, reset]);
+    titleLayer.add([title, subtitle, startButton, chapters, skyRewind, editor, reset]);
+    titleLayer.setAlpha(0);
 
-    playTitleBookOpening(this, {
-      width,
-      height,
-      content: titleLayer,
-      onComplete: () => {
-        let showRestartOpening = () => {};
-        const speedUpSunrise = this.startSunriseAnimation(sunrise, height, () => showRestartOpening());
-        addTitleLanguageButton(this, size, () => this.scene.restart());
-        showRestartOpening = addFastSunriseButton(this, size, speedUpSunrise);
-        activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
-        activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
-        activateTitleTextButton(this, editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
-        activateTitleTextButton(this, reset, '#9c8458', '#f3d98a', () => {
-          resetFlags();
-          reset.setText(t('Reset ✓'));
-        });
-      },
+    this.waitForTitleStart(size, () => {
+      this.titleStartedAtMs = performance.now();
+      logGameEvent('title start', { width, height });
+      this.startTitleMusic();
+
+      playTitleBookOpening(this, {
+        width,
+        height,
+        content: titleLayer,
+        onComplete: () => {
+          let showRestartOpening = () => {};
+          const speedUpSunrise = this.startSunriseAnimation(sunrise, height, () => showRestartOpening());
+          addTitleLanguageButton(this, size, () => this.scene.restart());
+          showRestartOpening = addFastSunriseButton(this, size, speedUpSunrise);
+          activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
+          activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
+          activateTitleTextButton(this, skyRewind, '#c9b07a', '#fff1c0', () => {
+            window.location.assign('./skyrewind.html');
+          });
+          activateTitleTextButton(this, editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
+          activateTitleTextButton(this, reset, '#9c8458', '#f3d98a', () => {
+            resetFlags();
+            reset.setText(t('Reset ✓'));
+          });
+        },
+      });
     });
   }
 
@@ -155,6 +192,7 @@ export class TitleScene extends Phaser.Scene {
       sunRays,
       sunCenterX: sunrise.centerX,
       sunCenterY: sunrise.centerY,
+      sunRadius: sunrise.radius,
       horizonY: cityBaseY,
       stars,
       daySky,
@@ -197,6 +235,73 @@ export class TitleScene extends Phaser.Scene {
     return this.add.image(0, 0, key).setOrigin(0).setDisplaySize(width, height);
   }
 
+  private waitForTitleStart(size: { width: number; height: number }, onStart: () => void): void {
+    const safe = safeLayout(size);
+    const centerX = safe.x + safe.width / 2;
+    const centerY = safe.y + safe.height * 0.58;
+    const gate = this.add.container(0, 0).setDepth(2000);
+    const hitArea = this.add.rectangle(0, 0, size.width, size.height, 0x05030a, 0.38)
+      .setOrigin(0)
+      .setInteractive({ useHandCursor: true });
+    const prompt = this.add.text(centerX, centerY, t('Press SPACE or click to begin'), localizedStyle({
+      fontFamily: 'Georgia, serif',
+      fontSize: buttonFont(22, size),
+      color: '#f3e2b5',
+      backgroundColor: '#1a120acc',
+      padding: { x: 24, y: 16 },
+      align: 'center',
+      wordWrap: { width: Math.min(safe.width, 760) },
+    }, 'center')).setOrigin(0.5);
+    let started = false;
+
+    gate.add([hitArea, prompt]);
+
+    const pulse = this.tweens.add({
+      targets: prompt,
+      alpha: 0.68,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    const cleanupKeyboard = () => {
+      this.input.keyboard?.off('keydown-SPACE', begin);
+      this.input.keyboard?.off('keydown-ENTER', begin);
+    };
+    const begin = () => {
+      if (started) return;
+
+      started = true;
+      cleanupKeyboard();
+      pulse.stop();
+      gate.destroy();
+      onStart();
+    };
+
+    hitArea.on('pointerdown', begin);
+    this.input.keyboard?.once('keydown-SPACE', begin);
+    this.input.keyboard?.once('keydown-ENTER', begin);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupKeyboard);
+  }
+
+  private startTitleMusic(): void {
+    if (!this.cache.audio.exists(titleMusicKey)) {
+      throw new Error(`Missing title music asset: ${titleMusicKey}`);
+    }
+
+    this.sound.pauseOnBlur = false;
+
+    let music = this.sound.get<Phaser.Sound.BaseSound>(titleMusicKey);
+    if (music) {
+      music.stop();
+    } else {
+      music = this.sound.add(titleMusicKey, titleMusicConfig);
+    }
+
+    music.play(titleMusicConfig);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => music.stop());
+  }
+
   private addStars(width: number, height: number, horizonY: number): Phaser.GameObjects.Container {
     const stars = this.add.container(0, 0);
     const widescreenAspect = 16 / 9;
@@ -226,12 +331,19 @@ export class TitleScene extends Phaser.Scene {
     effects: Phaser.GameObjects.Container[];
     centerX: number;
     centerY: number;
+    radius: number;
   } {
     const sunrise = this.add.container(0, 0);
     const backEffects = this.add.container(0, 0).setAlpha(0);
     const sunX = width / 2;
     const sunRadius = Phaser.Math.Clamp(Math.min(width, height) * 0.15, 52, 132);
-    const sunY = Math.max(visibleHorizonY + sunRadius * 1.3, visibleHorizonY * 1.22);
+    const sunY = calculateInitialSunY(
+      visibleHorizonY,
+      sunRadius,
+      height * sunTargetYMultiplier,
+      fixedSunPeakingElapsedMs,
+      normalSunriseDurationMs,
+    );
 
     for (let i = 5; i >= 1; i -= 1) {
       backEffects.add(this.add.circle(sunX, sunY, sunRadius * (1 + i * 0.38), 0xffb55a, 0.026 + i * 0.006));
@@ -242,15 +354,38 @@ export class TitleScene extends Phaser.Scene {
     sunrise.add(backEffects);
     sunrise.add(disk);
 
-    return { layer: sunrise, disk, effects: [backEffects], centerX: sunX, centerY: sunY };
+    return { layer: sunrise, disk, effects: [backEffects], centerX: sunX, centerY: sunY, radius: sunRadius };
   }
 
   private startSunriseAnimation(sunrise: SunriseBackground, height: number, onComplete: () => void): () => void {
-    const duration = 210000;
-    const acceleratedDuration = 10000;
-    const sunTargetY = -height * 1.45;
+    const duration = normalSunriseDurationMs;
+    const acceleratedDuration = acceleratedSunriseDurationMs;
+    const sunTargetY = height * sunTargetYMultiplier;
+    const sunStartedAtMs = performance.now();
+    const normalSunPeakingMs = calculateSunPeakingElapsedMs(sunrise, sunTargetY, duration);
+    const normalTitlePeakingMs = sunStartedAtMs - this.titleStartedAtMs + normalSunPeakingMs;
     let completed = false;
-    const updateLight = () => this.applySunriseLighting(sunrise);
+    let loggedSunPeaking = false;
+    const logSunPeaking = () => {
+      if (loggedSunPeaking) return;
+
+      loggedSunPeaking = true;
+      const now = performance.now();
+      logGameEvent('sun peaking', {
+        sunriseElapsedMs: Math.round(now - sunStartedAtMs),
+        titleElapsedMs: Math.round(now - this.titleStartedAtMs),
+        normalSunriseElapsedMs: Math.round(normalSunPeakingMs),
+        normalTitleElapsedMs: Math.round(normalTitlePeakingMs),
+        fixedSunriseElapsedMs: fixedSunPeakingElapsedMs,
+      });
+    };
+    const updateLight = () => {
+      this.applySunriseLighting(sunrise);
+
+      if (isSunPeakingOverHorizon(sunrise)) {
+        logSunPeaking();
+      }
+    };
     const completeSunrise = () => {
       if (completed) return;
 
@@ -376,4 +511,36 @@ export class TitleScene extends Phaser.Scene {
   private colorToCss(color: number): string {
     return `#${color.toString(16).padStart(6, '0')}`;
   }
+}
+
+function calculateInitialSunY(
+  horizonY: number,
+  sunRadius: number,
+  sunTargetY: number,
+  fixedPeakingElapsedMs: number,
+  durationMs: number,
+): number {
+  const linearProgress = Phaser.Math.Clamp(fixedPeakingElapsedMs / durationMs, 0, 1);
+  const easedProgress = (1 - Math.cos(linearProgress * Math.PI)) / 2;
+  const peakingTweenY = sunTargetY * easedProgress;
+
+  return horizonY + sunRadius - peakingTweenY;
+}
+
+function calculateSunPeakingElapsedMs(
+  sunrise: SunriseBackground,
+  sunTargetY: number,
+  durationMs: number,
+): number {
+  const peakingY = sunrise.horizonY + sunrise.sunRadius - sunrise.sunCenterY;
+  const easedProgress = Phaser.Math.Clamp(peakingY / sunTargetY, 0, 1);
+  const linearProgress = Math.acos(1 - 2 * easedProgress) / Math.PI;
+
+  return linearProgress * durationMs;
+}
+
+function isSunPeakingOverHorizon(sunrise: SunriseBackground): boolean {
+  const sunTopY = sunrise.sunCenterY + sunrise.sun.y - sunrise.sunRadius;
+
+  return sunTopY <= sunrise.horizonY;
 }

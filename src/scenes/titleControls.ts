@@ -38,6 +38,20 @@ export function addFastSunriseButton(
   };
 }
 
+export function addSkyRewindPrototypeButton(scene: Phaser.Scene, size: Size): void {
+  const safe = safeLayout(size);
+  const fastButtonGap = 76;
+  const x = rtl ? safe.right - fastButtonGap : safe.x + fastButtonGap;
+  const skyRewind = scene.add.text(x, safe.bottom, t('Sky Rewind'), localizedStyle({
+    fontFamily: 'Georgia, serif', fontSize: buttonFont(14, size), color: '#9c8458',
+    backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
+  })).setOrigin(textOriginX(0), 1);
+
+  activateTitleTextButton(scene, skyRewind, '#9c8458', '#f3d98a', () => {
+    window.location.assign('./skyrewind.html');
+  });
+}
+
 export function activateTitleTextButton(
   _scene: Phaser.Scene,
   button: Phaser.GameObjects.Text,

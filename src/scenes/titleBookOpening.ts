@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { logGameEvent } from '../logging/gameLogger';
 
 type Point = { x: number; y: number };
 
@@ -13,6 +14,8 @@ export function playTitleBookOpening(
   scene: Phaser.Scene,
   { width, height, content, onComplete }: TitleBookOpeningOptions,
 ): void {
+  logGameEvent('book start', { width, height });
+
   const dimmer = scene.add.rectangle(0, 0, width, height, 0x05030a, 0.82)
     .setOrigin(0)
     .setDepth(998);
@@ -99,6 +102,7 @@ export function playTitleBookOpening(
           book.destroy();
           dimmer.destroy();
           blocker.destroy();
+          logGameEvent('book end', { width, height });
           onComplete();
         },
       });

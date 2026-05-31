@@ -8,6 +8,7 @@ export const text: TranslationCatalog = {
   'Press SPACE or click to begin': 'برای آغاز، فاصله را بزنید یا کلیک کنید',
   'Chapters ›': 'فصل‌ها ‹',
   'Map Editor': 'ویرایشگر نقشه',
+  'Sky Rewind': 'بازپیچی آسمان',
   'Reset story': 'بازنشانی داستان',
   'Reset ✓': 'بازنشانی شد ✓',
   Fast: 'سریع',

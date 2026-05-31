@@ -10,16 +10,19 @@ import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ChapterEndScene } from './scenes/ChapterEndScene';
 import { MapEditorScene } from './scenes/MapEditorScene';
 import { activeLocale, applyLocaleDocument, loadLocale } from './i18n';
+import { attachConsolePanel } from './ui/consolePanel';
 import { measuredSafeAreaInsets } from './ui/responsive';
 
 applyLocaleDocument();
+
+const gameElement = document.getElementById('game');
+syncGameViewportHeight(gameElement);
 
 // Block boot on the active locale's catalog so the first paint isn't english
 // fallback. Other locales lazy-load when the player switches via Settings.
 await loadLocale(activeLocale);
 
-const gameElement = document.getElementById('game');
-syncGameViewportHeight(gameElement);
+attachConsolePanel();
 const initialWidth = gameElement?.clientWidth ?? window.innerWidth;
 const initialHeight = gameElement?.clientHeight ?? window.innerHeight;
 

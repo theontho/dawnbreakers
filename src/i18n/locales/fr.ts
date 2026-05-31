@@ -7,6 +7,7 @@ export const text: TranslationCatalog = {
   'Press SPACE or click to begin': 'Appuyez sur ESPACE ou cliquez pour commencer',
   'Chapters ›': 'Chapitres ›',
   'Map Editor': 'Éditeur de carte',
+  'Sky Rewind': 'Rembobiner le ciel',
   'Reset story': "Réinitialiser l'histoire",
   'Reset ✓': 'Réinitialisé ✓',
   Fast: 'Rapide',
