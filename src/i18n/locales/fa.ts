@@ -4,6 +4,7 @@ export const text: TranslationCatalog = {
 
   'The Dawn-Breakers': 'مطالع‌الانوار',
   'Shíráz, the eve of 23 May 1844': 'شیراز، شب ۲۳ مه ۱۸۴۴',
+  Start: 'آغاز',
   'Press SPACE or click to begin': 'برای آغاز، فاصله را بزنید یا کلیک کنید',
   'Chapters ›': 'فصل‌ها ‹',
   'Map Editor': 'ویرایشگر نقشه',
@@ -78,6 +79,7 @@ export const text: TranslationCatalog = {
   'Cleared to default map.': 'نقشه پیش‌فرض جایگزین شد.',
   'Saved in this browser.': 'در این مرورگر ذخیره شد.',
   'Save failed: {message}': 'ذخیره ناموفق بود: {message}',
+  'Load failed: {message}': 'بارگذاری ناموفق بود: {message}',
   'No saved editor map found.': 'نقشه ذخیره‌شده‌ای برای ویرایشگر پیدا نشد.',
   'Loaded saved editor map.': 'نقشه ذخیره‌شده بارگذاری شد.',
   'Clipboard unavailable. JSON preview shown below.': 'کلیپ‌بورد در دسترس نیست. پیش‌نمایش JSON در پایین نشان داده شده است.',

@@ -11,6 +11,8 @@ export interface RevealMaskState {
   sprite: Phaser.GameObjects.Image;
   bounds: Phaser.Geom.Rectangle;
   staticReveals: RevealTarget[];
+  mask?: Phaser.Display.Masks.BitmapMask | Phaser.Display.Masks.GeometryMask;
+  maskApplied?: boolean;
   textureKey?: string;
   texture?: Phaser.Textures.CanvasTexture;
   context?: CanvasRenderingContext2D;
@@ -25,12 +27,13 @@ export function revealTargetForSprite(
   minRadius: number,
   maxRadius: number,
 ): RevealTarget {
-  const bounds = sprite.getBounds();
+  const width = sprite.displayWidth;
+  const height = sprite.displayHeight;
   return {
-    x: bounds.centerX,
-    y: bounds.centerY,
+    x: sprite.x + (0.5 - sprite.originX) * width,
+    y: sprite.y + (0.5 - sprite.originY) * height,
     depth: sprite.depth,
-    radius: Phaser.Math.Clamp(Math.max(bounds.width, bounds.height) * radiusScale, minRadius, maxRadius),
+    radius: Phaser.Math.Clamp(Math.max(width, height) * radiusScale, minRadius, maxRadius),
   };
 }
 
@@ -68,9 +71,8 @@ export function createSoftRevealMaskState(
 
   const mask = maskObject.createBitmapMask();
   mask.invertAlpha = true;
-  sprite.setMask(mask);
 
-  return { sprite, bounds, staticReveals, textureKey, texture, context, maskObject };
+  return { sprite, bounds, staticReveals, textureKey, texture, context, maskObject, mask };
 }
 
 export function createHardRevealMaskState(
@@ -82,17 +84,22 @@ export function createHardRevealMaskState(
   const maskShape = scene.add.graphics().setVisible(false);
   const mask = maskShape.createGeometryMask();
   mask.setInvertAlpha(true);
-  sprite.setMask(mask);
-  return { sprite, bounds, staticReveals, maskShape };
+  return { sprite, bounds, staticReveals, maskShape, mask };
 }
 
 export function redrawRevealMaskState(state: RevealMaskState, reveals: RevealTarget[]): void {
+  if (reveals.length === 0) {
+    setRevealMaskActive(state, false);
+    return;
+  }
+
   if (state.context && state.texture) {
     state.context.clearRect(0, 0, state.context.canvas.width, state.context.canvas.height);
     for (const reveal of reveals) {
       drawSoftRevealCircle(state.context, state.bounds, reveal);
     }
     state.texture.refresh();
+    setRevealMaskActive(state, true);
     return;
   }
 
@@ -101,6 +108,7 @@ export function redrawRevealMaskState(state: RevealMaskState, reveals: RevealTar
   for (const reveal of reveals) {
     state.maskShape?.fillCircle(reveal.x, reveal.y, reveal.radius);
   }
+  setRevealMaskActive(state, true);
 }
 
 export function circleIntersectsRect(
@@ -134,4 +142,16 @@ function drawSoftRevealCircle(
     Math.ceil(reveal.radius * 2),
     Math.ceil(reveal.radius * 2),
   );
+}
+
+function setRevealMaskActive(state: RevealMaskState, active: boolean): void {
+  if (active === state.maskApplied) return;
+  if (active && state.mask) {
+    state.sprite.setMask(state.mask);
+    state.maskApplied = true;
+    return;
+  }
+
+  state.sprite.clearMask(false);
+  state.maskApplied = false;
 }

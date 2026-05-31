@@ -3,6 +3,7 @@ import type { TranslationCatalog } from '../types';
 export const text: TranslationCatalog = {
 
   'The Dawn-Breakers': "Les Hérauts de l'Aube",
+  Start: 'Commencer',
   'Press SPACE or click to begin': 'Appuyez sur ESPACE ou cliquez pour commencer',
   'Chapters ›': 'Chapitres ›',
   'Map Editor': 'Éditeur de carte',
@@ -472,6 +473,7 @@ export const text: TranslationCatalog = {
   "Sam Khan": "Sám Khán",
   "Sand": "Sable",
   "Save failed: {message}": "Échec de l'enregistrement : {message}",
+  "Load failed: {message}": "Échec du chargement : {message}",
   "Saved in this browser.": "Enregistré dans ce navigateur.",
   "Seek Quddús’s counsel  [E]": "Chercher le conseil de Quddús  [E]",
   "Ship Mast": "Mât du navire",

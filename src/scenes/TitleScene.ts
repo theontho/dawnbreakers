@@ -63,10 +63,12 @@ export class TitleScene extends Phaser.Scene {
       wordWrap: { width: Math.min(safe.width, 720) },
     }, 'center')).setOrigin(0.5);
 
-    const prompt = this.add.text(centerX, safe.y + safe.height * 0.7, t('Press SPACE or click to begin'), localizedStyle({
+    const startButton = this.add.text(centerX, safe.y + safe.height * 0.7, t('Start'), localizedStyle({
       fontFamily: 'Georgia, serif',
-      fontSize: responsiveFont(20, size, 15),
+      fontSize: buttonFont(22, size),
       color: '#e8d9b0',
+      backgroundColor: '#1a120acc',
+      padding: { x: 24, y: 16 },
       align: 'center',
       wordWrap: { width: safe.width },
     }, 'center')).setOrigin(0.5);
@@ -88,7 +90,7 @@ export class TitleScene extends Phaser.Scene {
       backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
     })).setOrigin(textOriginX(1), 1);
 
-    titleLayer.add([title, subtitle, prompt, chapters, editor, reset]);
+    titleLayer.add([title, subtitle, startButton, chapters, editor, reset]);
 
     playTitleBookOpening(this, {
       width,
@@ -97,11 +99,9 @@ export class TitleScene extends Phaser.Scene {
       onComplete: () => {
         let showRestartOpening = () => {};
         const speedUpSunrise = this.startSunriseAnimation(sunrise, height, () => showRestartOpening());
-        this.tweens.add({ targets: prompt, alpha: 0.3, duration: 900, yoyo: true, repeat: -1 });
-        this.input.keyboard?.once('keydown-SPACE', start);
-        this.input.once('pointerdown', start);
         addTitleLanguageButton(this, size, () => this.scene.restart());
         showRestartOpening = addFastSunriseButton(this, size, speedUpSunrise);
+        activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
         activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
         activateTitleTextButton(this, editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
         activateTitleTextButton(this, reset, '#9c8458', '#f3d98a', () => {

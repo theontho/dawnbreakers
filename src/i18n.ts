@@ -19,6 +19,7 @@ const FARSI_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'
 const ARABIC_SCRIPT_FONT_STACK = 'Tahoma, Arial, "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif';
 const HEBREW_FONT_STACK = 'Arial, "Noto Sans Hebrew", sans-serif';
 const CJK_FONT_STACK = 'Arial, "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR", sans-serif';
+const MAX_TEXT_RESOLUTION = 2;
 
 export const LOCALE_CONFIGS: Record<Locale, LocaleConfig> = {
   en: { name: 'English', shortName: 'EN', direction: 'ltr' },
@@ -192,7 +193,12 @@ export function localizedFont(fallback = 'Georgia, serif'): string {
   return LOCALE_CONFIGS[activeLocale].fontStack ?? fallback;
 }
 
-export function localizedStyle<T extends { fontFamily?: string; align?: string; rtl?: boolean }>(
+function textResolution(): number {
+  if (typeof window === 'undefined') return 1;
+  return Math.min(MAX_TEXT_RESOLUTION, Math.max(1, window.devicePixelRatio || 1));
+}
+
+export function localizedStyle<T extends { fontFamily?: string; align?: string; rtl?: boolean; resolution?: number }>(
   style: T,
   align: 'left' | 'center' | 'right' = 'right',
 ): T {
@@ -201,6 +207,7 @@ export function localizedStyle<T extends { fontFamily?: string; align?: string; 
     fontFamily: localizedFont(style.fontFamily),
     align: rtl ? align : style.align,
     rtl,
+    resolution: style.resolution ?? textResolution(),
   };
 }
 

@@ -27,9 +27,14 @@ const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: gameElement ?? 'game',
   backgroundColor: '#0a0806',
+  transparent: false,
+  powerPreference: 'high-performance',
+  disablePreFX: true,
+  disablePostFX: true,
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.NO_CENTER,
+    autoRound: true,
     width: initialWidth,
     height: initialHeight,
     min: {

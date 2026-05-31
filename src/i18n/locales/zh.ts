@@ -3,6 +3,7 @@ import type { TranslationCatalog } from '../types';
 export const text: TranslationCatalog = {
 
   'The Dawn-Breakers': '破晓者',
+  Start: '开始',
   'Press SPACE or click to begin': '按空格键或点击开始',
   'Chapters ›': '章节 ›',
   'Map Editor': '地图编辑器',
@@ -498,6 +499,7 @@ export const text: TranslationCatalog = {
   "Sam Khan": "萨姆汗",
   "Sand": "沙地",
   "Save failed: {message}": "保存失败：{message}",
+  "Load failed: {message}": "加载失败：{message}",
   "Saved in this browser.": "已保存在此浏览器中。",
   "Seek Quddús’s counsel  [E]": "寻求古杜斯的忠告  [E]",
   "Ship Mast": "船桅",

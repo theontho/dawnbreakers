@@ -104,8 +104,9 @@ export function destroyInteractableRevealMasks(
   scene: Phaser.Scene,
   occludableSprites: Phaser.GameObjects.Image[],
 ): void {
-  for (const sprite of occludableSprites) sprite.clearMask(true);
+  for (const sprite of occludableSprites) sprite.clearMask(false);
   for (const state of handle.states) {
+    state.mask?.destroy();
     state.maskObject?.destroy();
     state.maskShape?.destroy();
     if (state.textureKey && scene.textures.exists(state.textureKey)) scene.textures.remove(state.textureKey);

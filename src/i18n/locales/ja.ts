@@ -3,6 +3,7 @@ import type { TranslationCatalog } from '../types';
 export const text: TranslationCatalog = {
 
   'The Dawn-Breakers': '夜明けを告げる人々',
+  Start: '開始',
   'Press SPACE or click to begin': 'スペースキーまたはクリックで開始',
   'Chapters ›': '章 ›',
   'Map Editor': 'マップエディター',
@@ -498,6 +499,7 @@ export const text: TranslationCatalog = {
   "Sam Khan": "サーム・ハーン",
   "Sand": "砂",
   "Save failed: {message}": "保存に失敗しました：{message}",
+  "Load failed: {message}": "読み込みに失敗しました：{message}",
   "Saved in this browser.": "このブラウザに保存しました。",
   "Seek Quddús’s counsel  [E]": "クッドゥースの助言を求める  [E]",
   "Ship Mast": "船のマスト",

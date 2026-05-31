@@ -3,6 +3,7 @@ import type { TranslationCatalog } from '../types';
 export const text: TranslationCatalog = {
 
   'The Dawn-Breakers': '새벽을 여는 이들',
+  Start: '시작',
   'Press SPACE or click to begin': '스페이스를 누르거나 클릭하여 시작',
   'Chapters ›': '장 ›',
   'Map Editor': '지도 편집기',
@@ -472,6 +473,7 @@ export const text: TranslationCatalog = {
   "Sam Khan": "삼 칸",
   "Sand": "모래",
   "Save failed: {message}": "저장 실패: {message}",
+  "Load failed: {message}": "불러오기 실패: {message}",
   "Saved in this browser.": "이 브라우저에 저장했습니다.",
   "Seek Quddús’s counsel  [E]": "쿠두스의 조언 구하기  [E]",
   "Ship Mast": "배의 돛대",

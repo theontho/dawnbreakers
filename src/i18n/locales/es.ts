@@ -3,6 +3,7 @@ import type { TranslationCatalog } from '../types';
 export const text: TranslationCatalog = {
 
   'The Dawn-Breakers': 'Los Rompedores del Alba',
+  Start: 'Comenzar',
   'Press SPACE or click to begin': 'Pulsa ESPACIO o haz clic para comenzar',
   'Chapters ›': 'Capítulos ›',
   'Map Editor': 'Editor de mapas',
@@ -498,6 +499,7 @@ export const text: TranslationCatalog = {
   "Sam Khan": "Sám Khán",
   "Sand": "Arena",
   "Save failed: {message}": "No se pudo guardar: {message}",
+  "Load failed: {message}": "No se pudo cargar: {message}",
   "Saved in this browser.": "Guardado en este navegador.",
   "Seek Quddús’s counsel  [E]": "Buscad el consejo de Quddús  [E]",
   "Ship Mast": "Mástil de navío",
