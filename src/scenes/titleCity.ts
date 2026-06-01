@@ -314,26 +314,55 @@ function drawForegroundRoofs(
   cityBase: number,
   palette: ShirazCityPalette,
 ): void {
-  const blockWidth = 92;
-  const count = Math.ceil(width / blockWidth) + 2;
+  const rows = [
+    { yOffset: 114, blockWidth: 56, xShift: -18, baseWidth: 38, widthStep: 8, baseHeight: 25, heightStep: 7, colorOffset: 1 },
+    { yOffset: 82, blockWidth: 68, xShift: 22, baseWidth: 48, widthStep: 9, baseHeight: 28, heightStep: 8, colorOffset: 3 },
+    { yOffset: 48, blockWidth: 78, xShift: -6, baseWidth: 54, widthStep: 11, baseHeight: 31, heightStep: 9, colorOffset: 0 },
+    { yOffset: 0, blockWidth: 92, xShift: 7, baseWidth: 68, widthStep: 14, baseHeight: 34, heightStep: 11, colorOffset: 2 },
+  ];
 
-  for (let i = -1; i < count; i += 1) {
-    const x = i * blockWidth + (i % 2 === 0 ? 7 : -11);
-    const w = 68 + (Math.abs(i) % 3) * 14;
-    const h = 34 + (Math.abs(i + 2) % 3) * 11;
-    const bottomY = foregroundCurveTopY(x + w / 2, width, height) + 8;
-    const y = cityBase - h + (Math.abs(i) % 2) * 5;
-    const visibleHeight = Math.max(h, bottomY - y);
+  rows.forEach((row) => drawForegroundRoofRow(g, width, height, cityBase, palette, row));
+}
 
-    g.fillStyle(palette.buildings[Math.abs(i + 2) % palette.buildings.length]!, 1);
-    g.fillRect(x, y, w, visibleHeight);
+type ForegroundRoofRow = {
+  yOffset: number;
+  blockWidth: number;
+  xShift: number;
+  baseWidth: number;
+  widthStep: number;
+  baseHeight: number;
+  heightStep: number;
+  colorOffset: number;
+};
+
+function drawForegroundRoofRow(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  height: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+  row: ForegroundRoofRow,
+): void {
+  const count = Math.ceil(width / row.blockWidth) + 3;
+
+  for (let i = -2; i < count; i += 1) {
+    const x = i * row.blockWidth + row.xShift + (i % 2 === 0 ? 0 : -10);
+    const w = row.baseWidth + (Math.abs(i) % 3) * row.widthStep;
+    const h = row.baseHeight + (Math.abs(i + 2) % 3) * row.heightStep;
+    const y = cityBase - h + row.yOffset + (Math.abs(i) % 2) * 5;
+    const curveTopY = foregroundCurveTopY(x + w / 2, width, height);
+
+    if (y >= curveTopY - 7) continue;
+
+    g.fillStyle(palette.buildings[Math.abs(i + row.colorOffset) % palette.buildings.length]!, 1);
+    g.fillRect(x, y, w, h);
     drawRoofParapet(g, x, y, w, palette);
 
     g.fillStyle(palette.wallShadow, 1);
-    g.fillRect(x + w * 0.38, y + h * 0.35, w * 0.24, visibleHeight - h * 0.35);
+    g.fillRect(x + w * 0.38, y + h * 0.35, w * 0.24, h * 0.65);
 
     g.fillStyle(palette.highlight, 1);
-    g.fillRect(x + 8, y + 7, w * 0.18, visibleHeight - 12);
+    g.fillRect(x + 8, y + 7, w * 0.18, h - 12);
   }
 }
 

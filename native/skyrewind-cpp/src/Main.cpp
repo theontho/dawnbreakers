@@ -85,9 +85,10 @@ struct GuiState {
   float brightMagnitudeLimit = 1.6f;
   float starSizeScale = 1.0f;
   float horizonAlpha = 0.82f;
-  float persistenceThreshold = 0.18f;
-  float persistenceFade = 0.18f;
-  bool starPersistence = true;
+  float streakThreshold = 0.08f;
+  float streakLengthYears = 0.42f;
+  float streakWidthPixels = 3.5f;
+  bool starStreaks = true;
   bool showHorizon = true;
   bool vsync = true;
   bool showControls = true;
@@ -255,14 +256,21 @@ GLuint compileShader(GLenum type, const char* source) {
   return shader;
 }
 
-GlProgram makeProgram(const char* vertexSource, const char* fragmentSource) {
+GlProgram makeProgram(const char* vertexSource, const char* fragmentSource, const char* geometrySource = nullptr) {
   const GLuint vertex = compileShader(GL_VERTEX_SHADER, vertexSource);
   const GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
+  const GLuint geometry = geometrySource == nullptr ? 0 : compileShader(GL_GEOMETRY_SHADER, geometrySource);
   const GLuint program = glCreateProgram();
   glAttachShader(program, vertex);
+  if (geometry != 0) {
+    glAttachShader(program, geometry);
+  }
   glAttachShader(program, fragment);
   glLinkProgram(program);
   glDeleteShader(vertex);
+  if (geometry != 0) {
+    glDeleteShader(geometry);
+  }
   glDeleteShader(fragment);
 
   GLint ok = 0;
@@ -368,6 +376,179 @@ const char* starFragmentShader() {
   )GLSL";
 }
 
+const char* streakVertexShader() {
+  return R"GLSL(
+    #version 410 core
+
+    layout(location = 0) in float aRa;
+    layout(location = 1) in float aDec;
+    layout(location = 2) in float aPmRa;
+    layout(location = 3) in float aPmDec;
+    layout(location = 4) in float aMagnitude;
+    layout(location = 5) in vec3 aColor;
+
+    uniform mat4 uView;
+    uniform mat4 uProjection;
+    uniform float uCurrentYearsSinceCatalog;
+    uniform float uCurrentZeta;
+    uniform float uCurrentZ;
+    uniform float uCurrentCosTheta;
+    uniform float uCurrentSinTheta;
+    uniform float uCurrentLocalSiderealTime;
+    uniform float uTailYearsSinceCatalog;
+    uniform float uTailZeta;
+    uniform float uTailZ;
+    uniform float uTailCosTheta;
+    uniform float uTailSinTheta;
+    uniform float uTailLocalSiderealTime;
+    uniform float uSinLat;
+    uniform float uCosLat;
+    uniform float uSkyRadius;
+    uniform float uMaxVisibleMagnitude;
+    uniform float uCinematicStrength;
+
+    out StreakVertexData {
+      vec4 tailClip;
+      vec3 color;
+      float alpha;
+      float visible;
+    } vData;
+
+    vec4 projectStar(
+      float yearsSinceCatalog,
+      float zeta,
+      float z,
+      float cosTheta,
+      float sinTheta,
+      float localSiderealTime
+    ) {
+      float currentDec = clamp(aDec + aPmDec * yearsSinceCatalog, -1.57079637, 1.57079637);
+      float cosDec = cos(currentDec);
+      float sinDec = sin(currentDec);
+      float raZeta = aRa + aPmRa * yearsSinceCatalog + zeta;
+      float a = cosDec * sin(raZeta);
+      float b = cosTheta * cosDec * cos(raZeta) - sinTheta * sinDec;
+      float c = clamp(sinTheta * cosDec * cos(raZeta) + cosTheta * sinDec, -1.0, 1.0);
+      float precessedRa = atan(a, b) + z;
+      float precessedCosDec = sqrt(max(0.0, 1.0 - c * c));
+      float hourAngle = localSiderealTime - precessedRa;
+      float x = -precessedCosDec * sin(hourAngle) * uSkyRadius;
+      float y = (c * uSinLat + precessedCosDec * uCosLat * cos(hourAngle)) * uSkyRadius;
+      float north = c * uCosLat - precessedCosDec * uSinLat * cos(hourAngle);
+      float zPosition = -north * uSkyRadius;
+      return uProjection * uView * vec4(x, y, zPosition, 1.0);
+    }
+
+    void main() {
+      float visible = step(aMagnitude, uMaxVisibleMagnitude);
+      float brightness = clamp(1.0 - (aMagnitude + 1.4) / 10.4, 0.035, 1.0);
+      float thresholdFade = clamp((uMaxVisibleMagnitude - aMagnitude) / 0.8, 0.1, 1.0);
+      float intensity = clamp((pow(brightness, 1.35) + uCinematicStrength * 0.16) * thresholdFade, 0.02, 1.0);
+
+      vData.color = vec3(
+        clamp(intensity * aColor.r, 0.0, 1.0),
+        clamp(intensity * aColor.g, 0.0, 1.0),
+        clamp(intensity * (aColor.b + uCinematicStrength * 0.24), 0.0, 1.0)
+      );
+      vData.alpha = visible * clamp(0.38 + uCinematicStrength * 0.62, 0.0, 1.0);
+      vData.visible = visible;
+      gl_Position = projectStar(
+        uCurrentYearsSinceCatalog,
+        uCurrentZeta,
+        uCurrentZ,
+        uCurrentCosTheta,
+        uCurrentSinTheta,
+        uCurrentLocalSiderealTime
+      );
+      vData.tailClip = projectStar(
+        uTailYearsSinceCatalog,
+        uTailZeta,
+        uTailZ,
+        uTailCosTheta,
+        uTailSinTheta,
+        uTailLocalSiderealTime
+      );
+    }
+  )GLSL";
+}
+
+const char* streakGeometryShader() {
+  return R"GLSL(
+    #version 410 core
+
+    layout(points) in;
+    layout(triangle_strip, max_vertices = 4) out;
+
+    in StreakVertexData {
+      vec4 tailClip;
+      vec3 color;
+      float alpha;
+      float visible;
+    } gIn[];
+
+    uniform vec2 uViewport;
+    uniform float uStreakWidthPixels;
+    uniform float uMinStreakPixels;
+
+    out vec3 gColor;
+    out float gAlpha;
+
+    void emitStreakVertex(vec4 clipPosition, vec2 normalNdc, float alpha) {
+      gColor = gIn[0].color;
+      gAlpha = alpha;
+      gl_Position = vec4(clipPosition.xy + normalNdc * clipPosition.w, clipPosition.zw);
+      EmitVertex();
+    }
+
+    void main() {
+      if (gIn[0].visible <= 0.0) {
+        return;
+      }
+
+      vec4 headClip = gl_in[0].gl_Position;
+      vec4 tailClip = gIn[0].tailClip;
+      if (headClip.w <= 0.0 || tailClip.w <= 0.0) {
+        return;
+      }
+
+      vec2 headNdc = headClip.xy / headClip.w;
+      vec2 tailNdc = tailClip.xy / tailClip.w;
+      vec2 pixelDelta = (headNdc - tailNdc) * uViewport * 0.5;
+      float pixelLength = length(pixelDelta);
+      if (pixelLength < uMinStreakPixels || pixelLength > max(uViewport.x, uViewport.y) * 1.35) {
+        return;
+      }
+
+      vec2 direction = normalize(headNdc - tailNdc);
+      vec2 normal = vec2(-direction.y, direction.x);
+      float width = uStreakWidthPixels * clamp(pixelLength / 42.0, 0.45, 1.65);
+      vec2 normalNdc = normal * width * 2.0 / uViewport;
+      float headAlpha = gIn[0].alpha;
+      float tailAlpha = 0.0;
+
+      emitStreakVertex(tailClip, -normalNdc, tailAlpha);
+      emitStreakVertex(tailClip, normalNdc, tailAlpha);
+      emitStreakVertex(headClip, -normalNdc, headAlpha);
+      emitStreakVertex(headClip, normalNdc, headAlpha);
+      EndPrimitive();
+    }
+  )GLSL";
+}
+
+const char* streakFragmentShader() {
+  return R"GLSL(
+    #version 410 core
+
+    in vec3 gColor;
+    in float gAlpha;
+    out vec4 fragColor;
+
+    void main() {
+      fragColor = vec4(gColor, gAlpha);
+    }
+  )GLSL";
+}
+
 const char* guideVertexShader() {
   return R"GLSL(
     #version 410 core
@@ -384,35 +565,6 @@ const char* guideVertexShader() {
     void main() {
       vColor = vec4(aColor.rgb, aColor.a * uAlphaScale);
       gl_Position = uProjection * uView * vec4(aPosition, 1.0);
-    }
-  )GLSL";
-}
-
-const char* fadeVertexShader() {
-  return R"GLSL(
-    #version 410 core
-
-    const vec2 positions[3] = vec2[3](
-      vec2(-1.0, -1.0),
-      vec2(3.0, -1.0),
-      vec2(-1.0, 3.0)
-    );
-
-    void main() {
-      gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
-    }
-  )GLSL";
-}
-
-const char* fadeFragmentShader() {
-  return R"GLSL(
-    #version 410 core
-
-    uniform float uFadeAlpha;
-    out vec4 fragColor;
-
-    void main() {
-      fragColor = vec4(0.002, 0.005, 0.018, uFadeAlpha);
     }
   )GLSL";
 }
@@ -518,7 +670,7 @@ void restartAnimation(AppState& app, double now) {
   app.animation.paused = false;
 }
 
-void updateAnimation(AnimationState& animation, double now) {
+void updateAnimation(AnimationState& animation, double now, double deltaSeconds) {
   if (!animation.active || animation.paused) {
     animation.speed = 0.0;
     animation.motionStrength = 0.0;
@@ -529,7 +681,7 @@ void updateAnimation(AnimationState& animation, double now) {
   const double eased = cinematicInertiaEase(raw, animation.curve);
   const double previousYear = animation.currentYear;
   animation.currentYear = animation.startYear + (animation.targetYear - animation.startYear) * eased;
-  animation.speed = (animation.currentYear - previousYear) / std::max(0.001, 1.0 / 60.0);
+  animation.speed = (animation.currentYear - previousYear) / std::max(0.001, deltaSeconds);
   animation.motionStrength = normalizedMotionStrength(animation.speed, animation.startYear, animation.targetYear, animation.durationSeconds);
 
   if (raw >= 1.0) {
@@ -793,9 +945,10 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
     app.gui.brightMagnitudeLimit = std::min(app.gui.brightMagnitudeLimit, app.gui.faintMagnitudeLimit - 0.1f);
   }
   ImGui::SliderFloat("Star size", &app.gui.starSizeScale, 0.25f, 3.0f, "%.2f");
-  ImGui::Checkbox("Persistence streaks", &app.gui.starPersistence);
-  ImGui::SliderFloat("Streak threshold", &app.gui.persistenceThreshold, 0.02f, 0.8f, "%.2f");
-  ImGui::SliderFloat("Streak fade", &app.gui.persistenceFade, 0.03f, 0.55f, "%.2f");
+  ImGui::Checkbox("Star streaks", &app.gui.starStreaks);
+  ImGui::SliderFloat("Streak threshold", &app.gui.streakThreshold, 0.02f, 0.8f, "%.2f");
+  ImGui::SliderFloat("Streak length", &app.gui.streakLengthYears, 0.03f, 1.2f, "%.2f sky yr");
+  ImGui::SliderFloat("Streak width", &app.gui.streakWidthPixels, 0.8f, 8.0f, "%.1f px");
   ImGui::Checkbox("Horizon guide", &app.gui.showHorizon);
   ImGui::SliderFloat("Horizon opacity", &app.gui.horizonAlpha, 0.1f, 1.0f, "%.2f");
   if (ImGui::SliderFloat("FOV", &app.camera.fovRadians, 34.0f * static_cast<float>(kDegToRad), 92.0f * static_cast<float>(kDegToRad), "%.3f rad")) {
@@ -814,6 +967,36 @@ std::string makeTitle(double fps, const AnimationState& animation, std::size_t s
         << std::setprecision(1) << animation.currentYear << " CE | "
         << starCount << " Hipparcos stars | Space play/pause | R restart";
   return title.str();
+}
+
+int checkShaderPrograms() {
+  if (!glfwInit()) {
+    throw std::runtime_error("Unable to initialize GLFW for shader check.");
+  }
+
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+  GLFWwindow* window = glfwCreateWindow(64, 64, "Sky Rewind Shader Check", nullptr, nullptr);
+  if (!window) {
+    glfwTerminate();
+    throw std::runtime_error("Unable to create hidden OpenGL window for shader check.");
+  }
+
+  glfwMakeContextCurrent(window);
+  const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
+  const GlProgram streakProgram = makeProgram(streakVertexShader(), streakFragmentShader(), streakGeometryShader());
+  const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
+  glDeleteProgram(guideProgram.id);
+  glDeleteProgram(streakProgram.id);
+  glDeleteProgram(starsProgram.id);
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  std::cout << "OpenGL shader check passed.\n";
+  return EXIT_SUCCESS;
 }
 
 int runWindow(const std::vector<StarVertex>& stars) {
@@ -860,26 +1043,23 @@ int runWindow(const std::vector<StarVertex>& stars) {
   ImGui_ImplOpenGL3_Init("#version 410");
 
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
+  const GlProgram streakProgram = makeProgram(streakVertexShader(), streakFragmentShader(), streakGeometryShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
-  const GlProgram fadeProgram = makeProgram(fadeVertexShader(), fadeFragmentShader());
   GLuint vao = 0;
   GLuint vbo = 0;
   GLuint guideVao = 0;
   GLuint guideVbo = 0;
-  GLuint fadeVao = 0;
   const std::vector<GuideVertex> guideVertices = makeHorizonGuideVertices();
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
   glGenVertexArrays(1, &guideVao);
   glGenBuffers(1, &guideVbo);
-  glGenVertexArrays(1, &fadeVao);
   uploadStarAttributes(vao, vbo, stars);
   uploadGuideAttributes(guideVao, guideVbo, guideVertices);
 
   double lastFrameTime = glfwGetTime();
   double lastTitleTime = lastFrameTime;
   double smoothedFps = 0.0;
-  bool persistencePrimed = false;
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -895,7 +1075,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
     drawControls(app, smoothedFps, stars.size());
 
     applyGuiSettings(app);
-    updateAnimation(app.animation, now);
+    updateAnimation(app.animation, now, delta);
     const ProjectionUniforms projection = makeProjectionUniforms(app.animation.currentYear, app.location);
     const float cinematicStrength = static_cast<float>(app.animation.motionStrength);
     const float maxVisibleMagnitude = maxMagnitudeForSpeed(
@@ -912,33 +1092,59 @@ int runWindow(const std::vector<StarVertex>& stars) {
     };
     const Mat4 viewMatrix = lookAt({0.0f, 0.0f, 0.0f}, direction, {0.0f, 1.0f, 0.0f});
 
-    const bool persistenceActive = app.gui.starPersistence &&
-      cinematicStrength > app.gui.persistenceThreshold &&
+    glClearColor(0.002f, 0.005f, 0.018f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    const bool streaksActive = app.gui.starStreaks &&
+      cinematicStrength > app.gui.streakThreshold &&
       !app.camera.dragging &&
       app.animation.active &&
       !app.animation.paused;
-    if (persistenceActive && persistencePrimed) {
-      const float normalizedPersistence = std::clamp(
-        (cinematicStrength - app.gui.persistenceThreshold) / std::max(0.001f, 1.0f - app.gui.persistenceThreshold),
+    if (streaksActive) {
+      const double rawTailDeltaYears = -app.animation.speed * delta;
+      const double maxTailDeltaYears = static_cast<double>(app.gui.streakLengthYears);
+      const double tailDeltaYears = clamp(rawTailDeltaYears, -maxTailDeltaYears, maxTailDeltaYears);
+      const double tailYear = app.animation.currentYear + tailDeltaYears;
+      const ProjectionUniforms tailProjection = makeProjectionUniforms(tailYear, app.location);
+      const float normalizedStreak = std::clamp(
+        (cinematicStrength - app.gui.streakThreshold) / std::max(0.001f, 1.0f - app.gui.streakThreshold),
         0.0f,
         1.0f
       );
-      const float fadeAlpha = std::clamp(app.gui.persistenceFade * (1.0f - normalizedPersistence * 0.55f), 0.015f, 0.7f);
-      glDisable(GL_PROGRAM_POINT_SIZE);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glUseProgram(fadeProgram.id);
-      glUniform1f(glGetUniformLocation(fadeProgram.id, "uFadeAlpha"), fadeAlpha);
-      glBindVertexArray(fadeVao);
-      glDrawArrays(GL_TRIANGLES, 0, 3);
-      glEnable(GL_PROGRAM_POINT_SIZE);
+
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    } else {
-      glClearColor(0.002f, 0.005f, 0.018f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
-      persistencePrimed = persistenceActive;
-    }
-    if (persistenceActive) {
-      persistencePrimed = true;
+      glUseProgram(streakProgram.id);
+      glUniformMatrix4fv(glGetUniformLocation(streakProgram.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
+      glUniformMatrix4fv(glGetUniformLocation(streakProgram.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentYearsSinceCatalog"), projection.yearsSinceCatalog);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentZeta"), projection.zeta);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentZ"), projection.z);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentCosTheta"), projection.cosTheta);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentSinTheta"), projection.sinTheta);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentLocalSiderealTime"), projection.localSiderealTime);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailYearsSinceCatalog"), tailProjection.yearsSinceCatalog);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailZeta"), tailProjection.zeta);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailZ"), tailProjection.z);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailCosTheta"), tailProjection.cosTheta);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailSinTheta"), tailProjection.sinTheta);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailLocalSiderealTime"), tailProjection.localSiderealTime);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uSinLat"), projection.sinLatitude);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCosLat"), projection.cosLatitude);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uSkyRadius"), kSkyRadius);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uMaxVisibleMagnitude"), maxVisibleMagnitude);
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uCinematicStrength"), cinematicStrength);
+      glUniform2f(
+        glGetUniformLocation(streakProgram.id, "uViewport"),
+        static_cast<float>(app.framebufferWidth),
+        static_cast<float>(app.framebufferHeight)
+      );
+      glUniform1f(
+        glGetUniformLocation(streakProgram.id, "uStreakWidthPixels"),
+        app.gui.streakWidthPixels * (0.7f + normalizedStreak * 0.6f)
+      );
+      glUniform1f(glGetUniformLocation(streakProgram.id, "uMinStreakPixels"), 1.0f + normalizedStreak * 2.0f);
+      glBindVertexArray(vao);
+      glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(stars.size()));
     }
 
     glUseProgram(starsProgram.id);
@@ -989,11 +1195,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
   ImGui::DestroyContext();
   glDeleteBuffers(1, &guideVbo);
   glDeleteVertexArrays(1, &guideVao);
-  glDeleteVertexArrays(1, &fadeVao);
   glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
-  glDeleteProgram(fadeProgram.id);
   glDeleteProgram(guideProgram.id);
+  glDeleteProgram(streakProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();
@@ -1006,6 +1211,11 @@ int runWindow(const std::vector<StarVertex>& stars) {
 int main(int argc, char** argv) {
   try {
     const bool checkOnly = argc > 1 && std::string(argv[1]) == "--check";
+    const bool shaderCheckOnly = argc > 1 && std::string(argv[1]) == "--shader-check";
+    if (shaderCheckOnly) {
+      return skyrewind::checkShaderPrograms();
+    }
+
     const char* catalogOverride = nullptr;
     if (argc > 2 && std::string(argv[1]) == "--catalog") {
       catalogOverride = argv[2];
