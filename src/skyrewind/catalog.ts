@@ -2,9 +2,9 @@ import { DEG_TO_RAD, MAS_TO_RAD } from './math';
 import type { Star, StarCatalogSource } from './types';
 
 export const DEFAULT_STAR_CATALOG: StarCatalogSource = {
-  id: 'bright-stars',
-  name: 'Bright Hipparcos sample',
-  url: './sky/bright-stars.csv',
+  id: 'hipparcos',
+  name: 'Hipparcos Main Catalogue',
+  url: './sky/hipparcos.csv',
 };
 
 export async function loadStarCatalog(source = DEFAULT_STAR_CATALOG): Promise<Star[]> {
@@ -30,6 +30,7 @@ export function parseStarCatalogCsv(csv: string): Star[] {
     pmDecMasYr: requiredIndex(header, 'pmDecMasYr'),
     parallaxMas: requiredIndex(header, 'parallaxMas'),
     mag: requiredIndex(header, 'mag'),
+    bv: header.indexOf('bv'),
   };
 
   return lines.map((line, index) => {
@@ -40,6 +41,7 @@ export function parseStarCatalogCsv(csv: string): Star[] {
       throw new Error(`Invalid numeric value in star catalog row ${index + 2}.`);
     }
 
+    const colorIndex = indexes.bv === -1 ? undefined : optionalNumberAt(columns, indexes.bv);
     return {
       id,
       name: valueAt(columns, indexes.name, index),
@@ -49,6 +51,7 @@ export function parseStarCatalogCsv(csv: string): Star[] {
       pmDec: numberAt(columns, indexes.pmDecMasYr, index) * MAS_TO_RAD,
       parallax: numberAt(columns, indexes.parallaxMas, index) / 1000,
       magnitude,
+      ...(colorIndex === undefined ? {} : { colorIndex }),
     };
   });
 }
@@ -63,6 +66,13 @@ function numberAt(columns: readonly string[], index: number, rowIndex: number): 
   const value = Number.parseFloat(valueAt(columns, index, rowIndex));
   if (!Number.isFinite(value)) throw new Error(`Invalid number in star catalog row ${rowIndex + 2}.`);
   return value;
+}
+
+function optionalNumberAt(columns: readonly string[], index: number): number | undefined {
+  const raw = columns[index]?.trim();
+  if (!raw) return undefined;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : undefined;
 }
 
 function valueAt(columns: readonly string[], index: number, rowIndex: number): string {

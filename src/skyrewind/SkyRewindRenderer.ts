@@ -1,15 +1,39 @@
 import * as THREE from 'three';
-import { computeRenderStars } from './astronomy';
-import { clamp } from './math';
-import type { GeographicLocation, Star } from './types';
+import {
+  ARCSEC_TO_RAD,
+  DEG_TO_RAD,
+  J2000_JULIAN_DAY,
+  J2000_YEAR,
+  clamp,
+  decimalYear,
+  julianDay,
+  wrapRadians,
+} from './math';
+import type { GeographicLocation, Star, Vec3 } from './types';
 
 const SKY_RADIUS = 140;
 const MAX_STAR_COUNT = 120000;
+const HIPPARCOS_CATALOG_EPOCH_YEAR = 1991.25;
+const MOVING_SKY_UPDATE_INTERVAL_MS = 80;
+const SETTLED_SKY_UPDATE_INTERVAL_MS = 160;
+const HALF_PI = Math.PI / 2;
 
 export interface SkyRenderState {
   date: Date;
   location: GeographicLocation;
   cinematicStrength: number;
+  nowMs?: number;
+}
+
+interface ProjectionState {
+  yearsSinceCatalog: number;
+  zeta: number;
+  z: number;
+  cosTheta: number;
+  sinTheta: number;
+  localSiderealTime: number;
+  sinLat: number;
+  cosLat: number;
 }
 
 export class SkyRewindRenderer {
@@ -17,29 +41,49 @@ export class SkyRewindRenderer {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(62, 1, 0.1, 500);
-  private readonly positions = new Float32Array(MAX_STAR_COUNT * 3);
-  private readonly colors = new Float32Array(MAX_STAR_COUNT * 3);
-  private readonly sizes = new Float32Array(MAX_STAR_COUNT);
-  private readonly positionAttribute = new THREE.BufferAttribute(this.positions, 3);
-  private readonly colorAttribute = new THREE.BufferAttribute(this.colors, 3);
-  private readonly sizeAttribute = new THREE.BufferAttribute(this.sizes, 1);
   private readonly starGeometry = new THREE.BufferGeometry();
+  private readonly starUniforms = {
+    uYearsSinceCatalog: { value: 0 },
+    uZeta: { value: 0 },
+    uZ: { value: 0 },
+    uCosTheta: { value: 1 },
+    uSinTheta: { value: 0 },
+    uLocalSiderealTime: { value: 0 },
+    uSinLat: { value: 0 },
+    uCosLat: { value: 1 },
+    uSkyRadius: { value: SKY_RADIUS },
+    uMaxVisibleMagnitude: { value: 12.5 },
+    uCinematicStrength: { value: 0 },
+  };
   private readonly trailGeometry = new THREE.BufferGeometry();
   private readonly trailPositions = new Float32Array(MAX_STAR_COUNT * 6);
   private readonly trailPositionAttribute = new THREE.BufferAttribute(this.trailPositions, 3);
+  private readonly trailMaterial = new THREE.LineBasicMaterial({
+    color: 0x83d6ff,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
   private readonly catalog: readonly Star[];
   private readonly onResize = (): void => this.resize();
   private readonly onPointerDown = (event: PointerEvent): void => this.startDrag(event);
   private readonly onPointerMove = (event: PointerEvent): void => this.drag(event);
   private readonly onPointerUp = (): void => this.stopDrag();
   private readonly onWheel = (event: WheelEvent): void => this.zoom(event);
-  private lastPositions = new Float32Array(MAX_STAR_COUNT * 3);
+  private previousTrailPositions = new Map<number, Vec3>();
   private disposed = false;
   private dragging = false;
   private pointerX = 0;
   private pointerY = 0;
   private yaw = 0;
   private pitch = 0.35;
+  private skyDirty = true;
+  private lastSkyUpdateAtMs = Number.NEGATIVE_INFINITY;
+  private lastDateMs = Number.NaN;
+  private lastLatitude = Number.NaN;
+  private lastLongitude = Number.NaN;
+  private lastCinematicStrength = Number.NaN;
 
   constructor(canvas: HTMLCanvasElement, catalog: readonly Star[]) {
     this.canvas = canvas;
@@ -52,6 +96,7 @@ export class SkyRewindRenderer {
     this.addHorizon();
     this.addStars();
     this.addTrails();
+    this.addLowerSkyVeil();
     this.updateCamera();
     this.resize();
 
@@ -66,42 +111,27 @@ export class SkyRewindRenderer {
   render(state: SkyRenderState): void {
     if (this.disposed) return;
 
-    const stars = computeRenderStars(this.catalog, state.date, state.location, SKY_RADIUS);
-    const starCount = Math.min(stars.length, MAX_STAR_COUNT);
-    this.lastPositions.set(this.positions);
+    const maxVisibleMagnitude = maxMagnitudeForSpeed(state.cinematicStrength);
+    const nowMs = state.nowMs ?? performance.now();
+    const projection = computeProjectionState(state.date, state.location);
+    this.updateStarUniforms(projection, maxVisibleMagnitude, state.cinematicStrength);
+    const shouldUpdateTrails = this.shouldUpdateTrails(state, nowMs);
 
-    for (let i = 0; i < starCount; i += 1) {
-      const star = stars[i];
-      if (!star) continue;
-
-      const offset = i * 3;
-      this.positions[offset] = star.position.x;
-      this.positions[offset + 1] = star.position.y;
-      this.positions[offset + 2] = star.position.z;
-
-      const brightness = clamp(1 - (star.magnitude + 1.4) / 8.2, 0.08, 1);
-      const blue = clamp(0.74 + state.cinematicStrength * 0.2 + brightness * 0.18, 0, 1);
-      this.colors[offset] = clamp(0.68 + brightness * 0.32, 0, 1);
-      this.colors[offset + 1] = clamp(0.78 + brightness * 0.22, 0, 1);
-      this.colors[offset + 2] = blue;
-      this.sizes[i] = 5 + brightness * 9 + state.cinematicStrength * 7;
-
-      const trailOffset = i * 6;
-      this.trailPositions[trailOffset] = this.lastPositions[offset] || star.position.x;
-      this.trailPositions[trailOffset + 1] = this.lastPositions[offset + 1] || star.position.y;
-      this.trailPositions[trailOffset + 2] = this.lastPositions[offset + 2] || star.position.z;
-      this.trailPositions[trailOffset + 3] = star.position.x;
-      this.trailPositions[trailOffset + 4] = star.position.y;
-      this.trailPositions[trailOffset + 5] = star.position.z;
+    if (shouldUpdateTrails) {
+      this.updateTrailBuffers(state, projection);
+      this.lastSkyUpdateAtMs = performance.now();
+      this.lastDateMs = state.date.getTime();
+      this.lastLatitude = state.location.latitude;
+      this.lastLongitude = state.location.longitude;
+      this.lastCinematicStrength = state.cinematicStrength;
+      this.skyDirty = false;
     }
 
-    this.starGeometry.setDrawRange(0, starCount);
-    this.trailGeometry.setDrawRange(0, starCount * 2);
-    this.positionAttribute.needsUpdate = true;
-    this.colorAttribute.needsUpdate = true;
-    this.sizeAttribute.needsUpdate = true;
-    this.trailPositionAttribute.needsUpdate = true;
     this.renderer.render(this.scene, this.camera);
+  }
+
+  invalidate(): void {
+    this.skyDirty = true;
   }
 
   dispose(): void {
@@ -115,6 +145,68 @@ export class SkyRewindRenderer {
     this.renderer.dispose();
   }
 
+  private shouldUpdateTrails(state: SkyRenderState, nowMs: number): boolean {
+    if (this.skyDirty) return true;
+    if (state.location.latitude !== this.lastLatitude || state.location.longitude !== this.lastLongitude) return true;
+
+    const interval = state.cinematicStrength > 0.04
+      ? MOVING_SKY_UPDATE_INTERVAL_MS
+      : SETTLED_SKY_UPDATE_INTERVAL_MS;
+    if (nowMs - this.lastSkyUpdateAtMs < interval) return false;
+
+    const dateChanged = state.date.getTime() !== this.lastDateMs;
+    const visualChanged = Math.abs(state.cinematicStrength - this.lastCinematicStrength) > 0.025;
+    return dateChanged || visualChanged;
+  }
+
+  private updateStarUniforms(
+    projection: ProjectionState,
+    maxVisibleMagnitude: number,
+    cinematicStrength: number,
+  ): void {
+    this.starUniforms.uYearsSinceCatalog.value = projection.yearsSinceCatalog;
+    this.starUniforms.uZeta.value = projection.zeta;
+    this.starUniforms.uZ.value = projection.z;
+    this.starUniforms.uCosTheta.value = projection.cosTheta;
+    this.starUniforms.uSinTheta.value = projection.sinTheta;
+    this.starUniforms.uLocalSiderealTime.value = projection.localSiderealTime;
+    this.starUniforms.uSinLat.value = projection.sinLat;
+    this.starUniforms.uCosLat.value = projection.cosLat;
+    this.starUniforms.uMaxVisibleMagnitude.value = maxVisibleMagnitude;
+    this.starUniforms.uCinematicStrength.value = cinematicStrength;
+  }
+
+  private updateTrailBuffers(state: SkyRenderState, projection: ProjectionState): void {
+    const trailStrength = clamp((state.cinematicStrength - 0.18) / 0.72, 0, 1);
+    const maxTrailMagnitude = 3.1 - trailStrength * 0.75;
+    const nextTrailPositions = new Map<number, Vec3>();
+    let trailCount = 0;
+
+    for (const star of this.catalog) {
+      if (star.magnitude > 3.2) continue;
+
+      const position = projectStar(star, projection);
+      const previous = this.previousTrailPositions.get(star.id);
+      nextTrailPositions.set(star.id, position);
+      if (previous && trailStrength > 0 && star.magnitude <= maxTrailMagnitude) {
+        const trailOffset = trailCount * 6;
+        const lengthMultiplier = 2.5 + trailStrength * 7;
+        this.trailPositions[trailOffset] = position.x + (previous.x - position.x) * lengthMultiplier;
+        this.trailPositions[trailOffset + 1] = position.y + (previous.y - position.y) * lengthMultiplier;
+        this.trailPositions[trailOffset + 2] = position.z + (previous.z - position.z) * lengthMultiplier;
+        this.trailPositions[trailOffset + 3] = position.x;
+        this.trailPositions[trailOffset + 4] = position.y;
+        this.trailPositions[trailOffset + 5] = position.z;
+        trailCount += 1;
+      }
+    }
+
+    this.previousTrailPositions = nextTrailPositions;
+    this.trailGeometry.setDrawRange(0, trailCount * 2);
+    this.trailMaterial.opacity = trailStrength === 0 ? 0 : 0.045 + trailStrength * 0.105;
+    this.trailPositionAttribute.needsUpdate = true;
+  }
+
   private resize(): void {
     const width = this.canvas.clientWidth || window.innerWidth;
     const height = this.canvas.clientHeight || window.innerHeight;
@@ -123,30 +215,139 @@ export class SkyRewindRenderer {
     this.camera.updateProjectionMatrix();
   }
 
+  private startDrag(event: PointerEvent): void {
+    this.dragging = true;
+    this.pointerX = event.clientX;
+    this.pointerY = event.clientY;
+    this.canvas.setPointerCapture(event.pointerId);
+  }
+
+  private drag(event: PointerEvent): void {
+    if (!this.dragging) return;
+    const dx = event.clientX - this.pointerX;
+    const dy = event.clientY - this.pointerY;
+    this.pointerX = event.clientX;
+    this.pointerY = event.clientY;
+    this.yaw -= dx * 0.004;
+    this.pitch = clamp(this.pitch - dy * 0.004, -1.45, 1.45);
+    this.updateCamera();
+  }
+
+  private stopDrag(): void {
+    this.dragging = false;
+  }
+
+  private zoom(event: WheelEvent): void {
+    event.preventDefault();
+    this.camera.fov = clamp(this.camera.fov + event.deltaY * 0.025, 34, 92);
+    this.camera.updateProjectionMatrix();
+  }
+
+  private updateCamera(): void {
+    const direction = new THREE.Vector3(
+      Math.cos(this.pitch) * Math.sin(this.yaw),
+      Math.sin(this.pitch),
+      -Math.cos(this.pitch) * Math.cos(this.yaw),
+    );
+    this.camera.lookAt(direction);
+  }
+
   private addStars(): void {
-    this.starGeometry.setAttribute('position', this.positionAttribute);
-    this.starGeometry.setAttribute('starColor', this.colorAttribute);
-    this.starGeometry.setAttribute('starSize', this.sizeAttribute);
-    this.starGeometry.setDrawRange(0, 0);
+    const starCount = Math.min(this.catalog.length, MAX_STAR_COUNT);
+    const positions = new Float32Array(starCount * 3);
+    const colors = new Float32Array(starCount * 3);
+    const ra = new Float32Array(starCount);
+    const dec = new Float32Array(starCount);
+    const pmRa = new Float32Array(starCount);
+    const pmDec = new Float32Array(starCount);
+    const magnitude = new Float32Array(starCount);
+
+    for (let i = 0; i < starCount; i += 1) {
+      const star = this.catalog[i];
+      if (!star) continue;
+      const color = starColor(star.colorIndex);
+      const colorOffset = i * 3;
+      colors[colorOffset] = color.r;
+      colors[colorOffset + 1] = color.g;
+      colors[colorOffset + 2] = color.b;
+      ra[i] = star.ra;
+      dec[i] = star.dec;
+      pmRa[i] = star.pmRa;
+      pmDec[i] = star.pmDec;
+      magnitude[i] = star.magnitude;
+    }
+
+    this.starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    this.starGeometry.setAttribute('starColor', new THREE.BufferAttribute(colors, 3));
+    this.starGeometry.setAttribute('starRa', new THREE.BufferAttribute(ra, 1));
+    this.starGeometry.setAttribute('starDec', new THREE.BufferAttribute(dec, 1));
+    this.starGeometry.setAttribute('starPmRa', new THREE.BufferAttribute(pmRa, 1));
+    this.starGeometry.setAttribute('starPmDec', new THREE.BufferAttribute(pmDec, 1));
+    this.starGeometry.setAttribute('starMagnitude', new THREE.BufferAttribute(magnitude, 1));
+    this.starGeometry.setDrawRange(0, starCount);
 
     const material = new THREE.ShaderMaterial({
+      uniforms: this.starUniforms,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       vertexShader: `
         attribute vec3 starColor;
-        attribute float starSize;
+        attribute float starRa;
+        attribute float starDec;
+        attribute float starPmRa;
+        attribute float starPmDec;
+        attribute float starMagnitude;
+        uniform float uYearsSinceCatalog;
+        uniform float uZeta;
+        uniform float uZ;
+        uniform float uCosTheta;
+        uniform float uSinTheta;
+        uniform float uLocalSiderealTime;
+        uniform float uSinLat;
+        uniform float uCosLat;
+        uniform float uSkyRadius;
+        uniform float uMaxVisibleMagnitude;
+        uniform float uCinematicStrength;
         varying vec3 vColor;
+        varying float vAlpha;
         void main() {
-          vColor = starColor;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = starSize * (180.0 / max(12.0, -mvPosition.z));
+          float visible = step(starMagnitude, uMaxVisibleMagnitude);
+          float currentDec = clamp(starDec + starPmDec * uYearsSinceCatalog, ${(-HALF_PI).toFixed(8)}, ${HALF_PI.toFixed(8)});
+          float cosDec = cos(currentDec);
+          float sinDec = sin(currentDec);
+          float raZeta = starRa + starPmRa * uYearsSinceCatalog + uZeta;
+          float a = cosDec * sin(raZeta);
+          float b = uCosTheta * cosDec * cos(raZeta) - uSinTheta * sinDec;
+          float c = clamp(uSinTheta * cosDec * cos(raZeta) + uCosTheta * sinDec, -1.0, 1.0);
+          float precessedRa = atan(a, b) + uZ;
+          float precessedCosDec = sqrt(max(0.0, 1.0 - c * c));
+          float hourAngle = uLocalSiderealTime - precessedRa;
+          float x = -precessedCosDec * sin(hourAngle) * uSkyRadius;
+          float y = (c * uSinLat + precessedCosDec * uCosLat * cos(hourAngle)) * uSkyRadius;
+          float north = c * uCosLat - precessedCosDec * uSinLat * cos(hourAngle);
+          float zPosition = -north * uSkyRadius;
+          float brightness = clamp(1.0 - (starMagnitude + 1.4) / 10.4, 0.035, 1.0);
+          float thresholdFade = clamp((uMaxVisibleMagnitude - starMagnitude) / 0.8, 0.1, 1.0);
+          float lowerSkyDimming = y < 0.0 ? clamp(1.0 + (y / uSkyRadius) * 0.82, 0.18, 1.0) : 1.0;
+          float intensity = clamp((pow(brightness, 1.45) + uCinematicStrength * 0.09) * lowerSkyDimming * thresholdFade, 0.018, 1.0);
+          vColor = vec3(
+            clamp(intensity * starColor.r, 0.0, 1.0),
+            clamp(intensity * starColor.g, 0.0, 1.0),
+            clamp(intensity * (starColor.b + uCinematicStrength * 0.16), 0.0, 1.0)
+          );
+          vAlpha = visible;
+          vec4 mvPosition = modelViewMatrix * vec4(x, y, zPosition, 1.0);
+          float starSize = 2.4 + sqrt(brightness) * 7.8 + uCinematicStrength * 5.5;
+          gl_PointSize = visible * starSize * (180.0 / max(12.0, -mvPosition.z));
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
       fragmentShader: `
         varying vec3 vColor;
+        varying float vAlpha;
         void main() {
+          if (vAlpha <= 0.0) discard;
           float dist = distance(gl_PointCoord, vec2(0.5));
           float alpha = smoothstep(0.5, 0.08, dist);
           gl_FragColor = vec4(vColor, alpha);
@@ -154,20 +355,17 @@ export class SkyRewindRenderer {
       `,
     });
 
-    this.scene.add(new THREE.Points(this.starGeometry, material));
+    const stars = new THREE.Points(this.starGeometry, material);
+    stars.renderOrder = 2;
+    this.scene.add(stars);
   }
 
   private addTrails(): void {
     this.trailGeometry.setAttribute('position', this.trailPositionAttribute);
     this.trailGeometry.setDrawRange(0, 0);
-    const material = new THREE.LineBasicMaterial({
-      color: 0x83d6ff,
-      transparent: true,
-      opacity: 0.18,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    this.scene.add(new THREE.LineSegments(this.trailGeometry, material));
+    const trails = new THREE.LineSegments(this.trailGeometry, this.trailMaterial);
+    trails.renderOrder = 3;
+    this.scene.add(trails);
   }
 
   private addSkyDome(): void {
@@ -190,11 +388,40 @@ export class SkyRewindRenderer {
           vec3 horizon = vec3(0.035, 0.045, 0.085);
           vec3 zenith = vec3(0.004, 0.009, 0.035);
           vec3 color = mix(horizon, zenith, smoothstep(0.18, 0.92, up));
+          float lower = smoothstep(0.02, -0.7, vWorld.y);
+          color = mix(color, vec3(0.0, 0.002, 0.012), lower * 0.72);
           gl_FragColor = vec4(color, 1.0);
         }
       `,
     });
     this.scene.add(new THREE.Mesh(geometry, material));
+  }
+
+  private addLowerSkyVeil(): void {
+    const geometry = new THREE.SphereGeometry(SKY_RADIUS * 1.02, 48, 24);
+    const material = new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
+      vertexShader: `
+        varying vec3 vWorld;
+        void main() {
+          vec4 world = modelMatrix * vec4(position, 1.0);
+          vWorld = normalize(world.xyz);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vWorld;
+        void main() {
+          float alpha = smoothstep(0.02, -0.58, vWorld.y) * 0.46;
+          gl_FragColor = vec4(0.0, 0.003, 0.014, alpha);
+        }
+      `,
+    });
+    const veil = new THREE.Mesh(geometry, material);
+    veil.renderOrder = 6;
+    this.scene.add(veil);
   }
 
   private addHorizon(): void {
@@ -208,41 +435,80 @@ export class SkyRewindRenderer {
     this.scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x3f7894, transparent: true, opacity: 0.55 })));
   }
 
-  private startDrag(event: PointerEvent): void {
-    this.dragging = true;
-    this.pointerX = event.clientX;
-    this.pointerY = event.clientY;
-    this.canvas.setPointerCapture(event.pointerId);
-  }
+}
 
-  private drag(event: PointerEvent): void {
-    if (!this.dragging) return;
+function computeProjectionState(date: Date, location: GeographicLocation): ProjectionState {
+  const year = decimalYear(date);
+  const yearsSinceCatalog = year - HIPPARCOS_CATALOG_EPOCH_YEAR;
+  const centuriesSinceJ2000 = (year - J2000_YEAR) / 100;
+  const zeta = (
+    2306.2181 * centuriesSinceJ2000 +
+    0.30188 * centuriesSinceJ2000 * centuriesSinceJ2000 +
+    0.017998 * centuriesSinceJ2000 * centuriesSinceJ2000 * centuriesSinceJ2000
+  ) * ARCSEC_TO_RAD;
+  const z = (
+    2306.2181 * centuriesSinceJ2000 +
+    1.09468 * centuriesSinceJ2000 * centuriesSinceJ2000 +
+    0.018203 * centuriesSinceJ2000 * centuriesSinceJ2000 * centuriesSinceJ2000
+  ) * ARCSEC_TO_RAD;
+  const theta = (
+    2004.3109 * centuriesSinceJ2000 -
+    0.42665 * centuriesSinceJ2000 * centuriesSinceJ2000 -
+    0.041833 * centuriesSinceJ2000 * centuriesSinceJ2000 * centuriesSinceJ2000
+  ) * ARCSEC_TO_RAD;
 
-    const dx = event.clientX - this.pointerX;
-    const dy = event.clientY - this.pointerY;
-    this.pointerX = event.clientX;
-    this.pointerY = event.clientY;
-    this.yaw -= dx * 0.004;
-    this.pitch = clamp(this.pitch + dy * 0.003, -0.35, 1.35);
-    this.updateCamera();
-  }
+  return {
+    yearsSinceCatalog,
+    zeta,
+    z,
+    cosTheta: Math.cos(theta),
+    sinTheta: Math.sin(theta),
+    localSiderealTime: greenwichMeanSiderealTime(date) + location.longitude,
+    sinLat: Math.sin(location.latitude),
+    cosLat: Math.cos(location.latitude),
+  };
+}
 
-  private stopDrag(): void {
-    this.dragging = false;
-  }
+function projectStar(star: Star, projection: ProjectionState): Vec3 {
+  const dec = clamp(star.dec + star.pmDec * projection.yearsSinceCatalog, -HALF_PI, HALF_PI);
+  const cosDec = Math.cos(dec);
+  const sinDec = Math.sin(dec);
+  const raZeta = wrapRadians(star.ra + star.pmRa * projection.yearsSinceCatalog + projection.zeta);
+  const a = cosDec * Math.sin(raZeta);
+  const b = projection.cosTheta * cosDec * Math.cos(raZeta) - projection.sinTheta * sinDec;
+  const c = clamp(projection.sinTheta * cosDec * Math.cos(raZeta) + projection.cosTheta * sinDec, -1, 1);
+  const precessedRa = wrapRadians(Math.atan2(a, b) + projection.z);
+  const precessedCosDec = Math.sqrt(Math.max(0, 1 - c * c));
+  const hourAngle = wrapRadians(projection.localSiderealTime - precessedRa);
+  const x = -precessedCosDec * Math.sin(hourAngle) * SKY_RADIUS;
+  const y = (c * projection.sinLat + precessedCosDec * projection.cosLat * Math.cos(hourAngle)) * SKY_RADIUS;
+  const north = c * projection.cosLat - precessedCosDec * projection.sinLat * Math.cos(hourAngle);
+  return { x, y, z: -north * SKY_RADIUS };
+}
 
-  private zoom(event: WheelEvent): void {
-    event.preventDefault();
-    this.camera.fov = clamp(this.camera.fov + event.deltaY * 0.02, 36, 88);
-    this.camera.updateProjectionMatrix();
-  }
+function starColor(colorIndex: number | undefined): { r: number; g: number; b: number } {
+  if (colorIndex === undefined) return { r: 0.88, g: 0.93, b: 1.04 };
 
-  private updateCamera(): void {
-    const target = new THREE.Vector3(
-      Math.cos(this.pitch) * Math.sin(this.yaw),
-      Math.sin(this.pitch),
-      -Math.cos(this.pitch) * Math.cos(this.yaw),
-    );
-    this.camera.lookAt(target);
-  }
+  const t = clamp((colorIndex + 0.35) / 2.35, 0, 1);
+  return {
+    r: 0.72 + t * 0.48,
+    g: 0.82 + Math.sin(t * Math.PI) * 0.16,
+    b: 1.16 - t * 0.58,
+  };
+}
+
+function maxMagnitudeForSpeed(cinematicStrength: number): number {
+  const speed = clamp(cinematicStrength, 0, 1);
+  const brightStarOnly = Math.pow(speed, 0.62);
+  return 12.5 - brightStarOnly * 10.9;
+}
+
+function greenwichMeanSiderealTime(date: Date): number {
+  const jd = julianDay(date);
+  const t = (jd - J2000_JULIAN_DAY) / 36525;
+  const degrees = 280.46061837 +
+    360.98564736629 * (jd - J2000_JULIAN_DAY) +
+    0.000387933 * t * t -
+    (t * t * t) / 38710000;
+  return wrapRadians(degrees * DEG_TO_RAD);
 }

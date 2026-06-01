@@ -13,6 +13,7 @@ export interface Star {
   pmDec: number;
   parallax: number;
   magnitude: number;
+  colorIndex?: number;
 }
 
 export interface GeographicLocation {
@@ -22,8 +23,10 @@ export interface GeographicLocation {
 }
 
 export interface RenderStar {
+  id: number;
   position: Vec3;
   magnitude: number;
+  colorIndex?: number;
 }
 
 export interface SkyMoment {

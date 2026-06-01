@@ -6,7 +6,7 @@ export type TitleDaylightState = {
   dawnGlowAlpha: number;
   sunEffectsAlpha: number;
   starAlpha: number;
-  cityDayAlpha: number;
+  cityLightAmount: number;
   cloudAlpha: number;
   nightWashAlpha: number;
   skyTint: number;
@@ -32,7 +32,7 @@ export function calculateTitleDaylight(sunCenterY: number, horizonY: number): Ti
     dawnGlowAlpha: Phaser.Math.Clamp(twilightIntensity * (1 - smoothstep(8, 34, solarElevationDeg)), 0, 1),
     sunEffectsAlpha: smoothstep(-3, 14, solarElevationDeg),
     starAlpha: 1 - smoothstep(0.08, 0.32, lightIntensity),
-    cityDayAlpha: Phaser.Math.Clamp(lightIntensity * 1.08, 0, 1),
+    cityLightAmount: Phaser.Math.Clamp(lightIntensity * 1.08, 0, 1),
     cloudAlpha: smoothstep(-5, 22, solarElevationDeg),
     nightWashAlpha: 0.12 * (1 - lightIntensity),
     skyTint: mixColor(0xffb06a, daylightColor, colorShift),

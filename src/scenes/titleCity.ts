@@ -1,45 +1,57 @@
 import Phaser from 'phaser';
 
-export function addTitleCitySilhouette(
+export type TitleCity = {
+  graphics: Phaser.GameObjects.Graphics;
+  setLight: (amount: number) => void;
+};
+
+const nightPalette: ShirazCityPalette = {
+  ground: 0x130e0d,
+  foreground: 0x0c0908,
+  foothills: 0x100c0b,
+  wall: 0x17100e,
+  wallShadow: 0x0e0a09,
+  buildings: [0x17100e, 0x1e1411, 0x241713, 0x1a110f],
+  roof: 0x0f0b0a,
+  dome: 0x1d1310,
+  highlight: 0x2a1b15,
+  garden: 0x080806,
+};
+
+const dayPalette: ShirazCityPalette = {
+  ground: 0x6f503b,
+  foreground: 0x5f3f2e,
+  foothills: 0x846143,
+  wall: 0xa7784e,
+  wallShadow: 0x5f3f2e,
+  buildings: [0x856044, 0x9d7450, 0xb4895d, 0xc19563],
+  roof: 0x71503a,
+  dome: 0xb48255,
+  highlight: 0xd1a368,
+  garden: 0x20351f,
+};
+
+export function addTitleCity(
   scene: Phaser.Scene,
   width: number,
   height: number,
   baseY: number,
-): Phaser.GameObjects.Graphics {
+): TitleCity {
   const g = scene.add.graphics();
-  const buildingBase = Math.min(height - 40, baseY + height * 0.09);
-  const palette = [0x17100e, 0x1e1411, 0x241713];
+  const cityBase = Math.min(height - 40, baseY + height * 0.09);
+  let lastLightAmount = Number.NaN;
+  const setLight = (amount: number) => {
+    const lightAmount = Phaser.Math.Clamp(amount, 0, 1);
 
-  g.fillStyle(0x130e0d, 1);
-  g.fillRect(0, baseY, width, height - baseY);
-  drawCityBuildings(g, width, buildingBase, palette, 1);
+    if (Math.abs(lightAmount - lastLightAmount) < 0.006) return;
 
-  g.fillStyle(0x0c0908, 1);
-  g.fillEllipse(width / 2, height + height * 0.08, width * 1.5, height * 0.44);
+    lastLightAmount = lightAmount;
+    drawTitleCity(g, width, height, baseY, cityBase, mixPalette(nightPalette, dayPalette, lightAmount));
+  };
 
-  return g;
-}
+  setLight(0);
 
-export function addTitleCityDaylight(
-  scene: Phaser.Scene,
-  width: number,
-  height: number,
-  baseY: number,
-): Phaser.GameObjects.Container {
-  const city = scene.add.container(0, 0);
-  const g = scene.add.graphics();
-  const buildingBase = Math.min(height - 40, baseY + height * 0.09);
-  const palette = [0x856044, 0x9d7450, 0xb4895d];
-
-  g.fillStyle(0x6f503b, 1);
-  g.fillRect(0, baseY, width, height - baseY);
-  drawCityBuildings(g, width, buildingBase, palette, 0.72, true);
-
-  g.fillStyle(0xffcf86, 0.18);
-  g.fillEllipse(width / 2, baseY + height * 0.03, width * 0.9, height * 0.11);
-  city.add(g);
-
-  return city;
+  return { graphics: g, setLight };
 }
 
 export function addTitleCloud(
@@ -59,39 +71,353 @@ export function addTitleCloud(
   return g;
 }
 
-function drawCityBuildings(
+type ShirazCityPalette = {
+  ground: number;
+  foreground: number;
+  foothills: number;
+  wall: number;
+  wallShadow: number;
+  buildings: number[];
+  roof: number;
+  dome: number;
+  highlight: number;
+  garden: number;
+};
+
+function drawTitleCity(
   g: Phaser.GameObjects.Graphics,
   width: number,
-  buildingBase: number,
-  palette: number[],
-  alpha: number,
-  addHighlights = false,
+  height: number,
+  baseY: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
 ): void {
-  for (let i = -1; i < Math.ceil(width / 86) + 1; i += 1) {
-    const x = i * 86 + (i % 2 === 0 ? 8 : -6);
-    const w = 54 + (i % 3) * 12;
-    const h = 54 + (i % 4) * 14;
-    const roofY = buildingBase - h;
+  g.clear();
+  g.fillStyle(palette.ground, 1);
+  g.fillRect(0, baseY, width, height - baseY);
+  drawDistantPlain(g, width, height, baseY, palette);
+  drawGardenCypresses(g, width, cityBase, palette);
+  drawCourtyardQuarter(g, width, cityBase, palette);
+  drawVakilBazaarLine(g, width, cityBase, palette);
+  drawMosqueAndMadrasaDomes(g, width, cityBase, palette);
+  drawCityWallAndGate(g, width, cityBase, palette);
+  drawForegroundRoofs(g, width, height, cityBase, palette);
+  g.fillStyle(palette.foreground, 1);
+  g.fillEllipse(width / 2, height + height * 0.08, width * 1.5, height * 0.44);
+}
 
-    g.fillStyle(palette[Math.abs(i) % palette.length]!, alpha);
+function drawDistantPlain(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  height: number,
+  baseY: number,
+  palette: ShirazCityPalette,
+): void {
+  const plainTop = baseY - height * 0.035;
+
+  g.fillStyle(palette.foothills, 1);
+  g.beginPath();
+  g.moveTo(0, baseY + height * 0.01);
+  g.lineTo(0, plainTop + 5);
+  g.lineTo(width * 0.18, plainTop + 1);
+  g.lineTo(width * 0.46, plainTop + 4);
+  g.lineTo(width * 0.72, plainTop);
+  g.lineTo(width, plainTop + 3);
+  g.lineTo(width, baseY + height * 0.02);
+  g.closePath();
+  g.fillPath();
+}
+
+function drawGardenCypresses(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+): void {
+  const treeBase = cityBase - 18;
+  const positions = [
+    width * 0.08,
+    width * 0.14,
+    width * 0.76,
+    width * 0.82,
+    width * 0.9,
+  ];
+
+  g.fillStyle(palette.garden, 1);
+  positions.forEach((x, index) => {
+    const h = 48 + (index % 3) * 13;
+    const w = 17 + (index % 2) * 5;
+
+    g.fillTriangle(x, treeBase - h, x - w, treeBase, x + w, treeBase);
+    g.fillRect(x - 2, treeBase - h * 0.1, 4, h * 0.1);
+  });
+
+  g.fillStyle(palette.highlight, 1);
+  positions.forEach((x, index) => {
+    const h = 48 + (index % 3) * 13;
+    g.fillTriangle(x - 3, treeBase - h * 0.85, x - 12, treeBase - 8, x - 1, treeBase - 8);
+  });
+}
+
+function drawCourtyardQuarter(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+): void {
+  const blockWidth = 62;
+  const count = Math.ceil(width / blockWidth) + 2;
+
+  for (let i = -1; i < count; i += 1) {
+    const x = i * blockWidth + (i % 2 === 0 ? 4 : -9);
+    const w = 46 + (Math.abs(i) % 3) * 11;
+    const h = 38 + (Math.abs(i + 1) % 4) * 12;
+    const roofY = cityBase - h - 16 - (Math.abs(i) % 2) * 6;
+
+    g.fillStyle(palette.buildings[Math.abs(i) % palette.buildings.length]!, 1);
     g.fillRect(x, roofY, w, h);
+    drawRoofParapet(g, x, roofY, w, palette);
 
-    if (addHighlights) {
-      g.fillStyle(0xffd58a, 0.34);
-      g.fillRect(x + w * 0.12, roofY + 6, w * 0.12, h - 8);
+    if (Math.abs(i) % 4 === 1) {
+      drawBadgir(g, x + w * 0.62, roofY, palette);
     }
 
-    if (i % 4 === 0) {
-      g.fillCircle(x + w / 2, roofY, w * 0.36);
-      g.fillRect(x + w * 0.14, roofY, w * 0.72, w * 0.18);
-    } else if (i % 5 === 0) {
-      g.fillTriangle(x, roofY, x + w / 2, roofY - 24, x + w, roofY);
-    }
-
-    if (i % 6 === 0) {
-      const minaretX = x + w + 10;
-      g.fillRect(minaretX, roofY - 34, 8, h + 34);
-      g.fillCircle(minaretX + 4, roofY - 36, 8);
-    }
+    g.fillStyle(palette.highlight, 1);
+    g.fillRect(x + w * 0.14, roofY + 7, 4, h - 11);
+    g.fillStyle(palette.wallShadow, 1);
+    g.fillRect(x + w - 8, roofY + 5, 6, h - 8);
   }
+}
+
+function drawVakilBazaarLine(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+): void {
+  const y = cityBase - 46;
+  const vaultWidth = 42;
+  const startX = width * 0.18;
+  const endX = width * 0.82;
+
+  for (let x = startX; x < endX; x += vaultWidth * 0.78) {
+    g.fillStyle(palette.buildings[1]!, 1);
+    g.fillRect(x, y + 12, vaultWidth, 34);
+    g.fillCircle(x + vaultWidth / 2, y + 12, vaultWidth / 2);
+
+    g.fillStyle(palette.wallShadow, 1);
+    g.fillRect(x + vaultWidth * 0.28, y + 24, vaultWidth * 0.44, 22);
+
+    g.fillStyle(palette.highlight, 1);
+    g.fillCircle(x + vaultWidth / 2 - 4, y + 8, vaultWidth * 0.22);
+  }
+}
+
+function drawMosqueAndMadrasaDomes(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+): void {
+  drawDomedComplex(g, width * 0.36, cityBase - 26, 72, 74, palette);
+  drawDomedComplex(g, width * 0.62, cityBase - 32, 86, 88, palette);
+  drawMinaret(g, width * 0.29, cityBase - 112, 12, 112, palette);
+  drawMinaret(g, width * 0.69, cityBase - 122, 13, 124, palette);
+}
+
+function drawDomedComplex(
+  g: Phaser.GameObjects.Graphics,
+  centerX: number,
+  baseY: number,
+  width: number,
+  height: number,
+  palette: ShirazCityPalette,
+): void {
+  const bodyX = centerX - width / 2;
+  const bodyY = baseY - height * 0.5;
+
+  g.fillStyle(palette.buildings[2]!, 1);
+  g.fillRect(bodyX, bodyY, width, height * 0.5);
+  drawRoofParapet(g, bodyX, bodyY, width, palette);
+
+  g.fillStyle(palette.dome, 1);
+  g.fillEllipse(centerX, bodyY, width * 0.74, height * 0.5);
+  g.fillRect(centerX - width * 0.27, bodyY, width * 0.54, height * 0.1);
+
+  g.fillStyle(palette.wallShadow, 1);
+  g.fillRect(centerX - width * 0.12, bodyY + height * 0.22, width * 0.24, height * 0.28);
+
+  g.fillStyle(palette.highlight, 1);
+  g.fillEllipse(centerX - width * 0.12, bodyY - 2, width * 0.28, height * 0.22);
+}
+
+function drawMinaret(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  topY: number,
+  width: number,
+  height: number,
+  palette: ShirazCityPalette,
+): void {
+  g.fillStyle(palette.wall, 1);
+  g.fillRect(x - width / 2, topY, width, height);
+  g.fillCircle(x, topY - width * 0.25, width * 0.72);
+  g.fillRect(x - width * 0.7, topY + height * 0.2, width * 1.4, 5);
+
+  g.fillStyle(palette.wallShadow, 1);
+  g.fillRect(x + width * 0.15, topY + 8, width * 0.28, height - 10);
+
+  g.fillStyle(palette.highlight, 1);
+  g.fillRect(x - width * 0.28, topY + 8, width * 0.18, height - 18);
+}
+
+function drawCityWallAndGate(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+): void {
+  const wallTop = cityBase - 36;
+  const wallHeight = 42;
+  const towerWidth = 22;
+  const gateX = width * 0.5;
+  const gateWidth = 86;
+
+  g.fillStyle(palette.wall, 1);
+  g.fillRect(0, wallTop, width, wallHeight);
+
+  for (let x = -towerWidth; x < width + towerWidth; x += 96) {
+    g.fillRect(x, wallTop - 14, towerWidth, wallHeight + 14);
+    drawCrenellations(g, x - 2, wallTop - 20, towerWidth + 4, palette);
+  }
+
+  drawCrenellations(g, 0, wallTop - 6, width, palette);
+
+  g.fillStyle(palette.wallShadow, 1);
+  g.fillRect(gateX - gateWidth / 2, wallTop - 10, gateWidth, wallHeight + 10);
+  g.fillStyle(palette.wall, 1);
+  g.fillRect(gateX - gateWidth * 0.38, wallTop - 22, gateWidth * 0.76, 26);
+  g.fillCircle(gateX, wallTop - 22, gateWidth * 0.38);
+  g.fillStyle(palette.wallShadow, 1);
+  g.fillRect(gateX - gateWidth * 0.18, wallTop + 8, gateWidth * 0.36, wallHeight - 8);
+  g.fillCircle(gateX, wallTop + 8, gateWidth * 0.18);
+
+  g.fillStyle(palette.highlight, 1);
+  g.fillRect(0, wallTop + 4, width, 4);
+  g.fillRect(gateX - gateWidth * 0.32, wallTop - 18, gateWidth * 0.18, wallHeight + 8);
+}
+
+function drawForegroundRoofs(
+  g: Phaser.GameObjects.Graphics,
+  width: number,
+  height: number,
+  cityBase: number,
+  palette: ShirazCityPalette,
+): void {
+  const blockWidth = 92;
+  const count = Math.ceil(width / blockWidth) + 2;
+
+  for (let i = -1; i < count; i += 1) {
+    const x = i * blockWidth + (i % 2 === 0 ? 7 : -11);
+    const w = 68 + (Math.abs(i) % 3) * 14;
+    const h = 34 + (Math.abs(i + 2) % 3) * 11;
+    const bottomY = foregroundCurveTopY(x + w / 2, width, height) + 8;
+    const y = cityBase - h + (Math.abs(i) % 2) * 5;
+    const visibleHeight = Math.max(h, bottomY - y);
+
+    g.fillStyle(palette.buildings[Math.abs(i + 2) % palette.buildings.length]!, 1);
+    g.fillRect(x, y, w, visibleHeight);
+    drawRoofParapet(g, x, y, w, palette);
+
+    g.fillStyle(palette.wallShadow, 1);
+    g.fillRect(x + w * 0.38, y + h * 0.35, w * 0.24, visibleHeight - h * 0.35);
+
+    g.fillStyle(palette.highlight, 1);
+    g.fillRect(x + 8, y + 7, w * 0.18, visibleHeight - 12);
+  }
+}
+
+function foregroundCurveTopY(x: number, width: number, height: number): number {
+  const radiusX = width * 0.75;
+  const radiusY = height * 0.22;
+  const centerX = width / 2;
+  const centerY = height + height * 0.08;
+  const normalizedX = Phaser.Math.Clamp((x - centerX) / radiusX, -1, 1);
+
+  return centerY - radiusY * Math.sqrt(1 - normalizedX * normalizedX);
+}
+
+function drawRoofParapet(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  y: number,
+  width: number,
+  palette: ShirazCityPalette,
+): void {
+  g.fillStyle(palette.roof, 1);
+  g.fillRect(x, y - 5, width, 5);
+
+  for (let merlonX = x + 4; merlonX < x + width - 2; merlonX += 14) {
+    g.fillRect(merlonX, y - 10, 7, 6);
+  }
+}
+
+function drawBadgir(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  roofY: number,
+  palette: ShirazCityPalette,
+): void {
+  const width = 15;
+  const height = 33;
+
+  g.fillStyle(palette.wall, 1);
+  g.fillRect(x - width / 2, roofY - height, width, height);
+  g.fillStyle(palette.wallShadow, 1);
+  g.fillRect(x - width / 2 + 3, roofY - height + 4, 3, height - 8);
+  g.fillRect(x + width / 2 - 6, roofY - height + 4, 3, height - 8);
+  drawRoofParapet(g, x - width / 2 - 2, roofY - height, width + 4, palette);
+
+  g.fillStyle(palette.highlight, 1);
+  g.fillRect(x - width / 2 + 1, roofY - height + 5, 2, height - 10);
+}
+
+function drawCrenellations(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  y: number,
+  width: number,
+  palette: ShirazCityPalette,
+): void {
+  g.fillStyle(palette.wall, 1);
+
+  for (let merlonX = x; merlonX < x + width; merlonX += 18) {
+    g.fillRect(merlonX, y, 10, 8);
+  }
+}
+
+function mixPalette(from: ShirazCityPalette, to: ShirazCityPalette, amount: number): ShirazCityPalette {
+  return {
+    ground: mixColor(from.ground, to.ground, amount),
+    foreground: mixColor(from.foreground, to.foreground, amount),
+    foothills: mixColor(from.foothills, to.foothills, amount),
+    wall: mixColor(from.wall, to.wall, amount),
+    wallShadow: mixColor(from.wallShadow, to.wallShadow, amount),
+    buildings: from.buildings.map((color, index) => mixColor(color, to.buildings[index] ?? color, amount)),
+    roof: mixColor(from.roof, to.roof, amount),
+    dome: mixColor(from.dome, to.dome, amount),
+    highlight: mixColor(from.highlight, to.highlight, amount),
+    garden: mixColor(from.garden, to.garden, amount),
+  };
+}
+
+function mixColor(from: number, to: number, amount: number): number {
+  const fromRgb = Phaser.Display.Color.IntegerToRGB(from);
+  const toRgb = Phaser.Display.Color.IntegerToRGB(to);
+
+  return Phaser.Display.Color.GetColor(
+    Math.round(Phaser.Math.Linear(fromRgb.r, toRgb.r, amount)),
+    Math.round(Phaser.Math.Linear(fromRgb.g, toRgb.g, amount)),
+    Math.round(Phaser.Math.Linear(fromRgb.b, toRgb.b, amount)),
+  );
 }

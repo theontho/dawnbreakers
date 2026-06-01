@@ -15,7 +15,12 @@
     "lint:content": "node scripts/lint-content.mjs",
     "lint:duplicates": "jscpd --config .jscpd.json src scripts",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "skyrewind:catalog": "node scripts/generate-hipparcos-catalog.mjs",
+    "skyrewind:cpp:configure": "cmake -S native/skyrewind-cpp -B native/skyrewind-cpp/build",
+    "skyrewind:cpp:build": "cmake --build native/skyrewind-cpp/build",
+    "skyrewind:cpp:check": "npm run skyrewind:catalog && cmake --build native/skyrewind-cpp/build && native/skyrewind-cpp/build/skyrewind_cpp --check",
+    "skyrewind:cpp:run": "npm run skyrewind:catalog && cmake --build native/skyrewind-cpp/build && native/skyrewind-cpp/build/skyrewind_cpp"
   },
   "keywords": [],
   "author": "",

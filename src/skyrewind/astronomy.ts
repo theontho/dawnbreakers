@@ -12,6 +12,9 @@ import {
 } from './math';
 import type { GeographicLocation, RenderStar, Star, Vec3 } from './types';
 
+const HIPPARCOS_CATALOG_EPOCH_YEAR = 1991.25;
+const DARK_SKY_LIMIT_MAGNITUDE = 12.5;
+
 export function convertRaDecToVec3(ra: number, dec: number): Vec3 {
   const cosDec = Math.cos(dec);
   return {
@@ -59,7 +62,7 @@ export function applyPrecession(ra: number, dec: number, yearsSinceJ2000: number
 }
 
 export function starToEquatorial(star: Star, date: Date): { ra: number; dec: number } {
-  const moved = applyProperMotion(star, decimalYear(date) - J2000_YEAR);
+  const moved = applyProperMotion(star, decimalYear(date) - HIPPARCOS_CATALOG_EPOCH_YEAR);
   return applyPrecession(moved.ra, moved.dec, decimalYear(date) - J2000_YEAR);
 }
 
@@ -97,15 +100,16 @@ export function computeRenderStars(
 ): RenderStar[] {
   const out: RenderStar[] = [];
   for (const star of catalog) {
-    if (star.magnitude > 6.6) continue;
+    if (star.magnitude > DARK_SKY_LIMIT_MAGNITUDE) continue;
 
     const equatorial = starToEquatorial(star, date);
     const local = equatorialToLocalVector(equatorial.ra, equatorial.dec, date, location);
-    if (local.y < -0.045) continue;
 
     out.push({
+      id: star.id,
       position: scaleVec3(local, radius),
       magnitude: star.magnitude,
+      ...(star.colorIndex === undefined ? {} : { colorIndex: star.colorIndex }),
     });
   }
   return out;

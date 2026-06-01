@@ -5,7 +5,7 @@ import { logGameEvent } from '../logging/gameLogger';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 import { activateTitleTextButton, addFastSunriseButton, addTitleLanguageButton } from './titleControls';
 import { playTitleBookOpening } from './titleBookOpening';
-import { addTitleCityDaylight, addTitleCitySilhouette, addTitleCloud } from './titleCity';
+import { addTitleCity, addTitleCloud, type TitleCity } from './titleCity';
 import { calculateTitleDaylight } from './titleDaylight';
 import { SHIRAZ_EAST_STAR_CHART } from './titleStarChart';
 import { drawTitleSunRays } from './titleSunRays';
@@ -25,7 +25,7 @@ type SunriseBackground = {
   daySky: Phaser.GameObjects.Image;
   dawnGlow: Phaser.GameObjects.Container;
   dayClouds: Phaser.GameObjects.Container;
-  cityDay: Phaser.GameObjects.Container;
+  city: TitleCity;
   nightWash: Phaser.GameObjects.Rectangle;
   cloudDrift: { fromX: number; toX: number };
 };
@@ -177,8 +177,7 @@ export class TitleScene extends Phaser.Scene {
       .add(addTitleCloud(this, width * 1.22, height * 0.18, 0.95, 0.14))
       .setAlpha(0);
 
-    addTitleCitySilhouette(this, width, height, cityBaseY);
-    const cityDay = addTitleCityDaylight(this, width, height, cityBaseY).setAlpha(0);
+    const city = addTitleCity(this, width, height, cityBaseY);
     const nightWash = this.add.rectangle(0, 0, width, height, 0x030611, 0.12).setOrigin(0);
     this.add.rectangle(width / 2, height * 0.36, Math.min(width - 24, 940), height * 0.26, 0x07040a, 0.28)
       .setOrigin(0.5);
@@ -198,7 +197,7 @@ export class TitleScene extends Phaser.Scene {
       daySky,
       dawnGlow,
       dayClouds,
-      cityDay,
+      city,
       nightWash,
       cloudDrift,
     };
@@ -448,7 +447,7 @@ export class TitleScene extends Phaser.Scene {
     sunrise.sunEffects.forEach((effect) => effect.setAlpha(daylight.sunEffectsAlpha));
     sunrise.sunDisk.setFillStyle(daylight.sunTint, 1);
     sunrise.stars.setAlpha(daylight.starAlpha);
-    sunrise.cityDay.setAlpha(daylight.cityDayAlpha);
+    sunrise.city.setLight(daylight.cityLightAmount);
     sunrise.dayClouds.setAlpha(daylight.cloudAlpha);
     sunrise.nightWash.setAlpha(daylight.nightWashAlpha);
   }
