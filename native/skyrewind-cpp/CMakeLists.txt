@@ -48,6 +48,7 @@ add_executable(skyrewind_cpp
   src/Astronomy.cpp
   src/Catalog.cpp
   src/Main.cpp
+  src/TimePlayer.cpp
 )
 
 target_include_directories(skyrewind_cpp PRIVATE src)

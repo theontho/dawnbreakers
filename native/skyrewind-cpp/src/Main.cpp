@@ -1,5 +1,6 @@
 #include "Astronomy.hpp"
 #include "Catalog.hpp"
+#include "TimePlayer.hpp"
 #ifdef __APPLE__
 #include "MacDockIcon.hpp"
 #endif
@@ -34,9 +35,11 @@ namespace skyrewind {
 namespace {
 
 constexpr float kSkyRadius = 140.0f;
-constexpr double kInitialYear = 1844.389;
-constexpr double kDefaultRewindYears = 8000.0;
+constexpr double kInitialYear = 2022.28;
+constexpr double kDefaultRewindYears = 2022.0;
 constexpr double kDefaultDurationSeconds = 14.0;
+constexpr double kDefaultLatitudeDegrees = 30.0444;
+constexpr double kDefaultLongitudeDegrees = 31.2357;
 
 struct Vec3 {
   float x = 0.0f;
@@ -58,7 +61,7 @@ struct AnimationState {
   double pausedDuration = 0.0;
   double speed = 0.0;
   double motionStrength = 0.0;
-  bool active = true;
+  bool active = false;
   bool paused = false;
   TimeCurve curve{};
 };
@@ -79,26 +82,43 @@ struct GuiState {
   float inertiaPortion = 0.32f;
   float driftPercent = 0.0004f;
   float power = 3.0f;
-  float latitudeDegrees = 29.5918f;
-  float longitudeDegrees = 52.5837f;
+  float latitudeDegrees = static_cast<float>(kDefaultLatitudeDegrees);
+  float longitudeDegrees = static_cast<float>(kDefaultLongitudeDegrees);
   float faintMagnitudeLimit = 12.5f;
-  float brightMagnitudeLimit = 1.6f;
+  float brightMagnitudeLimit = 5.6f;
   float starSizeScale = 1.0f;
   float horizonAlpha = 0.82f;
   float streakThreshold = 0.08f;
   float streakLengthYears = 0.42f;
   float streakWidthPixels = 3.5f;
+  float zoetropeIntervalYears = 650.0f;
+  float zoetropeBlendPortion = 0.18f;
+  float layerSeparation = 0.42f;
+  float atmosphereWarp = 0.26f;
+  float moonSizePixels = 82.0f;
+  float moonHalo = 0.86f;
+  float moonAnalemma = 0.52f;
+  bool zoetropeSampling = true;
+  bool layeredSky = true;
+  bool showMoon = true;
   bool starStreaks = true;
   bool showHorizon = true;
   bool vsync = true;
   bool showControls = true;
 };
 
+enum class VisibleProgram {
+  CinematicRewind,
+  TimePlayer,
+};
+
 struct AppState {
   CameraState camera;
   AnimationState animation;
+  TimePlayerState timePlayer;
   GuiState gui;
   Location location;
+  VisibleProgram visibleProgram = VisibleProgram::TimePlayer;
   int framebufferWidth = 1440;
   int framebufferHeight = 960;
 };
@@ -115,6 +135,13 @@ struct GuideVertex {
   float g = 1.0f;
   float b = 1.0f;
   float a = 1.0f;
+};
+
+struct ZoetropeState {
+  double primaryYear = kInitialYear;
+  double secondaryYear = kInitialYear;
+  float secondaryAlpha = 0.0f;
+  float lockPulse = 0.0f;
 };
 
 std::vector<std::uint8_t> makeMoonIconPixels(int size) {
@@ -169,6 +196,11 @@ void setMoonWindowIcon(GLFWwindow* window) {
 
 float clampFloat(float value, float minValue, float maxValue) {
   return std::max(minValue, std::min(maxValue, value));
+}
+
+double smoothStep01(double value) {
+  const double t = clamp(value, 0.0, 1.0);
+  return t * t * (3.0 - 2.0 * t);
 }
 
 Vec3 normalize(Vec3 value) {
@@ -312,6 +344,10 @@ const char* starVertexShader() {
     uniform float uMaxVisibleMagnitude;
     uniform float uCinematicStrength;
     uniform float uStarSizeScale;
+    uniform float uLayerAlpha;
+    uniform float uLayerBlueShift;
+    uniform float uAtmosphereWarp;
+    uniform float uEffectClock;
 
     out vec3 vColor;
     out float vAlpha;
@@ -332,6 +368,11 @@ const char* starVertexShader() {
       float y = (c * uSinLat + precessedCosDec * uCosLat * cos(hourAngle)) * uSkyRadius;
       float north = c * uCosLat - precessedCosDec * uSinLat * cos(hourAngle);
       float zPosition = -north * uSkyRadius;
+      float warp = uAtmosphereWarp * uCinematicStrength;
+      float shimmer = sin((x + zPosition) * 0.021 + uEffectClock * 0.73) +
+        cos((y - zPosition) * 0.017 - uEffectClock * 0.51);
+      x += shimmer * warp * 1.2;
+      y += sin(x * 0.015 + uEffectClock * 0.39) * warp * 0.62;
 
       float brightness = clamp(1.0 - (aMagnitude + 1.4) / 10.4, 0.035, 1.0);
       float thresholdFade = clamp((uMaxVisibleMagnitude - aMagnitude) / 0.8, 0.1, 1.0);
@@ -341,9 +382,9 @@ const char* starVertexShader() {
       vColor = vec3(
         clamp(intensity * aColor.r, 0.0, 1.0),
         clamp(intensity * aColor.g, 0.0, 1.0),
-        clamp(intensity * (aColor.b + uCinematicStrength * 0.16), 0.0, 1.0)
+        clamp(intensity * (aColor.b + uCinematicStrength * (0.16 + uLayerBlueShift)), 0.0, 1.0)
       );
-      vAlpha = visible;
+      vAlpha = visible * uLayerAlpha;
 
       vec4 viewPosition = uView * vec4(x, y, zPosition, 1.0);
       float starSize = (2.4 + sqrt(brightness) * 7.8 + uCinematicStrength * 5.5) * uStarSizeScale;
@@ -370,8 +411,8 @@ const char* starFragmentShader() {
       if (dist > 0.5) {
         discard;
       }
-      float alpha = smoothstep(0.5, 0.08, dist);
-      fragColor = vec4(vColor, alpha);
+      float alpha = 1.0 - smoothstep(0.08, 0.5, dist);
+      fragColor = vec4(vColor, alpha * vAlpha);
     }
   )GLSL";
 }
@@ -697,6 +738,82 @@ float maxMagnitudeForSpeed(double cinematicStrength, float faintMagnitudeLimit, 
   return faintMagnitudeLimit - static_cast<float>(std::pow(speed, 0.62)) * (faintMagnitudeLimit - brightMagnitudeLimit);
 }
 
+ZoetropeState makeZoetropeState(const AppState& app) {
+  ZoetropeState state{app.animation.currentYear, app.animation.currentYear, 0.0f, 0.0f};
+  if (!app.gui.zoetropeSampling || !app.animation.active || app.animation.paused) {
+    return state;
+  }
+
+  const double totalTravel = std::abs(app.animation.targetYear - app.animation.startYear);
+  const double interval = std::max(1.0, static_cast<double>(app.gui.zoetropeIntervalYears));
+  if (totalTravel <= interval * 0.25) {
+    return state;
+  }
+
+  const double direction = app.animation.targetYear >= app.animation.startYear ? 1.0 : -1.0;
+  const double travelled = clamp(std::abs(app.animation.currentYear - app.animation.startYear), 0.0, totalTravel);
+  const double stepIndex = std::floor(travelled / interval);
+  const double stepStart = std::min(stepIndex * interval, totalTravel);
+  const double stepEnd = std::min(stepStart + interval, totalTravel);
+  const double stepSize = std::max(0.001, stepEnd - stepStart);
+  const double local = clamp((travelled - stepStart) / stepSize, 0.0, 1.0);
+  const double blendPortion = clamp(static_cast<double>(app.gui.zoetropeBlendPortion), 0.02, 0.75);
+  const double blendStart = 1.0 - blendPortion;
+  const double blend = smoothStep01((local - blendStart) / blendPortion);
+
+  state.primaryYear = app.animation.startYear + direction * stepStart;
+  state.secondaryYear = app.animation.startYear + direction * stepEnd;
+  state.secondaryAlpha = static_cast<float>(blend);
+  state.lockPulse = static_cast<float>((1.0 - blend) * (1.0 - smoothStep01(local / std::max(0.001, blendStart))));
+  return state;
+}
+
+ProjectionUniforms projectionForLayer(double year, const Location& location, float siderealOffset, float precessionOffset) {
+  ProjectionUniforms projection = makeProjectionUniforms(year, location);
+  projection.localSiderealTime += siderealOffset;
+  projection.zeta += precessionOffset;
+  projection.z += precessionOffset * 0.72f;
+  return projection;
+}
+
+void drawStarPass(
+  const GlProgram& program,
+  GLuint vao,
+  std::size_t starCount,
+  const Mat4& viewMatrix,
+  const Mat4& projectionMatrix,
+  const ProjectionUniforms& projection,
+  float maxVisibleMagnitude,
+  float cinematicStrength,
+  float starSizeScale,
+  float layerAlpha,
+  float layerBlueShift,
+  float atmosphereWarp,
+  float effectClock
+) {
+  glUseProgram(program.id);
+  glUniformMatrix4fv(glGetUniformLocation(program.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
+  glUniformMatrix4fv(glGetUniformLocation(program.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
+  glUniform1f(glGetUniformLocation(program.id, "uYearsSinceCatalog"), projection.yearsSinceCatalog);
+  glUniform1f(glGetUniformLocation(program.id, "uZeta"), projection.zeta);
+  glUniform1f(glGetUniformLocation(program.id, "uZ"), projection.z);
+  glUniform1f(glGetUniformLocation(program.id, "uCosTheta"), projection.cosTheta);
+  glUniform1f(glGetUniformLocation(program.id, "uSinTheta"), projection.sinTheta);
+  glUniform1f(glGetUniformLocation(program.id, "uLocalSiderealTime"), projection.localSiderealTime);
+  glUniform1f(glGetUniformLocation(program.id, "uSinLat"), projection.sinLatitude);
+  glUniform1f(glGetUniformLocation(program.id, "uCosLat"), projection.cosLatitude);
+  glUniform1f(glGetUniformLocation(program.id, "uSkyRadius"), kSkyRadius);
+  glUniform1f(glGetUniformLocation(program.id, "uMaxVisibleMagnitude"), maxVisibleMagnitude);
+  glUniform1f(glGetUniformLocation(program.id, "uCinematicStrength"), cinematicStrength);
+  glUniform1f(glGetUniformLocation(program.id, "uStarSizeScale"), starSizeScale);
+  glUniform1f(glGetUniformLocation(program.id, "uLayerAlpha"), layerAlpha);
+  glUniform1f(glGetUniformLocation(program.id, "uLayerBlueShift"), layerBlueShift);
+  glUniform1f(glGetUniformLocation(program.id, "uAtmosphereWarp"), atmosphereWarp);
+  glUniform1f(glGetUniformLocation(program.id, "uEffectClock"), effectClock);
+  glBindVertexArray(vao);
+  glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(starCount));
+}
+
 void keyCallback(GLFWwindow* window, int key, int, int action, int) {
   ImGui_ImplGlfw_KeyCallback(window, key, 0, action, 0);
   if (action != GLFW_PRESS) {
@@ -708,6 +825,10 @@ void keyCallback(GLFWwindow* window, int key, int, int action, int) {
     app->gui.showControls = !app->gui.showControls;
     return;
   }
+  if (key == GLFW_KEY_F2) {
+    app->timePlayer.showWindow = !app->timePlayer.showWindow;
+    return;
+  }
   if (key == GLFW_KEY_ESCAPE) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
     return;
@@ -716,16 +837,19 @@ void keyCallback(GLFWwindow* window, int key, int, int action, int) {
     return;
   }
   if (key == GLFW_KEY_R) {
+    app->visibleProgram = VisibleProgram::CinematicRewind;
     restartAnimation(*app, glfwGetTime());
     return;
   }
   if (key == GLFW_KEY_SPACE) {
     const double now = glfwGetTime();
     if (!app->animation.active) {
+      app->visibleProgram = VisibleProgram::CinematicRewind;
       restartAnimation(*app, now);
       return;
     }
     if (app->animation.paused) {
+      app->visibleProgram = VisibleProgram::CinematicRewind;
       app->animation.pausedDuration += now - app->animation.pausedAt;
       app->animation.paused = false;
     } else {
@@ -876,6 +1000,99 @@ void drawCurvePreview(const AppState& app) {
   );
 }
 
+const char* visibleProgramName(VisibleProgram program) {
+  return program == VisibleProgram::TimePlayer ? "time player" : "cinematic rewind";
+}
+
+void setTimePlayerDirection(AppState& app, double direction) {
+  app.timePlayer.rateDirection = direction;
+  syncTimePlayerSpeed(app.timePlayer);
+  app.visibleProgram = VisibleProgram::TimePlayer;
+}
+
+void drawTimePlayerControls(AppState& app) {
+  if (!app.timePlayer.showWindow) {
+    return;
+  }
+
+  ImGui::SetNextWindowSize(ImVec2(370.0f, 0.0f), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowPos(ImVec2(410.0f, 28.0f), ImGuiCond_FirstUseEver);
+  ImGui::Begin("Starfield Time Player", &app.timePlayer.showWindow);
+  ImGui::Text("Simple starfield playback");
+  ImGui::TextDisabled("No zoetrope, no layered effect. Just sky time moving.");
+  ImGui::Separator();
+
+  if (ImGui::Button(app.timePlayer.playing ? "Pause" : "Play")) {
+    app.timePlayer.playing = !app.timePlayer.playing;
+    if (app.timePlayer.playing) {
+      if (app.timePlayer.rateDirection == 0.0) {
+        app.timePlayer.rateDirection = -1.0;
+      }
+      syncTimePlayerSpeed(app.timePlayer);
+      app.visibleProgram = VisibleProgram::TimePlayer;
+    }
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("Use visible sky")) {
+    app.visibleProgram = VisibleProgram::TimePlayer;
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("Reset 2022")) {
+    app.timePlayer.currentYear = kInitialYear;
+    app.visibleProgram = VisibleProgram::TimePlayer;
+  }
+
+  syncTimePlayerSpeed(app.timePlayer);
+  const std::string currentYear = formatDecimalYear(app.timePlayer.currentYear);
+  const std::string currentRate = formatTimeRate(app.timePlayer.speedSecondsPerSecond);
+  const std::string sampledRate = formatYearRate(app.timePlayer.sampledYearsPerSecond);
+  ImGui::Text("Current: %s | sampled %s", currentYear.c_str(), sampledRate.c_str());
+  ImGui::Text("Target rate: %s", currentRate.c_str());
+  ImGui::Text("Visible sky: %s", visibleProgramName(app.visibleProgram));
+  if (app.timePlayer.playing) {
+    ImGui::Text("Decimal year: %.6f", app.timePlayer.currentYear);
+  } else {
+    ImGui::InputDouble("Set decimal year", &app.timePlayer.currentYear, 1.0, 100.0, "%.6f");
+    sanitizeTimePlayer(app.timePlayer);
+  }
+
+  ImGui::Separator();
+  ImGui::Text("Custom rate per real second");
+  bool customChanged = false;
+  customChanged |= ImGui::InputDouble("Years", &app.timePlayer.customYearsPerSecond, 0.1, 1.0, "%.3f");
+  customChanged |= ImGui::InputDouble("Days", &app.timePlayer.customDaysPerSecond, 1.0, 10.0, "%.3f");
+  customChanged |= ImGui::InputDouble("Hours", &app.timePlayer.customHoursPerSecond, 1.0, 10.0, "%.3f");
+  customChanged |= ImGui::InputDouble("Minutes", &app.timePlayer.customMinutesPerSecond, 1.0, 10.0, "%.3f");
+  customChanged |= ImGui::InputDouble("Seconds", &app.timePlayer.customSecondsPerSecond, 1.0, 10.0, "%.3f");
+  if (customChanged) {
+    syncTimePlayerSpeed(app.timePlayer);
+  }
+  const double customRate = customTimePlayerRateSeconds(app.timePlayer);
+  const std::string customRateLabel = formatTimeRate(customRate);
+  const std::string customMagnitude = customRateLabel.size() > 2 ? customRateLabel.substr(2) : customRateLabel;
+  ImGui::Text("Custom magnitude: %s", customMagnitude.c_str());
+  if (ImGui::Button("Apply backward", ImVec2(112.0f, 0.0f))) {
+    setTimePlayerDirection(app, -1.0);
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("Apply forward", ImVec2(112.0f, 0.0f))) {
+    setTimePlayerDirection(app, 1.0);
+  }
+  if (ImGui::Button("Stop rate", ImVec2(229.0f, 0.0f))) {
+    setTimePlayerDirection(app, 0.0);
+    app.timePlayer.playing = false;
+  }
+
+  ImGui::Separator();
+  ImGui::Text("Shared observer");
+  if (ImGui::SliderFloat("Latitude##time-player", &app.gui.latitudeDegrees, -90.0f, 90.0f, "%.4f") ||
+      ImGui::SliderFloat("Longitude##time-player", &app.gui.longitudeDegrees, -180.0f, 180.0f, "%.4f")) {
+    applyGuiSettings(app);
+  }
+  ImGui::TextDisabled("F1 toggles the old window. This window stays separate.");
+  ImGui::End();
+}
+
 void drawControls(AppState& app, double fps, std::size_t starCount) {
   if (!app.gui.showControls) {
     return;
@@ -892,11 +1109,14 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::Separator();
 
   ImGui::Text("Transport");
+  ImGui::TextDisabled("Cairo reference preset: 2022 CE -> near 1 BCE.");
   if (ImGui::Button(app.animation.paused || !app.animation.active ? "Play" : "Pause")) {
     const double now = glfwGetTime();
     if (!app.animation.active) {
+      app.visibleProgram = VisibleProgram::CinematicRewind;
       restartAnimation(app, now);
     } else if (app.animation.paused) {
+      app.visibleProgram = VisibleProgram::CinematicRewind;
       app.animation.pausedDuration += now - app.animation.pausedAt;
       app.animation.paused = false;
     } else {
@@ -906,9 +1126,15 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   }
   ImGui::SameLine();
   if (ImGui::Button("Restart")) {
+    app.visibleProgram = VisibleProgram::CinematicRewind;
     restartAnimation(app, glfwGetTime());
   }
+  ImGui::SameLine();
+  if (ImGui::Button("Use visible sky")) {
+    app.visibleProgram = VisibleProgram::CinematicRewind;
+  }
   ImGui::Text("Current year: %.2f", app.animation.currentYear);
+  ImGui::Text("Visible sky: %s", visibleProgramName(app.visibleProgram));
 
   ImGui::Separator();
   bool restartRecommended = false;
@@ -941,7 +1167,7 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   if (ImGui::SliderFloat("Faint mag limit", &app.gui.faintMagnitudeLimit, 4.0f, 12.5f, "%.1f")) {
     app.gui.faintMagnitudeLimit = std::max(app.gui.faintMagnitudeLimit, app.gui.brightMagnitudeLimit + 0.1f);
   }
-  if (ImGui::SliderFloat("Fast bright limit", &app.gui.brightMagnitudeLimit, -1.5f, 5.0f, "%.1f")) {
+  if (ImGui::SliderFloat("Fast bright limit", &app.gui.brightMagnitudeLimit, -1.5f, 8.0f, "%.1f")) {
     app.gui.brightMagnitudeLimit = std::min(app.gui.brightMagnitudeLimit, app.gui.faintMagnitudeLimit - 0.1f);
   }
   ImGui::SliderFloat("Star size", &app.gui.starSizeScale, 0.25f, 3.0f, "%.2f");
@@ -949,6 +1175,16 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::SliderFloat("Streak threshold", &app.gui.streakThreshold, 0.02f, 0.8f, "%.2f");
   ImGui::SliderFloat("Streak length", &app.gui.streakLengthYears, 0.03f, 1.2f, "%.2f sky yr");
   ImGui::SliderFloat("Streak width", &app.gui.streakWidthPixels, 0.8f, 8.0f, "%.1f px");
+  ImGui::Checkbox("Zoetrope sampling", &app.gui.zoetropeSampling);
+  ImGui::SliderFloat("Zoetrope interval", &app.gui.zoetropeIntervalYears, 120.0f, 1400.0f, "%.0f yr");
+  ImGui::SliderFloat("Zoetrope blend", &app.gui.zoetropeBlendPortion, 0.04f, 0.65f, "%.2f");
+  ImGui::Checkbox("Three sky layers", &app.gui.layeredSky);
+  ImGui::SliderFloat("Layer separation", &app.gui.layerSeparation, 0.0f, 1.0f, "%.2f");
+  ImGui::SliderFloat("Atmosphere warp", &app.gui.atmosphereWarp, 0.0f, 1.0f, "%.2f");
+  ImGui::Checkbox("Moon element", &app.gui.showMoon);
+  ImGui::SliderFloat("Moon size", &app.gui.moonSizePixels, 24.0f, 160.0f, "%.0f px");
+  ImGui::SliderFloat("Moon halo", &app.gui.moonHalo, 0.0f, 1.5f, "%.2f");
+  ImGui::SliderFloat("Moon analemma", &app.gui.moonAnalemma, 0.0f, 1.4f, "%.2f");
   ImGui::Checkbox("Horizon guide", &app.gui.showHorizon);
   ImGui::SliderFloat("Horizon opacity", &app.gui.horizonAlpha, 0.1f, 1.0f, "%.2f");
   if (ImGui::SliderFloat("FOV", &app.camera.fovRadians, 34.0f * static_cast<float>(kDegToRad), 92.0f * static_cast<float>(kDegToRad), "%.3f rad")) {
@@ -960,12 +1196,63 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::End();
 }
 
-std::string makeTitle(double fps, const AnimationState& animation, std::size_t starCount) {
+void drawCinematicOverlays(AppState& app, float cinematicStrength, const ZoetropeState& zoetrope, double now) {
+  ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+  const ImVec2 screen(static_cast<float>(app.framebufferWidth), static_cast<float>(app.framebufferHeight));
+  const float pulse = 0.5f + 0.5f * std::sin(static_cast<float>(now) * 5.2f);
+  const int tintAlpha = static_cast<int>(std::clamp(cinematicStrength * 30.0f + zoetrope.lockPulse * 16.0f, 0.0f, 46.0f));
+  if (tintAlpha > 0) {
+    drawList->AddRectFilled(ImVec2(0.0f, 0.0f), screen, IM_COL32(12, 34, 68, tintAlpha));
+  }
+
+  const float edgeAlpha = std::clamp(cinematicStrength * 0.34f + pulse * zoetrope.lockPulse * 0.24f, 0.0f, 0.56f);
+  if (edgeAlpha > 0.0f) {
+    const ImU32 edgeColor = IM_COL32(58, 154, 255, static_cast<int>(edgeAlpha * 140.0f));
+    drawList->AddRect(ImVec2(10.0f, 10.0f), ImVec2(screen.x - 10.0f, screen.y - 10.0f), edgeColor, 22.0f, 0, 18.0f);
+    drawList->AddRect(ImVec2(32.0f, 32.0f), ImVec2(screen.x - 32.0f, screen.y - 32.0f), edgeColor, 18.0f, 0, 10.0f);
+  }
+
+  if (!app.gui.showMoon) {
+    return;
+  }
+
+  const double moonCycle = 12.368266 * (zoetrope.primaryYear - 2000.0);
+  const double phase = moonCycle - std::floor(moonCycle);
+  const double yearPhase = zoetrope.primaryYear - std::floor(zoetrope.primaryYear);
+  const float analemmaScale = app.gui.moonAnalemma * (0.35f + cinematicStrength * 0.95f);
+  const ImVec2 base(screen.x * 0.72f, screen.y * 0.23f);
+  const ImVec2 moonCenter(
+    base.x + std::sin(static_cast<float>(yearPhase * kTau)) * 78.0f * analemmaScale,
+    base.y + std::sin(static_cast<float>(yearPhase * kTau * 2.0)) * 96.0f * analemmaScale
+  );
+  const float radius = app.gui.moonSizePixels * 0.5f;
+  const float halo = app.gui.moonHalo * (0.65f + cinematicStrength * 0.55f);
+
+  for (int i = 0; i < 18; ++i) {
+    const double sample = yearPhase + static_cast<double>(i) / 18.0;
+    const ImVec2 point(
+      base.x + std::sin(static_cast<float>(sample * kTau)) * 78.0f * analemmaScale,
+      base.y + std::sin(static_cast<float>(sample * kTau * 2.0)) * 96.0f * analemmaScale
+    );
+    drawList->AddCircleFilled(point, 1.4f + cinematicStrength * 1.5f, IM_COL32(122, 198, 255, static_cast<int>(28.0f * cinematicStrength)));
+  }
+
+  drawList->AddCircleFilled(moonCenter, radius * 3.5f * halo, IM_COL32(72, 136, 255, static_cast<int>(18.0f * halo)));
+  drawList->AddCircleFilled(moonCenter, radius * 2.2f * halo, IM_COL32(115, 178, 255, static_cast<int>(30.0f * halo)));
+  drawList->AddCircleFilled(moonCenter, radius, IM_COL32(229, 240, 255, 232));
+  const float cutoutOffset = std::cos(static_cast<float>(phase * kTau)) * radius * 0.58f;
+  drawList->AddCircleFilled(ImVec2(moonCenter.x + cutoutOffset, moonCenter.y), radius * 0.98f, IM_COL32(2, 7, 21, 224));
+  drawList->AddCircle(moonCenter, radius, IM_COL32(173, 226, 255, 190), 64, 1.6f);
+}
+
+std::string makeTitle(double fps, VisibleProgram program, double visibleYear, std::size_t starCount) {
   std::ostringstream title;
+  const std::string yearLabel = formatDecimalYear(visibleYear);
   title << "Sky Rewind C++ | "
         << std::fixed << std::setprecision(0) << fps << " FPS | "
-        << std::setprecision(1) << animation.currentYear << " CE | "
-        << starCount << " Hipparcos stars | Space play/pause | R restart";
+        << yearLabel << " | "
+        << visibleProgramName(program) << " | "
+        << starCount << " Hipparcos stars | Space old play | F2 time player";
   return title.str();
 }
 
@@ -1018,7 +1305,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   setMoonWindowIcon(window);
 
   AppState app;
-  restartAnimation(app, glfwGetTime());
+  applyGuiSettings(app);
   glfwSetWindowUserPointer(window, &app);
   glfwSetKeyCallback(window, keyCallback);
   glfwSetCursorPosCallback(window, cursorCallback);
@@ -1069,15 +1356,22 @@ int runWindow(const std::vector<StarVertex>& stars) {
     const double instantFps = 1.0 / delta;
     smoothedFps = smoothedFps == 0.0 ? instantFps : smoothedFps * 0.9 + instantFps * 0.1;
 
+    applyGuiSettings(app);
+    updateAnimation(app.animation, now, delta);
+    updateTimePlayer(app.timePlayer, delta);
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     drawControls(app, smoothedFps, stars.size());
+    drawTimePlayerControls(app);
 
     applyGuiSettings(app);
-    updateAnimation(app.animation, now, delta);
-    const ProjectionUniforms projection = makeProjectionUniforms(app.animation.currentYear, app.location);
-    const float cinematicStrength = static_cast<float>(app.animation.motionStrength);
+    const bool usingTimePlayer = app.visibleProgram == VisibleProgram::TimePlayer;
+    const ZoetropeState zoetrope = makeZoetropeState(app);
+    const double visibleYear = usingTimePlayer ? app.timePlayer.currentYear : zoetrope.primaryYear;
+    const ProjectionUniforms projection = projectionForLayer(visibleYear, app.location, 0.0f, 0.0f);
+    const float cinematicStrength = usingTimePlayer ? 0.0f : static_cast<float>(app.animation.motionStrength);
     const float maxVisibleMagnitude = maxMagnitudeForSpeed(
       cinematicStrength,
       app.gui.faintMagnitudeLimit,
@@ -1091,11 +1385,13 @@ int runWindow(const std::vector<StarVertex>& stars) {
       -std::cos(app.camera.pitch) * std::cos(app.camera.yaw),
     };
     const Mat4 viewMatrix = lookAt({0.0f, 0.0f, 0.0f}, direction, {0.0f, 1.0f, 0.0f});
+    const float effectClock = static_cast<float>(now + (app.animation.startYear - visibleYear) * 0.013);
 
     glClearColor(0.002f, 0.005f, 0.018f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    const bool streaksActive = app.gui.starStreaks &&
+    const bool streaksActive = !usingTimePlayer &&
+      app.gui.starStreaks &&
       cinematicStrength > app.gui.streakThreshold &&
       !app.camera.dragging &&
       app.animation.active &&
@@ -1104,7 +1400,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
       const double rawTailDeltaYears = -app.animation.speed * delta;
       const double maxTailDeltaYears = static_cast<double>(app.gui.streakLengthYears);
       const double tailDeltaYears = clamp(rawTailDeltaYears, -maxTailDeltaYears, maxTailDeltaYears);
-      const double tailYear = app.animation.currentYear + tailDeltaYears;
+      const double tailYear = zoetrope.primaryYear + tailDeltaYears;
       const ProjectionUniforms tailProjection = makeProjectionUniforms(tailYear, app.location);
       const float normalizedStreak = std::clamp(
         (cinematicStrength - app.gui.streakThreshold) / std::max(0.001f, 1.0f - app.gui.streakThreshold),
@@ -1147,23 +1443,97 @@ int runWindow(const std::vector<StarVertex>& stars) {
       glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(stars.size()));
     }
 
-    glUseProgram(starsProgram.id);
-    glUniformMatrix4fv(glGetUniformLocation(starsProgram.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
-    glUniformMatrix4fv(glGetUniformLocation(starsProgram.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uYearsSinceCatalog"), projection.yearsSinceCatalog);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uZeta"), projection.zeta);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uZ"), projection.z);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uCosTheta"), projection.cosTheta);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uSinTheta"), projection.sinTheta);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uLocalSiderealTime"), projection.localSiderealTime);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uSinLat"), projection.sinLatitude);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uCosLat"), projection.cosLatitude);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uSkyRadius"), kSkyRadius);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uMaxVisibleMagnitude"), maxVisibleMagnitude);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uCinematicStrength"), cinematicStrength);
-    glUniform1f(glGetUniformLocation(starsProgram.id, "uStarSizeScale"), app.gui.starSizeScale);
-    glBindVertexArray(vao);
-    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(stars.size()));
+    const auto drawSkyState = [&](double year, float alphaScale, float phaseOffset) {
+      const float cinematicLayer = cinematicStrength * app.gui.layerSeparation;
+      const float warp = app.gui.atmosphereWarp * (0.35f + cinematicStrength * 0.95f);
+      const ProjectionUniforms mainProjection = projectionForLayer(year, app.location, 0.0f, 0.0f);
+      drawStarPass(
+        starsProgram,
+        vao,
+        stars.size(),
+        viewMatrix,
+        projectionMatrix,
+        mainProjection,
+        maxVisibleMagnitude,
+        cinematicStrength,
+        app.gui.starSizeScale,
+        alphaScale,
+        0.04f,
+        warp,
+        effectClock + phaseOffset
+      );
+
+      if (!app.gui.layeredSky || cinematicLayer <= 0.001f) {
+        return;
+      }
+
+      const ProjectionUniforms diurnalProjection = projectionForLayer(
+        year + static_cast<double>(cinematicLayer) * 3.4,
+        app.location,
+        cinematicLayer * (0.54f + std::sin(effectClock * 0.29f + phaseOffset) * 0.08f),
+        cinematicLayer * 0.012f
+      );
+      drawStarPass(
+        starsProgram,
+        vao,
+        stars.size(),
+        viewMatrix,
+        projectionMatrix,
+        diurnalProjection,
+        maxVisibleMagnitude - 0.25f,
+        cinematicStrength,
+        app.gui.starSizeScale * 1.18f,
+        alphaScale * cinematicStrength * 0.32f,
+        0.22f,
+        warp * 1.3f,
+        effectClock * 1.17f + phaseOffset
+      );
+
+      const ProjectionUniforms driftProjection = projectionForLayer(
+        year - static_cast<double>(cinematicLayer) * 5.8,
+        app.location,
+        cinematicLayer * (-0.38f + std::cos(effectClock * 0.21f + phaseOffset) * 0.07f),
+        -cinematicLayer * 0.018f
+      );
+      drawStarPass(
+        starsProgram,
+        vao,
+        stars.size(),
+        viewMatrix,
+        projectionMatrix,
+        driftProjection,
+        maxVisibleMagnitude - 0.65f,
+        cinematicStrength,
+        app.gui.starSizeScale * 1.42f,
+        alphaScale * cinematicStrength * 0.22f,
+        0.34f,
+        warp * 1.55f,
+        effectClock * 0.83f + phaseOffset
+      );
+    };
+
+    if (usingTimePlayer) {
+      drawStarPass(
+        starsProgram,
+        vao,
+        stars.size(),
+        viewMatrix,
+        projectionMatrix,
+        projection,
+        app.gui.faintMagnitudeLimit,
+        0.0f,
+        app.gui.starSizeScale,
+        1.0f,
+        0.0f,
+        0.0f,
+        effectClock
+      );
+    } else {
+      drawSkyState(zoetrope.primaryYear, 0.9f * (1.0f - zoetrope.secondaryAlpha * 0.42f), 0.0f);
+      if (zoetrope.secondaryAlpha > 0.01f) {
+        drawSkyState(zoetrope.secondaryYear, 0.78f * zoetrope.secondaryAlpha, 3.7f);
+      }
+    }
 
     if (app.gui.showHorizon) {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1177,13 +1547,17 @@ int runWindow(const std::vector<StarVertex>& stars) {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     }
 
+    if (!usingTimePlayer) {
+      drawCinematicOverlays(app, cinematicStrength, zoetrope, now);
+    }
+
     ImGui::Render();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     if (now - lastTitleTime > 0.25) {
-      glfwSetWindowTitle(window, makeTitle(smoothedFps, app.animation, stars.size()).c_str());
+      glfwSetWindowTitle(window, makeTitle(smoothedFps, app.visibleProgram, visibleYear, stars.size()).c_str());
       lastTitleTime = now;
     }
 

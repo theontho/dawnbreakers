@@ -15,8 +15,8 @@ constexpr double kJ2000Year = 2000.0;
 constexpr double kHipparcosCatalogEpochYear = 1991.25;
 
 struct Location {
-  double latitudeRadians = 29.5918 * kDegToRad;
-  double longitudeRadians = 52.5837 * kDegToRad;
+  double latitudeRadians = 30.0444 * kDegToRad;
+  double longitudeRadians = 31.2357 * kDegToRad;
 };
 
 struct ProjectionUniforms {

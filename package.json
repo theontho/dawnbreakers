@@ -18,9 +18,9 @@
     "typecheck": "tsc --noEmit",
     "skyrewind:catalog": "node scripts/generate-hipparcos-catalog.mjs",
     "skyrewind:cpp:configure": "cmake -S native/skyrewind-cpp -B native/skyrewind-cpp/build",
-    "skyrewind:cpp:build": "cmake --build native/skyrewind-cpp/build",
-    "skyrewind:cpp:check": "npm run skyrewind:catalog && cmake --build native/skyrewind-cpp/build && native/skyrewind-cpp/build/skyrewind_cpp --check && native/skyrewind-cpp/build/skyrewind_cpp --shader-check",
-    "skyrewind:cpp:run": "npm run skyrewind:catalog && cmake --build native/skyrewind-cpp/build && native/skyrewind-cpp/build/skyrewind_cpp"
+    "skyrewind:cpp:build": "npm run skyrewind:cpp:configure && cmake --build native/skyrewind-cpp/build",
+    "skyrewind:cpp:check": "npm run skyrewind:catalog && npm run skyrewind:cpp:build && native/skyrewind-cpp/build/skyrewind_cpp --check && native/skyrewind-cpp/build/skyrewind_cpp --shader-check",
+    "skyrewind:cpp:run": "npm run skyrewind:catalog && npm run skyrewind:cpp:build && native/skyrewind-cpp/build/skyrewind_cpp"
   },
   "keywords": [],
   "author": "",

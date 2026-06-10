@@ -22,6 +22,24 @@ npm run lint:localization
 npm run build
 ```
 
+## Native Sky Rewind prototype
+
+The C++/OpenGL version renders the generated Hipparcos catalog in a native
+OpenGL window. It has two separate ImGui programs: the original cinematic rewind
+window, and a simpler Starfield Time Player window for moving the sky backward
+or forward with a custom year/day/hour/minute/second rate. Run it from the repo
+root:
+
+```bash
+npm run skyrewind:cpp:run
+```
+
+The first run generates `public/sky/hipparcos.csv` from the cached/downloaded
+CDS source data. Use `npm run skyrewind:cpp:check` to build, load the catalog,
+and compile the OpenGL shaders without opening the visible app window. In the
+native app, F1 toggles the old cinematic controls and F2 toggles the new time
+player.
+
 ## Controls
 
 - **Arrow keys / WASD** - walk
