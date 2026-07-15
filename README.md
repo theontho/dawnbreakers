@@ -43,7 +43,8 @@ apparent motion crosses the shutter threshold, producing camera-like trails in
 either playback mode. Adaptive intra-frame samples fill fast trails between
 frames, with adjustable trail spacing and a fixed performance cap. The moon is
 rendered in the OpenGL sky from an approximate lunar orbit, so it follows its
-own path rather than moving with the stellar catalog.
+own path rather than moving with the stellar catalog. Moon follow mode keeps
+the camera centered on it during playback; dragging the view exits follow mode.
 
 ## Controls
 

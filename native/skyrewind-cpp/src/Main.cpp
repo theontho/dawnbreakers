@@ -105,6 +105,7 @@ struct GuiState {
   bool zoetropeSampling = true;
   bool layeredSky = true;
   bool showMoon = true;
+  bool followMoon = false;
   bool longExposure = true;
   bool showHorizon = true;
   bool vsync = true;
@@ -507,6 +508,8 @@ const char* moonFragmentShader() {
     #version 410 core
 
     uniform float uAlpha;
+    uniform float uPhaseSin;
+    uniform float uPhaseCos;
 
     in vec2 gUv;
     out vec4 fragColor;
@@ -517,11 +520,17 @@ const char* moonFragmentShader() {
         discard;
       }
 
-      float core = 1.0 - smoothstep(0.18, 0.62, radius);
-      float halo = (1.0 - smoothstep(0.28, 1.0, radius)) * 0.32;
-      float intensity = core + halo;
-      vec3 color = mix(vec3(0.42, 0.67, 1.0), vec3(0.94, 0.98, 1.0), core);
-      fragColor = vec4(color * intensity, intensity * uAlpha);
+      float surfaceZ = sqrt(max(0.0, 1.0 - dot(gUv, gUv)));
+      vec3 surfaceNormal = vec3(gUv, surfaceZ);
+      vec3 lightDirection = normalize(vec3(uPhaseSin, 0.0, -uPhaseCos));
+      float light = dot(surfaceNormal, lightDirection);
+      float litMask = smoothstep(-0.018, 0.018, light);
+      float limb = 0.42 + 0.58 * sqrt(max(0.0, surfaceZ));
+      float lightFalloff = 0.5 + 0.5 * sqrt(max(0.0, light));
+      vec3 darkSide = vec3(0.0015, 0.003, 0.008);
+      vec3 litSide = vec3(0.86, 0.93, 1.0) * limb * lightFalloff;
+      float edgeAlpha = 1.0 - smoothstep(0.94, 1.0, radius);
+      fragColor = vec4(mix(darkSide, litSide, litMask), edgeAlpha * uAlpha);
     }
   )GLSL";
 }
@@ -704,13 +713,34 @@ ZoetropeState makeZoetropeState(const AppState& app) {
   return state;
 }
 
+void orientCameraTowardMoon(AppState& app, double visibleYear) {
+  const MoonState moon = moonState(visibleYear, app.location);
+  const float horizontalLength = std::hypot(moon.direction.east, moon.direction.north);
+  if (horizontalLength > 0.00001f) {
+    app.camera.yaw = std::atan2(moon.direction.east, moon.direction.north);
+  }
+  app.camera.pitch = std::asin(clampFloat(moon.direction.up, -1.0f, 1.0f));
+}
+
 void centerViewportOnMoon(AppState& app) {
   const double visibleYear = app.visibleProgram == VisibleProgram::TimePlayer
     ? app.timePlayer.currentYear
     : makeZoetropeState(app).primaryYear;
-  const SkyDirection moon = moonDirection(visibleYear, app.location);
-  app.camera.yaw = std::atan2(moon.east, moon.north);
-  app.camera.pitch = std::asin(clampFloat(moon.up, -1.0f, 1.0f));
+  orientCameraTowardMoon(app, visibleYear);
+}
+
+void drawMoonCameraControls(AppState& app, const char* id) {
+  ImGui::PushID(id);
+  ImGui::BeginDisabled(!app.gui.showMoon);
+  if (ImGui::Checkbox("Follow moon", &app.gui.followMoon) && app.gui.followMoon) {
+    centerViewportOnMoon(app);
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("Center moon")) {
+    centerViewportOnMoon(app);
+  }
+  ImGui::EndDisabled();
+  ImGui::PopID();
 }
 
 ProjectionUniforms projectionForLayer(double year, const Location& location, float siderealOffset, float precessionOffset) {
@@ -771,15 +801,15 @@ void drawMoonPass(
   float sizePixels,
   float alpha
 ) {
-  const SkyDirection moon = moonDirection(year, location);
+  const MoonState moon = moonState(year, location);
   glUseProgram(program.id);
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
   glUniform3f(
     glGetUniformLocation(program.id, "uMoonPosition"),
-    moon.east * kSkyRadius,
-    moon.up * kSkyRadius,
-    -moon.north * kSkyRadius
+    moon.direction.east * kSkyRadius,
+    moon.direction.up * kSkyRadius,
+    -moon.direction.north * kSkyRadius
   );
   glUniform2f(
     glGetUniformLocation(program.id, "uViewport"),
@@ -788,8 +818,12 @@ void drawMoonPass(
   );
   glUniform1f(glGetUniformLocation(program.id, "uSizePixels"), sizePixels);
   glUniform1f(glGetUniformLocation(program.id, "uAlpha"), alpha);
+  glUniform1f(glGetUniformLocation(program.id, "uPhaseSin"), moon.phaseSin);
+  glUniform1f(glGetUniformLocation(program.id, "uPhaseCos"), moon.phaseCos);
   glBindVertexArray(vao);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDrawArrays(GL_POINTS, 0, 1);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 }
 
 void keyCallback(GLFWwindow* window, int key, int, int action, int) {
@@ -862,6 +896,9 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int) {
   if (ImGui::GetIO().WantCaptureMouse) {
     app->camera.dragging = false;
     return;
+  }
+  if (action == GLFW_PRESS) {
+    app->gui.followMoon = false;
   }
   app->camera.dragging = action == GLFW_PRESS;
   glfwGetCursorPos(window, &app->camera.pointerX, &app->camera.pointerY);
@@ -1078,6 +1115,7 @@ void drawTimePlayerControls(AppState& app) {
     kMaximumFovDegrees,
     "%.0f deg"
   );
+  drawMoonCameraControls(app, "time-player-moon-camera");
   ImGui::TextDisabled("F1 toggles the old window. This window stays separate.");
   ImGui::End();
 }
@@ -1196,13 +1234,10 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::Checkbox("Three sky layers", &app.gui.layeredSky);
   ImGui::SliderFloat("Layer separation", &app.gui.layerSeparation, 0.0f, 1.0f, "%.2f");
   ImGui::SliderFloat("Atmosphere warp", &app.gui.atmosphereWarp, 0.0f, 1.0f, "%.2f");
-  ImGui::Checkbox("Moon element", &app.gui.showMoon);
-  ImGui::SameLine();
-  ImGui::BeginDisabled(!app.gui.showMoon);
-  if (ImGui::Button("Center moon")) {
-    centerViewportOnMoon(app);
+  if (ImGui::Checkbox("Moon element", &app.gui.showMoon) && !app.gui.showMoon) {
+    app.gui.followMoon = false;
   }
-  ImGui::EndDisabled();
+  drawMoonCameraControls(app, "cinematic-moon-camera");
   ImGui::SliderFloat("Moon size", &app.gui.moonSizePixels, 24.0f, 160.0f, "%.0f px");
   ImGui::Checkbox("Horizon guide", &app.gui.showHorizon);
   ImGui::SliderFloat("Horizon opacity", &app.gui.horizonAlpha, 0.1f, 1.0f, "%.2f");
@@ -1345,6 +1380,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   float previousCameraYaw = app.camera.yaw;
   float previousCameraPitch = app.camera.pitch;
   float previousCameraFov = app.camera.fovRadians;
+  bool previousFollowMoon = app.gui.followMoon;
   bool previousExposureProjectionValid = false;
 
   while (!glfwWindowShouldClose(window)) {
@@ -1371,6 +1407,9 @@ int runWindow(const std::vector<StarVertex>& stars) {
     const double visibleYear = usingTimePlayer ? app.timePlayer.currentYear : zoetrope.primaryYear;
     const ProjectionUniforms projection = projectionForLayer(visibleYear, app.location, 0.0f, 0.0f);
     const float cinematicStrength = usingTimePlayer ? 0.0f : static_cast<float>(app.animation.motionStrength);
+    if (app.gui.showMoon && app.gui.followMoon) {
+      orientCameraTowardMoon(app, visibleYear);
+    }
     const float maxVisibleMagnitude = maxMagnitudeForSpeed(
       cinematicStrength,
       app.gui.faintMagnitudeLimit,
@@ -1395,10 +1434,16 @@ int runWindow(const std::vector<StarVertex>& stars) {
       : app.animation.active && !app.animation.paused;
     const bool programChanged =
       previousExposureProjectionValid && previousExposureProgram != app.visibleProgram;
-    const bool cameraChanged =
+    const bool followModeChanged = previousFollowMoon != app.gui.followMoon;
+    const bool cameraOrientationChanged =
       std::abs(app.camera.yaw - previousCameraYaw) > 0.00001f ||
-      std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f ||
+      std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f;
+    const bool cameraFovChanged =
       std::abs(app.camera.fovRadians - previousCameraFov) > 0.00001f;
+    const bool cameraChanged =
+      followModeChanged ||
+      cameraFovChanged ||
+      (!app.gui.followMoon && cameraOrientationChanged);
     app.exposureMotionPixels = previousExposureProjectionValid && !programChanged
       ? estimateApparentMotionPixels(
           projection,
@@ -1457,6 +1502,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
     previousCameraYaw = app.camera.yaw;
     previousCameraPitch = app.camera.pitch;
     previousCameraFov = app.camera.fovRadians;
+    previousFollowMoon = app.gui.followMoon;
     previousExposureProjectionValid = true;
 
     beginLongExposureScene(exposureBuffer);
@@ -1612,21 +1658,6 @@ int runWindow(const std::vector<StarVertex>& stars) {
       }
     }
 
-    if (app.gui.showMoon) {
-      drawMoonPass(
-        moonProgram,
-        moonVao,
-        viewMatrix,
-        projectionMatrix,
-        visibleYear,
-        app.location,
-        app.framebufferWidth,
-        app.framebufferHeight,
-        app.gui.moonSizePixels,
-        1.0f
-      );
-    }
-
     if (app.gui.showHorizon) {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glLineWidth(2.5f);
@@ -1646,6 +1677,21 @@ int runWindow(const std::vector<StarVertex>& stars) {
       exposureStrength,
       resetExposureHistory
     );
+
+    if (app.gui.showMoon) {
+      drawMoonPass(
+        moonProgram,
+        moonVao,
+        viewMatrix,
+        projectionMatrix,
+        visibleYear,
+        app.location,
+        app.framebufferWidth,
+        app.framebufferHeight,
+        app.gui.moonSizePixels,
+        1.0f
+      );
+    }
 
     if (!usingTimePlayer) {
       drawCinematicOverlays(cinematicStrength, zoetrope);

@@ -25,6 +25,11 @@ struct SkyDirection {
   float north = 0.0f;
 };
 
+struct MoonState {
+  SkyDirection direction;
+  SkyDirection sunDirection;
+};
+
 struct ProjectionUniforms {
   float yearsSinceCatalog = 0.0f;
   float zeta = 0.0f;
@@ -49,6 +54,6 @@ double greenwichMeanSiderealTime(double decimalYear);
 double cinematicInertiaEase(double value, const TimeCurve& curve);
 double normalizedMotionStrength(double speed, double startYear, double targetYear, double durationSeconds);
 ProjectionUniforms makeProjectionUniforms(double decimalYear, const Location& location);
-SkyDirection moonDirection(double decimalYear, const Location& location);
+MoonState moonState(double decimalYear, const Location& location);
 
 } // namespace skyrewind

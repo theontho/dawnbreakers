@@ -107,7 +107,7 @@ ProjectionUniforms makeProjectionUniforms(double decimalYear, const Location& lo
   };
 }
 
-SkyDirection moonDirection(double decimalYear, const Location& location) {
+MoonState moonState(double decimalYear, const Location& location) {
   const double daysSinceJ2000 = julianDayFromDecimalYear(decimalYear) - kJ2000JulianDay;
   const double ascendingNode = degreesToWrappedRadians(125.1228 - 0.0529538083 * daysSinceJ2000);
   const double inclination = 5.1454 * kDegToRad;
@@ -177,23 +177,44 @@ SkyDirection moonDirection(double decimalYear, const Location& location) {
   const double equatorialZ = eclipticY * std::sin(obliquity) + eclipticZ * std::cos(obliquity);
   const double rightAscension = std::atan2(equatorialY, equatorialX);
   const double declination = std::asin(clamp(equatorialZ, -1.0, 1.0));
-  const double hourAngle =
-    greenwichMeanSiderealTime(decimalYear) + location.longitudeRadians - rightAscension;
-  const double cosDeclination = std::cos(declination);
-  const double sinDeclination = std::sin(declination);
+  const double localSiderealTime =
+    greenwichMeanSiderealTime(decimalYear) + location.longitudeRadians;
   const double sinLatitude = std::sin(location.latitudeRadians);
   const double cosLatitude = std::cos(location.latitudeRadians);
 
+  const double solarTrueLongitude = wrapRadians(
+    solarMeanLongitude +
+    (
+      1.915 * std::sin(solarMeanAnomaly) +
+      0.020 * std::sin(2.0 * solarMeanAnomaly)
+    ) * kDegToRad
+  );
+  const double solarEquatorialX = std::cos(solarTrueLongitude);
+  const double solarEquatorialY = std::sin(solarTrueLongitude) * std::cos(obliquity);
+  const double solarEquatorialZ = std::sin(solarTrueLongitude) * std::sin(obliquity);
+  const double solarRightAscension = std::atan2(solarEquatorialY, solarEquatorialX);
+  const double solarDeclination = std::asin(clamp(solarEquatorialZ, -1.0, 1.0));
+
+  const auto localDirection = [&](double ra, double dec) {
+    const double hourAngle = localSiderealTime - ra;
+    const double cosDeclination = std::cos(dec);
+    const double sinDeclination = std::sin(dec);
+    return SkyDirection{
+      static_cast<float>(-cosDeclination * std::sin(hourAngle)),
+      static_cast<float>(
+        sinDeclination * sinLatitude +
+        cosDeclination * cosLatitude * std::cos(hourAngle)
+      ),
+      static_cast<float>(
+        sinDeclination * cosLatitude -
+        cosDeclination * sinLatitude * std::cos(hourAngle)
+      ),
+    };
+  };
+
   return {
-    static_cast<float>(-cosDeclination * std::sin(hourAngle)),
-    static_cast<float>(
-      sinDeclination * sinLatitude +
-      cosDeclination * cosLatitude * std::cos(hourAngle)
-    ),
-    static_cast<float>(
-      sinDeclination * cosLatitude -
-      cosDeclination * sinLatitude * std::cos(hourAngle)
-    ),
+    localDirection(rightAscension, declination),
+    localDirection(solarRightAscension, solarDeclination),
   };
 }
 
