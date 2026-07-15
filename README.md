@@ -31,7 +31,7 @@ or forward with a custom year/day/hour/minute/second rate. Run it from the repo
 root:
 
 ```bash
-npm run skyrewind:cpp:run
+npm run dev:starfield
 ```
 
 The first run generates `public/sky/hipparcos.csv` from the cached/downloaded
@@ -41,7 +41,9 @@ native app, F1 toggles the old cinematic controls and F2 toggles the new time
 player. The shared long-exposure controls accumulate recent sky frames once
 apparent motion crosses the shutter threshold, producing camera-like trails in
 either playback mode. Adaptive intra-frame samples fill fast trails between
-frames, with adjustable trail spacing and a fixed performance cap.
+frames, with adjustable trail spacing and a fixed performance cap. The moon is
+rendered in the OpenGL sky from an approximate lunar orbit, so it follows its
+own path rather than moving with the stellar catalog.
 
 ## Controls
 

@@ -19,6 +19,12 @@ struct Location {
   double longitudeRadians = 31.2357 * kDegToRad;
 };
 
+struct SkyDirection {
+  float east = 0.0f;
+  float up = 0.0f;
+  float north = 0.0f;
+};
+
 struct ProjectionUniforms {
   float yearsSinceCatalog = 0.0f;
   float zeta = 0.0f;
@@ -43,5 +49,6 @@ double greenwichMeanSiderealTime(double decimalYear);
 double cinematicInertiaEase(double value, const TimeCurve& curve);
 double normalizedMotionStrength(double speed, double startYear, double targetYear, double durationSeconds);
 ProjectionUniforms makeProjectionUniforms(double decimalYear, const Location& location);
+SkyDirection moonDirection(double decimalYear, const Location& location);
 
 } // namespace skyrewind

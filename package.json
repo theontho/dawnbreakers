@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "vite --host 0.0.0.0 --port 5173 --strictPort",
+    "dev:starfield": "npm run skyrewind:cpp:run",
     "build": "tsc --noEmit && vite build",
     "demo:build": "tsc --noEmit && vite build --outDir dist-demo",
     "demo:serve": "vite preview --host 0.0.0.0 --port 4173 --strictPort --outDir dist-demo",

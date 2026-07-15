@@ -3,6 +3,13 @@
 #include <algorithm>
 
 namespace skyrewind {
+namespace {
+
+double degreesToWrappedRadians(double degrees) {
+  return wrapRadians(degrees * kDegToRad);
+}
+
+} // namespace
 
 double clamp(double value, double minValue, double maxValue) {
   return std::max(minValue, std::min(maxValue, value));
@@ -97,6 +104,96 @@ ProjectionUniforms makeProjectionUniforms(double decimalYear, const Location& lo
     static_cast<float>(greenwichMeanSiderealTime(decimalYear) + location.longitudeRadians),
     static_cast<float>(std::sin(location.latitudeRadians)),
     static_cast<float>(std::cos(location.latitudeRadians)),
+  };
+}
+
+SkyDirection moonDirection(double decimalYear, const Location& location) {
+  const double daysSinceJ2000 = julianDayFromDecimalYear(decimalYear) - kJ2000JulianDay;
+  const double ascendingNode = degreesToWrappedRadians(125.1228 - 0.0529538083 * daysSinceJ2000);
+  const double inclination = 5.1454 * kDegToRad;
+  const double argumentOfPerigee =
+    degreesToWrappedRadians(318.0634 + 0.1643573223 * daysSinceJ2000);
+  const double meanAnomaly =
+    degreesToWrappedRadians(115.3654 + 13.0649929509 * daysSinceJ2000);
+  constexpr double eccentricity = 0.0549;
+
+  const double eccentricAnomaly =
+    meanAnomaly +
+    eccentricity * std::sin(meanAnomaly) * (1.0 + eccentricity * std::cos(meanAnomaly));
+  const double orbitalX = std::cos(eccentricAnomaly) - eccentricity;
+  const double orbitalY = std::sqrt(1.0 - eccentricity * eccentricity) * std::sin(eccentricAnomaly);
+  const double trueAnomaly = std::atan2(orbitalY, orbitalX);
+  const double orbitalArgumentOfLatitude = wrapRadians(trueAnomaly + argumentOfPerigee);
+  const double baseEclipticLongitude = wrapRadians(
+    ascendingNode +
+    std::atan2(
+      std::sin(orbitalArgumentOfLatitude) * std::cos(inclination),
+      std::cos(orbitalArgumentOfLatitude)
+    )
+  );
+
+  const double meanLongitude = wrapRadians(ascendingNode + argumentOfPerigee + meanAnomaly);
+  const double solarMeanAnomaly =
+    degreesToWrappedRadians(356.0470 + 0.9856002585 * daysSinceJ2000);
+  const double solarPerihelion =
+    degreesToWrappedRadians(282.9404 + 0.0000470935 * daysSinceJ2000);
+  const double solarMeanLongitude = wrapRadians(solarMeanAnomaly + solarPerihelion);
+  const double elongation = wrapRadians(meanLongitude - solarMeanLongitude);
+  const double argumentOfLatitude = wrapRadians(meanLongitude - ascendingNode);
+
+  const double longitudeCorrectionDegrees =
+    -1.274 * std::sin(meanAnomaly - 2.0 * elongation) +
+    0.658 * std::sin(2.0 * elongation) -
+    0.186 * std::sin(solarMeanAnomaly) -
+    0.059 * std::sin(2.0 * meanAnomaly - 2.0 * elongation) -
+    0.057 * std::sin(meanAnomaly - 2.0 * elongation + solarMeanAnomaly) +
+    0.053 * std::sin(meanAnomaly + 2.0 * elongation) +
+    0.046 * std::sin(2.0 * elongation - solarMeanAnomaly) +
+    0.041 * std::sin(meanAnomaly - solarMeanAnomaly) -
+    0.035 * std::sin(elongation) -
+    0.031 * std::sin(meanAnomaly + solarMeanAnomaly) -
+    0.015 * std::sin(2.0 * argumentOfLatitude - 2.0 * elongation) +
+    0.011 * std::sin(meanAnomaly - 4.0 * elongation);
+  const double latitudeCorrectionDegrees =
+    -0.173 * std::sin(argumentOfLatitude - 2.0 * elongation) -
+    0.055 * std::sin(meanAnomaly - argumentOfLatitude - 2.0 * elongation) -
+    0.046 * std::sin(meanAnomaly + argumentOfLatitude - 2.0 * elongation) +
+    0.033 * std::sin(argumentOfLatitude + 2.0 * elongation) +
+    0.017 * std::sin(2.0 * meanAnomaly + argumentOfLatitude);
+
+  const double eclipticLongitude =
+    wrapRadians(baseEclipticLongitude + longitudeCorrectionDegrees * kDegToRad);
+  const double eclipticLatitude =
+    std::asin(std::sin(orbitalArgumentOfLatitude) * std::sin(inclination)) +
+    latitudeCorrectionDegrees * kDegToRad;
+  const double obliquity =
+    (23.4393 - 0.0000003563 * daysSinceJ2000) * kDegToRad;
+
+  const double eclipticX = std::cos(eclipticLongitude) * std::cos(eclipticLatitude);
+  const double eclipticY = std::sin(eclipticLongitude) * std::cos(eclipticLatitude);
+  const double eclipticZ = std::sin(eclipticLatitude);
+  const double equatorialX = eclipticX;
+  const double equatorialY = eclipticY * std::cos(obliquity) - eclipticZ * std::sin(obliquity);
+  const double equatorialZ = eclipticY * std::sin(obliquity) + eclipticZ * std::cos(obliquity);
+  const double rightAscension = std::atan2(equatorialY, equatorialX);
+  const double declination = std::asin(clamp(equatorialZ, -1.0, 1.0));
+  const double hourAngle =
+    greenwichMeanSiderealTime(decimalYear) + location.longitudeRadians - rightAscension;
+  const double cosDeclination = std::cos(declination);
+  const double sinDeclination = std::sin(declination);
+  const double sinLatitude = std::sin(location.latitudeRadians);
+  const double cosLatitude = std::cos(location.latitudeRadians);
+
+  return {
+    static_cast<float>(-cosDeclination * std::sin(hourAngle)),
+    static_cast<float>(
+      sinDeclination * sinLatitude +
+      cosDeclination * cosLatitude * std::cos(hourAngle)
+    ),
+    static_cast<float>(
+      sinDeclination * cosLatitude -
+      cosDeclination * sinLatitude * std::cos(hourAngle)
+    ),
   };
 }
 

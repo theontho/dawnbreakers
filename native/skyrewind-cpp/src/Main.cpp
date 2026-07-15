@@ -43,6 +43,8 @@ constexpr double kDefaultLatitudeDegrees = 30.0444;
 constexpr double kDefaultLongitudeDegrees = 31.2357;
 constexpr double kSiderealRadiansPerYear = 360.98564736629 * 365.2425 * kDegToRad;
 constexpr int kMaxExposureSamples = 48;
+constexpr float kMinimumFovDegrees = 34.0f;
+constexpr float kMaximumFovDegrees = 165.0f;
 
 struct Vec3 {
   float x = 0.0f;
@@ -100,8 +102,6 @@ struct GuiState {
   float layerSeparation = 0.42f;
   float atmosphereWarp = 0.26f;
   float moonSizePixels = 82.0f;
-  float moonHalo = 0.86f;
-  float moonAnalemma = 0.52f;
   bool zoetropeSampling = true;
   bool layeredSky = true;
   bool showMoon = true;
@@ -454,6 +454,78 @@ const char* starFragmentShader() {
   )GLSL";
 }
 
+const char* moonVertexShader() {
+  return R"GLSL(
+    #version 410 core
+
+    uniform mat4 uView;
+    uniform mat4 uProjection;
+    uniform vec3 uMoonPosition;
+
+    void main() {
+      gl_Position = uProjection * uView * vec4(uMoonPosition, 1.0);
+    }
+  )GLSL";
+}
+
+const char* moonGeometryShader() {
+  return R"GLSL(
+    #version 410 core
+
+    layout(points) in;
+    layout(triangle_strip, max_vertices = 4) out;
+
+    uniform vec2 uViewport;
+    uniform float uSizePixels;
+
+    out vec2 gUv;
+
+    void emitMoonVertex(vec4 center, vec2 offset, vec2 uv) {
+      gUv = uv;
+      gl_Position = vec4(center.xy + offset * center.w, center.zw);
+      EmitVertex();
+    }
+
+    void main() {
+      vec4 center = gl_in[0].gl_Position;
+      if (center.w <= 0.0) {
+        return;
+      }
+
+      vec2 halfSizeNdc = vec2(uSizePixels) / uViewport;
+      emitMoonVertex(center, vec2(-halfSizeNdc.x, -halfSizeNdc.y), vec2(-1.0, -1.0));
+      emitMoonVertex(center, vec2(halfSizeNdc.x, -halfSizeNdc.y), vec2(1.0, -1.0));
+      emitMoonVertex(center, vec2(-halfSizeNdc.x, halfSizeNdc.y), vec2(-1.0, 1.0));
+      emitMoonVertex(center, vec2(halfSizeNdc.x, halfSizeNdc.y), vec2(1.0, 1.0));
+      EndPrimitive();
+    }
+  )GLSL";
+}
+
+const char* moonFragmentShader() {
+  return R"GLSL(
+    #version 410 core
+
+    uniform float uAlpha;
+
+    in vec2 gUv;
+    out vec4 fragColor;
+
+    void main() {
+      float radius = length(gUv);
+      if (radius > 1.0) {
+        discard;
+      }
+
+      float core = 1.0 - smoothstep(0.18, 0.62, radius);
+      float halo = (1.0 - smoothstep(0.28, 1.0, radius)) * 0.32;
+      float intensity = core + halo;
+      vec3 color = mix(vec3(0.42, 0.67, 1.0), vec3(0.94, 0.98, 1.0), core);
+      fragColor = vec4(color * intensity, intensity * uAlpha);
+    }
+  )GLSL";
+}
+
 const char* guideVertexShader() {
   return R"GLSL(
     #version 410 core
@@ -632,6 +704,15 @@ ZoetropeState makeZoetropeState(const AppState& app) {
   return state;
 }
 
+void centerViewportOnMoon(AppState& app) {
+  const double visibleYear = app.visibleProgram == VisibleProgram::TimePlayer
+    ? app.timePlayer.currentYear
+    : makeZoetropeState(app).primaryYear;
+  const SkyDirection moon = moonDirection(visibleYear, app.location);
+  app.camera.yaw = std::atan2(moon.east, moon.north);
+  app.camera.pitch = std::asin(clampFloat(moon.up, -1.0f, 1.0f));
+}
+
 ProjectionUniforms projectionForLayer(double year, const Location& location, float siderealOffset, float precessionOffset) {
   ProjectionUniforms projection = makeProjectionUniforms(year, location);
   projection.localSiderealTime += siderealOffset;
@@ -676,6 +757,39 @@ void drawStarPass(
   glUniform1f(glGetUniformLocation(program.id, "uEffectClock"), effectClock);
   glBindVertexArray(vao);
   glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(starCount));
+}
+
+void drawMoonPass(
+  const GlProgram& program,
+  GLuint vao,
+  const Mat4& viewMatrix,
+  const Mat4& projectionMatrix,
+  double year,
+  const Location& location,
+  int viewportWidth,
+  int viewportHeight,
+  float sizePixels,
+  float alpha
+) {
+  const SkyDirection moon = moonDirection(year, location);
+  glUseProgram(program.id);
+  glUniformMatrix4fv(glGetUniformLocation(program.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
+  glUniformMatrix4fv(glGetUniformLocation(program.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
+  glUniform3f(
+    glGetUniformLocation(program.id, "uMoonPosition"),
+    moon.east * kSkyRadius,
+    moon.up * kSkyRadius,
+    -moon.north * kSkyRadius
+  );
+  glUniform2f(
+    glGetUniformLocation(program.id, "uViewport"),
+    static_cast<float>(viewportWidth),
+    static_cast<float>(viewportHeight)
+  );
+  glUniform1f(glGetUniformLocation(program.id, "uSizePixels"), sizePixels);
+  glUniform1f(glGetUniformLocation(program.id, "uAlpha"), alpha);
+  glBindVertexArray(vao);
+  glDrawArrays(GL_POINTS, 0, 1);
 }
 
 void keyCallback(GLFWwindow* window, int key, int, int action, int) {
@@ -760,7 +874,11 @@ void scrollCallback(GLFWwindow* window, double, double yOffset) {
   }
   auto* app = static_cast<AppState*>(glfwGetWindowUserPointer(window));
   const float fovDegrees = app->camera.fovRadians / static_cast<float>(kDegToRad);
-  const float nextDegrees = clampFloat(fovDegrees - static_cast<float>(yOffset) * 2.0f, 34.0f, 92.0f);
+  const float nextDegrees = clampFloat(
+    fovDegrees - static_cast<float>(yOffset) * 2.0f,
+    kMinimumFovDegrees,
+    kMaximumFovDegrees
+  );
   app->camera.fovRadians = nextDegrees * static_cast<float>(kDegToRad);
 }
 
@@ -953,6 +1071,13 @@ void drawTimePlayerControls(AppState& app) {
       ImGui::SliderFloat("Longitude##time-player", &app.gui.longitudeDegrees, -180.0f, 180.0f, "%.4f")) {
     applyGuiSettings(app);
   }
+  ImGui::SliderAngle(
+    "Field of view##time-player",
+    &app.camera.fovRadians,
+    kMinimumFovDegrees,
+    kMaximumFovDegrees,
+    "%.0f deg"
+  );
   ImGui::TextDisabled("F1 toggles the old window. This window stays separate.");
   ImGui::End();
 }
@@ -1072,13 +1197,22 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::SliderFloat("Layer separation", &app.gui.layerSeparation, 0.0f, 1.0f, "%.2f");
   ImGui::SliderFloat("Atmosphere warp", &app.gui.atmosphereWarp, 0.0f, 1.0f, "%.2f");
   ImGui::Checkbox("Moon element", &app.gui.showMoon);
+  ImGui::SameLine();
+  ImGui::BeginDisabled(!app.gui.showMoon);
+  if (ImGui::Button("Center moon")) {
+    centerViewportOnMoon(app);
+  }
+  ImGui::EndDisabled();
   ImGui::SliderFloat("Moon size", &app.gui.moonSizePixels, 24.0f, 160.0f, "%.0f px");
-  ImGui::SliderFloat("Moon halo", &app.gui.moonHalo, 0.0f, 1.5f, "%.2f");
-  ImGui::SliderFloat("Moon analemma", &app.gui.moonAnalemma, 0.0f, 1.4f, "%.2f");
   ImGui::Checkbox("Horizon guide", &app.gui.showHorizon);
   ImGui::SliderFloat("Horizon opacity", &app.gui.horizonAlpha, 0.1f, 1.0f, "%.2f");
-  if (ImGui::SliderFloat("FOV", &app.camera.fovRadians, 34.0f * static_cast<float>(kDegToRad), 92.0f * static_cast<float>(kDegToRad), "%.3f rad")) {
-  }
+  ImGui::SliderAngle(
+    "Field of view##cinematic",
+    &app.camera.fovRadians,
+    kMinimumFovDegrees,
+    kMaximumFovDegrees,
+    "%.0f deg"
+  );
   if (ImGui::Checkbox("VSync", &app.gui.vsync)) {
     glfwSwapInterval(app.gui.vsync ? 1 : 0);
   }
@@ -1086,53 +1220,13 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::End();
 }
 
-void drawCinematicOverlays(AppState& app, float cinematicStrength, const ZoetropeState& zoetrope, double now) {
+void drawCinematicOverlays(float cinematicStrength, const ZoetropeState& zoetrope) {
   ImDrawList* drawList = ImGui::GetBackgroundDrawList();
-  const ImVec2 screen(static_cast<float>(app.framebufferWidth), static_cast<float>(app.framebufferHeight));
-  const float pulse = 0.5f + 0.5f * std::sin(static_cast<float>(now) * 5.2f);
+  const ImVec2 screen = ImGui::GetIO().DisplaySize;
   const int tintAlpha = static_cast<int>(std::clamp(cinematicStrength * 30.0f + zoetrope.lockPulse * 16.0f, 0.0f, 46.0f));
   if (tintAlpha > 0) {
     drawList->AddRectFilled(ImVec2(0.0f, 0.0f), screen, IM_COL32(12, 34, 68, tintAlpha));
   }
-
-  const float edgeAlpha = std::clamp(cinematicStrength * 0.34f + pulse * zoetrope.lockPulse * 0.24f, 0.0f, 0.56f);
-  if (edgeAlpha > 0.0f) {
-    const ImU32 edgeColor = IM_COL32(58, 154, 255, static_cast<int>(edgeAlpha * 140.0f));
-    drawList->AddRect(ImVec2(10.0f, 10.0f), ImVec2(screen.x - 10.0f, screen.y - 10.0f), edgeColor, 22.0f, 0, 18.0f);
-    drawList->AddRect(ImVec2(32.0f, 32.0f), ImVec2(screen.x - 32.0f, screen.y - 32.0f), edgeColor, 18.0f, 0, 10.0f);
-  }
-
-  if (!app.gui.showMoon) {
-    return;
-  }
-
-  const double moonCycle = 12.368266 * (zoetrope.primaryYear - 2000.0);
-  const double phase = moonCycle - std::floor(moonCycle);
-  const double yearPhase = zoetrope.primaryYear - std::floor(zoetrope.primaryYear);
-  const float analemmaScale = app.gui.moonAnalemma * (0.35f + cinematicStrength * 0.95f);
-  const ImVec2 base(screen.x * 0.72f, screen.y * 0.23f);
-  const ImVec2 moonCenter(
-    base.x + std::sin(static_cast<float>(yearPhase * kTau)) * 78.0f * analemmaScale,
-    base.y + std::sin(static_cast<float>(yearPhase * kTau * 2.0)) * 96.0f * analemmaScale
-  );
-  const float radius = app.gui.moonSizePixels * 0.5f;
-  const float halo = app.gui.moonHalo * (0.65f + cinematicStrength * 0.55f);
-
-  for (int i = 0; i < 18; ++i) {
-    const double sample = yearPhase + static_cast<double>(i) / 18.0;
-    const ImVec2 point(
-      base.x + std::sin(static_cast<float>(sample * kTau)) * 78.0f * analemmaScale,
-      base.y + std::sin(static_cast<float>(sample * kTau * 2.0)) * 96.0f * analemmaScale
-    );
-    drawList->AddCircleFilled(point, 1.4f + cinematicStrength * 1.5f, IM_COL32(122, 198, 255, static_cast<int>(28.0f * cinematicStrength)));
-  }
-
-  drawList->AddCircleFilled(moonCenter, radius * 3.5f * halo, IM_COL32(72, 136, 255, static_cast<int>(18.0f * halo)));
-  drawList->AddCircleFilled(moonCenter, radius * 2.2f * halo, IM_COL32(115, 178, 255, static_cast<int>(30.0f * halo)));
-  drawList->AddCircleFilled(moonCenter, radius, IM_COL32(229, 240, 255, 232));
-  const float cutoutOffset = std::cos(static_cast<float>(phase * kTau)) * radius * 0.58f;
-  drawList->AddCircleFilled(ImVec2(moonCenter.x + cutoutOffset, moonCenter.y), radius * 0.98f, IM_COL32(2, 7, 21, 224));
-  drawList->AddCircle(moonCenter, radius, IM_COL32(173, 226, 255, 190), 64, 1.6f);
 }
 
 std::string makeTitle(double fps, VisibleProgram program, double visibleYear, std::size_t starCount) {
@@ -1165,10 +1259,13 @@ int checkShaderPrograms() {
 
   glfwMakeContextCurrent(window);
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
+  const GlProgram moonProgram =
+    makeProgram(moonVertexShader(), moonFragmentShader(), moonGeometryShader());
   const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
   glDeleteProgram(guideProgram.id);
   glDeleteProgram(exposureProgram.id);
+  glDeleteProgram(moonProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();
@@ -1220,16 +1317,20 @@ int runWindow(const std::vector<StarVertex>& stars) {
   ImGui_ImplOpenGL3_Init("#version 410");
 
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
+  const GlProgram moonProgram =
+    makeProgram(moonVertexShader(), moonFragmentShader(), moonGeometryShader());
   const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
   LongExposureBuffer exposureBuffer;
   GLuint vao = 0;
   GLuint vbo = 0;
+  GLuint moonVao = 0;
   GLuint guideVao = 0;
   GLuint guideVbo = 0;
   const std::vector<GuideVertex> guideVertices = makeHorizonGuideVertices();
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
+  glGenVertexArrays(1, &moonVao);
   glGenVertexArrays(1, &guideVao);
   glGenBuffers(1, &guideVbo);
   uploadStarAttributes(vao, vbo, stars);
@@ -1471,6 +1572,20 @@ int runWindow(const std::vector<StarVertex>& stars) {
           sampleWarp,
           sampleClock
         );
+        if (app.gui.showMoon) {
+          drawMoonPass(
+            moonProgram,
+            moonVao,
+            viewMatrix,
+            projectionMatrix,
+            sampleYear,
+            app.location,
+            app.framebufferWidth,
+            app.framebufferHeight,
+            app.gui.moonSizePixels,
+            sampleAlpha
+          );
+        }
       }
     }
 
@@ -1497,6 +1612,21 @@ int runWindow(const std::vector<StarVertex>& stars) {
       }
     }
 
+    if (app.gui.showMoon) {
+      drawMoonPass(
+        moonProgram,
+        moonVao,
+        viewMatrix,
+        projectionMatrix,
+        visibleYear,
+        app.location,
+        app.framebufferWidth,
+        app.framebufferHeight,
+        app.gui.moonSizePixels,
+        1.0f
+      );
+    }
+
     if (app.gui.showHorizon) {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glLineWidth(2.5f);
@@ -1518,7 +1648,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
     );
 
     if (!usingTimePlayer) {
-      drawCinematicOverlays(app, cinematicStrength, zoetrope, now);
+      drawCinematicOverlays(cinematicStrength, zoetrope);
     }
 
     ImGui::Render();
@@ -1539,11 +1669,13 @@ int runWindow(const std::vector<StarVertex>& stars) {
   ImGui::DestroyContext();
   glDeleteBuffers(1, &guideVbo);
   glDeleteVertexArrays(1, &guideVao);
+  glDeleteVertexArrays(1, &moonVao);
   glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
   destroyLongExposureBuffer(exposureBuffer);
   glDeleteProgram(guideProgram.id);
   glDeleteProgram(exposureProgram.id);
+  glDeleteProgram(moonProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();
