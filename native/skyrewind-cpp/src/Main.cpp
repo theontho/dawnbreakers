@@ -53,6 +53,11 @@ struct Vec3 {
   float z = 0.0f;
 };
 
+struct Vec2 {
+  float x = 0.0f;
+  float y = 0.0f;
+};
+
 struct Mat4 {
   std::array<float, 16> m{};
 };
@@ -115,6 +120,7 @@ struct GuiState {
   bool showMoon = true;
   MoonTrackingMode moonTrackingMode = MoonTrackingMode::Off;
   bool hdrOutput = true;
+  bool fisheyeWideFov = true;
   bool longExposure = true;
   bool showHorizon = true;
   bool vsync = true;
@@ -227,7 +233,8 @@ float estimateApparentMotionPixels(
   double currentYear,
   double previousYear,
   float fovRadians,
-  int viewportHeight
+  int viewportHeight,
+  float fisheyeBlend
 ) {
   const float siderealMotion = static_cast<float>(std::min(
     std::abs(currentYear - previousYear) * kSiderealRadiansPerYear,
@@ -240,9 +247,14 @@ float estimateApparentMotionPixels(
     wrappedAngleDistance(current.zeta, previous.zeta),
     wrappedAngleDistance(currentTheta, previousTheta),
   });
-  const float focalLengthPixels =
+  const float perspectiveFocalLength =
     static_cast<float>(std::max(1, viewportHeight)) /
     (2.0f * std::tan(std::max(0.01f, fovRadians) * 0.5f));
+  const float fisheyeFocalLength =
+    static_cast<float>(std::max(1, viewportHeight)) / std::max(0.01f, fovRadians);
+  const float focalLengthPixels =
+    perspectiveFocalLength +
+    (fisheyeFocalLength - perspectiveFocalLength) * fisheyeBlend;
   return (siderealMotion + precessionMotion) * focalLengthPixels;
 }
 
@@ -269,6 +281,44 @@ Vec3 cross(Vec3 a, Vec3 b) {
 
 float dot(Vec3 a, Vec3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+float wideProjectionBlend(float fovRadians, bool enabled) {
+  if (!enabled) {
+    return 0.0f;
+  }
+  const double fovDegrees = static_cast<double>(fovRadians) / kDegToRad;
+  return static_cast<float>(smoothStep01((fovDegrees - 110.0) / 25.0));
+}
+
+Vec2 projectSkyDirection(
+  Vec3 viewDirection,
+  float fovRadians,
+  float aspect,
+  float fisheyeBlend
+) {
+  const Vec3 direction = normalize(viewDirection);
+  const float safeDepth = std::max(0.0001f, -direction.z);
+  const float focalScale = 1.0f / std::tan(std::max(0.01f, fovRadians) * 0.5f);
+  const Vec2 perspectiveNdc{
+    direction.x * focalScale / (safeDepth * aspect),
+    direction.y * focalScale / safeDepth,
+  };
+
+  const float radialLength = std::hypot(direction.x, direction.y);
+  const float theta = std::acos(clampFloat(-direction.z, -1.0f, 1.0f));
+  const float fisheyeRadius = theta / std::max(0.01f, fovRadians * 0.5f);
+  const Vec2 fisheyeNdc = radialLength > 0.00001f
+    ? Vec2{
+        direction.x / radialLength * fisheyeRadius / aspect,
+        direction.y / radialLength * fisheyeRadius,
+      }
+    : Vec2{};
+
+  return {
+    perspectiveNdc.x + (fisheyeNdc.x - perspectiveNdc.x) * fisheyeBlend,
+    perspectiveNdc.y + (fisheyeNdc.y - perspectiveNdc.y) * fisheyeBlend,
+  };
 }
 
 Mat4 multiply(const Mat4& a, const Mat4& b) {
@@ -412,6 +462,9 @@ const char* starVertexShader() {
     uniform float uLayerBlueShift;
     uniform float uAtmosphereWarp;
     uniform float uEffectClock;
+    uniform float uFovRadians;
+    uniform float uAspect;
+    uniform float uFisheyeBlend;
 
     out vec3 vColor;
     out float vAlpha;
@@ -459,12 +512,41 @@ const char* starVertexShader() {
           maxRadiance
         )
       );
+      vec4 viewPosition = uView * vec4(x, y, zPosition, 1.0);
+      vec3 viewDirection = normalize(viewPosition.xyz);
+      float angularDistance = acos(clamp(-viewDirection.z, -1.0, 1.0));
+      float halfFov = uFovRadians * 0.5;
+      float perspectiveCorner = atan(tan(halfFov) * sqrt(1.0 + uAspect * uAspect));
+      float angularLimit = mix(perspectiveCorner, halfFov, uFisheyeBlend);
+      visible *= step(angularDistance, angularLimit);
       vAlpha = visible * uLayerAlpha;
 
-      vec4 viewPosition = uView * vec4(x, y, zPosition, 1.0);
+      vec4 perspectivePosition = uProjection * viewPosition;
+      vec2 perspectiveNdc =
+        perspectivePosition.xy / max(0.0001, abs(perspectivePosition.w));
+      float radialLength = length(viewDirection.xy);
+      float fisheyeRadius = angularDistance / max(0.01, uFovRadians * 0.5);
+      vec2 fisheyeNdc = radialLength > 0.00001
+        ? vec2(
+            viewDirection.x / radialLength * fisheyeRadius / uAspect,
+            viewDirection.y / radialLength * fisheyeRadius
+          )
+        : vec2(0.0);
+      vec2 projectedNdc = mix(perspectiveNdc, fisheyeNdc, uFisheyeBlend);
+
       float starSize = (2.4 + sqrt(brightness) * 7.8 + uCinematicStrength * 5.5) * uStarSizeScale;
-      gl_PointSize = visible * starSize * (180.0 / max(12.0, -viewPosition.z));
-      gl_Position = uProjection * viewPosition;
+      float perspectiveSizeScale =
+        tan(radians(31.0)) / tan(max(0.01, uFovRadians * 0.5));
+      float fisheyeSizeScale = radians(62.0) / max(0.01, uFovRadians);
+      float angularSizeScale = clamp(
+        mix(perspectiveSizeScale, fisheyeSizeScale, uFisheyeBlend),
+        0.35,
+        2.5
+      );
+      gl_PointSize = visible * starSize * angularSizeScale;
+      gl_Position = uFisheyeBlend > 0.0
+        ? vec4(projectedNdc, 0.0, 1.0)
+        : perspectivePosition;
     }
   )GLSL";
 }
@@ -499,9 +581,36 @@ const char* moonVertexShader() {
     uniform mat4 uView;
     uniform mat4 uProjection;
     uniform vec3 uMoonPosition;
+    uniform float uFovRadians;
+    uniform float uAspect;
+    uniform float uFisheyeBlend;
+
+    out float vVisible;
 
     void main() {
-      gl_Position = uProjection * uView * vec4(uMoonPosition, 1.0);
+      vec4 viewPosition = uView * vec4(uMoonPosition, 1.0);
+      vec3 viewDirection = normalize(viewPosition.xyz);
+      float angularDistance = acos(clamp(-viewDirection.z, -1.0, 1.0));
+      float halfFov = uFovRadians * 0.5;
+      float perspectiveCorner = atan(tan(halfFov) * sqrt(1.0 + uAspect * uAspect));
+      float angularLimit = mix(perspectiveCorner, halfFov, uFisheyeBlend);
+      vVisible = step(angularDistance, angularLimit);
+
+      vec4 perspectivePosition = uProjection * viewPosition;
+      vec2 perspectiveNdc =
+        perspectivePosition.xy / max(0.0001, abs(perspectivePosition.w));
+      float radialLength = length(viewDirection.xy);
+      float fisheyeRadius = angularDistance / max(0.01, uFovRadians * 0.5);
+      vec2 fisheyeNdc = radialLength > 0.00001
+        ? vec2(
+            viewDirection.x / radialLength * fisheyeRadius / uAspect,
+            viewDirection.y / radialLength * fisheyeRadius
+          )
+        : vec2(0.0);
+      vec2 projectedNdc = mix(perspectiveNdc, fisheyeNdc, uFisheyeBlend);
+      gl_Position = uFisheyeBlend > 0.0
+        ? vec4(projectedNdc, 0.0, 1.0)
+        : perspectivePosition;
     }
   )GLSL";
 }
@@ -516,6 +625,7 @@ const char* moonGeometryShader() {
     uniform vec2 uViewport;
     uniform float uSizePixels;
 
+    in float vVisible[];
     out vec2 gUv;
 
     void emitMoonVertex(vec4 center, vec2 offset, vec2 uv) {
@@ -526,7 +636,7 @@ const char* moonGeometryShader() {
 
     void main() {
       vec4 center = gl_in[0].gl_Position;
-      if (center.w <= 0.0) {
+      if (center.w <= 0.0 || vVisible[0] <= 0.0) {
         return;
       }
 
@@ -580,12 +690,36 @@ const char* guideVertexShader() {
     uniform mat4 uView;
     uniform mat4 uProjection;
     uniform float uAlphaScale;
+    uniform float uFovRadians;
+    uniform float uAspect;
+    uniform float uFisheyeBlend;
 
     out vec4 vColor;
 
     void main() {
       vColor = vec4(aColor.rgb, aColor.a * uAlphaScale);
-      gl_Position = uProjection * uView * vec4(aPosition, 1.0);
+      vec4 viewPosition = uView * vec4(aPosition, 1.0);
+      vec3 viewDirection = normalize(viewPosition.xyz);
+      float angularDistance = acos(clamp(-viewDirection.z, -1.0, 1.0));
+      float halfFov = uFovRadians * 0.5;
+      float perspectiveCorner = atan(tan(halfFov) * sqrt(1.0 + uAspect * uAspect));
+      float angularLimit = mix(perspectiveCorner, halfFov, uFisheyeBlend);
+      vec4 perspectivePosition = uProjection * viewPosition;
+      vec2 perspectiveNdc =
+        perspectivePosition.xy / max(0.0001, abs(perspectivePosition.w));
+      float radialLength = length(viewDirection.xy);
+      float fisheyeRadius = angularDistance / max(0.01, uFovRadians * 0.5);
+      vec2 fisheyeNdc = radialLength > 0.00001
+        ? vec2(
+            viewDirection.x / radialLength * fisheyeRadius / uAspect,
+            viewDirection.y / radialLength * fisheyeRadius
+          )
+        : vec2(0.0);
+      vec2 projectedNdc = mix(perspectiveNdc, fisheyeNdc, uFisheyeBlend);
+      gl_ClipDistance[0] = angularLimit - angularDistance;
+      gl_Position = uFisheyeBlend > 0.0
+        ? vec4(projectedNdc, 0.0, 1.0)
+        : perspectivePosition;
     }
   )GLSL";
 }
@@ -840,7 +974,10 @@ void drawStarPass(
   float layerAlpha,
   float layerBlueShift,
   float atmosphereWarp,
-  float effectClock
+  float effectClock,
+  float fovRadians,
+  float aspect,
+  float fisheyeBlend
 ) {
   glUseProgram(program.id);
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
@@ -862,6 +999,9 @@ void drawStarPass(
   glUniform1f(glGetUniformLocation(program.id, "uLayerBlueShift"), layerBlueShift);
   glUniform1f(glGetUniformLocation(program.id, "uAtmosphereWarp"), atmosphereWarp);
   glUniform1f(glGetUniformLocation(program.id, "uEffectClock"), effectClock);
+  glUniform1f(glGetUniformLocation(program.id, "uFovRadians"), fovRadians);
+  glUniform1f(glGetUniformLocation(program.id, "uAspect"), aspect);
+  glUniform1f(glGetUniformLocation(program.id, "uFisheyeBlend"), fisheyeBlend);
   glBindVertexArray(vao);
   glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(starCount));
 }
@@ -875,10 +1015,30 @@ void drawMoonPass(
   const Location& location,
   int viewportWidth,
   int viewportHeight,
+  float fovRadians,
+  float fisheyeBlend,
   float sizePixels,
   float alpha
 ) {
   const MoonState moon = moonState(year, location);
+  const float aspect =
+    static_cast<float>(viewportWidth) / static_cast<float>(std::max(1, viewportHeight));
+  const Vec3 moonInView = normalize(transformDirection(
+    viewMatrix,
+    {
+      moon.direction.east,
+      moon.direction.up,
+      -moon.direction.north,
+    }
+  ));
+  const Vec3 sunInView = normalize(transformDirection(
+    viewMatrix,
+    {
+      moon.sunDirection.east,
+      moon.sunDirection.up,
+      -moon.sunDirection.north,
+    }
+  ));
   glUseProgram(program.id);
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
@@ -895,19 +1055,51 @@ void drawMoonPass(
   );
   glUniform1f(glGetUniformLocation(program.id, "uSizePixels"), sizePixels);
   glUniform1f(glGetUniformLocation(program.id, "uAlpha"), alpha);
-  const Vec3 sunInView = normalize(transformDirection(
-    viewMatrix,
-    {
-      moon.sunDirection.east,
-      moon.sunDirection.up,
-      -moon.sunDirection.north,
+  glUniform1f(glGetUniformLocation(program.id, "uFovRadians"), fovRadians);
+  glUniform1f(glGetUniformLocation(program.id, "uAspect"), aspect);
+  glUniform1f(glGetUniformLocation(program.id, "uFisheyeBlend"), fisheyeBlend);
+
+  const float moonSunCosine = clampFloat(dot(moonInView, sunInView), -1.0f, 1.0f);
+  const Vec3 tangent = {
+    sunInView.x - moonInView.x * moonSunCosine,
+    sunInView.y - moonInView.y * moonSunCosine,
+    sunInView.z - moonInView.z * moonSunCosine,
+  };
+  const float tangentLength = std::sqrt(std::max(0.0f, dot(tangent, tangent)));
+  Vec2 screenLightDirection{};
+  if (tangentLength > 0.00001f) {
+    const Vec3 tangentDirection = {
+      tangent.x / tangentLength,
+      tangent.y / tangentLength,
+      tangent.z / tangentLength,
+    };
+    const Vec3 lightSample = normalize({
+      moonInView.x + tangentDirection.x * 0.001f,
+      moonInView.y + tangentDirection.y * 0.001f,
+      moonInView.z + tangentDirection.z * 0.001f,
+    });
+    const Vec2 moonNdc =
+      projectSkyDirection(moonInView, fovRadians, aspect, fisheyeBlend);
+    const Vec2 lightNdc =
+      projectSkyDirection(lightSample, fovRadians, aspect, fisheyeBlend);
+    const float screenLength = std::hypot(
+      lightNdc.x - moonNdc.x,
+      lightNdc.y - moonNdc.y
+    );
+    if (screenLength > 0.000001f) {
+      screenLightDirection = {
+        (lightNdc.x - moonNdc.x) / screenLength,
+        (lightNdc.y - moonNdc.y) / screenLength,
+      };
+    } else {
+      screenLightDirection = {1.0f, 0.0f};
     }
-  ));
+  }
   glUniform3f(
     glGetUniformLocation(program.id, "uLightDirection"),
-    sunInView.x,
-    sunInView.y,
-    sunInView.z
+    screenLightDirection.x * tangentLength,
+    screenLightDirection.y * tangentLength,
+    -moonSunCosine
   );
   glBindVertexArray(vao);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1204,6 +1396,7 @@ void drawTimePlayerControls(AppState& app) {
     kMaximumFovDegrees,
     "%.0f deg"
   );
+  ImGui::Checkbox("Wide-angle fisheye##time-player", &app.gui.fisheyeWideFov);
   drawMoonCameraControls(app, "time-player-moon-camera");
   drawHdrControls(app, "time-player-hdr");
   ImGui::TextDisabled("F1 toggles the old window. This window stays separate.");
@@ -1338,6 +1531,7 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
     kMaximumFovDegrees,
     "%.0f deg"
   );
+  ImGui::Checkbox("Wide-angle fisheye##cinematic", &app.gui.fisheyeWideFov);
   drawHdrControls(app, "cinematic-hdr");
   if (ImGui::Checkbox("VSync", &app.gui.vsync)) {
     glfwSwapInterval(app.gui.vsync ? 1 : 0);
@@ -1462,6 +1656,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   glViewport(0, 0, app.framebufferWidth, app.framebufferHeight);
 
   glEnable(GL_PROGRAM_POINT_SIZE);
+  glEnable(GL_CLIP_DISTANCE0);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
@@ -1504,6 +1699,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   float previousCameraPitch = app.camera.pitch;
   float previousCameraFov = app.camera.fovRadians;
   MoonTrackingMode previousMoonTrackingMode = app.gui.moonTrackingMode;
+  bool previousFisheyeWideFov = app.gui.fisheyeWideFov;
   bool previousExposureProjectionValid = false;
 
   while (!glfwWindowShouldClose(window)) {
@@ -1546,6 +1742,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
       app.gui.brightMagnitudeLimit
     );
     const float aspect = static_cast<float>(app.framebufferWidth) / static_cast<float>(std::max(1, app.framebufferHeight));
+    const float fisheyeBlend =
+      wideProjectionBlend(app.camera.fovRadians, app.gui.fisheyeWideFov);
     const Mat4 projectionMatrix = perspective(app.camera.fovRadians, aspect, 0.1f, 500.0f);
     const Vec3 direction = {
       std::cos(app.camera.pitch) * std::sin(app.camera.yaw),
@@ -1574,6 +1772,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
       previousExposureProjectionValid && previousExposureProgram != app.visibleProgram;
     const bool trackingModeChanged =
       previousMoonTrackingMode != app.gui.moonTrackingMode;
+    const bool projectionModeChanged =
+      previousFisheyeWideFov != app.gui.fisheyeWideFov;
     const bool cameraOrientationChanged =
       std::abs(app.camera.yaw - previousCameraYaw) > 0.00001f ||
       std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f;
@@ -1581,6 +1781,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
       std::abs(app.camera.fovRadians - previousCameraFov) > 0.00001f;
     const bool cameraChanged =
       trackingModeChanged ||
+      projectionModeChanged ||
       cameraFovChanged ||
       (!trackingMoon && cameraOrientationChanged);
     app.exposureMotionPixels = previousExposureProjectionValid && !programChanged
@@ -1590,7 +1791,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
           visibleYear,
           previousExposureYear,
           app.camera.fovRadians,
-          app.framebufferHeight
+          app.framebufferHeight,
+          fisheyeBlend
         )
       : 0.0f;
     const float motionThreshold = std::max(0.01f, app.gui.exposureMotionThresholdPixels);
@@ -1642,6 +1844,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
     previousCameraPitch = app.camera.pitch;
     previousCameraFov = app.camera.fovRadians;
     previousMoonTrackingMode = app.gui.moonTrackingMode;
+    previousFisheyeWideFov = app.gui.fisheyeWideFov;
     previousExposureProjectionValid = true;
 
     beginLongExposureScene(exposureBuffer);
@@ -1664,7 +1867,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
         alphaScale,
         0.04f,
         warp,
-        effectClock + phaseOffset
+        effectClock + phaseOffset,
+        app.camera.fovRadians,
+        aspect,
+        fisheyeBlend
       );
 
       if (!app.gui.layeredSky || cinematicLayer <= 0.001f) {
@@ -1691,7 +1897,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
         alphaScale * cinematicStrength * 0.32f,
         0.22f,
         warp * 1.3f,
-        effectClock * 1.17f + phaseOffset
+        effectClock * 1.17f + phaseOffset,
+        app.camera.fovRadians,
+        aspect,
+        fisheyeBlend
       );
 
       const ProjectionUniforms driftProjection = projectionForLayer(
@@ -1714,7 +1923,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
         alphaScale * cinematicStrength * 0.22f,
         0.34f,
         warp * 1.55f,
-        effectClock * 0.83f + phaseOffset
+        effectClock * 0.83f + phaseOffset,
+        app.camera.fovRadians,
+        aspect,
+        fisheyeBlend
       );
     };
 
@@ -1759,7 +1971,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
           sampleAlpha,
           0.04f,
           sampleWarp,
-          sampleClock
+          sampleClock,
+          app.camera.fovRadians,
+          aspect,
+          fisheyeBlend
         );
         if (app.gui.showMoon) {
           drawMoonPass(
@@ -1771,6 +1986,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
             app.location,
             app.framebufferWidth,
             app.framebufferHeight,
+            app.camera.fovRadians,
+            fisheyeBlend,
             app.gui.moonSizePixels,
             sampleAlpha
           );
@@ -1793,7 +2010,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
         1.0f,
         0.0f,
         0.0f,
-        effectClock
+        effectClock,
+        app.camera.fovRadians,
+        aspect,
+        fisheyeBlend
       );
     } else {
       drawSkyState(zoetrope.primaryYear, 0.9f * (1.0f - zoetrope.secondaryAlpha * 0.42f), 0.0f);
@@ -1809,6 +2029,15 @@ int runWindow(const std::vector<StarVertex>& stars) {
       glUniformMatrix4fv(glGetUniformLocation(guideProgram.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
       glUniformMatrix4fv(glGetUniformLocation(guideProgram.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
       glUniform1f(glGetUniformLocation(guideProgram.id, "uAlphaScale"), app.gui.horizonAlpha);
+      glUniform1f(
+        glGetUniformLocation(guideProgram.id, "uFovRadians"),
+        app.camera.fovRadians
+      );
+      glUniform1f(glGetUniformLocation(guideProgram.id, "uAspect"), aspect);
+      glUniform1f(
+        glGetUniformLocation(guideProgram.id, "uFisheyeBlend"),
+        fisheyeBlend
+      );
       glBindVertexArray(guideVao);
       glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(guideVertices.size()));
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -1836,6 +2065,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
         app.location,
         app.framebufferWidth,
         app.framebufferHeight,
+        app.camera.fovRadians,
+        fisheyeBlend,
         app.gui.moonSizePixels,
         1.0f
       );
