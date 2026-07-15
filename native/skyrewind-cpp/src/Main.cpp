@@ -1,5 +1,6 @@
 #include "Astronomy.hpp"
 #include "Catalog.hpp"
+#include "LongExposure.hpp"
 #include "TimePlayer.hpp"
 #ifdef __APPLE__
 #include "MacDockIcon.hpp"
@@ -40,6 +41,8 @@ constexpr double kDefaultRewindYears = 2022.0;
 constexpr double kDefaultDurationSeconds = 14.0;
 constexpr double kDefaultLatitudeDegrees = 30.0444;
 constexpr double kDefaultLongitudeDegrees = 31.2357;
+constexpr double kSiderealRadiansPerYear = 360.98564736629 * 365.2425 * kDegToRad;
+constexpr int kMaxExposureSamples = 48;
 
 struct Vec3 {
   float x = 0.0f;
@@ -88,9 +91,10 @@ struct GuiState {
   float brightMagnitudeLimit = 5.6f;
   float starSizeScale = 1.0f;
   float horizonAlpha = 0.82f;
-  float streakThreshold = 0.08f;
-  float streakLengthYears = 0.42f;
-  float streakWidthPixels = 3.5f;
+  float shutterDurationSeconds = 0.65f;
+  float exposureMotionThresholdPixels = 0.7f;
+  float exposureStrength = 0.92f;
+  float exposureSampleSpacingPixels = 5.0f;
   float zoetropeIntervalYears = 650.0f;
   float zoetropeBlendPortion = 0.18f;
   float layerSeparation = 0.42f;
@@ -101,7 +105,7 @@ struct GuiState {
   bool zoetropeSampling = true;
   bool layeredSky = true;
   bool showMoon = true;
-  bool starStreaks = true;
+  bool longExposure = true;
   bool showHorizon = true;
   bool vsync = true;
   bool showControls = true;
@@ -121,6 +125,9 @@ struct AppState {
   VisibleProgram visibleProgram = VisibleProgram::TimePlayer;
   int framebufferWidth = 1440;
   int framebufferHeight = 960;
+  float exposureMotionPixels = 0.0f;
+  int exposureSampleCount = 1;
+  bool exposureActive = false;
 };
 
 struct GlProgram {
@@ -196,6 +203,36 @@ void setMoonWindowIcon(GLFWwindow* window) {
 
 float clampFloat(float value, float minValue, float maxValue) {
   return std::max(minValue, std::min(maxValue, value));
+}
+
+float wrappedAngleDistance(float a, float b) {
+  const float delta = a - b;
+  return std::abs(std::atan2(std::sin(delta), std::cos(delta)));
+}
+
+float estimateApparentMotionPixels(
+  const ProjectionUniforms& current,
+  const ProjectionUniforms& previous,
+  double currentYear,
+  double previousYear,
+  float fovRadians,
+  int viewportHeight
+) {
+  const float siderealMotion = static_cast<float>(std::min(
+    std::abs(currentYear - previousYear) * kSiderealRadiansPerYear,
+    kTau
+  ));
+  const float currentTheta = std::atan2(current.sinTheta, current.cosTheta);
+  const float previousTheta = std::atan2(previous.sinTheta, previous.cosTheta);
+  const float precessionMotion = std::max({
+    wrappedAngleDistance(current.z, previous.z),
+    wrappedAngleDistance(current.zeta, previous.zeta),
+    wrappedAngleDistance(currentTheta, previousTheta),
+  });
+  const float focalLengthPixels =
+    static_cast<float>(std::max(1, viewportHeight)) /
+    (2.0f * std::tan(std::max(0.01f, fovRadians) * 0.5f));
+  return (siderealMotion + precessionMotion) * focalLengthPixels;
 }
 
 double smoothStep01(double value) {
@@ -417,179 +454,6 @@ const char* starFragmentShader() {
   )GLSL";
 }
 
-const char* streakVertexShader() {
-  return R"GLSL(
-    #version 410 core
-
-    layout(location = 0) in float aRa;
-    layout(location = 1) in float aDec;
-    layout(location = 2) in float aPmRa;
-    layout(location = 3) in float aPmDec;
-    layout(location = 4) in float aMagnitude;
-    layout(location = 5) in vec3 aColor;
-
-    uniform mat4 uView;
-    uniform mat4 uProjection;
-    uniform float uCurrentYearsSinceCatalog;
-    uniform float uCurrentZeta;
-    uniform float uCurrentZ;
-    uniform float uCurrentCosTheta;
-    uniform float uCurrentSinTheta;
-    uniform float uCurrentLocalSiderealTime;
-    uniform float uTailYearsSinceCatalog;
-    uniform float uTailZeta;
-    uniform float uTailZ;
-    uniform float uTailCosTheta;
-    uniform float uTailSinTheta;
-    uniform float uTailLocalSiderealTime;
-    uniform float uSinLat;
-    uniform float uCosLat;
-    uniform float uSkyRadius;
-    uniform float uMaxVisibleMagnitude;
-    uniform float uCinematicStrength;
-
-    out StreakVertexData {
-      vec4 tailClip;
-      vec3 color;
-      float alpha;
-      float visible;
-    } vData;
-
-    vec4 projectStar(
-      float yearsSinceCatalog,
-      float zeta,
-      float z,
-      float cosTheta,
-      float sinTheta,
-      float localSiderealTime
-    ) {
-      float currentDec = clamp(aDec + aPmDec * yearsSinceCatalog, -1.57079637, 1.57079637);
-      float cosDec = cos(currentDec);
-      float sinDec = sin(currentDec);
-      float raZeta = aRa + aPmRa * yearsSinceCatalog + zeta;
-      float a = cosDec * sin(raZeta);
-      float b = cosTheta * cosDec * cos(raZeta) - sinTheta * sinDec;
-      float c = clamp(sinTheta * cosDec * cos(raZeta) + cosTheta * sinDec, -1.0, 1.0);
-      float precessedRa = atan(a, b) + z;
-      float precessedCosDec = sqrt(max(0.0, 1.0 - c * c));
-      float hourAngle = localSiderealTime - precessedRa;
-      float x = -precessedCosDec * sin(hourAngle) * uSkyRadius;
-      float y = (c * uSinLat + precessedCosDec * uCosLat * cos(hourAngle)) * uSkyRadius;
-      float north = c * uCosLat - precessedCosDec * uSinLat * cos(hourAngle);
-      float zPosition = -north * uSkyRadius;
-      return uProjection * uView * vec4(x, y, zPosition, 1.0);
-    }
-
-    void main() {
-      float visible = step(aMagnitude, uMaxVisibleMagnitude);
-      float brightness = clamp(1.0 - (aMagnitude + 1.4) / 10.4, 0.035, 1.0);
-      float thresholdFade = clamp((uMaxVisibleMagnitude - aMagnitude) / 0.8, 0.1, 1.0);
-      float intensity = clamp((pow(brightness, 1.35) + uCinematicStrength * 0.16) * thresholdFade, 0.02, 1.0);
-
-      vData.color = vec3(
-        clamp(intensity * aColor.r, 0.0, 1.0),
-        clamp(intensity * aColor.g, 0.0, 1.0),
-        clamp(intensity * (aColor.b + uCinematicStrength * 0.24), 0.0, 1.0)
-      );
-      vData.alpha = visible * clamp(0.38 + uCinematicStrength * 0.62, 0.0, 1.0);
-      vData.visible = visible;
-      gl_Position = projectStar(
-        uCurrentYearsSinceCatalog,
-        uCurrentZeta,
-        uCurrentZ,
-        uCurrentCosTheta,
-        uCurrentSinTheta,
-        uCurrentLocalSiderealTime
-      );
-      vData.tailClip = projectStar(
-        uTailYearsSinceCatalog,
-        uTailZeta,
-        uTailZ,
-        uTailCosTheta,
-        uTailSinTheta,
-        uTailLocalSiderealTime
-      );
-    }
-  )GLSL";
-}
-
-const char* streakGeometryShader() {
-  return R"GLSL(
-    #version 410 core
-
-    layout(points) in;
-    layout(triangle_strip, max_vertices = 4) out;
-
-    in StreakVertexData {
-      vec4 tailClip;
-      vec3 color;
-      float alpha;
-      float visible;
-    } gIn[];
-
-    uniform vec2 uViewport;
-    uniform float uStreakWidthPixels;
-    uniform float uMinStreakPixels;
-
-    out vec3 gColor;
-    out float gAlpha;
-
-    void emitStreakVertex(vec4 clipPosition, vec2 normalNdc, float alpha) {
-      gColor = gIn[0].color;
-      gAlpha = alpha;
-      gl_Position = vec4(clipPosition.xy + normalNdc * clipPosition.w, clipPosition.zw);
-      EmitVertex();
-    }
-
-    void main() {
-      if (gIn[0].visible <= 0.0) {
-        return;
-      }
-
-      vec4 headClip = gl_in[0].gl_Position;
-      vec4 tailClip = gIn[0].tailClip;
-      if (headClip.w <= 0.0 || tailClip.w <= 0.0) {
-        return;
-      }
-
-      vec2 headNdc = headClip.xy / headClip.w;
-      vec2 tailNdc = tailClip.xy / tailClip.w;
-      vec2 pixelDelta = (headNdc - tailNdc) * uViewport * 0.5;
-      float pixelLength = length(pixelDelta);
-      if (pixelLength < uMinStreakPixels || pixelLength > max(uViewport.x, uViewport.y) * 1.35) {
-        return;
-      }
-
-      vec2 direction = normalize(headNdc - tailNdc);
-      vec2 normal = vec2(-direction.y, direction.x);
-      float width = uStreakWidthPixels * clamp(pixelLength / 42.0, 0.45, 1.65);
-      vec2 normalNdc = normal * width * 2.0 / uViewport;
-      float headAlpha = gIn[0].alpha;
-      float tailAlpha = 0.0;
-
-      emitStreakVertex(tailClip, -normalNdc, tailAlpha);
-      emitStreakVertex(tailClip, normalNdc, tailAlpha);
-      emitStreakVertex(headClip, -normalNdc, headAlpha);
-      emitStreakVertex(headClip, normalNdc, headAlpha);
-      EndPrimitive();
-    }
-  )GLSL";
-}
-
-const char* streakFragmentShader() {
-  return R"GLSL(
-    #version 410 core
-
-    in vec3 gColor;
-    in float gAlpha;
-    out vec4 fragColor;
-
-    void main() {
-      fragColor = vec4(gColor, gAlpha);
-    }
-  )GLSL";
-}
-
 const char* guideVertexShader() {
   return R"GLSL(
     #version 410 core
@@ -740,7 +604,7 @@ float maxMagnitudeForSpeed(double cinematicStrength, float faintMagnitudeLimit, 
 
 ZoetropeState makeZoetropeState(const AppState& app) {
   ZoetropeState state{app.animation.currentYear, app.animation.currentYear, 0.0f, 0.0f};
-  if (!app.gui.zoetropeSampling || !app.animation.active || app.animation.paused) {
+  if (app.gui.longExposure || !app.gui.zoetropeSampling || !app.animation.active || app.animation.paused) {
     return state;
   }
 
@@ -1019,7 +883,7 @@ void drawTimePlayerControls(AppState& app) {
   ImGui::SetNextWindowPos(ImVec2(410.0f, 28.0f), ImGuiCond_FirstUseEver);
   ImGui::Begin("Starfield Time Player", &app.timePlayer.showWindow);
   ImGui::Text("Simple starfield playback");
-  ImGui::TextDisabled("No zoetrope, no layered effect. Just sky time moving.");
+  ImGui::TextDisabled("Long exposure is shared with the cinematic sky.");
   ImGui::Separator();
 
   if (ImGui::Button(app.timePlayer.playing ? "Pause" : "Play")) {
@@ -1171,13 +1035,39 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
     app.gui.brightMagnitudeLimit = std::min(app.gui.brightMagnitudeLimit, app.gui.faintMagnitudeLimit - 0.1f);
   }
   ImGui::SliderFloat("Star size", &app.gui.starSizeScale, 0.25f, 3.0f, "%.2f");
-  ImGui::Checkbox("Star streaks", &app.gui.starStreaks);
-  ImGui::SliderFloat("Streak threshold", &app.gui.streakThreshold, 0.02f, 0.8f, "%.2f");
-  ImGui::SliderFloat("Streak length", &app.gui.streakLengthYears, 0.03f, 1.2f, "%.2f sky yr");
-  ImGui::SliderFloat("Streak width", &app.gui.streakWidthPixels, 0.8f, 8.0f, "%.1f px");
+  ImGui::Checkbox("Long exposure", &app.gui.longExposure);
+  ImGui::SliderFloat("Shutter duration", &app.gui.shutterDurationSeconds, 0.05f, 3.0f, "%.2f sec");
+  ImGui::SliderFloat(
+    "Motion threshold",
+    &app.gui.exposureMotionThresholdPixels,
+    0.05f,
+    12.0f,
+    "%.2f px/frame",
+    ImGuiSliderFlags_Logarithmic
+  );
+  ImGui::SliderFloat("Trail strength", &app.gui.exposureStrength, 0.0f, 1.0f, "%.2f");
+  ImGui::SliderFloat(
+    "Trail spacing",
+    &app.gui.exposureSampleSpacingPixels,
+    2.0f,
+    16.0f,
+    "%.1f px"
+  );
+  ImGui::Text(
+    "Apparent motion: %.2f px/frame | %d sample%s%s",
+    app.exposureMotionPixels,
+    app.exposureSampleCount,
+    app.exposureSampleCount == 1 ? "" : "s",
+    app.exposureActive ? " | exposing" : ""
+  );
+  ImGui::BeginDisabled(app.gui.longExposure);
   ImGui::Checkbox("Zoetrope sampling", &app.gui.zoetropeSampling);
   ImGui::SliderFloat("Zoetrope interval", &app.gui.zoetropeIntervalYears, 120.0f, 1400.0f, "%.0f yr");
   ImGui::SliderFloat("Zoetrope blend", &app.gui.zoetropeBlendPortion, 0.04f, 0.65f, "%.2f");
+  ImGui::EndDisabled();
+  if (app.gui.longExposure) {
+    ImGui::TextDisabled("Continuous exposure replaces zoetrope sampling.");
+  }
   ImGui::Checkbox("Three sky layers", &app.gui.layeredSky);
   ImGui::SliderFloat("Layer separation", &app.gui.layerSeparation, 0.0f, 1.0f, "%.2f");
   ImGui::SliderFloat("Atmosphere warp", &app.gui.atmosphereWarp, 0.0f, 1.0f, "%.2f");
@@ -1275,10 +1165,10 @@ int checkShaderPrograms() {
 
   glfwMakeContextCurrent(window);
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
-  const GlProgram streakProgram = makeProgram(streakVertexShader(), streakFragmentShader(), streakGeometryShader());
+  const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
   glDeleteProgram(guideProgram.id);
-  glDeleteProgram(streakProgram.id);
+  glDeleteProgram(exposureProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();
@@ -1330,8 +1220,9 @@ int runWindow(const std::vector<StarVertex>& stars) {
   ImGui_ImplOpenGL3_Init("#version 410");
 
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
-  const GlProgram streakProgram = makeProgram(streakVertexShader(), streakFragmentShader(), streakGeometryShader());
+  const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
+  LongExposureBuffer exposureBuffer;
   GLuint vao = 0;
   GLuint vbo = 0;
   GLuint guideVao = 0;
@@ -1347,6 +1238,13 @@ int runWindow(const std::vector<StarVertex>& stars) {
   double lastFrameTime = glfwGetTime();
   double lastTitleTime = lastFrameTime;
   double smoothedFps = 0.0;
+  ProjectionUniforms previousExposureProjection;
+  double previousExposureYear = kInitialYear;
+  VisibleProgram previousExposureProgram = app.visibleProgram;
+  float previousCameraYaw = app.camera.yaw;
+  float previousCameraPitch = app.camera.pitch;
+  float previousCameraFov = app.camera.fovRadians;
+  bool previousExposureProjectionValid = false;
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -1386,62 +1284,81 @@ int runWindow(const std::vector<StarVertex>& stars) {
     };
     const Mat4 viewMatrix = lookAt({0.0f, 0.0f, 0.0f}, direction, {0.0f, 1.0f, 0.0f});
     const float effectClock = static_cast<float>(now + (app.animation.startYear - visibleYear) * 0.013);
-
-    glClearColor(0.002f, 0.005f, 0.018f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    const bool streaksActive = !usingTimePlayer &&
-      app.gui.starStreaks &&
-      cinematicStrength > app.gui.streakThreshold &&
+    const bool exposureResized = resizeLongExposureBuffer(
+      exposureBuffer,
+      app.framebufferWidth,
+      app.framebufferHeight
+    );
+    const bool simulationMoving = usingTimePlayer
+      ? app.timePlayer.playing && std::abs(app.timePlayer.sampledYearsPerSecond) > 0.0
+      : app.animation.active && !app.animation.paused;
+    const bool programChanged =
+      previousExposureProjectionValid && previousExposureProgram != app.visibleProgram;
+    const bool cameraChanged =
+      std::abs(app.camera.yaw - previousCameraYaw) > 0.00001f ||
+      std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f ||
+      std::abs(app.camera.fovRadians - previousCameraFov) > 0.00001f;
+    app.exposureMotionPixels = previousExposureProjectionValid && !programChanged
+      ? estimateApparentMotionPixels(
+          projection,
+          previousExposureProjection,
+          visibleYear,
+          previousExposureYear,
+          app.camera.fovRadians,
+          app.framebufferHeight
+        )
+      : 0.0f;
+    const float motionThreshold = std::max(0.01f, app.gui.exposureMotionThresholdPixels);
+    const float activationRange = std::max(0.01f, motionThreshold * 2.0f);
+    const float motionActivation = static_cast<float>(smoothStep01(
+      (app.exposureMotionPixels - motionThreshold) / activationRange
+    ));
+    app.exposureActive =
+      app.gui.longExposure &&
+      simulationMoving &&
       !app.camera.dragging &&
-      app.animation.active &&
-      !app.animation.paused;
-    if (streaksActive) {
-      const double rawTailDeltaYears = -app.animation.speed * delta;
-      const double maxTailDeltaYears = static_cast<double>(app.gui.streakLengthYears);
-      const double tailDeltaYears = clamp(rawTailDeltaYears, -maxTailDeltaYears, maxTailDeltaYears);
-      const double tailYear = zoetrope.primaryYear + tailDeltaYears;
-      const ProjectionUniforms tailProjection = makeProjectionUniforms(tailYear, app.location);
-      const float normalizedStreak = std::clamp(
-        (cinematicStrength - app.gui.streakThreshold) / std::max(0.001f, 1.0f - app.gui.streakThreshold),
-        0.0f,
-        1.0f
-      );
+      !cameraChanged &&
+      motionActivation > 0.0f;
+    const float retention = std::exp(
+      std::log(0.01f) *
+      static_cast<float>(delta) /
+      std::max(0.01f, app.gui.shutterDurationSeconds)
+    );
+    const float exposureStrength = app.exposureActive
+      ? motionActivation * app.gui.exposureStrength
+      : 0.0f;
+    const bool resetExposureHistory =
+      exposureResized ||
+      !previousExposureProjectionValid ||
+      programChanged ||
+      cameraChanged ||
+      app.camera.dragging ||
+      !simulationMoving;
+    const bool interpolateExposure =
+      app.exposureActive &&
+      !resetExposureHistory &&
+      previousExposureProjectionValid;
+    app.exposureSampleCount = interpolateExposure
+      ? std::clamp(
+          static_cast<int>(std::ceil(
+            app.exposureMotionPixels /
+            std::max(1.0f, app.gui.exposureSampleSpacingPixels)
+          )),
+          1,
+          kMaxExposureSamples
+        )
+      : 1;
+    const double exposureStartYear = previousExposureYear;
 
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-      glUseProgram(streakProgram.id);
-      glUniformMatrix4fv(glGetUniformLocation(streakProgram.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
-      glUniformMatrix4fv(glGetUniformLocation(streakProgram.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentYearsSinceCatalog"), projection.yearsSinceCatalog);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentZeta"), projection.zeta);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentZ"), projection.z);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentCosTheta"), projection.cosTheta);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentSinTheta"), projection.sinTheta);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCurrentLocalSiderealTime"), projection.localSiderealTime);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailYearsSinceCatalog"), tailProjection.yearsSinceCatalog);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailZeta"), tailProjection.zeta);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailZ"), tailProjection.z);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailCosTheta"), tailProjection.cosTheta);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailSinTheta"), tailProjection.sinTheta);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uTailLocalSiderealTime"), tailProjection.localSiderealTime);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uSinLat"), projection.sinLatitude);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCosLat"), projection.cosLatitude);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uSkyRadius"), kSkyRadius);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uMaxVisibleMagnitude"), maxVisibleMagnitude);
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uCinematicStrength"), cinematicStrength);
-      glUniform2f(
-        glGetUniformLocation(streakProgram.id, "uViewport"),
-        static_cast<float>(app.framebufferWidth),
-        static_cast<float>(app.framebufferHeight)
-      );
-      glUniform1f(
-        glGetUniformLocation(streakProgram.id, "uStreakWidthPixels"),
-        app.gui.streakWidthPixels * (0.7f + normalizedStreak * 0.6f)
-      );
-      glUniform1f(glGetUniformLocation(streakProgram.id, "uMinStreakPixels"), 1.0f + normalizedStreak * 2.0f);
-      glBindVertexArray(vao);
-      glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(stars.size()));
-    }
+    previousExposureProjection = projection;
+    previousExposureYear = visibleYear;
+    previousExposureProgram = app.visibleProgram;
+    previousCameraYaw = app.camera.yaw;
+    previousCameraPitch = app.camera.pitch;
+    previousCameraFov = app.camera.fovRadians;
+    previousExposureProjectionValid = true;
+
+    beginLongExposureScene(exposureBuffer);
 
     const auto drawSkyState = [&](double year, float alphaScale, float phaseOffset) {
       const float cinematicLayer = cinematicStrength * app.gui.layerSeparation;
@@ -1512,6 +1429,51 @@ int runWindow(const std::vector<StarVertex>& stars) {
       );
     };
 
+    if (app.exposureSampleCount > 1) {
+      double exposureYearSpan = visibleYear - exposureStartYear;
+      const double maximumUsefulSpan = kTau / kSiderealRadiansPerYear;
+      if (std::abs(exposureYearSpan) > maximumUsefulSpan) {
+        exposureYearSpan = std::copysign(maximumUsefulSpan, exposureYearSpan);
+      }
+      const double sampledStartYear = visibleYear - exposureYearSpan;
+      const float sampleAlpha = std::clamp(
+        exposureStrength * 0.72f / std::sqrt(static_cast<float>(app.exposureSampleCount)),
+        0.035f,
+        0.24f
+      );
+      const float sampleSpacing =
+        app.exposureMotionPixels / static_cast<float>(app.exposureSampleCount);
+      const float sampleSizeScale =
+        app.gui.starSizeScale * std::clamp(sampleSpacing / 5.0f, 1.0f, 3.2f);
+      const float sampleWarp =
+        app.gui.atmosphereWarp * (0.35f + cinematicStrength * 0.95f);
+      for (int sample = 1; sample < app.exposureSampleCount; ++sample) {
+        const double t =
+          static_cast<double>(sample) / static_cast<double>(app.exposureSampleCount);
+        const double sampleYear = sampledStartYear + exposureYearSpan * t;
+        const ProjectionUniforms sampleProjection =
+          projectionForLayer(sampleYear, app.location, 0.0f, 0.0f);
+        const float sampleClock = static_cast<float>(
+          now + (app.animation.startYear - sampleYear) * 0.013
+        );
+        drawStarPass(
+          starsProgram,
+          vao,
+          stars.size(),
+          viewMatrix,
+          projectionMatrix,
+          sampleProjection,
+          maxVisibleMagnitude,
+          cinematicStrength,
+          sampleSizeScale,
+          sampleAlpha,
+          0.04f,
+          sampleWarp,
+          sampleClock
+        );
+      }
+    }
+
     if (usingTimePlayer) {
       drawStarPass(
         starsProgram,
@@ -1547,6 +1509,14 @@ int runWindow(const std::vector<StarVertex>& stars) {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     }
 
+    resolveLongExposure(
+      exposureBuffer,
+      exposureProgram.id,
+      retention,
+      exposureStrength,
+      resetExposureHistory
+    );
+
     if (!usingTimePlayer) {
       drawCinematicOverlays(app, cinematicStrength, zoetrope, now);
     }
@@ -1571,8 +1541,9 @@ int runWindow(const std::vector<StarVertex>& stars) {
   glDeleteVertexArrays(1, &guideVao);
   glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
+  destroyLongExposureBuffer(exposureBuffer);
   glDeleteProgram(guideProgram.id);
-  glDeleteProgram(streakProgram.id);
+  glDeleteProgram(exposureProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();

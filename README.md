@@ -38,7 +38,10 @@ The first run generates `public/sky/hipparcos.csv` from the cached/downloaded
 CDS source data. Use `npm run skyrewind:cpp:check` to build, load the catalog,
 and compile the OpenGL shaders without opening the visible app window. In the
 native app, F1 toggles the old cinematic controls and F2 toggles the new time
-player.
+player. The shared long-exposure controls accumulate recent sky frames once
+apparent motion crosses the shutter threshold, producing camera-like trails in
+either playback mode. Adaptive intra-frame samples fill fast trails between
+frames, with adjustable trail spacing and a fixed performance cap.
 
 ## Controls
 

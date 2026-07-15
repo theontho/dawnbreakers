@@ -47,6 +47,7 @@ endif()
 add_executable(skyrewind_cpp
   src/Astronomy.cpp
   src/Catalog.cpp
+  src/LongExposure.cpp
   src/Main.cpp
   src/TimePlayer.cpp
 )
