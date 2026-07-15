@@ -22,14 +22,19 @@ struct LongExposureBuffer {
 
 const char* longExposureVertexShader();
 const char* longExposureFragmentShader();
+const char* longExposureDisplayFragmentShader();
 bool resizeLongExposureBuffer(LongExposureBuffer& buffer, int width, int height);
 void beginLongExposureScene(const LongExposureBuffer& buffer);
 void resolveLongExposure(
   LongExposureBuffer& buffer,
-  GLuint program,
+  GLuint accumulationProgram,
+  GLuint displayProgram,
   float retention,
   float strength,
-  bool resetHistory
+  bool resetHistory,
+  int outputMode,
+  float exposure,
+  float headroom
 );
 void destroyLongExposureBuffer(LongExposureBuffer& buffer);
 

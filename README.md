@@ -43,8 +43,14 @@ apparent motion crosses the shutter threshold, producing camera-like trails in
 either playback mode. Adaptive intra-frame samples fill fast trails between
 frames, with adjustable trail spacing and a fixed performance cap. The moon is
 rendered in the OpenGL sky from an approximate lunar orbit, so it follows its
-own path rather than moving with the stellar catalog. Moon follow mode keeps
-the camera centered on it during playback; dragging the view exits follow mode.
+own path rather than moving with the stellar catalog. Moon tracking can retain
+a horizon-up view or stabilize the surrounding celestial field; dragging the
+view exits tracking.
+
+On macOS, the native app requests a half-float OpenGL surface and opts into
+Extended Dynamic Range. **HDR output** uses available XDR headroom directly on
+capable displays and falls back to ACES tone mapping on SDR displays. The
+exposure slider adjusts reference brightness without changing simulation data.
 
 ## Controls
 

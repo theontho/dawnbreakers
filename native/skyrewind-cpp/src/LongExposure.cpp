@@ -73,6 +73,60 @@ const char* longExposureFragmentShader() {
   )GLSL";
 }
 
+const char* longExposureDisplayFragmentShader() {
+  return R"GLSL(
+    #version 410 core
+
+    uniform sampler2D uImage;
+    uniform int uOutputMode;
+    uniform float uExposure;
+    uniform float uHeadroom;
+
+    in vec2 vUv;
+    out vec4 fragColor;
+
+    vec3 acesToneMap(vec3 color) {
+      const float a = 2.51;
+      const float b = 0.03;
+      const float c = 2.43;
+      const float d = 0.59;
+      const float e = 0.14;
+      return clamp(
+        (color * (a * color + b)) /
+        (color * (c * color + d) + e),
+        0.0,
+        1.0
+      );
+    }
+
+    vec3 softClipEdr(vec3 color, float headroom) {
+      float safeHeadroom = max(1.001, headroom);
+      float knee = 1.0 + (safeHeadroom - 1.0) * 0.75;
+      vec3 result = color;
+      for (int channel = 0; channel < 3; ++channel) {
+        if (result[channel] > knee) {
+          float range = safeHeadroom - knee;
+          float excess = (result[channel] - knee) / range;
+          result[channel] = knee + range * excess / (1.0 + excess);
+        }
+      }
+      return clamp(result, 0.0, safeHeadroom);
+    }
+
+    void main() {
+      vec3 color = texture(uImage, vUv).rgb * exp2(uExposure);
+      if (uOutputMode == 1) {
+        color = acesToneMap(color);
+      } else if (uOutputMode == 2) {
+        color = softClipEdr(color, uHeadroom);
+      } else {
+        color = clamp(color, 0.0, 1.0);
+      }
+      fragColor = vec4(color, 1.0);
+    }
+  )GLSL";
+}
+
 bool resizeLongExposureBuffer(LongExposureBuffer& buffer, int width, int height) {
   const int safeWidth = std::max(1, width);
   const int safeHeight = std::max(1, height);
@@ -113,10 +167,14 @@ void beginLongExposureScene(const LongExposureBuffer& buffer) {
 
 void resolveLongExposure(
   LongExposureBuffer& buffer,
-  GLuint program,
+  GLuint accumulationProgram,
+  GLuint displayProgram,
   float retention,
   float strength,
-  bool resetHistory
+  bool resetHistory,
+  int outputMode,
+  float exposure,
+  float headroom
 ) {
   const int writeIndex = 1 - buffer.historyIndex;
   const bool useHistory = buffer.historyValid && !resetHistory;
@@ -124,34 +182,35 @@ void resolveLongExposure(
   glDisable(GL_BLEND);
   glBindFramebuffer(GL_FRAMEBUFFER, buffer.historyFramebuffers[writeIndex]);
   glViewport(0, 0, buffer.width, buffer.height);
-  glUseProgram(program);
+  glUseProgram(accumulationProgram);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, buffer.sceneTexture);
-  glUniform1i(glGetUniformLocation(program, "uCurrentFrame"), 0);
+  glUniform1i(glGetUniformLocation(accumulationProgram, "uCurrentFrame"), 0);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, buffer.historyTextures[buffer.historyIndex]);
-  glUniform1i(glGetUniformLocation(program, "uHistory"), 1);
-  glUniform1f(glGetUniformLocation(program, "uRetention"), useHistory ? std::clamp(retention, 0.0f, 1.0f) : 0.0f);
-  glUniform1f(glGetUniformLocation(program, "uStrength"), useHistory ? std::clamp(strength, 0.0f, 1.0f) : 0.0f);
+  glUniform1i(glGetUniformLocation(accumulationProgram, "uHistory"), 1);
+  glUniform1f(
+    glGetUniformLocation(accumulationProgram, "uRetention"),
+    useHistory ? std::clamp(retention, 0.0f, 1.0f) : 0.0f
+  );
+  glUniform1f(
+    glGetUniformLocation(accumulationProgram, "uStrength"),
+    useHistory ? std::clamp(strength, 0.0f, 1.0f) : 0.0f
+  );
   glBindVertexArray(buffer.fullscreenVao);
   glDrawArrays(GL_TRIANGLES, 0, 3);
 
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.historyFramebuffers[writeIndex]);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  glBlitFramebuffer(
-    0,
-    0,
-    buffer.width,
-    buffer.height,
-    0,
-    0,
-    buffer.width,
-    buffer.height,
-    GL_COLOR_BUFFER_BIT,
-    GL_NEAREST
-  );
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glViewport(0, 0, buffer.width, buffer.height);
+  glUseProgram(displayProgram);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, buffer.historyTextures[writeIndex]);
+  glUniform1i(glGetUniformLocation(displayProgram, "uImage"), 0);
+  glUniform1i(glGetUniformLocation(displayProgram, "uOutputMode"), outputMode);
+  glUniform1f(glGetUniformLocation(displayProgram, "uExposure"), exposure);
+  glUniform1f(glGetUniformLocation(displayProgram, "uHeadroom"), std::max(1.0f, headroom));
+  glDrawArrays(GL_TRIANGLES, 0, 3);
 
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, 0);
   glActiveTexture(GL_TEXTURE0);

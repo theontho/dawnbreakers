@@ -1,5 +1,6 @@
 #include "Astronomy.hpp"
 #include "Catalog.hpp"
+#include "ExtendedRange.hpp"
 #include "LongExposure.hpp"
 #include "TimePlayer.hpp"
 #ifdef __APPLE__
@@ -80,6 +81,12 @@ struct CameraState {
   double pointerY = 0.0;
 };
 
+enum class MoonTrackingMode : int {
+  Off = 0,
+  HorizonUp = 1,
+  SkyStabilized = 2,
+};
+
 struct GuiState {
   float startYear = static_cast<float>(kInitialYear);
   float rewindYears = static_cast<float>(kDefaultRewindYears);
@@ -102,10 +109,12 @@ struct GuiState {
   float layerSeparation = 0.42f;
   float atmosphereWarp = 0.26f;
   float moonSizePixels = 82.0f;
+  float hdrExposure = 0.0f;
   bool zoetropeSampling = true;
   bool layeredSky = true;
   bool showMoon = true;
-  bool followMoon = false;
+  MoonTrackingMode moonTrackingMode = MoonTrackingMode::Off;
+  bool hdrOutput = true;
   bool longExposure = true;
   bool showHorizon = true;
   bool vsync = true;
@@ -123,6 +132,7 @@ struct AppState {
   TimePlayerState timePlayer;
   GuiState gui;
   Location location;
+  ExtendedRangeState extendedRange;
   VisibleProgram visibleProgram = VisibleProgram::TimePlayer;
   int framebufferWidth = 1440;
   int framebufferHeight = 960;
@@ -275,6 +285,14 @@ Mat4 multiply(const Mat4& a, const Mat4& b) {
   return out;
 }
 
+Vec3 transformDirection(const Mat4& matrix, Vec3 value) {
+  return {
+    matrix.m[0] * value.x + matrix.m[4] * value.y + matrix.m[8] * value.z,
+    matrix.m[1] * value.x + matrix.m[5] * value.y + matrix.m[9] * value.z,
+    matrix.m[2] * value.x + matrix.m[6] * value.y + matrix.m[10] * value.z,
+  };
+}
+
 Mat4 perspective(float fovRadians, float aspect, float nearPlane, float farPlane) {
   const float f = 1.0f / std::tan(fovRadians * 0.5f);
   Mat4 out;
@@ -288,7 +306,14 @@ Mat4 perspective(float fovRadians, float aspect, float nearPlane, float farPlane
 
 Mat4 lookAt(Vec3 eye, Vec3 target, Vec3 up) {
   const Vec3 forward = normalize({target.x - eye.x, target.y - eye.y, target.z - eye.z});
-  const Vec3 side = normalize(cross(forward, up));
+  Vec3 side = cross(forward, up);
+  if (dot(side, side) < 0.000001f) {
+    const Vec3 fallbackUp = std::abs(forward.y) > 0.95f
+      ? Vec3{0.0f, 0.0f, -1.0f}
+      : Vec3{0.0f, 1.0f, 0.0f};
+    side = cross(forward, fallbackUp);
+  }
+  side = normalize(side);
   const Vec3 cameraUp = cross(side, forward);
 
   Mat4 out;
@@ -381,6 +406,7 @@ const char* starVertexShader() {
     uniform float uSkyRadius;
     uniform float uMaxVisibleMagnitude;
     uniform float uCinematicStrength;
+    uniform float uHdrHighlightScale;
     uniform float uStarSizeScale;
     uniform float uLayerAlpha;
     uniform float uLayerBlueShift;
@@ -415,12 +441,23 @@ const char* starVertexShader() {
       float brightness = clamp(1.0 - (aMagnitude + 1.4) / 10.4, 0.035, 1.0);
       float thresholdFade = clamp((uMaxVisibleMagnitude - aMagnitude) / 0.8, 0.1, 1.0);
       float lowerSkyDimming = y < 0.0 ? clamp(1.0 + (y / uSkyRadius) * 0.82, 0.18, 1.0) : 1.0;
-      float intensity = clamp((pow(brightness, 1.45) + uCinematicStrength * 0.09) * lowerSkyDimming * thresholdFade, 0.018, 1.0);
+      float baseIntensity = clamp(
+        (pow(brightness, 1.45) + uCinematicStrength * 0.09) *
+          lowerSkyDimming * thresholdFade,
+        0.018,
+        1.0
+      );
+      float intensity = baseIntensity + pow(brightness, 4.0) * uHdrHighlightScale;
+      float maxRadiance = 1.0 + uHdrHighlightScale;
 
       vColor = vec3(
-        clamp(intensity * aColor.r, 0.0, 1.0),
-        clamp(intensity * aColor.g, 0.0, 1.0),
-        clamp(intensity * (aColor.b + uCinematicStrength * (0.16 + uLayerBlueShift)), 0.0, 1.0)
+        clamp(intensity * aColor.r, 0.0, maxRadiance),
+        clamp(intensity * aColor.g, 0.0, maxRadiance),
+        clamp(
+          intensity * (aColor.b + uCinematicStrength * (0.16 + uLayerBlueShift)),
+          0.0,
+          maxRadiance
+        )
       );
       vAlpha = visible * uLayerAlpha;
 
@@ -508,8 +545,7 @@ const char* moonFragmentShader() {
     #version 410 core
 
     uniform float uAlpha;
-    uniform float uPhaseSin;
-    uniform float uPhaseCos;
+    uniform vec3 uLightDirection;
 
     in vec2 gUv;
     out vec4 fragColor;
@@ -522,8 +558,7 @@ const char* moonFragmentShader() {
 
       float surfaceZ = sqrt(max(0.0, 1.0 - dot(gUv, gUv)));
       vec3 surfaceNormal = vec3(gUv, surfaceZ);
-      vec3 lightDirection = normalize(vec3(uPhaseSin, 0.0, -uPhaseCos));
-      float light = dot(surfaceNormal, lightDirection);
+      float light = dot(surfaceNormal, normalize(uLightDirection));
       float litMask = smoothstep(-0.018, 0.018, light);
       float limb = 0.42 + 0.58 * sqrt(max(0.0, surfaceZ));
       float lightFalloff = 0.5 + 0.5 * sqrt(max(0.0, light));
@@ -732,15 +767,55 @@ void centerViewportOnMoon(AppState& app) {
 void drawMoonCameraControls(AppState& app, const char* id) {
   ImGui::PushID(id);
   ImGui::BeginDisabled(!app.gui.showMoon);
-  if (ImGui::Checkbox("Follow moon", &app.gui.followMoon) && app.gui.followMoon) {
-    centerViewportOnMoon(app);
+  int trackingMode = static_cast<int>(app.gui.moonTrackingMode);
+  if (ImGui::Combo(
+        "Moon tracking",
+        &trackingMode,
+        "Off\0Horizon up\0Sky stabilized\0"
+      )) {
+    app.gui.moonTrackingMode = static_cast<MoonTrackingMode>(trackingMode);
+    if (app.gui.moonTrackingMode != MoonTrackingMode::Off) {
+      centerViewportOnMoon(app);
+    }
   }
-  ImGui::SameLine();
   if (ImGui::Button("Center moon")) {
     centerViewportOnMoon(app);
   }
   ImGui::EndDisabled();
   ImGui::PopID();
+}
+
+void drawHdrControls(AppState& app, const char* id) {
+  ImGui::PushID(id);
+  ImGui::Checkbox("HDR output", &app.gui.hdrOutput);
+  ImGui::BeginDisabled(!app.gui.hdrOutput);
+  ImGui::SliderFloat("Exposure", &app.gui.hdrExposure, -4.0f, 4.0f, "%+.1f EV");
+  if (app.extendedRange.floatingPointSurface &&
+      app.extendedRange.currentHeadroom > 1.001f) {
+    ImGui::Text(
+      "XDR active: %.2fx headroom",
+      app.extendedRange.currentHeadroom
+    );
+  } else if (app.extendedRange.displayCapable) {
+    ImGui::Text(
+      "XDR display: SDR fallback (potential %.2fx)",
+      app.extendedRange.potentialHeadroom
+    );
+  } else {
+    ImGui::Text("SDR tone mapping");
+  }
+  ImGui::EndDisabled();
+  ImGui::PopID();
+}
+
+int hdrOutputMode(const AppState& app) {
+  if (!app.gui.hdrOutput) {
+    return 0;
+  }
+  return app.extendedRange.floatingPointSurface &&
+      app.extendedRange.currentHeadroom > 1.001f
+    ? 2
+    : 1;
 }
 
 ProjectionUniforms projectionForLayer(double year, const Location& location, float siderealOffset, float precessionOffset) {
@@ -760,6 +835,7 @@ void drawStarPass(
   const ProjectionUniforms& projection,
   float maxVisibleMagnitude,
   float cinematicStrength,
+  float hdrHighlightScale,
   float starSizeScale,
   float layerAlpha,
   float layerBlueShift,
@@ -780,6 +856,7 @@ void drawStarPass(
   glUniform1f(glGetUniformLocation(program.id, "uSkyRadius"), kSkyRadius);
   glUniform1f(glGetUniformLocation(program.id, "uMaxVisibleMagnitude"), maxVisibleMagnitude);
   glUniform1f(glGetUniformLocation(program.id, "uCinematicStrength"), cinematicStrength);
+  glUniform1f(glGetUniformLocation(program.id, "uHdrHighlightScale"), hdrHighlightScale);
   glUniform1f(glGetUniformLocation(program.id, "uStarSizeScale"), starSizeScale);
   glUniform1f(glGetUniformLocation(program.id, "uLayerAlpha"), layerAlpha);
   glUniform1f(glGetUniformLocation(program.id, "uLayerBlueShift"), layerBlueShift);
@@ -818,8 +895,20 @@ void drawMoonPass(
   );
   glUniform1f(glGetUniformLocation(program.id, "uSizePixels"), sizePixels);
   glUniform1f(glGetUniformLocation(program.id, "uAlpha"), alpha);
-  glUniform1f(glGetUniformLocation(program.id, "uPhaseSin"), moon.phaseSin);
-  glUniform1f(glGetUniformLocation(program.id, "uPhaseCos"), moon.phaseCos);
+  const Vec3 sunInView = normalize(transformDirection(
+    viewMatrix,
+    {
+      moon.sunDirection.east,
+      moon.sunDirection.up,
+      -moon.sunDirection.north,
+    }
+  ));
+  glUniform3f(
+    glGetUniformLocation(program.id, "uLightDirection"),
+    sunInView.x,
+    sunInView.y,
+    sunInView.z
+  );
   glBindVertexArray(vao);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDrawArrays(GL_POINTS, 0, 1);
@@ -898,7 +987,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int) {
     return;
   }
   if (action == GLFW_PRESS) {
-    app->gui.followMoon = false;
+    app->gui.moonTrackingMode = MoonTrackingMode::Off;
   }
   app->camera.dragging = action == GLFW_PRESS;
   glfwGetCursorPos(window, &app->camera.pointerX, &app->camera.pointerY);
@@ -1116,6 +1205,7 @@ void drawTimePlayerControls(AppState& app) {
     "%.0f deg"
   );
   drawMoonCameraControls(app, "time-player-moon-camera");
+  drawHdrControls(app, "time-player-hdr");
   ImGui::TextDisabled("F1 toggles the old window. This window stays separate.");
   ImGui::End();
 }
@@ -1235,7 +1325,7 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   ImGui::SliderFloat("Layer separation", &app.gui.layerSeparation, 0.0f, 1.0f, "%.2f");
   ImGui::SliderFloat("Atmosphere warp", &app.gui.atmosphereWarp, 0.0f, 1.0f, "%.2f");
   if (ImGui::Checkbox("Moon element", &app.gui.showMoon) && !app.gui.showMoon) {
-    app.gui.followMoon = false;
+    app.gui.moonTrackingMode = MoonTrackingMode::Off;
   }
   drawMoonCameraControls(app, "cinematic-moon-camera");
   ImGui::SliderFloat("Moon size", &app.gui.moonSizePixels, 24.0f, 160.0f, "%.0f px");
@@ -1248,6 +1338,7 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
     kMaximumFovDegrees,
     "%.0f deg"
   );
+  drawHdrControls(app, "cinematic-hdr");
   if (ImGui::Checkbox("VSync", &app.gui.vsync)) {
     glfwSwapInterval(app.gui.vsync ? 1 : 0);
   }
@@ -1275,36 +1366,71 @@ std::string makeTitle(double fps, VisibleProgram program, double visibleYear, st
   return title.str();
 }
 
+void configureOpenGLWindowHints(bool floatingPointColor, bool visible) {
+  glfwDefaultWindowHints();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+  glfwWindowHint(GLFW_SAMPLES, 0);
+  glfwWindowHint(GLFW_VISIBLE, visible ? GLFW_TRUE : GLFW_FALSE);
+#ifdef __APPLE__
+  if (floatingPointColor) {
+    glfwWindowHint(GLFW_RED_BITS, 16);
+    glfwWindowHint(GLFW_GREEN_BITS, 16);
+    glfwWindowHint(GLFW_BLUE_BITS, 16);
+    glfwWindowHint(GLFW_ALPHA_BITS, 16);
+  }
+#else
+  (void) floatingPointColor;
+#endif
+}
+
+GLFWwindow* createOpenGLWindow(int width, int height, const char* title, bool visible) {
+  configureOpenGLWindowHints(true, visible);
+  GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+#ifdef __APPLE__
+  if (window == nullptr) {
+    configureOpenGLWindowHints(false, visible);
+    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+  }
+#endif
+  return window;
+}
+
 int checkShaderPrograms() {
   if (!glfwInit()) {
     throw std::runtime_error("Unable to initialize GLFW for shader check.");
   }
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-  GLFWwindow* window = glfwCreateWindow(64, 64, "Sky Rewind Shader Check", nullptr, nullptr);
+  GLFWwindow* window = createOpenGLWindow(64, 64, "Sky Rewind Shader Check", false);
   if (!window) {
     glfwTerminate();
     throw std::runtime_error("Unable to create hidden OpenGL window for shader check.");
   }
 
   glfwMakeContextCurrent(window);
+  const ExtendedRangeState extendedRange = configureExtendedRange(window);
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
   const GlProgram moonProgram =
     makeProgram(moonVertexShader(), moonFragmentShader(), moonGeometryShader());
   const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
+  const GlProgram displayProgram =
+    makeProgram(longExposureVertexShader(), longExposureDisplayFragmentShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
   glDeleteProgram(guideProgram.id);
+  glDeleteProgram(displayProgram.id);
   glDeleteProgram(exposureProgram.id);
   glDeleteProgram(moonProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();
-  std::cout << "OpenGL shader check passed.\n";
+  std::cout
+    << "OpenGL shader check passed. Default framebuffer: "
+    << (extendedRange.floatingPointSurface ? "FP16" : "integer SDR")
+    << ", display potential: "
+    << std::fixed << std::setprecision(2)
+    << extendedRange.potentialHeadroom << "x.\n";
   return EXIT_SUCCESS;
 }
 
@@ -1313,13 +1439,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
     throw std::runtime_error("Unable to initialize GLFW.");
   }
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-  glfwWindowHint(GLFW_SAMPLES, 0);
-
-  GLFWwindow* window = glfwCreateWindow(1440, 960, "Sky Rewind C++", nullptr, nullptr);
+  GLFWwindow* window = createOpenGLWindow(1440, 960, "Sky Rewind C++", true);
   if (!window) {
     glfwTerminate();
     throw std::runtime_error("Unable to create native OpenGL window.");
@@ -1336,6 +1456,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   glfwSetCharCallback(window, charCallback);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   glfwMakeContextCurrent(window);
+  app.extendedRange = configureExtendedRange(window);
   glfwSwapInterval(1);
   glfwGetFramebufferSize(window, &app.framebufferWidth, &app.framebufferHeight);
   glViewport(0, 0, app.framebufferWidth, app.framebufferHeight);
@@ -1355,6 +1476,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
   const GlProgram moonProgram =
     makeProgram(moonVertexShader(), moonFragmentShader(), moonGeometryShader());
   const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
+  const GlProgram displayProgram =
+    makeProgram(longExposureVertexShader(), longExposureDisplayFragmentShader());
   const GlProgram guideProgram = makeProgram(guideVertexShader(), guideFragmentShader());
   LongExposureBuffer exposureBuffer;
   GLuint vao = 0;
@@ -1380,7 +1503,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   float previousCameraYaw = app.camera.yaw;
   float previousCameraPitch = app.camera.pitch;
   float previousCameraFov = app.camera.fovRadians;
-  bool previousFollowMoon = app.gui.followMoon;
+  MoonTrackingMode previousMoonTrackingMode = app.gui.moonTrackingMode;
   bool previousExposureProjectionValid = false;
 
   while (!glfwWindowShouldClose(window)) {
@@ -1390,6 +1513,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
     lastFrameTime = now;
     const double instantFps = 1.0 / delta;
     smoothedFps = smoothedFps == 0.0 ? instantFps : smoothedFps * 0.9 + instantFps * 0.1;
+    app.extendedRange = queryExtendedRange(
+      window,
+      app.extendedRange.floatingPointSurface
+    );
 
     applyGuiSettings(app);
     updateAnimation(app.animation, now, delta);
@@ -1407,7 +1534,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
     const double visibleYear = usingTimePlayer ? app.timePlayer.currentYear : zoetrope.primaryYear;
     const ProjectionUniforms projection = projectionForLayer(visibleYear, app.location, 0.0f, 0.0f);
     const float cinematicStrength = usingTimePlayer ? 0.0f : static_cast<float>(app.animation.motionStrength);
-    if (app.gui.showMoon && app.gui.followMoon) {
+    const float hdrHighlightScale = app.gui.hdrOutput ? 3.0f : 0.0f;
+    const bool trackingMoon =
+      app.gui.showMoon && app.gui.moonTrackingMode != MoonTrackingMode::Off;
+    if (trackingMoon) {
       orientCameraTowardMoon(app, visibleYear);
     }
     const float maxVisibleMagnitude = maxMagnitudeForSpeed(
@@ -1422,7 +1552,15 @@ int runWindow(const std::vector<StarVertex>& stars) {
       std::sin(app.camera.pitch),
       -std::cos(app.camera.pitch) * std::cos(app.camera.yaw),
     };
-    const Mat4 viewMatrix = lookAt({0.0f, 0.0f, 0.0f}, direction, {0.0f, 1.0f, 0.0f});
+    const float hemisphere = app.location.latitudeRadians < 0.0 ? -1.0f : 1.0f;
+    const Vec3 cameraUp = app.gui.moonTrackingMode == MoonTrackingMode::SkyStabilized
+      ? Vec3{
+          0.0f,
+          std::abs(static_cast<float>(std::sin(app.location.latitudeRadians))),
+          -hemisphere * static_cast<float>(std::cos(app.location.latitudeRadians)),
+        }
+      : Vec3{0.0f, 1.0f, 0.0f};
+    const Mat4 viewMatrix = lookAt({0.0f, 0.0f, 0.0f}, direction, cameraUp);
     const float effectClock = static_cast<float>(now + (app.animation.startYear - visibleYear) * 0.013);
     const bool exposureResized = resizeLongExposureBuffer(
       exposureBuffer,
@@ -1434,16 +1572,17 @@ int runWindow(const std::vector<StarVertex>& stars) {
       : app.animation.active && !app.animation.paused;
     const bool programChanged =
       previousExposureProjectionValid && previousExposureProgram != app.visibleProgram;
-    const bool followModeChanged = previousFollowMoon != app.gui.followMoon;
+    const bool trackingModeChanged =
+      previousMoonTrackingMode != app.gui.moonTrackingMode;
     const bool cameraOrientationChanged =
       std::abs(app.camera.yaw - previousCameraYaw) > 0.00001f ||
       std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f;
     const bool cameraFovChanged =
       std::abs(app.camera.fovRadians - previousCameraFov) > 0.00001f;
     const bool cameraChanged =
-      followModeChanged ||
+      trackingModeChanged ||
       cameraFovChanged ||
-      (!app.gui.followMoon && cameraOrientationChanged);
+      (!trackingMoon && cameraOrientationChanged);
     app.exposureMotionPixels = previousExposureProjectionValid && !programChanged
       ? estimateApparentMotionPixels(
           projection,
@@ -1502,7 +1641,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
     previousCameraYaw = app.camera.yaw;
     previousCameraPitch = app.camera.pitch;
     previousCameraFov = app.camera.fovRadians;
-    previousFollowMoon = app.gui.followMoon;
+    previousMoonTrackingMode = app.gui.moonTrackingMode;
     previousExposureProjectionValid = true;
 
     beginLongExposureScene(exposureBuffer);
@@ -1520,6 +1659,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         mainProjection,
         maxVisibleMagnitude,
         cinematicStrength,
+        hdrHighlightScale,
         app.gui.starSizeScale,
         alphaScale,
         0.04f,
@@ -1546,6 +1686,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         diurnalProjection,
         maxVisibleMagnitude - 0.25f,
         cinematicStrength,
+        hdrHighlightScale,
         app.gui.starSizeScale * 1.18f,
         alphaScale * cinematicStrength * 0.32f,
         0.22f,
@@ -1568,6 +1709,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         driftProjection,
         maxVisibleMagnitude - 0.65f,
         cinematicStrength,
+        hdrHighlightScale,
         app.gui.starSizeScale * 1.42f,
         alphaScale * cinematicStrength * 0.22f,
         0.34f,
@@ -1612,6 +1754,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
           sampleProjection,
           maxVisibleMagnitude,
           cinematicStrength,
+          hdrHighlightScale,
           sampleSizeScale,
           sampleAlpha,
           0.04f,
@@ -1645,6 +1788,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         projection,
         app.gui.faintMagnitudeLimit,
         0.0f,
+        hdrHighlightScale,
         app.gui.starSizeScale,
         1.0f,
         0.0f,
@@ -1673,9 +1817,13 @@ int runWindow(const std::vector<StarVertex>& stars) {
     resolveLongExposure(
       exposureBuffer,
       exposureProgram.id,
+      displayProgram.id,
       retention,
       exposureStrength,
-      resetExposureHistory
+      resetExposureHistory,
+      hdrOutputMode(app),
+      app.gui.hdrExposure,
+      app.extendedRange.currentHeadroom
     );
 
     if (app.gui.showMoon) {
@@ -1720,6 +1868,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   glDeleteVertexArrays(1, &vao);
   destroyLongExposureBuffer(exposureBuffer);
   glDeleteProgram(guideProgram.id);
+  glDeleteProgram(displayProgram.id);
   glDeleteProgram(exposureProgram.id);
   glDeleteProgram(moonProgram.id);
   glDeleteProgram(starsProgram.id);

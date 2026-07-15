@@ -19,6 +19,17 @@ FetchContent_Declare(
   GIT_TAG 3.4
 )
 FetchContent_MakeAvailable(glfw)
+if(APPLE)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+      -DGLFW_SOURCE_DIR=${glfw_SOURCE_DIR}
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/EnableGlfwEdr.cmake
+    RESULT_VARIABLE glfw_edr_patch_result
+  )
+  if(NOT glfw_edr_patch_result EQUAL 0)
+    message(FATAL_ERROR "Unable to enable GLFW floating-point EDR support")
+  endif()
+endif()
 
 FetchContent_Declare(
   imgui
@@ -56,11 +67,12 @@ target_include_directories(skyrewind_cpp PRIVATE src)
 target_link_libraries(skyrewind_cpp PRIVATE glfw imgui)
 
 if(APPLE)
-  target_sources(skyrewind_cpp PRIVATE src/MacDockIcon.mm)
+  target_sources(skyrewind_cpp PRIVATE src/ExtendedRangeMac.mm src/MacDockIcon.mm)
   target_compile_definitions(skyrewind_cpp PRIVATE GL_SILENCE_DEPRECATION)
   target_compile_options(skyrewind_cpp PRIVATE -Wno-nontrivial-memcall)
   target_link_libraries(skyrewind_cpp PRIVATE "-framework Cocoa" "-framework OpenGL")
 else()
+  target_sources(skyrewind_cpp PRIVATE src/ExtendedRangeStub.cpp)
   find_package(OpenGL REQUIRED)
   target_link_libraries(skyrewind_cpp PRIVATE OpenGL::GL)
 endif()
