@@ -108,13 +108,14 @@ ProjectionUniforms makeProjectionUniforms(double decimalYear, const Location& lo
 }
 
 MoonState moonState(double decimalYear, const Location& location) {
-  const double daysSinceJ2000 = julianDayFromDecimalYear(decimalYear) - kJ2000JulianDay;
-  const double ascendingNode = degreesToWrappedRadians(125.1228 - 0.0529538083 * daysSinceJ2000);
+  const double orbitalDays =
+    julianDayFromDecimalYear(decimalYear) - kSchlyterEpochJulianDay;
+  const double ascendingNode = degreesToWrappedRadians(125.1228 - 0.0529538083 * orbitalDays);
   const double inclination = 5.1454 * kDegToRad;
   const double argumentOfPerigee =
-    degreesToWrappedRadians(318.0634 + 0.1643573223 * daysSinceJ2000);
+    degreesToWrappedRadians(318.0634 + 0.1643573223 * orbitalDays);
   const double meanAnomaly =
-    degreesToWrappedRadians(115.3654 + 13.0649929509 * daysSinceJ2000);
+    degreesToWrappedRadians(115.3654 + 13.0649929509 * orbitalDays);
   constexpr double eccentricity = 0.0549;
 
   const double eccentricAnomaly =
@@ -134,9 +135,9 @@ MoonState moonState(double decimalYear, const Location& location) {
 
   const double meanLongitude = wrapRadians(ascendingNode + argumentOfPerigee + meanAnomaly);
   const double solarMeanAnomaly =
-    degreesToWrappedRadians(356.0470 + 0.9856002585 * daysSinceJ2000);
+    degreesToWrappedRadians(356.0470 + 0.9856002585 * orbitalDays);
   const double solarPerihelion =
-    degreesToWrappedRadians(282.9404 + 0.0000470935 * daysSinceJ2000);
+    degreesToWrappedRadians(282.9404 + 0.0000470935 * orbitalDays);
   const double solarMeanLongitude = wrapRadians(solarMeanAnomaly + solarPerihelion);
   const double elongation = wrapRadians(meanLongitude - solarMeanLongitude);
   const double argumentOfLatitude = wrapRadians(meanLongitude - ascendingNode);
@@ -167,7 +168,7 @@ MoonState moonState(double decimalYear, const Location& location) {
     std::asin(std::sin(orbitalArgumentOfLatitude) * std::sin(inclination)) +
     latitudeCorrectionDegrees * kDegToRad;
   const double obliquity =
-    (23.4393 - 0.0000003563 * daysSinceJ2000) * kDegToRad;
+    (23.4393 - 0.0000003563 * orbitalDays) * kDegToRad;
 
   const double eclipticX = std::cos(eclipticLongitude) * std::cos(eclipticLatitude);
   const double eclipticY = std::sin(eclipticLongitude) * std::cos(eclipticLatitude);

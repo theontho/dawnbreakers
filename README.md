@@ -46,7 +46,13 @@ rendered in the OpenGL sky from an approximate lunar orbit, so it follows its
 own path rather than moving with the stellar catalog. Moon tracking can retain
 a horizon-up view or stabilize the surrounding celestial field; dragging the
 view exits tracking. Wide-angle fisheye projection blends in above 110 degrees
-to preserve angular star size and avoid perspective edge defocus.
+to preserve angular star size and avoid perspective edge defocus. The Sun,
+Mercury, Venus, Mars, Jupiter, and Saturn use approximate orbital ephemerides,
+apparent brightness, and colors, and share the same wide-angle, long-exposure,
+and HDR rendering path. A calibrated flat-display projection derives a
+rectilinear horizontal and vertical field of view from the rendered surface
+size and centered eye distance, producing correct geometry from that viewing
+position without fisheye distortion.
 
 On macOS, the native app requests a half-float OpenGL surface and opts into
 Extended Dynamic Range. **HDR output** uses available XDR headroom directly on

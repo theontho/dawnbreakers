@@ -60,7 +60,9 @@ add_executable(skyrewind_cpp
   src/Catalog.cpp
   src/LongExposure.cpp
   src/Main.cpp
+  src/SolarSystem.cpp
   src/TimePlayer.cpp
+  src/ViewProjection.cpp
 )
 
 target_include_directories(skyrewind_cpp PRIVATE src)

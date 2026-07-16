@@ -2,7 +2,9 @@
 #include "Catalog.hpp"
 #include "ExtendedRange.hpp"
 #include "LongExposure.hpp"
+#include "SolarSystem.hpp"
 #include "TimePlayer.hpp"
+#include "ViewProjection.hpp"
 #ifdef __APPLE__
 #include "MacDockIcon.hpp"
 #endif
@@ -114,13 +116,17 @@ struct GuiState {
   float layerSeparation = 0.42f;
   float atmosphereWarp = 0.26f;
   float moonSizePixels = 82.0f;
+  float solarSystemSizeScale = 1.0f;
   float hdrExposure = 0.0f;
+  PhysicalDisplaySettings physicalDisplay;
   bool zoetropeSampling = true;
   bool layeredSky = true;
   bool showMoon = true;
+  bool showSun = true;
+  bool showPlanets = true;
   MoonTrackingMode moonTrackingMode = MoonTrackingMode::Off;
+  ProjectionMode projectionMode = ProjectionMode::AdaptiveFisheye;
   bool hdrOutput = true;
-  bool fisheyeWideFov = true;
   bool longExposure = true;
   bool showHorizon = true;
   bool vsync = true;
@@ -281,14 +287,6 @@ Vec3 cross(Vec3 a, Vec3 b) {
 
 float dot(Vec3 a, Vec3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-float wideProjectionBlend(float fovRadians, bool enabled) {
-  if (!enabled) {
-    return 0.0f;
-  }
-  const double fovDegrees = static_cast<double>(fovRadians) / kDegToRad;
-  return static_cast<float>(smoothStep01((fovDegrees - 110.0) / 25.0));
 }
 
 Vec2 projectSkyDirection(
@@ -574,13 +572,13 @@ const char* starFragmentShader() {
   )GLSL";
 }
 
-const char* moonVertexShader() {
+const char* skyBodyVertexShader() {
   return R"GLSL(
     #version 410 core
 
     uniform mat4 uView;
     uniform mat4 uProjection;
-    uniform vec3 uMoonPosition;
+    uniform vec3 uBodyPosition;
     uniform float uFovRadians;
     uniform float uAspect;
     uniform float uFisheyeBlend;
@@ -588,7 +586,7 @@ const char* moonVertexShader() {
     out float vVisible;
 
     void main() {
-      vec4 viewPosition = uView * vec4(uMoonPosition, 1.0);
+      vec4 viewPosition = uView * vec4(uBodyPosition, 1.0);
       vec3 viewDirection = normalize(viewPosition.xyz);
       float angularDistance = acos(clamp(-viewDirection.z, -1.0, 1.0));
       float halfFov = uFovRadians * 0.5;
@@ -615,7 +613,7 @@ const char* moonVertexShader() {
   )GLSL";
 }
 
-const char* moonGeometryShader() {
+const char* skyBodyGeometryShader() {
   return R"GLSL(
     #version 410 core
 
@@ -628,7 +626,7 @@ const char* moonGeometryShader() {
     in float vVisible[];
     out vec2 gUv;
 
-    void emitMoonVertex(vec4 center, vec2 offset, vec2 uv) {
+    void emitBodyVertex(vec4 center, vec2 offset, vec2 uv) {
       gUv = uv;
       gl_Position = vec4(center.xy + offset * center.w, center.zw);
       EmitVertex();
@@ -641,10 +639,10 @@ const char* moonGeometryShader() {
       }
 
       vec2 halfSizeNdc = vec2(uSizePixels) / uViewport;
-      emitMoonVertex(center, vec2(-halfSizeNdc.x, -halfSizeNdc.y), vec2(-1.0, -1.0));
-      emitMoonVertex(center, vec2(halfSizeNdc.x, -halfSizeNdc.y), vec2(1.0, -1.0));
-      emitMoonVertex(center, vec2(-halfSizeNdc.x, halfSizeNdc.y), vec2(-1.0, 1.0));
-      emitMoonVertex(center, vec2(halfSizeNdc.x, halfSizeNdc.y), vec2(1.0, 1.0));
+      emitBodyVertex(center, vec2(-halfSizeNdc.x, -halfSizeNdc.y), vec2(-1.0, -1.0));
+      emitBodyVertex(center, vec2(halfSizeNdc.x, -halfSizeNdc.y), vec2(1.0, -1.0));
+      emitBodyVertex(center, vec2(-halfSizeNdc.x, halfSizeNdc.y), vec2(-1.0, 1.0));
+      emitBodyVertex(center, vec2(halfSizeNdc.x, halfSizeNdc.y), vec2(1.0, 1.0));
       EndPrimitive();
     }
   )GLSL";
@@ -676,6 +674,34 @@ const char* moonFragmentShader() {
       vec3 litSide = vec3(0.86, 0.93, 1.0) * limb * lightFalloff;
       float edgeAlpha = 1.0 - smoothstep(0.94, 1.0, radius);
       fragColor = vec4(mix(darkSide, litSide, litMask), edgeAlpha * uAlpha);
+    }
+  )GLSL";
+}
+
+const char* celestialBodyFragmentShader() {
+  return R"GLSL(
+    #version 410 core
+
+    uniform vec3 uColor;
+    uniform float uRadiance;
+    uniform int uDisc;
+    uniform float uAlpha;
+
+    in vec2 gUv;
+    out vec4 fragColor;
+
+    void main() {
+      float radius = length(gUv);
+      if (radius > 1.0) {
+        discard;
+      }
+
+      float edgeAlpha = 1.0 - smoothstep(0.88, 1.0, radius);
+      float center = 1.0 - smoothstep(0.0, 1.0, radius);
+      float profile = uDisc != 0
+        ? 0.92 + 0.08 * center
+        : 0.32 + 0.68 * center * center;
+      fragColor = vec4(uColor * uRadiance * profile, edgeAlpha * uAlpha);
     }
   )GLSL";
 }
@@ -919,6 +945,92 @@ void drawMoonCameraControls(AppState& app, const char* id) {
   ImGui::PopID();
 }
 
+void drawSolarSystemControls(AppState& app, const char* id) {
+  ImGui::PushID(id);
+  ImGui::Checkbox("Sun", &app.gui.showSun);
+  ImGui::SameLine();
+  ImGui::Checkbox("Mercury through Saturn", &app.gui.showPlanets);
+  ImGui::SliderFloat(
+    "Solar-system size",
+    &app.gui.solarSystemSizeScale,
+    0.5f,
+    3.0f,
+    "%.2f"
+  );
+  ImGui::PopID();
+}
+
+void drawProjectionControls(AppState& app, const char* id) {
+  ImGui::PushID(id);
+  int projectionMode = static_cast<int>(app.gui.projectionMode);
+  if (ImGui::Combo(
+        "Projection",
+        &projectionMode,
+        "Perspective\0Wide-angle fisheye\0Calibrated flat display\0"
+      )) {
+    app.gui.projectionMode = static_cast<ProjectionMode>(projectionMode);
+  }
+
+  if (app.gui.projectionMode == ProjectionMode::CalibratedDisplay) {
+    ImGui::SliderFloat(
+      "Rendered width",
+      &app.gui.physicalDisplay.surfaceWidthCentimeters,
+      10.0f,
+      300.0f,
+      "%.1f cm"
+    );
+    ImGui::SliderFloat(
+      "Rendered height",
+      &app.gui.physicalDisplay.surfaceHeightCentimeters,
+      10.0f,
+      200.0f,
+      "%.1f cm"
+    );
+    ImGui::SliderFloat(
+      "Eye distance",
+      &app.gui.physicalDisplay.eyeDistanceCentimeters,
+      5.0f,
+      300.0f,
+      "%.1f cm",
+      ImGuiSliderFlags_Logarithmic
+    );
+    const float viewportAspect =
+      static_cast<float>(app.framebufferWidth) /
+      static_cast<float>(std::max(1, app.framebufferHeight));
+    const ViewProjection projection = makeViewProjection(
+      app.gui.projectionMode,
+      app.camera.fovRadians,
+      viewportAspect,
+      app.gui.physicalDisplay
+    );
+    ImGui::Text(
+      "Physical FOV: %.1f horizontal x %.1f vertical",
+      projection.horizontalFovRadians / static_cast<float>(kDegToRad),
+      projection.verticalFovRadians / static_cast<float>(kDegToRad)
+    );
+    const float physicalAspect =
+      app.gui.physicalDisplay.surfaceWidthCentimeters /
+      std::max(0.01f, app.gui.physicalDisplay.surfaceHeightCentimeters);
+    if (std::abs(physicalAspect - viewportAspect) / viewportAspect > 0.02f) {
+      ImGui::TextColored(
+        ImVec4(1.0f, 0.72f, 0.28f, 1.0f),
+        "Rendered dimensions must match the window's %.3f aspect.",
+        viewportAspect
+      );
+    }
+    ImGui::TextDisabled("Measure only the rendered area and keep your eyes centered.");
+  } else {
+    ImGui::SliderAngle(
+      "Field of view",
+      &app.camera.fovRadians,
+      kMinimumFovDegrees,
+      kMaximumFovDegrees,
+      "%.0f deg"
+    );
+  }
+  ImGui::PopID();
+}
+
 void drawHdrControls(AppState& app, const char* id) {
   ImGui::PushID(id);
   ImGui::Checkbox("HDR output", &app.gui.hdrOutput);
@@ -1016,13 +1128,13 @@ void drawMoonPass(
   int viewportWidth,
   int viewportHeight,
   float fovRadians,
+  float perspectiveAspect,
   float fisheyeBlend,
   float sizePixels,
   float alpha
 ) {
   const MoonState moon = moonState(year, location);
-  const float aspect =
-    static_cast<float>(viewportWidth) / static_cast<float>(std::max(1, viewportHeight));
+  const float aspect = perspectiveAspect;
   const Vec3 moonInView = normalize(transformDirection(
     viewMatrix,
     {
@@ -1043,7 +1155,7 @@ void drawMoonPass(
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uView"), 1, GL_FALSE, viewMatrix.m.data());
   glUniformMatrix4fv(glGetUniformLocation(program.id, "uProjection"), 1, GL_FALSE, projectionMatrix.m.data());
   glUniform3f(
-    glGetUniformLocation(program.id, "uMoonPosition"),
+    glGetUniformLocation(program.id, "uBodyPosition"),
     moon.direction.east * kSkyRadius,
     moon.direction.up * kSkyRadius,
     -moon.direction.north * kSkyRadius
@@ -1104,6 +1216,104 @@ void drawMoonPass(
   glBindVertexArray(vao);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDrawArrays(GL_POINTS, 0, 1);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+}
+
+void drawSolarSystemPass(
+  const GlProgram& program,
+  GLuint vao,
+  const Mat4& viewMatrix,
+  const Mat4& projectionMatrix,
+  double year,
+  const Location& location,
+  int viewportWidth,
+  int viewportHeight,
+  float fovRadians,
+  float perspectiveAspect,
+  float fisheyeBlend,
+  float sizeScale,
+  float alpha,
+  bool showSun,
+  bool showPlanets,
+  bool hdrOutput
+) {
+  if (!showSun && !showPlanets) {
+    return;
+  }
+
+  const float aspect = perspectiveAspect;
+  const float perspectivePixelsPerRadian =
+    static_cast<float>(std::max(1, viewportHeight)) /
+    (2.0f * std::tan(std::max(0.01f, fovRadians) * 0.5f));
+  const float fisheyePixelsPerRadian =
+    static_cast<float>(std::max(1, viewportHeight)) / std::max(0.01f, fovRadians);
+  const float pixelsPerRadian =
+    perspectivePixelsPerRadian +
+    (fisheyePixelsPerRadian - perspectivePixelsPerRadian) * fisheyeBlend;
+
+  glUseProgram(program.id);
+  glUniformMatrix4fv(
+    glGetUniformLocation(program.id, "uView"),
+    1,
+    GL_FALSE,
+    viewMatrix.m.data()
+  );
+  glUniformMatrix4fv(
+    glGetUniformLocation(program.id, "uProjection"),
+    1,
+    GL_FALSE,
+    projectionMatrix.m.data()
+  );
+  glUniform2f(
+    glGetUniformLocation(program.id, "uViewport"),
+    static_cast<float>(viewportWidth),
+    static_cast<float>(viewportHeight)
+  );
+  glUniform1f(glGetUniformLocation(program.id, "uFovRadians"), fovRadians);
+  glUniform1f(glGetUniformLocation(program.id, "uAspect"), aspect);
+  glUniform1f(glGetUniformLocation(program.id, "uFisheyeBlend"), fisheyeBlend);
+  glUniform1f(glGetUniformLocation(program.id, "uAlpha"), alpha);
+  glBindVertexArray(vao);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  for (const SolarSystemBodyState& state : solarSystemState(year, location)) {
+    const bool isSun = state.body == SolarSystemBody::Sun;
+    if ((isSun && !showSun) || (!isSun && !showPlanets)) {
+      continue;
+    }
+
+    const float physicalSize =
+      state.angularDiameterRadians * pixelsPerRadian;
+    const float artisticSize = isSun
+      ? 14.0f
+      : clampFloat(7.0f - state.apparentMagnitude * 0.85f, 4.0f, 13.0f);
+    const float sizePixels =
+      std::max(physicalSize, artisticSize) * sizeScale;
+    float radiance = isSun
+      ? 12.0f
+      : clampFloat(1.15f - state.apparentMagnitude * 0.62f, 0.35f, 4.5f);
+    if (!hdrOutput) {
+      radiance = std::min(1.0f, radiance);
+    }
+
+    glUniform3f(
+      glGetUniformLocation(program.id, "uBodyPosition"),
+      state.direction.east * kSkyRadius,
+      state.direction.up * kSkyRadius,
+      -state.direction.north * kSkyRadius
+    );
+    glUniform1f(glGetUniformLocation(program.id, "uSizePixels"), sizePixels);
+    glUniform3f(
+      glGetUniformLocation(program.id, "uColor"),
+      state.color[0],
+      state.color[1],
+      state.color[2]
+    );
+    glUniform1f(glGetUniformLocation(program.id, "uRadiance"), radiance);
+    glUniform1i(glGetUniformLocation(program.id, "uDisc"), isSun ? 1 : 0);
+    glDrawArrays(GL_POINTS, 0, 1);
+  }
+
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 }
 
@@ -1191,6 +1401,9 @@ void scrollCallback(GLFWwindow* window, double, double yOffset) {
     return;
   }
   auto* app = static_cast<AppState*>(glfwGetWindowUserPointer(window));
+  if (app->gui.projectionMode == ProjectionMode::CalibratedDisplay) {
+    return;
+  }
   const float fovDegrees = app->camera.fovRadians / static_cast<float>(kDegToRad);
   const float nextDegrees = clampFloat(
     fovDegrees - static_cast<float>(yOffset) * 2.0f,
@@ -1389,14 +1602,8 @@ void drawTimePlayerControls(AppState& app) {
       ImGui::SliderFloat("Longitude##time-player", &app.gui.longitudeDegrees, -180.0f, 180.0f, "%.4f")) {
     applyGuiSettings(app);
   }
-  ImGui::SliderAngle(
-    "Field of view##time-player",
-    &app.camera.fovRadians,
-    kMinimumFovDegrees,
-    kMaximumFovDegrees,
-    "%.0f deg"
-  );
-  ImGui::Checkbox("Wide-angle fisheye##time-player", &app.gui.fisheyeWideFov);
+  drawProjectionControls(app, "time-player-projection");
+  drawSolarSystemControls(app, "time-player-solar-system");
   drawMoonCameraControls(app, "time-player-moon-camera");
   drawHdrControls(app, "time-player-hdr");
   ImGui::TextDisabled("F1 toggles the old window. This window stays separate.");
@@ -1522,16 +1729,10 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   }
   drawMoonCameraControls(app, "cinematic-moon-camera");
   ImGui::SliderFloat("Moon size", &app.gui.moonSizePixels, 24.0f, 160.0f, "%.0f px");
+  drawSolarSystemControls(app, "cinematic-solar-system");
   ImGui::Checkbox("Horizon guide", &app.gui.showHorizon);
   ImGui::SliderFloat("Horizon opacity", &app.gui.horizonAlpha, 0.1f, 1.0f, "%.2f");
-  ImGui::SliderAngle(
-    "Field of view##cinematic",
-    &app.camera.fovRadians,
-    kMinimumFovDegrees,
-    kMaximumFovDegrees,
-    "%.0f deg"
-  );
-  ImGui::Checkbox("Wide-angle fisheye##cinematic", &app.gui.fisheyeWideFov);
+  drawProjectionControls(app, "cinematic-projection");
   drawHdrControls(app, "cinematic-hdr");
   if (ImGui::Checkbox("VSync", &app.gui.vsync)) {
     glfwSwapInterval(app.gui.vsync ? 1 : 0);
@@ -1607,7 +1808,9 @@ int checkShaderPrograms() {
   const ExtendedRangeState extendedRange = configureExtendedRange(window);
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
   const GlProgram moonProgram =
-    makeProgram(moonVertexShader(), moonFragmentShader(), moonGeometryShader());
+    makeProgram(skyBodyVertexShader(), moonFragmentShader(), skyBodyGeometryShader());
+  const GlProgram solarSystemProgram =
+    makeProgram(skyBodyVertexShader(), celestialBodyFragmentShader(), skyBodyGeometryShader());
   const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
   const GlProgram displayProgram =
     makeProgram(longExposureVertexShader(), longExposureDisplayFragmentShader());
@@ -1615,6 +1818,7 @@ int checkShaderPrograms() {
   glDeleteProgram(guideProgram.id);
   glDeleteProgram(displayProgram.id);
   glDeleteProgram(exposureProgram.id);
+  glDeleteProgram(solarSystemProgram.id);
   glDeleteProgram(moonProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
@@ -1669,7 +1873,9 @@ int runWindow(const std::vector<StarVertex>& stars) {
 
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
   const GlProgram moonProgram =
-    makeProgram(moonVertexShader(), moonFragmentShader(), moonGeometryShader());
+    makeProgram(skyBodyVertexShader(), moonFragmentShader(), skyBodyGeometryShader());
+  const GlProgram solarSystemProgram =
+    makeProgram(skyBodyVertexShader(), celestialBodyFragmentShader(), skyBodyGeometryShader());
   const GlProgram exposureProgram = makeProgram(longExposureVertexShader(), longExposureFragmentShader());
   const GlProgram displayProgram =
     makeProgram(longExposureVertexShader(), longExposureDisplayFragmentShader());
@@ -1697,9 +1903,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
   VisibleProgram previousExposureProgram = app.visibleProgram;
   float previousCameraYaw = app.camera.yaw;
   float previousCameraPitch = app.camera.pitch;
-  float previousCameraFov = app.camera.fovRadians;
+  float previousRenderFov = 0.0f;
+  float previousRenderAspect = 0.0f;
   MoonTrackingMode previousMoonTrackingMode = app.gui.moonTrackingMode;
-  bool previousFisheyeWideFov = app.gui.fisheyeWideFov;
+  ProjectionMode previousProjectionMode = app.gui.projectionMode;
   bool previousExposureProjectionValid = false;
 
   while (!glfwWindowShouldClose(window)) {
@@ -1741,10 +1948,19 @@ int runWindow(const std::vector<StarVertex>& stars) {
       app.gui.faintMagnitudeLimit,
       app.gui.brightMagnitudeLimit
     );
-    const float aspect = static_cast<float>(app.framebufferWidth) / static_cast<float>(std::max(1, app.framebufferHeight));
-    const float fisheyeBlend =
-      wideProjectionBlend(app.camera.fovRadians, app.gui.fisheyeWideFov);
-    const Mat4 projectionMatrix = perspective(app.camera.fovRadians, aspect, 0.1f, 500.0f);
+    const float viewportAspect =
+      static_cast<float>(app.framebufferWidth) /
+      static_cast<float>(std::max(1, app.framebufferHeight));
+    const ViewProjection viewProjection = makeViewProjection(
+      app.gui.projectionMode,
+      app.camera.fovRadians,
+      viewportAspect,
+      app.gui.physicalDisplay
+    );
+    const float renderFov = viewProjection.verticalFovRadians;
+    const float aspect = viewProjection.perspectiveAspect;
+    const float fisheyeBlend = viewProjection.fisheyeBlend;
+    const Mat4 projectionMatrix = perspective(renderFov, aspect, 0.1f, 500.0f);
     const Vec3 direction = {
       std::cos(app.camera.pitch) * std::sin(app.camera.yaw),
       std::sin(app.camera.pitch),
@@ -1773,16 +1989,17 @@ int runWindow(const std::vector<StarVertex>& stars) {
     const bool trackingModeChanged =
       previousMoonTrackingMode != app.gui.moonTrackingMode;
     const bool projectionModeChanged =
-      previousFisheyeWideFov != app.gui.fisheyeWideFov;
+      previousProjectionMode != app.gui.projectionMode;
     const bool cameraOrientationChanged =
       std::abs(app.camera.yaw - previousCameraYaw) > 0.00001f ||
       std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f;
-    const bool cameraFovChanged =
-      std::abs(app.camera.fovRadians - previousCameraFov) > 0.00001f;
+    const bool projectionShapeChanged =
+      std::abs(renderFov - previousRenderFov) > 0.00001f ||
+      std::abs(aspect - previousRenderAspect) > 0.00001f;
     const bool cameraChanged =
       trackingModeChanged ||
       projectionModeChanged ||
-      cameraFovChanged ||
+      projectionShapeChanged ||
       (!trackingMoon && cameraOrientationChanged);
     app.exposureMotionPixels = previousExposureProjectionValid && !programChanged
       ? estimateApparentMotionPixels(
@@ -1790,7 +2007,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
           previousExposureProjection,
           visibleYear,
           previousExposureYear,
-          app.camera.fovRadians,
+          renderFov,
           app.framebufferHeight,
           fisheyeBlend
         )
@@ -1842,9 +2059,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
     previousExposureProgram = app.visibleProgram;
     previousCameraYaw = app.camera.yaw;
     previousCameraPitch = app.camera.pitch;
-    previousCameraFov = app.camera.fovRadians;
+    previousRenderFov = renderFov;
+    previousRenderAspect = aspect;
     previousMoonTrackingMode = app.gui.moonTrackingMode;
-    previousFisheyeWideFov = app.gui.fisheyeWideFov;
+    previousProjectionMode = app.gui.projectionMode;
     previousExposureProjectionValid = true;
 
     beginLongExposureScene(exposureBuffer);
@@ -1868,7 +2086,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         0.04f,
         warp,
         effectClock + phaseOffset,
-        app.camera.fovRadians,
+        renderFov,
         aspect,
         fisheyeBlend
       );
@@ -1898,7 +2116,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         0.22f,
         warp * 1.3f,
         effectClock * 1.17f + phaseOffset,
-        app.camera.fovRadians,
+        renderFov,
         aspect,
         fisheyeBlend
       );
@@ -1924,7 +2142,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         0.34f,
         warp * 1.55f,
         effectClock * 0.83f + phaseOffset,
-        app.camera.fovRadians,
+        renderFov,
         aspect,
         fisheyeBlend
       );
@@ -1972,7 +2190,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
           0.04f,
           sampleWarp,
           sampleClock,
-          app.camera.fovRadians,
+          renderFov,
           aspect,
           fisheyeBlend
         );
@@ -1986,12 +2204,31 @@ int runWindow(const std::vector<StarVertex>& stars) {
             app.location,
             app.framebufferWidth,
             app.framebufferHeight,
-            app.camera.fovRadians,
+            renderFov,
+            aspect,
             fisheyeBlend,
             app.gui.moonSizePixels,
             sampleAlpha
           );
         }
+        drawSolarSystemPass(
+          solarSystemProgram,
+          moonVao,
+          viewMatrix,
+          projectionMatrix,
+          sampleYear,
+          app.location,
+          app.framebufferWidth,
+          app.framebufferHeight,
+          renderFov,
+          aspect,
+          fisheyeBlend,
+          app.gui.solarSystemSizeScale,
+          sampleAlpha,
+          app.gui.showSun,
+          app.gui.showPlanets,
+          app.gui.hdrOutput
+        );
       }
     }
 
@@ -2011,7 +2248,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
         0.0f,
         0.0f,
         effectClock,
-        app.camera.fovRadians,
+        renderFov,
         aspect,
         fisheyeBlend
       );
@@ -2022,6 +2259,25 @@ int runWindow(const std::vector<StarVertex>& stars) {
       }
     }
 
+    drawSolarSystemPass(
+      solarSystemProgram,
+      moonVao,
+      viewMatrix,
+      projectionMatrix,
+      visibleYear,
+      app.location,
+      app.framebufferWidth,
+      app.framebufferHeight,
+      renderFov,
+      aspect,
+      fisheyeBlend,
+      app.gui.solarSystemSizeScale,
+      1.0f,
+      app.gui.showSun,
+      app.gui.showPlanets,
+      app.gui.hdrOutput
+    );
+
     if (app.gui.showHorizon) {
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glLineWidth(2.5f);
@@ -2031,7 +2287,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
       glUniform1f(glGetUniformLocation(guideProgram.id, "uAlphaScale"), app.gui.horizonAlpha);
       glUniform1f(
         glGetUniformLocation(guideProgram.id, "uFovRadians"),
-        app.camera.fovRadians
+        renderFov
       );
       glUniform1f(glGetUniformLocation(guideProgram.id, "uAspect"), aspect);
       glUniform1f(
@@ -2065,7 +2321,8 @@ int runWindow(const std::vector<StarVertex>& stars) {
         app.location,
         app.framebufferWidth,
         app.framebufferHeight,
-        app.camera.fovRadians,
+        renderFov,
+        aspect,
         fisheyeBlend,
         app.gui.moonSizePixels,
         1.0f
@@ -2101,6 +2358,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   glDeleteProgram(guideProgram.id);
   glDeleteProgram(displayProgram.id);
   glDeleteProgram(exposureProgram.id);
+  glDeleteProgram(solarSystemProgram.id);
   glDeleteProgram(moonProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);

@@ -11,6 +11,7 @@ constexpr double kDegToRad = kPi / 180.0;
 constexpr double kArcsecToRad = kDegToRad / 3600.0;
 constexpr double kMasToRad = kArcsecToRad / 1000.0;
 constexpr double kJ2000JulianDay = 2451545.0;
+constexpr double kSchlyterEpochJulianDay = 2451543.5;
 constexpr double kJ2000Year = 2000.0;
 constexpr double kHipparcosCatalogEpochYear = 1991.25;
 
