@@ -4,6 +4,7 @@
 #include "LongExposure.hpp"
 #include "MoonPath.hpp"
 #include "SolarSystem.hpp"
+#include "StarTrails.hpp"
 #include "TimePlayer.hpp"
 #include "ViewProjection.hpp"
 #ifdef __APPLE__
@@ -46,7 +47,7 @@ constexpr double kDefaultDurationSeconds = 14.0;
 constexpr double kDefaultLatitudeDegrees = 30.0444;
 constexpr double kDefaultLongitudeDegrees = 31.2357;
 constexpr double kSiderealRadiansPerYear = 360.98564736629 * 365.2425 * kDegToRad;
-constexpr int kMaxExposureSamples = 48;
+constexpr int kMaxExposureSamples = 12;
 constexpr float kMinimumFovDegrees = 34.0f;
 constexpr float kMaximumFovDegrees = 175.0f;
 
@@ -95,6 +96,13 @@ enum class MoonTrackingMode : int {
   SkyStabilized = 2,
 };
 
+enum class StreakStyle : int {
+  SmoothExposure = 0,
+  SolidLightTrail = 1,
+  ShutterSamples = 2,
+  LegacyFullStarLines = 3,
+};
+
 struct GuiState {
   float startYear = static_cast<float>(kInitialYear);
   float rewindYears = static_cast<float>(kDefaultRewindYears);
@@ -111,7 +119,9 @@ struct GuiState {
   float shutterDurationSeconds = 0.65f;
   float exposureMotionThresholdPixels = 0.7f;
   float exposureStrength = 0.92f;
-  float exposureSampleSpacingPixels = 5.0f;
+  float exposureSampleSpacingPixels = 64.0f;
+  float legacyStreakLengthYears = 0.42f;
+  float legacyStreakWidthPixels = 3.5f;
   float zoetropeIntervalYears = 650.0f;
   float zoetropeBlendPortion = 0.18f;
   float layerSeparation = 0.42f;
@@ -129,6 +139,7 @@ struct GuiState {
   bool moonPathFrameClipped = false;
   MoonTrackingMode moonTrackingMode = MoonTrackingMode::Off;
   ProjectionMode projectionMode = ProjectionMode::AdaptiveFisheye;
+  StreakStyle streakStyle = StreakStyle::SmoothExposure;
   bool hdrOutput = true;
   bool longExposure = true;
   bool showHorizon = true;
@@ -153,6 +164,7 @@ struct AppState {
   int framebufferHeight = 960;
   float exposureMotionPixels = 0.0f;
   int exposureSampleCount = 1;
+  std::size_t exposureTrailStarCount = 0;
   bool exposureActive = false;
 };
 
@@ -1182,6 +1194,150 @@ void drawStarPass(
   glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(starCount));
 }
 
+void setStarTrailProjection(
+  GLuint program,
+  const char* prefix,
+  const ProjectionUniforms& projection
+) {
+  const auto uniform = [&](const char* suffix) {
+    return glGetUniformLocation(
+      program,
+      (std::string(prefix) + suffix).c_str()
+    );
+  };
+  glUniform1f(uniform("YearsSinceCatalog"), projection.yearsSinceCatalog);
+  glUniform1f(uniform("Zeta"), projection.zeta);
+  glUniform1f(uniform("Z"), projection.z);
+  glUniform1f(uniform("CosTheta"), projection.cosTheta);
+  glUniform1f(uniform("SinTheta"), projection.sinTheta);
+  glUniform1f(
+    uniform("LocalSiderealTime"),
+    projection.localSiderealTime
+  );
+}
+
+void drawStarTrailPass(
+  const GlProgram& program,
+  GLuint vao,
+  std::size_t starCount,
+  const Mat4& viewMatrix,
+  const Mat4& projectionMatrix,
+  const ProjectionUniforms& startProjection,
+  const ProjectionUniforms& endProjection,
+  float maxVisibleMagnitude,
+  float cinematicStrength,
+  float hdrHighlightScale,
+  float starSizeScale,
+  float trailAlpha,
+  float segmentStartProgress,
+  float segmentEndProgress,
+  bool capStart,
+  bool capEnd,
+  StreakStyle streakStyle,
+  float fixedWidthPixels,
+  int viewportWidth,
+  int viewportHeight,
+  float fovRadians,
+  float aspect,
+  float fisheyeBlend
+) {
+  glUseProgram(program.id);
+  glUniformMatrix4fv(
+    glGetUniformLocation(program.id, "uView"),
+    1,
+    GL_FALSE,
+    viewMatrix.m.data()
+  );
+  glUniformMatrix4fv(
+    glGetUniformLocation(program.id, "uProjection"),
+    1,
+    GL_FALSE,
+    projectionMatrix.m.data()
+  );
+  setStarTrailProjection(
+    program.id,
+    "uStart",
+    startProjection
+  );
+  setStarTrailProjection(
+    program.id,
+    "uEnd",
+    endProjection
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uSinLat"),
+    endProjection.sinLatitude
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uCosLat"),
+    endProjection.cosLatitude
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uSkyRadius"),
+    kSkyRadius
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uMaxVisibleMagnitude"),
+    maxVisibleMagnitude
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uCinematicStrength"),
+    cinematicStrength
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uHdrHighlightScale"),
+    hdrHighlightScale
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uStarSizeScale"),
+    starSizeScale
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uTrailAlpha"),
+    trailAlpha
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uSegmentStartProgress"),
+    segmentStartProgress
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uSegmentEndProgress"),
+    segmentEndProgress
+  );
+  glUniform1i(
+    glGetUniformLocation(program.id, "uCapStart"),
+    capStart ? 1 : 0
+  );
+  glUniform1i(
+    glGetUniformLocation(program.id, "uCapEnd"),
+    capEnd ? 1 : 0
+  );
+  glUniform1i(
+    glGetUniformLocation(program.id, "uStreakStyle"),
+    static_cast<int>(streakStyle)
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uFixedWidthPixels"),
+    fixedWidthPixels
+  );
+  glUniform2f(
+    glGetUniformLocation(program.id, "uViewport"),
+    static_cast<float>(viewportWidth),
+    static_cast<float>(viewportHeight)
+  );
+  glUniform1f(
+    glGetUniformLocation(program.id, "uFovRadians"),
+    fovRadians
+  );
+  glUniform1f(glGetUniformLocation(program.id, "uAspect"), aspect);
+  glUniform1f(
+    glGetUniformLocation(program.id, "uFisheyeBlend"),
+    fisheyeBlend
+  );
+  glBindVertexArray(vao);
+  glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(starCount));
+}
+
 void drawMoonPass(
   const GlProgram& program,
   GLuint vao,
@@ -1753,6 +1909,30 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   }
   ImGui::SliderFloat("Star size", &app.gui.starSizeScale, 0.25f, 3.0f, "%.2f");
   ImGui::Checkbox("Long exposure", &app.gui.longExposure);
+  int streakStyle = static_cast<int>(app.gui.streakStyle);
+  if (ImGui::Combo(
+        "Streak style",
+        &streakStyle,
+        "Smooth exposure\0Solid light trail\0Shutter samples\0Legacy full-star lines\0"
+      )) {
+    app.gui.streakStyle = static_cast<StreakStyle>(streakStyle);
+  }
+  if (app.gui.streakStyle == StreakStyle::LegacyFullStarLines) {
+    ImGui::SliderFloat(
+      "Legacy streak length",
+      &app.gui.legacyStreakLengthYears,
+      0.03f,
+      1.2f,
+      "%.2f sky yr"
+    );
+    ImGui::SliderFloat(
+      "Legacy streak width",
+      &app.gui.legacyStreakWidthPixels,
+      0.8f,
+      8.0f,
+      "%.1f px"
+    );
+  }
   ImGui::SliderFloat("Shutter duration", &app.gui.shutterDurationSeconds, 0.05f, 3.0f, "%.2f sec");
   ImGui::SliderFloat(
     "Motion threshold",
@@ -1764,17 +1944,19 @@ void drawControls(AppState& app, double fps, std::size_t starCount) {
   );
   ImGui::SliderFloat("Trail strength", &app.gui.exposureStrength, 0.0f, 1.0f, "%.2f");
   ImGui::SliderFloat(
-    "Trail spacing",
+    "Curve segment length",
     &app.gui.exposureSampleSpacingPixels,
-    2.0f,
-    16.0f,
+    24.0f,
+    160.0f,
     "%.1f px"
   );
+  ImGui::TextDisabled("Shorter curve segments use more GPU time.");
   ImGui::Text(
-    "Apparent motion: %.2f px/frame | %d sample%s%s",
+    "Apparent motion: %.2f px/frame | %d segment%s | %zu trail stars%s",
     app.exposureMotionPixels,
     app.exposureSampleCount,
     app.exposureSampleCount == 1 ? "" : "s",
+    app.exposureTrailStarCount,
     app.exposureActive ? " | exposing" : ""
   );
   ImGui::BeginDisabled(app.gui.longExposure);
@@ -1871,6 +2053,11 @@ int checkShaderPrograms() {
   glfwMakeContextCurrent(window);
   const ExtendedRangeState extendedRange = configureExtendedRange(window);
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
+  const GlProgram starTrailsProgram = makeProgram(
+    starTrailVertexShader(),
+    starTrailFragmentShader(),
+    starTrailGeometryShader()
+  );
   const GlProgram moonProgram =
     makeProgram(skyBodyVertexShader(), moonFragmentShader(), skyBodyGeometryShader());
   const GlProgram solarSystemProgram =
@@ -1884,6 +2071,7 @@ int checkShaderPrograms() {
   glDeleteProgram(exposureProgram.id);
   glDeleteProgram(solarSystemProgram.id);
   glDeleteProgram(moonProgram.id);
+  glDeleteProgram(starTrailsProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();
@@ -1936,6 +2124,11 @@ int runWindow(const std::vector<StarVertex>& stars) {
   ImGui_ImplOpenGL3_Init("#version 410");
 
   const GlProgram starsProgram = makeProgram(starVertexShader(), starFragmentShader());
+  const GlProgram starTrailsProgram = makeProgram(
+    starTrailVertexShader(),
+    starTrailFragmentShader(),
+    starTrailGeometryShader()
+  );
   const GlProgram moonProgram =
     makeProgram(skyBodyVertexShader(), moonFragmentShader(), skyBodyGeometryShader());
   const GlProgram solarSystemProgram =
@@ -1950,13 +2143,34 @@ int runWindow(const std::vector<StarVertex>& stars) {
   GLuint moonVao = 0;
   GLuint guideVao = 0;
   GLuint guideVbo = 0;
+  std::vector<StarVertex> renderStars = stars;
+  std::stable_sort(
+    renderStars.begin(),
+    renderStars.end(),
+    [](const StarVertex& a, const StarVertex& b) {
+      return a.magnitude < b.magnitude;
+    }
+  );
+  const auto starCountForMagnitude = [&](float maximumMagnitude) {
+    return static_cast<std::size_t>(std::distance(
+      renderStars.begin(),
+      std::upper_bound(
+        renderStars.begin(),
+        renderStars.end(),
+        maximumMagnitude,
+        [](float magnitude, const StarVertex& star) {
+          return magnitude < star.magnitude;
+        }
+      )
+    ));
+  };
   const std::vector<GuideVertex> guideVertices = makeHorizonGuideVertices();
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
   glGenVertexArrays(1, &moonVao);
   glGenVertexArrays(1, &guideVao);
   glGenBuffers(1, &guideVbo);
-  uploadStarAttributes(vao, vbo, stars);
+  uploadStarAttributes(vao, vbo, renderStars);
   uploadGuideAttributes(guideVao, guideVbo, guideVertices);
 
   double lastFrameTime = glfwGetTime();
@@ -1971,6 +2185,9 @@ int runWindow(const std::vector<StarVertex>& stars) {
   float previousRenderAspect = 0.0f;
   MoonTrackingMode previousMoonTrackingMode = app.gui.moonTrackingMode;
   ProjectionMode previousProjectionMode = app.gui.projectionMode;
+  StreakStyle previousStreakStyle = app.gui.streakStyle;
+  float previousLegacyStreakLength = app.gui.legacyStreakLengthYears;
+  float previousLegacyStreakWidth = app.gui.legacyStreakWidthPixels;
   bool previousExposureProjectionValid = false;
 
   while (!glfwWindowShouldClose(window)) {
@@ -2054,6 +2271,20 @@ int runWindow(const std::vector<StarVertex>& stars) {
       previousMoonTrackingMode != app.gui.moonTrackingMode;
     const bool projectionModeChanged =
       previousProjectionMode != app.gui.projectionMode;
+    const bool streakStyleChanged =
+      previousStreakStyle != app.gui.streakStyle;
+    const bool legacyStreakChanged =
+      app.gui.streakStyle == StreakStyle::LegacyFullStarLines &&
+      (
+        std::abs(
+          previousLegacyStreakLength -
+          app.gui.legacyStreakLengthYears
+        ) > 0.00001f ||
+        std::abs(
+          previousLegacyStreakWidth -
+          app.gui.legacyStreakWidthPixels
+        ) > 0.00001f
+      );
     const bool cameraOrientationChanged =
       std::abs(app.camera.yaw - previousCameraYaw) > 0.00001f ||
       std::abs(app.camera.pitch - previousCameraPitch) > 0.00001f;
@@ -2076,6 +2307,16 @@ int runWindow(const std::vector<StarVertex>& stars) {
           fisheyeBlend
         )
       : 0.0f;
+    const float trailMotionStrength = static_cast<float>(smoothStep01(
+      (app.exposureMotionPixels - 24.0f) / 360.0f
+    ));
+    const float trailVisibleMagnitude = maxMagnitudeForSpeed(
+      std::max(cinematicStrength, trailMotionStrength),
+      app.gui.faintMagnitudeLimit,
+      app.gui.brightMagnitudeLimit
+    );
+    app.exposureTrailStarCount =
+      starCountForMagnitude(trailVisibleMagnitude);
     const float motionThreshold = std::max(0.01f, app.gui.exposureMotionThresholdPixels);
     const float activationRange = std::max(0.01f, motionThreshold * 2.0f);
     const float motionActivation = static_cast<float>(smoothStep01(
@@ -2100,7 +2341,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
       !previousExposureProjectionValid ||
       programChanged ||
       cameraChanged ||
+      streakStyleChanged ||
+      legacyStreakChanged ||
       app.camera.dragging ||
+      !app.gui.longExposure ||
       !simulationMoving;
     const bool interpolateExposure =
       app.exposureActive &&
@@ -2116,6 +2360,11 @@ int runWindow(const std::vector<StarVertex>& stars) {
           kMaxExposureSamples
         )
       : 1;
+    if (app.gui.streakStyle == StreakStyle::LegacyFullStarLines) {
+      app.exposureSampleCount = 1;
+      app.exposureTrailStarCount =
+        starCountForMagnitude(maxVisibleMagnitude);
+    }
     const double exposureStartYear = previousExposureYear;
 
     previousExposureProjection = projection;
@@ -2127,9 +2376,10 @@ int runWindow(const std::vector<StarVertex>& stars) {
     previousRenderAspect = aspect;
     previousMoonTrackingMode = app.gui.moonTrackingMode;
     previousProjectionMode = app.gui.projectionMode;
+    previousStreakStyle = app.gui.streakStyle;
+    previousLegacyStreakLength = app.gui.legacyStreakLengthYears;
+    previousLegacyStreakWidth = app.gui.legacyStreakWidthPixels;
     previousExposureProjectionValid = true;
-
-    beginLongExposureScene(exposureBuffer);
 
     const auto drawSkyState = [&](double year, float alphaScale, float phaseOffset) {
       const float cinematicLayer = cinematicStrength * app.gui.layerSeparation;
@@ -2138,7 +2388,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
       drawStarPass(
         starsProgram,
         vao,
-        stars.size(),
+        starCountForMagnitude(maxVisibleMagnitude),
         viewMatrix,
         projectionMatrix,
         mainProjection,
@@ -2168,7 +2418,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
       drawStarPass(
         starsProgram,
         vao,
-        stars.size(),
+        starCountForMagnitude(maxVisibleMagnitude - 0.25f),
         viewMatrix,
         projectionMatrix,
         diurnalProjection,
@@ -2194,7 +2444,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
       drawStarPass(
         starsProgram,
         vao,
-        stars.size(),
+        starCountForMagnitude(maxVisibleMagnitude - 0.65f),
         viewMatrix,
         projectionMatrix,
         driftProjection,
@@ -2212,95 +2462,117 @@ int runWindow(const std::vector<StarVertex>& stars) {
       );
     };
 
-    if (app.exposureSampleCount > 1) {
+    beginLongExposureTrails(exposureBuffer);
+    if (interpolateExposure) {
       double exposureYearSpan = visibleYear - exposureStartYear;
       const double maximumUsefulSpan = kTau / kSiderealRadiansPerYear;
       if (std::abs(exposureYearSpan) > maximumUsefulSpan) {
         exposureYearSpan = std::copysign(maximumUsefulSpan, exposureYearSpan);
       }
       const double sampledStartYear = visibleYear - exposureYearSpan;
-      const float sampleAlpha = std::clamp(
-        exposureStrength * 0.72f / std::sqrt(static_cast<float>(app.exposureSampleCount)),
-        0.035f,
-        0.24f
-      );
-      const float sampleSpacing =
-        app.exposureMotionPixels / static_cast<float>(app.exposureSampleCount);
-      const float sampleSizeScale =
-        app.gui.starSizeScale * std::clamp(sampleSpacing / 5.0f, 1.0f, 3.2f);
-      const float sampleWarp =
-        app.gui.atmosphereWarp * (0.35f + cinematicStrength * 0.95f);
-      for (int sample = 1; sample < app.exposureSampleCount; ++sample) {
-        const double t =
-          static_cast<double>(sample) / static_cast<double>(app.exposureSampleCount);
-        const double sampleYear = sampledStartYear + exposureYearSpan * t;
-        const ProjectionUniforms sampleProjection =
-          projectionForLayer(sampleYear, app.location, 0.0f, 0.0f);
-        const float sampleClock = static_cast<float>(
-          now + (app.animation.startYear - sampleYear) * 0.013
-        );
-        drawStarPass(
-          starsProgram,
-          vao,
-          stars.size(),
-          viewMatrix,
-          projectionMatrix,
-          sampleProjection,
-          maxVisibleMagnitude,
-          cinematicStrength,
-          hdrHighlightScale,
-          sampleSizeScale,
-          sampleAlpha,
+      if (app.gui.streakStyle == StreakStyle::ShutterSamples) {
+        glBlendEquation(GL_FUNC_ADD);
+        const float sampleAlpha = std::clamp(
+          exposureStrength * 0.8f /
+            std::sqrt(static_cast<float>(app.exposureSampleCount)),
           0.04f,
-          sampleWarp,
-          sampleClock,
-          renderFov,
-          aspect,
-          fisheyeBlend
+          0.35f
         );
-        if (app.gui.showMoon) {
-          drawMoonPass(
-            moonProgram,
-            moonVao,
+        for (int sample = 0; sample < app.exposureSampleCount; ++sample) {
+          const double t =
+            static_cast<double>(sample) /
+            static_cast<double>(app.exposureSampleCount);
+          const double sampleYear =
+            sampledStartYear + exposureYearSpan * t;
+          const ProjectionUniforms sampleProjection =
+            projectionForLayer(sampleYear, app.location, 0.0f, 0.0f);
+          drawStarPass(
+            starsProgram,
+            vao,
+            app.exposureTrailStarCount,
             viewMatrix,
             projectionMatrix,
-            sampleYear,
-            app.location,
+            sampleProjection,
+            trailVisibleMagnitude,
+            cinematicStrength,
+            hdrHighlightScale,
+            app.gui.starSizeScale,
+            sampleAlpha,
+            0.0f,
+            0.0f,
+            effectClock,
+            renderFov,
+            aspect,
+            fisheyeBlend
+          );
+        }
+      } else {
+        glBlendEquation(GL_MAX);
+        const bool legacyLines =
+          app.gui.streakStyle == StreakStyle::LegacyFullStarLines;
+        const int segmentCount =
+          legacyLines ? 1 : app.exposureSampleCount;
+        const double trailStartYear = legacyLines
+          ? visibleYear - std::copysign(
+              static_cast<double>(app.gui.legacyStreakLengthYears),
+              exposureYearSpan
+            )
+          : sampledStartYear;
+        ProjectionUniforms segmentStartProjection =
+          projectionForLayer(trailStartYear, app.location, 0.0f, 0.0f);
+        for (int sample = 1; sample <= segmentCount; ++sample) {
+          const double t =
+            static_cast<double>(sample) /
+            static_cast<double>(segmentCount);
+          const double segmentEndYear =
+            trailStartYear + (visibleYear - trailStartYear) * t;
+          const ProjectionUniforms segmentEndProjection =
+            projectionForLayer(segmentEndYear, app.location, 0.0f, 0.0f);
+          const float streakMagnitude = legacyLines
+            ? maxVisibleMagnitude
+            : trailVisibleMagnitude;
+          const std::size_t streakStarCount = legacyLines
+            ? starCountForMagnitude(maxVisibleMagnitude)
+            : app.exposureTrailStarCount;
+          drawStarTrailPass(
+            starTrailsProgram,
+            vao,
+            streakStarCount,
+            viewMatrix,
+            projectionMatrix,
+            segmentStartProjection,
+            segmentEndProjection,
+            streakMagnitude,
+            cinematicStrength,
+            hdrHighlightScale,
+            app.gui.starSizeScale,
+            exposureStrength,
+            static_cast<float>(sample - 1) /
+              static_cast<float>(segmentCount),
+            static_cast<float>(sample) /
+              static_cast<float>(segmentCount),
+            !legacyLines,
+            !legacyLines,
+            app.gui.streakStyle,
+            legacyLines ? app.gui.legacyStreakWidthPixels : 0.0f,
             app.framebufferWidth,
             app.framebufferHeight,
             renderFov,
             aspect,
-            fisheyeBlend,
-            app.gui.moonSizePixels,
-            sampleAlpha
+            fisheyeBlend
           );
+          segmentStartProjection = segmentEndProjection;
         }
-        drawSolarSystemPass(
-          solarSystemProgram,
-          moonVao,
-          viewMatrix,
-          projectionMatrix,
-          sampleYear,
-          app.location,
-          app.framebufferWidth,
-          app.framebufferHeight,
-          renderFov,
-          aspect,
-          fisheyeBlend,
-          app.gui.solarSystemSizeScale,
-          sampleAlpha,
-          app.gui.showSun,
-          app.gui.showPlanets,
-          app.gui.hdrOutput
-        );
       }
     }
+    glBlendEquation(GL_FUNC_ADD);
 
+    beginLongExposureScene(exposureBuffer);
     if (usingTimePlayer) {
       drawStarPass(
         starsProgram,
         vao,
-        stars.size(),
+        starCountForMagnitude(app.gui.faintMagnitudeLimit),
         viewMatrix,
         projectionMatrix,
         projection,
@@ -2368,7 +2640,6 @@ int runWindow(const std::vector<StarVertex>& stars) {
       exposureProgram.id,
       displayProgram.id,
       retention,
-      exposureStrength,
       resetExposureHistory,
       hdrOutputMode(app),
       app.gui.hdrExposure,
@@ -2424,6 +2695,7 @@ int runWindow(const std::vector<StarVertex>& stars) {
   glDeleteProgram(exposureProgram.id);
   glDeleteProgram(solarSystemProgram.id);
   glDeleteProgram(moonProgram.id);
+  glDeleteProgram(starTrailsProgram.id);
   glDeleteProgram(starsProgram.id);
   glfwDestroyWindow(window);
   glfwTerminate();

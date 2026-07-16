@@ -11,6 +11,8 @@ namespace skyrewind {
 struct LongExposureBuffer {
   GLuint sceneFramebuffer = 0;
   GLuint sceneTexture = 0;
+  GLuint trailFramebuffer = 0;
+  GLuint trailTexture = 0;
   GLuint historyFramebuffers[2]{};
   GLuint historyTextures[2]{};
   GLuint fullscreenVao = 0;
@@ -25,12 +27,12 @@ const char* longExposureFragmentShader();
 const char* longExposureDisplayFragmentShader();
 bool resizeLongExposureBuffer(LongExposureBuffer& buffer, int width, int height);
 void beginLongExposureScene(const LongExposureBuffer& buffer);
+void beginLongExposureTrails(const LongExposureBuffer& buffer);
 void resolveLongExposure(
   LongExposureBuffer& buffer,
   GLuint accumulationProgram,
   GLuint displayProgram,
   float retention,
-  float strength,
   bool resetHistory,
   int outputMode,
   float exposure,

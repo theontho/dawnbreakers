@@ -40,8 +40,12 @@ and compile the OpenGL shaders without opening the visible app window. In the
 native app, F1 toggles the old cinematic controls and F2 toggles the new time
 player. The shared long-exposure controls accumulate recent sky frames once
 apparent motion crosses the shutter threshold, producing camera-like trails in
-either playback mode. Adaptive intra-frame samples fill fast trails between
-frames, with adjustable trail spacing and a fixed performance cap. The moon is
+either playback mode. Connected GPU capsule segments sweep each star between
+sampled positions, while the sharp current star is composited only once at the
+trail endpoint. Adjustable curve-segment length keeps fast, curved trails
+continuous without exposing intermediate star dots. Streak styles include
+smooth exposure, solid trails, explicit shutter samples, and the original
+single-pass full-star line look with its legacy length and width controls. The moon is
 rendered in the OpenGL sky from an approximate lunar orbit, so it follows its
 own path rather than moving with the stellar catalog. Moon tracking can retain
 a horizon-up view or stabilize the surrounding celestial field; dragging the

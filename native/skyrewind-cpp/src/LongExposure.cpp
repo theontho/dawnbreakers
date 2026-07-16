@@ -24,10 +24,17 @@ void attachTexture(GLuint framebuffer, GLuint texture) {
   }
 }
 
-void clearFramebuffer(GLuint framebuffer, int width, int height) {
+void clearFramebuffer(
+  GLuint framebuffer,
+  int width,
+  int height,
+  float red,
+  float green,
+  float blue
+) {
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glViewport(0, 0, width, height);
-  glClearColor(0.002f, 0.005f, 0.018f, 1.0f);
+  glClearColor(red, green, blue, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -59,7 +66,6 @@ const char* longExposureFragmentShader() {
     uniform sampler2D uCurrentFrame;
     uniform sampler2D uHistory;
     uniform float uRetention;
-    uniform float uStrength;
 
     in vec2 vUv;
     out vec4 fragColor;
@@ -67,8 +73,7 @@ const char* longExposureFragmentShader() {
     void main() {
       vec3 current = texture(uCurrentFrame, vUv).rgb;
       vec3 history = texture(uHistory, vUv).rgb * uRetention;
-      vec3 exposed = max(current, history);
-      fragColor = vec4(mix(current, exposed, uStrength), 1.0);
+      fragColor = vec4(max(current, history), 1.0);
     }
   )GLSL";
 }
@@ -78,6 +83,7 @@ const char* longExposureDisplayFragmentShader() {
     #version 410 core
 
     uniform sampler2D uImage;
+    uniform sampler2D uCurrentFrame;
     uniform int uOutputMode;
     uniform float uExposure;
     uniform float uHeadroom;
@@ -114,7 +120,9 @@ const char* longExposureDisplayFragmentShader() {
     }
 
     void main() {
-      vec3 color = texture(uImage, vUv).rgb * exp2(uExposure);
+      vec3 current = texture(uCurrentFrame, vUv).rgb;
+      vec3 history = texture(uImage, vUv).rgb;
+      vec3 color = max(current, history) * exp2(uExposure);
       if (uOutputMode == 1) {
         color = acesToneMap(color);
       } else if (uOutputMode == 2) {
@@ -137,6 +145,8 @@ bool resizeLongExposureBuffer(LongExposureBuffer& buffer, int width, int height)
   if (buffer.sceneFramebuffer == 0) {
     glGenFramebuffers(1, &buffer.sceneFramebuffer);
     glGenTextures(1, &buffer.sceneTexture);
+    glGenFramebuffers(1, &buffer.trailFramebuffer);
+    glGenTextures(1, &buffer.trailTexture);
     glGenFramebuffers(2, buffer.historyFramebuffers);
     glGenTextures(2, buffer.historyTextures);
     glGenVertexArrays(1, &buffer.fullscreenVao);
@@ -146,10 +156,19 @@ bool resizeLongExposureBuffer(LongExposureBuffer& buffer, int width, int height)
   buffer.height = safeHeight;
   configureTexture(buffer.sceneTexture, safeWidth, safeHeight);
   attachTexture(buffer.sceneFramebuffer, buffer.sceneTexture);
+  configureTexture(buffer.trailTexture, safeWidth, safeHeight);
+  attachTexture(buffer.trailFramebuffer, buffer.trailTexture);
   for (int i = 0; i < 2; ++i) {
     configureTexture(buffer.historyTextures[i], safeWidth, safeHeight);
     attachTexture(buffer.historyFramebuffers[i], buffer.historyTextures[i]);
-    clearFramebuffer(buffer.historyFramebuffers[i], safeWidth, safeHeight);
+    clearFramebuffer(
+      buffer.historyFramebuffers[i],
+      safeWidth,
+      safeHeight,
+      0.0f,
+      0.0f,
+      0.0f
+    );
   }
 
   buffer.historyIndex = 0;
@@ -165,12 +184,18 @@ void beginLongExposureScene(const LongExposureBuffer& buffer) {
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void beginLongExposureTrails(const LongExposureBuffer& buffer) {
+  glBindFramebuffer(GL_FRAMEBUFFER, buffer.trailFramebuffer);
+  glViewport(0, 0, buffer.width, buffer.height);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
 void resolveLongExposure(
   LongExposureBuffer& buffer,
   GLuint accumulationProgram,
   GLuint displayProgram,
   float retention,
-  float strength,
   bool resetHistory,
   int outputMode,
   float exposure,
@@ -184,7 +209,7 @@ void resolveLongExposure(
   glViewport(0, 0, buffer.width, buffer.height);
   glUseProgram(accumulationProgram);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, buffer.sceneTexture);
+  glBindTexture(GL_TEXTURE_2D, buffer.trailTexture);
   glUniform1i(glGetUniformLocation(accumulationProgram, "uCurrentFrame"), 0);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, buffer.historyTextures[buffer.historyIndex]);
@@ -192,10 +217,6 @@ void resolveLongExposure(
   glUniform1f(
     glGetUniformLocation(accumulationProgram, "uRetention"),
     useHistory ? std::clamp(retention, 0.0f, 1.0f) : 0.0f
-  );
-  glUniform1f(
-    glGetUniformLocation(accumulationProgram, "uStrength"),
-    useHistory ? std::clamp(strength, 0.0f, 1.0f) : 0.0f
   );
   glBindVertexArray(buffer.fullscreenVao);
   glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -206,6 +227,12 @@ void resolveLongExposure(
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, buffer.historyTextures[writeIndex]);
   glUniform1i(glGetUniformLocation(displayProgram, "uImage"), 0);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, buffer.sceneTexture);
+  glUniform1i(
+    glGetUniformLocation(displayProgram, "uCurrentFrame"),
+    1
+  );
   glUniform1i(glGetUniformLocation(displayProgram, "uOutputMode"), outputMode);
   glUniform1f(glGetUniformLocation(displayProgram, "uExposure"), exposure);
   glUniform1f(glGetUniformLocation(displayProgram, "uHeadroom"), std::max(1.0f, headroom));
@@ -228,9 +255,15 @@ void destroyLongExposureBuffer(LongExposureBuffer& buffer) {
   if (buffer.sceneTexture != 0) {
     glDeleteTextures(1, &buffer.sceneTexture);
   }
+  if (buffer.trailTexture != 0) {
+    glDeleteTextures(1, &buffer.trailTexture);
+  }
   glDeleteTextures(2, buffer.historyTextures);
   if (buffer.sceneFramebuffer != 0) {
     glDeleteFramebuffers(1, &buffer.sceneFramebuffer);
+  }
+  if (buffer.trailFramebuffer != 0) {
+    glDeleteFramebuffers(1, &buffer.trailFramebuffer);
   }
   glDeleteFramebuffers(2, buffer.historyFramebuffers);
   buffer = {};
