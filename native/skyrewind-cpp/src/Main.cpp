@@ -2,6 +2,7 @@
 #include "Catalog.hpp"
 #include "ExtendedRange.hpp"
 #include "LongExposure.hpp"
+#include "MoonPath.hpp"
 #include "SolarSystem.hpp"
 #include "TimePlayer.hpp"
 #include "ViewProjection.hpp"
@@ -47,7 +48,7 @@ constexpr double kDefaultLongitudeDegrees = 31.2357;
 constexpr double kSiderealRadiansPerYear = 360.98564736629 * 365.2425 * kDegToRad;
 constexpr int kMaxExposureSamples = 48;
 constexpr float kMinimumFovDegrees = 34.0f;
-constexpr float kMaximumFovDegrees = 165.0f;
+constexpr float kMaximumFovDegrees = 175.0f;
 
 struct Vec3 {
   float x = 0.0f;
@@ -116,6 +117,7 @@ struct GuiState {
   float layerSeparation = 0.42f;
   float atmosphereWarp = 0.26f;
   float moonSizePixels = 82.0f;
+  float moonPathHours = 24.0f;
   float solarSystemSizeScale = 1.0f;
   float hdrExposure = 0.0f;
   PhysicalDisplaySettings physicalDisplay;
@@ -124,6 +126,7 @@ struct GuiState {
   bool showMoon = true;
   bool showSun = true;
   bool showPlanets = true;
+  bool moonPathFrameClipped = false;
   MoonTrackingMode moonTrackingMode = MoonTrackingMode::Off;
   ProjectionMode projectionMode = ProjectionMode::AdaptiveFisheye;
   bool hdrOutput = true;
@@ -924,6 +927,43 @@ void centerViewportOnMoon(AppState& app) {
   orientCameraTowardMoon(app, visibleYear);
 }
 
+double moonPathTimeDirection(const AppState& app) {
+  if (app.visibleProgram == VisibleProgram::TimePlayer) {
+    return app.timePlayer.rateDirection < 0.0 ? -1.0 : 1.0;
+  }
+  return app.animation.targetYear < app.animation.startYear ? -1.0 : 1.0;
+}
+
+void frameViewportAroundMoonPath(AppState& app) {
+  const double visibleYear = app.visibleProgram == VisibleProgram::TimePlayer
+    ? app.timePlayer.currentYear
+    : makeZoetropeState(app).primaryYear;
+  const float viewportAspect =
+    static_cast<float>(app.framebufferWidth) /
+    static_cast<float>(std::max(1, app.framebufferHeight));
+  const MoonPathFrame frame = frameMoonPath(
+    visibleYear,
+    static_cast<double>(app.gui.moonPathHours) * moonPathTimeDirection(app),
+    app.location,
+    viewportAspect,
+    kMinimumFovDegrees * static_cast<float>(kDegToRad),
+    kMaximumFovDegrees * static_cast<float>(kDegToRad)
+  );
+  const float horizontalLength =
+    std::hypot(frame.center.east, frame.center.north);
+  if (horizontalLength > 0.00001f) {
+    app.camera.yaw = std::atan2(frame.center.east, frame.center.north);
+  }
+  app.camera.pitch =
+    std::asin(clampFloat(frame.center.up, -1.0f, 1.0f));
+  app.camera.fovRadians = frame.verticalFovRadians;
+  app.gui.projectionMode = frame.useFisheye
+    ? ProjectionMode::AdaptiveFisheye
+    : ProjectionMode::Perspective;
+  app.gui.moonTrackingMode = MoonTrackingMode::Off;
+  app.gui.moonPathFrameClipped = frame.clipped;
+}
+
 void drawMoonCameraControls(AppState& app, const char* id) {
   ImGui::PushID(id);
   ImGui::BeginDisabled(!app.gui.showMoon);
@@ -940,6 +980,30 @@ void drawMoonCameraControls(AppState& app, const char* id) {
   }
   if (ImGui::Button("Center moon")) {
     centerViewportOnMoon(app);
+  }
+  if (ImGui::SliderFloat(
+    "Moon path span",
+    &app.gui.moonPathHours,
+    1.0f,
+    72.0f,
+    "%.0f hr"
+  )) {
+    app.gui.moonPathFrameClipped = false;
+  }
+  if (ImGui::Button("Frame moon path")) {
+    frameViewportAroundMoonPath(app);
+  }
+  ImGui::SameLine();
+  ImGui::TextDisabled(
+    "%s from current time",
+    moonPathTimeDirection(app) < 0.0 ? "backward" : "forward"
+  );
+  if (app.gui.moonPathFrameClipped) {
+    ImGui::TextColored(
+      ImVec4(1.0f, 0.72f, 0.28f, 1.0f),
+      "Path exceeds the %.0f degree FOV limit.",
+      kMaximumFovDegrees
+    );
   }
   ImGui::EndDisabled();
   ImGui::PopID();

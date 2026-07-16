@@ -60,6 +60,7 @@ add_executable(skyrewind_cpp
   src/Catalog.cpp
   src/LongExposure.cpp
   src/Main.cpp
+  src/MoonPath.cpp
   src/SolarSystem.cpp
   src/TimePlayer.cpp
   src/ViewProjection.cpp
