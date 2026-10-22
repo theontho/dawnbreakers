@@ -55,7 +55,8 @@ export const ch1IlkhaniMosqueMap: MapDefinition = {
     // The travellers' corner by the west wall.
     { gridX: 1, gridY: 9, texture: 'ch2-bundles', blocks: true },
     { gridX: 2, gridY: 10, texture: 'rug', blocks: false },
-    { gridX: 12, gridY: 9, texture: 'writing-desk', blocks: true },
+    // A student's place on the floor: felt mat, lap board, pen case and inkwell.
+    { gridX: 12, gridY: 9, texture: 'floor-writing-board', blocks: true },
   ],
   npcs: [
     { gridX: 2, gridY: 9, texture: 'ch1-sleeping-nephew',

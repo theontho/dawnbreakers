@@ -6,8 +6,9 @@ import type { DecorSpec, MapDefinition } from './types';
  * seen from the garden (`ch7-tent-quddus`), so there is space to move.
  * Printed cotton lining along the back walls, mattresses and bolsters against them, carpets laid
  * edge to edge on the earth, the pole and its lantern in the middle. The
- * man of Bárfurúsh who keeps the tent is here, and Quddús's papers on a low
- * desk by the door; Quddús himself is out in his garden.
+ * man of Bárfurúsh who keeps the tent is here, and Quddús's papers on his
+ * writing board on the floor by the door, where he writes seated as scribes
+ * did; Quddús himself is out in his garden.
  */
 
 const W = 7;
@@ -66,7 +67,7 @@ export const ch7QuddusTentMap: MapDefinition = {
       prompt: 'Speak with the Man of Bárfurúsh  [E]',
       dialogue: 'ch7-tent-keeper-after',
       gate: { when: f => !!f.ch7WitnessedUnveiling, lockedDialogue: 'ch7-tent-keeper' } },
-    { gridX: DESK.x, gridY: DESK.y, texture: 'writing-desk',
+    { gridX: DESK.x, gridY: DESK.y, texture: 'floor-writing-board',
       prompt: 'Look at the papers on the low desk  [E]',
       dialogue: 'ch7-quddus-papers' },
   ],
