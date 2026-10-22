@@ -122,6 +122,12 @@ export interface TileCanvas {
 export interface BuildingSpec extends Building {
   /** When true, mark every footprint cell as blocked. Defaults to true. */
   blocks?: boolean;
+  /**
+   * Which painted variant (`texture~N`) of a texture with variants to use.
+   * Left out, the map picks one from the placement; set it whenever the map
+   * depends on a particular variant's art, such as a door on its front.
+   */
+  variant?: number;
 }
 
 /** Decor: cosmetic prop on a single cell, optionally blocking. */

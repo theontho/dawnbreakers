@@ -39,7 +39,7 @@ import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMa
 import { connectBuildings } from './mapJoins';
 import { connectWalls } from './mapWalls';
 import { nearestFreeCell, widenExits } from './mapExits';
-import { placeMapDoors, type MapDoors } from './mapDoors';
+import { checkDoorVariants, placeMapDoors, type MapDoors } from './mapDoors';
 import { setupMapCameras, type MapCameras } from './mapCamera';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
@@ -208,8 +208,9 @@ export class MapScene extends Phaser.Scene {
     this.blocked = grids.blocked;
     this.definition.build(makeTileCanvas(width, height, this.map, this.blocked));
 
+    if (import.meta.env.DEV) checkDoorVariants(this.definition.key, this.definition.buildings, this.definition.doors ?? []);
     for (const spec of this.definition.buildings) {
-      this.buildings.push({ gridX: spec.gridX, gridY: spec.gridY, w: spec.w, h: spec.h, texture: variantTexture(spec.texture, spec.gridX, spec.gridY) });
+      this.buildings.push({ gridX: spec.gridX, gridY: spec.gridY, w: spec.w, h: spec.h, texture: variantTexture(spec.texture, spec.gridX, spec.gridY, spec.variant) });
       if (spec.blocks !== false) blockFootprintInto(this.blocked, width, height, spec.gridX, spec.gridY, spec.w, spec.h);
     }
     for (const spec of this.definition.decor) {

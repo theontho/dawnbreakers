@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import type { DoorSpec } from '../data/maps/types';
+import { TEXTURE_VARIANTS } from '../assets/art';
+import type { BuildingSpec, DoorSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
 import { makeTextureGraphics } from './graphicsFactory';
 import { TILE_H, type Interactable } from './baseMapTypes';
@@ -84,4 +85,19 @@ function ensureMarkTexture(scene: Phaser.Scene): void {
   g.fillRect(9, 12, 2, 5);
   g.generateTexture(MARK, 20, 22);
   g.destroy();
+}
+
+/**
+ * A door is painted on one variant of a building's art, so a door on a
+ * building whose texture has variants must name the variant it was placed
+ * for; otherwise moving the building could pick another and strand the door.
+ */
+export function checkDoorVariants(key: string, buildings: readonly BuildingSpec[], doors: readonly DoorSpec[]): void {
+  for (const door of doors) {
+    const on = buildings.find(b => door.gridX >= b.gridX && door.gridX < b.gridX + b.w
+      && door.gridY >= b.gridY && door.gridY < b.gridY + b.h);
+    if (on && TEXTURE_VARIANTS[on.texture] && on.variant === undefined) {
+      throw new Error(`${key}: the door at (${door.gridX}, ${door.gridY}) is on a ${on.texture} with no chosen variant`);
+    }
+  }
 }

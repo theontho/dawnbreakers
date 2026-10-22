@@ -36,10 +36,20 @@ export const BASE_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>>
   ...Object.fromEntries(Object.keys(WALL_STYLES).map(id => [id, ((scene, def) => paintWallBase(scene, def.texture)) as TextureGenerator])),
 };
 
-/** The variant of `texture` to use at a grid cell; stable for a given placement. */
-export function variantTexture(texture: string, gridX: number, gridY: number): string {
-  const count = TEXTURE_VARIANTS[texture];
-  if (!count) return texture;
+/**
+ * The variant of `texture` to use at a grid cell: the `chosen` one when the
+ * map names it, otherwise one picked from the placement (stable for a given
+ * cell).
+ */
+export function variantTexture(texture: string, gridX: number, gridY: number, chosen?: number): string {
+  const count = TEXTURE_VARIANTS[texture] ?? 1;
+  if (chosen !== undefined) {
+    if (!Number.isInteger(chosen) || chosen < 0 || chosen >= count) {
+      throw new Error(`${texture} has no variant ${chosen} (it has ${count})`);
+    }
+    return variantKey(texture, chosen);
+  }
+  if (count === 1) return texture;
   const i = Math.abs((gridX * 73856093) ^ (gridY * 19349663)) % count;
   return variantKey(texture, i);
 }

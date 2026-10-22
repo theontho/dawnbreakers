@@ -29,8 +29,8 @@ const H = 40;
 const TALAR = { gridX: 16, gridY: 2, w: 12, h: 8 };
 /** The carved door of the inner apartments, in the enclosure's south wall. */
 const CHAMBER_DOOR = { x: 34, y: 34 };
-/** The chancery house; at this cell the town house paints its two-storey variant, door on the fourth cell. */
-const CHANCERY = { gridX: 3, gridY: 3, w: 6, h: 5 } as const;
+/** The chancery house: the town house's two-storey variant (`variant: 0`), its door on the fourth cell of the front. */
+const CHANCERY = { gridX: 3, gridY: 3, w: 6, h: 5, variant: 0 } as const;
 export const RECEPTION_DOOR = { x: CHANCERY.gridX + 3, y: CHANCERY.gridY + CHANCERY.h - 1 } as const;
 const AXIS = { y0: 21, y1: 23 } as const;
 const POOL = { x0: 20, x1: 23 } as const;

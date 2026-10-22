@@ -40,11 +40,11 @@ const FORT = { x0: 1, y0: 1, x1: 22, y1: 19 } as const;
 const GATE = { x: 11, y: 18, passage: 12 } as const;
 const CASTLE = { x: 3, y: 2, w: 9, h: 7 } as const;
 /**
- * The amanuensis's lodging against the castle's east wall. At this cell the
- * mountain house paints its first variant (the stone house), whose door is
- * centred on the third cell of its front.
+ * The amanuensis's lodging against the castle's east wall: the mountain
+ * house's stone variant (`variant: 0`), whose door is centred on the third
+ * cell of its front.
  */
-const LODGING = { x: 12, y: 3, w: 5, h: 4 } as const;
+const LODGING = { x: 12, y: 3, w: 5, h: 4, variant: 0 } as const;
 export const AMANUENSIS_DOOR = { x: LODGING.x + 2, y: LODGING.y + LODGING.h - 1 } as const;
 const STREET = 36;
 const STREAM = 33;
@@ -161,7 +161,7 @@ export const ch6MakuMap: MapDefinition = {
   },
   buildings: [
     { gridX: CASTLE.x, gridY: CASTLE.y, w: CASTLE.w, h: CASTLE.h, texture: 'ch6-maku-fortress' },
-    { gridX: LODGING.x, gridY: LODGING.y, w: LODGING.w, h: LODGING.h, texture: 'ch6-mountain-house' },
+    { gridX: LODGING.x, gridY: LODGING.y, w: LODGING.w, h: LODGING.h, variant: LODGING.variant, texture: 'ch6-mountain-house' },
     { gridX: GATE.x, gridY: GATE.y, w: 3, h: 3, texture: 'ch6-fortress-gate', blocks: false },
     // The town of Mákú.
     { gridX: 0, gridY: 30, w: 5, h: 4, texture: 'ch6-mountain-house' },
