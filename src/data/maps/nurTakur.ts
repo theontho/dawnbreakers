@@ -144,7 +144,7 @@ export const nurTakurMap: MapDefinition = {
   npcs,
   exits: [19, 20].map(fromX => ({
     fromX, fromY: H - 1, dx: 0, dy: 1,
-    targetScene: 'NurLane', targetSpawnX: 30, targetSpawnY: 11,
+    targetScene: 'NurLane', targetSpawnX: fromX + 11, targetSpawnY: 1,
     label: '↓ Back over the mountains to Ṭihrán',
   })),
   // Autumn rain in the hills; when the district wakes to the news, the rain lifts.

@@ -79,6 +79,28 @@ Flags carried forward:
   `dx/dy`. Optional `requires: f => ...` and `lockedLabel` keep an exit shut
   until the story allows. Pair every exit with a matching return exit on the
   target map. Make sure the target spawn cell is walkable.
+- Exit directions are read on the **screen**: up is north, right is east.
+  The grid is drawn as a diamond, so its edges face the screen's
+  diagonals: `y = 0` (`dy: -1`) is the upper-right edge, north-east;
+  `x = max` (`dx: 1`) the lower-right, south-east; `y = max` (`dy: 1`) the
+  lower-left, south-west; `x = 0` (`dx: -1`) the upper-left, north-west.
+  An arrow or compass word in an exit's `label` or `lockedLabel` says
+  where it leads from here, and must match the edge: a cardinal (`↑`,
+  "north", "the road west") fits either edge within 45° of it (north is the
+  upper-right or upper-left edge), a diagonal (`↗`, "south-east") only its
+  own edge. Capitalised compass words inside a label are names ("the North
+  Gate") and "from the north" says where a road comes from; both are
+  ignored. `checkExitBearings` (`src/scenes/mapExitBearings.ts`) runs at
+  map load in development, so `npm run smoke` fails on a mismatch and
+  names the edges that would fit.
+- When it fails, put the exit where the story's geography says the place
+  lies (Núr and Mázindarán are north of Ṭihrán, Búshihr south of Shíráz,
+  Tabríz north-west of Ṭihrán): move the exit cell to that edge and paint
+  its road through to it, or, if the place does not care, correct the
+  label. Keep the pairs symmetric: leaving by a north-ish edge should bring
+  the player in at a south-ish edge of the next map, and the return exit
+  back at the edge they left by. Dialogue, objectives and journal text that
+  give directions ("take the road north", "the west gate") must agree.
 - `doors`: a way into another map, usually a building's interior. Put it on
   the building cell where the door is painted (`gridX/gridY`); the player
   stands in front and presses E or clicks it. `requires` and `lockedLabel`

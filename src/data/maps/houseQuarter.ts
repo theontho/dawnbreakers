@@ -8,13 +8,15 @@ import { wallRun } from './wallRuns';
  * small paved square; on its north side the Báb's house stands behind its
  * court wall, its lamplit entrance facing the square. He is never on the
  * map; the player keeps vigil at the threshold. A cross-lane runs east to
- * west below the square; east it becomes the road north, opened at dawn.
+ * west below the square; east it runs on through the city to the Qur'án
+ * Gate, where the road north begins (`Road`), opened at dawn.
  *
  * Districts (x runs east, y runs south):
  * - The Báb's house: court wall x 11..23, y 2..12, the house at the back
  *   (x 14..19, y 2..6), the entrance at (17, 12).
  * - The square before it: x 12..23, y 13..18.
- * - Cross-lane: y 19..21 across the map; the road north leaves at (35, 20).
+ * - Cross-lane: y 19..21 across the map; the way to the Qur'án Gate leaves
+ *   east at (35, 20).
  * - Lane to the city: x 16..18, y 22..33, with the neighbourhood well at y 28..30.
  * - Neighbours' houses and walled gardens fill the corners; the orchard in
  *   the south-east is kept low so the watchman on the cross-lane stays in view.
@@ -154,9 +156,9 @@ export const houseQuarterMap: MapDefinition = {
       label: '↓ Walk back to the city' },
     { fromX: W - 1, fromY: 20, dx: 1, dy: 0,
       targetScene: 'Road', targetSpawnX: 1, targetSpawnY: 22,
-      label: '→ Take the road north',
+      label: '→ East through the city to the Qur\'án Gate',
       requires: f => !!f.shirazComplete,
-      lockedLabel: 'The road north can wait until dawn' },
+      lockedLabel: 'The Qur\'án Gate can wait until dawn' },
   ],
   ambience: {
     wash: { color: 0x34407a, alpha: 0.58 },

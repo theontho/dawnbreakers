@@ -40,6 +40,7 @@ import { connectBuildings } from './mapJoins';
 import { connectWalls } from './mapWalls';
 import { nearestFreeCell, widenExits } from './mapExits';
 import { checkDoorVariants, placeMapDoors, type MapDoors } from './mapDoors';
+import { checkExitBearings } from './mapExitBearings';
 import { setupMapCameras, type MapCameras } from './mapCamera';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
@@ -211,6 +212,7 @@ export class MapScene extends Phaser.Scene {
     this.definition.build(makeTileCanvas(width, height, this.map, this.blocked));
 
     if (import.meta.env.DEV) checkDoorVariants(this.definition.key, this.definition.buildings, this.definition.doors ?? []);
+    if (import.meta.env.DEV) checkExitBearings(this.definition.key, this.definition.exits);
     for (const spec of this.definition.buildings) {
       this.buildings.push({ gridX: spec.gridX, gridY: spec.gridY, w: spec.w, h: spec.h, texture: variantTexture(spec.texture, spec.gridX, spec.gridY, spec.variant) });
       if (spec.blocks !== false) blockFootprintInto(this.blocked, width, height, spec.gridX, spec.gridY, spec.w, spec.h);

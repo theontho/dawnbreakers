@@ -12,7 +12,8 @@ import { wallRun } from './wallRuns';
  *
  * Districts (x runs east, y runs south):
  * - The lane: y 10..12, from the west edge (exit at (0, 11), back to the
- *   madrasa) east to the road north out of the city (exit at (31, 11)).
+ *   madrasa) east to the corner where the road north out of the city turns
+ *   up past the last house, x 30..31, to the north edge (exit at (30, 0)).
  * - The house: walls x 9..23, y 0..8, the house at x 12..19, y 0..6, the
  *   door in the wall at (16, 8).
  * - The bakery south of the lane at x 4..9, y 14..17; houses either side.
@@ -21,6 +22,8 @@ import { wallRun } from './wallRuns';
 const W = 32;
 const H = 22;
 const LANE = 11;
+/** The road north out of the city, from the lane's east end to the north edge. */
+const ROAD_NORTH = { x: 30, w: 2 } as const;
 const NUR_HOUSE_DOOR = { x: 16, y: 8 } as const;
 
 const DOOR_CELL = { gridX: NUR_HOUSE_DOOR.x, gridY: NUR_HOUSE_DOOR.y, texture: 'ch4-uncle-door' } as const;
@@ -109,6 +112,7 @@ export const nurLaneMap: MapDefinition = {
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');
     paintRect(0, LANE - 1, W, 3, 'path');
+    paintRect(ROAD_NORTH.x, 0, ROAD_NORTH.w, LANE - 1, 'path');
     paintRect(14, 9, 5, 1, 'stone');
   },
   buildings,
@@ -118,9 +122,9 @@ export const nurLaneMap: MapDefinition = {
     { fromX: 0, fromY: LANE, dx: -1, dy: 0,
       targetScene: 'NurMadrasa', targetSpawnX: 12, targetSpawnY: 16,
       label: '← Back to the madrasa' },
-    { fromX: W - 1, fromY: LANE, dx: 1, dy: 0,
+    { fromX: ROAD_NORTH.x, fromY: 0, dx: 0, dy: -1,
       targetScene: 'NurTakur', targetSpawnX: 19, targetSpawnY: 32,
-      label: '→ The road north over the mountains to Núr',
+      label: '↑ The road north over the mountains to Núr',
       requires: has('nurHusaynFarewell'),
       lockedLabel: 'The road north, out of the city' },
   ],
