@@ -39,6 +39,18 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('nabil', 'Nabíl', ['Nabíl'],
     'Nabíl-i-Aʿẓam, Mullá Muḥammad of Zarand (1831 to 1892), a believer who gathered the memories of the survivors into The Dawn-Breakers, the history this game follows.'),
 
+  // Zanján, 1850 to 1851.
+  person('hujjat', 'Ḥujjat', ['Ḥujjat'],
+    '"The Proof": the title the Báb gave Mullá Muḥammad-ʿAlí of Zanján, a learned and outspoken divine who believed with much of his congregation. In 1850 he and some three thousand believers held the fort of ʿAlí-Mardán Khán against royal regiments for months. Wounded at his ablutions, he died in prayer in January 1851.'),
+  person('zaynab', 'Zaynab', ['Zaynab', 'Rustam-ʿAlí'],
+    'A village girl near Zanján who cut her hair, put on men\'s clothes and kept the barricades for five months in 1850. Ḥujjat named her Rustam-ʿAlí, after the hero of Persian legend. She fell in a charge.'),
+  person('umm-i-ashraf', 'Umm-i-Ashraf', ['Umm-i-Ashraf'],
+    '"Mother of Ashraf": a woman of Zanján who bore her son Ashraf in the besieged fort and vowed him to God. Years later, when he was put to death for his faith, she bade him be steadfast.'),
+  person('mihr-ali', 'Mihr-ʿAlí', ['Mihr-ʿAlí'],
+    'Ustád Mihr-ʿAlí, a smith of Zanján, who as a boy of under ten was among the children Ḥujjat sent out with the sealed Qur\'án. He survived the massacre and told the story to Nabíl.'),
+  person('majdu-d-dawlih', 'Majdu\'d-Dawlih', ['Majdu\'d-Dawlih'],
+    'The governor of Zanján in 1850, maternal uncle of Náṣiri\'d-Dín Sháh, who at the mullás\' urging moved against Ḥujjat and his companions.'),
+
   // Teachers.
   person('siyyid-kazim', 'Siyyid Káẓim', ['Siyyid Káẓim'],
     'Siyyid Káẓim of Rasht (died 1843), the leader of the Shaykhí school in Karbilá. He told his students that the Promised One was near, and sent them out to seek Him.'),

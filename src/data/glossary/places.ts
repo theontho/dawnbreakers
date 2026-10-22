@@ -27,6 +27,8 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('kazirun', 'Kázirún', [51.65, 29.62], 'A town on the road from Búshihr up into the mountains to Shíráz.'),
   place('shahrud', 'Sháhrúd', [54.98, 36.42], 'A town on the road east to Khurásán, near Badasht.'),
   place('kirman', 'Kirmán', [57.08, 30.28], 'A city in south-east Persia.'),
+  place('zanjan', 'Zanján', [48.48, 36.67], 'A town on the road between Tabríz and Ṭihrán, where Ḥujjat and his companions were besieged from May 1850 to January 1851. The Báb named it the Ard-i-Aʿlá, the Exalted Land.'),
+  place('ali-mardan-khan', 'Fort of ʿAlí-Mardán Khán', [48.5, 36.69], 'An old fort beside Ḥujjat\'s quarter in Zanján, where the believers moved their families and held out through the siege of 1850.', ['ʿAlí-Mardán Khán']),
   place('siyah-chal', 'Síyáh-Chál', [51.42, 35.68], 'The "Black Pit": an underground dungeon in Ṭihrán, once a reservoir, where Bahá\'u\'lláh was imprisoned in 1852.'),
 
   // Provinces.
