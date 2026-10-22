@@ -33,12 +33,6 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('zanjan', 'Zanján', [48.48, 36.67], 'A town on the road between Tabríz and Ṭihrán, where Ḥujjat and his companions were besieged from May 1850 to January 1851. The Báb named it the Ard-i-Aʿlá, the Exalted Land.'),
   place('ali-mardan-khan', 'Fort of ʿAlí-Mardán Khán', [48.5, 36.69], 'An old fort beside Ḥujjat\'s quarter in Zanján, where the believers moved their families and held out through the siege of 1850.', ['ʿAlí-Mardán Khán']),
   place('siyah-chal', 'Síyáh-Chál', [51.42, 35.68], 'The "Black Pit": an underground dungeon in Ṭihrán, once a reservoir, where Bahá\'u\'lláh was imprisoned in 1852.'),
-
-  // Provinces.
-  region('mazindaran', 'Mázindarán', 'The forested province along the Caspian Sea\'s southern shore, between the mountains and the sea.'),
-  region('khurasan', 'Khurásán', 'The great north-eastern province of Persia, around the holy city of Mashhad.'),
-  region('adhirbayjan', 'Ádhirbáyján', 'The mountainous north-western province of Persia, around Tabríz.'),
-  region('fars', 'Fárs', 'The southern province of Persia, around Shíráz.'),
   place('sari', 'Sárí', [53.06, 36.56], 'The chief town of Mázindarán, near the Caspian shore.'),
   place('nur', 'Núr', [51.75, 36.3], 'A mountain district of Mázindarán, the home of Bahá\'u\'lláh\'s family.'),
   place('takur', 'Tákur', [51.72, 36.21], 'A village in the district of Núr, the estate of Bahá\'u\'lláh\'s father, Mírzá Buzurg. Half of the family\'s great house there was carried away by a flood. Bahá\'u\'lláh went there in 1844 to teach the Cause of the Báb.'),
@@ -67,6 +61,6 @@ export const PLACES: readonly GlossaryEntry[] = [
   // Provinces.
   region('mazindaran', 'Mázindarán', 'The forested province along the Caspian Sea\'s southern shore, between the mountains and the sea.'),
   region('khurasan', 'Khurásán', 'The great north-eastern province of Persia, around the holy city of Mashhad.'),
-  region('adhirbayjan', 'Ádhirbáyján', 'The mountainous north-western province of Persia, around Tabríz.', ['Ádhirbáyján', 'Ádharbáyján']),
+  region('adhirbayjan', 'Ádhirbáyján', 'The mountainous north-western province of Persia, around Tabríz.'),
   region('fars', 'Fárs', 'The southern province of Persia, around Shíráz.'),
 ];
