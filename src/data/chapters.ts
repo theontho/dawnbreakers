@@ -5,6 +5,7 @@ import type { ChapterStory } from './story/types';
 export type ChapterId =
   | 'shiraz'
   | 'road'
+  | 'tehran-nur'
   | 'mecca'
   | 'shiraz-return'
   | 'isfahan'
@@ -25,6 +26,7 @@ export type ChapterId =
 export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   shiraz: 'shirazComplete',
   road: 'roadComplete',
+  'tehran-nur': 'nurComplete',
   mecca: 'meccaComplete',
   'shiraz-return': 'houseArrestComplete',
   isfahan: 'isfahanComplete',
@@ -80,6 +82,15 @@ const SPECS: ChapterSpec[] = [
     description: 'The Letters of the Living set out from Shíráz in every direction, bidden to proclaim that the Gate has opened without yet speaking His name. You see them off, and a stranger on the road asks you the one thing you may not say.',
     startScene: 'Road',
     scenes: ['Road', 'Ch2Caravanserai'],
+  },
+  {
+    id: 'tehran-nur',
+    story: CHAPTER_STORIES['tehran-nur'],
+    title: 'Ṭihrán and Núr',
+    subtitle: 'Ṭihrán and Mázindarán, 1844',
+    description: 'You follow Mullá Ḥusayn north to Ṭihrán, where a Shaykhí teacher turns him away and a tutor from Núr knocks at his door at midnight. At dawn a scroll goes in at a door you may not enter, and in the green hills of Núr you hear how a whole district was won.',
+    startScene: 'NurMadrasa',
+    scenes: ['NurMadrasa', 'NurLane', 'NurTakur'],
   },
   {
     id: 'mecca',

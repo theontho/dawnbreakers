@@ -1,6 +1,7 @@
 import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
 import { CH01_OBJECTS, CH01_TEXTURE_GENERATORS } from './chapter01';
 import { CH02_OBJECTS, CH02_TEXTURE_GENERATORS } from './chapter02';
+import { NUR_OBJECTS, NUR_TEXTURE_GENERATORS } from './nur';
 import { CH03_OBJECTS, CH03_TEXTURE_GENERATORS } from './chapter03';
 import { CH04_OBJECTS, CH04_TEXTURE_GENERATORS } from './chapter04';
 import { CH05_OBJECTS, CH05_TEXTURE_GENERATORS } from './chapter05';
@@ -28,6 +29,7 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
   ...SHARED_TEXTURE_GENERATORS,
   ...CH01_TEXTURE_GENERATORS,
   ...CH02_TEXTURE_GENERATORS,
+  ...NUR_TEXTURE_GENERATORS,
   ...CH03_TEXTURE_GENERATORS,
   ...CH04_TEXTURE_GENERATORS,
   ...CH05_TEXTURE_GENERATORS,
@@ -44,6 +46,7 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
 export const CHAPTER_OBJECTS: MapObjectDefinition[] = [
   ...CH01_OBJECTS,
   ...CH02_OBJECTS,
+  ...NUR_OBJECTS,
   ...CH03_OBJECTS,
   ...CH04_OBJECTS,
   ...CH05_OBJECTS,

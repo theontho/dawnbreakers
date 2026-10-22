@@ -1,6 +1,7 @@
 import type { DialogueTree } from '../dialogue/types';
 import { chapter01Dialogues } from './dialogues_ch/chapter01_shiraz';
 import { chapter02Dialogues } from './dialogues_ch/chapter02_road';
+import { nurDialogues } from './dialogues_ch/nur';
 import { chapter03Dialogues } from './dialogues_ch/chapter03_mecca';
 import { chapter04Dialogues } from './dialogues_ch/chapter04_shiraz_return';
 import { chapter05Dialogues } from './dialogues_ch/chapter05_isfahan';
@@ -26,6 +27,7 @@ import { chapter10Dialogues } from './dialogues_ch/chapter10_siyah_chal';
 export const dialogues: Record<string, DialogueTree> = {
   ...chapter01Dialogues,
   ...chapter02Dialogues,
+  ...nurDialogues,
   ...chapter03Dialogues,
   ...chapter04Dialogues,
   ...chapter05Dialogues,

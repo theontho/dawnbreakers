@@ -91,6 +91,10 @@ export const WORDS: readonly GlossaryEntry[] = [
   term('qara-guhar', 'Qará-Guhar', ['Qará-Guhar'],
     'One of the two heavy chains of the Síyáh-Chál, which was laid on Bahá\'u\'lláh\'s neck.'),
 
+  term('vazir', 'Vazír', ['Vazír'],
+    'A minister of state. Bahá\'u\'lláh\'s father, Mírzá Buzurg, was known as the Vazír.'),
+  term('shikastih', 'Shikastih-nastaʿlíq', ['shikastih-nastaʿlíq'],
+    'A flowing, "broken" form of the Persian hanging script, much prized by calligraphers.'),
   // The new Faith.
   term('babi', 'Bábí', ['Bábí', 'Bábís'],
     'A follower of the Báb.'),

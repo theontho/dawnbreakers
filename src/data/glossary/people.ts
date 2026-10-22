@@ -39,6 +39,20 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('nabil', 'Nabíl', ['Nabíl'],
     'Nabíl-i-Aʿẓam, Mullá Muḥammad of Zarand (1831 to 1892), a believer who gathered the memories of the survivors into The Dawn-Breakers, the history this game follows.'),
 
+  // Ṭihrán and Núr, 1844.
+  person('mirza-buzurg', 'Mírzá Buzurg', ['Mírzá Buzurg'],
+    'Mírzá ʿAbbás of Núr, called Mírzá Buzurg (died 1839), a minister of the Qajar court and a celebrated calligrapher, the father of Bahá\'u\'lláh. His fortunes failed in his last years: a flood took half his house at Tákur, and envious rivals took his posts.'),
+  person('mirza-musa', 'Mírzá Músá', ['Mírzá Músá'],
+    'Áqáy-i-Kalím, the brother of Bahá\'u\'lláh and His companion in every exile. He was at the gate when the tutor brought Mullá Ḥusayn\'s scroll in 1844, and told the story to Nabíl.'),
+  person('muallim', 'Mullá Muḥammad-i-Muʿallim', ['Mullá Muḥammad-i-Muʿallim'],
+    'A tutor from Núr, a student of the Shaykhí teacher in the madrasa of Mírzá Ṣáliḥ in Ṭihrán. In 1844 he carried Mullá Ḥusayn\'s scroll to Bahá\'u\'lláh at dawn, and brought back His answer.'),
+  person('khurasani', 'Ḥájí Mírzá Muḥammad-i-Khurásání', ['Ḥájí Mírzá Muḥammad'],
+    'The leader of the Shaykhís of Ṭihrán in 1844, who taught in the madrasa of Mírzá Ṣáliḥ, and turned away Mullá Ḥusayn and his message.'),
+  person('mulla-abbas', 'Mullá ʿAbbás', ['Mullá ʿAbbás'],
+    'A son-in-law and disciple of the late mujtahid of Núr, sent with Mírzá Abu\'l-Qásim in 1844 to examine Bahá\'u\'lláh. He forgot his questions, stood by the door, and never went back to his teacher.'),
+  person('abul-qasim', 'Mírzá Abu\'l-Qásim', ['Mírzá Abu\'l-Qásim'],
+    'A son-in-law and disciple of the late mujtahid of Núr, Mullá ʿAbbás\'s companion on the errand of 1844, who vowed the rest of his life to the service of the One he had been sent to examine.'),
+
   // Zanján, 1850 to 1851.
   person('hujjat', 'Ḥujjat', ['Ḥujjat'],
     '"The Proof": the title the Báb gave Mullá Muḥammad-ʿAlí of Zanján, a learned and outspoken divine who believed with much of his congregation. In 1850 he and some three thousand believers held the fort of ʿAlí-Mardán Khán against royal regiments for months. Wounded at his ablutions, he died in prayer in January 1851.'),

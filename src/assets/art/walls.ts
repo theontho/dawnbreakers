@@ -5,6 +5,7 @@ import { FOLD_WALL, foldWallFace, RAMPART, rampartFace, rampartMerlons } from '.
 import { brick, glazedTiles, plaster, stone, type Surface } from './materials';
 import { archPath, clipped, LIGHT } from './ornaments';
 import { SERAI_BAY_H, seraiBayFace, seraiWindowFace } from './seraiWalls';
+import { MADRASA_BAY_H, madrasaBayFace, madrasaBlindFace } from './tehranMadrasa';
 import {
   SHIP_CABIN_WALL_H, shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace,
 } from './shipCabinWalls';
@@ -156,6 +157,19 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   'ch2-serai-window': {
     height: SERAI_BAY_H, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-bay-lit'],
     face: seraiWindowFace,
+  },
+  // The arcade of students' cells round a Ṭihrán madrasa court; see tehranMadrasa.ts.
+  'nur-madrasa-cell': {
+    height: MADRASA_BAY_H, thickness: 0.34, top: 0xbc9a6a, cap: 'coping', joins: ['nur-madrasa-cell-lit', 'nur-madrasa-blind'],
+    face: (ctx, w, h, l) => madrasaBayFace(ctx, w, h, l, false),
+  },
+  'nur-madrasa-cell-lit': {
+    height: MADRASA_BAY_H, thickness: 0.34, top: 0xbc9a6a, cap: 'coping', joins: ['nur-madrasa-cell', 'nur-madrasa-blind'],
+    face: (ctx, w, h, l) => madrasaBayFace(ctx, w, h, l, true),
+  },
+  'nur-madrasa-blind': {
+    height: MADRASA_BAY_H, thickness: 0.34, top: 0xbc9a6a, cap: 'coping', joins: ['nur-madrasa-cell', 'nur-madrasa-cell-lit'],
+    face: madrasaBlindFace,
   },
   // The shrine of Shaykh Ṭabarsí: limewash, damp and lamp smoke; see shrineInterior.
   'ch8-shrine-wall': {

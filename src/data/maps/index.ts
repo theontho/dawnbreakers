@@ -4,6 +4,9 @@ import { ch1IlkhaniMosqueMap } from './ch1IlkhaniMosque';
 import { houseQuarterMap } from './houseQuarter';
 import { roadMap } from './road';
 import { ch2CaravanseraiMap } from './ch2Caravanserai';
+import { nurMadrasaMap } from './nurMadrasa';
+import { nurLaneMap } from './nurLane';
+import { nurTakurMap } from './nurTakur';
 import { ch3ShipMap } from './ch3Ship';
 import { ch3ShipCabinMap } from './ch3ShipCabin';
 import { ch3MeccaMap } from './ch3Mecca';
@@ -46,6 +49,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   houseQuarterMap,
   roadMap,
   ch2CaravanseraiMap,
+  nurMadrasaMap,
+  nurLaneMap,
+  nurTakurMap,
   ch3ShipMap,
   ch3ShipCabinMap,
   ch3MeccaMap,
