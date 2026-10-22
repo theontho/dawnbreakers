@@ -1,114 +1,20 @@
-import { css, footprintBox, groundShadow, outlineBox, paintTexture, shade, type Ctx, type IsoBox } from '../art/canvasKit';
+import { footprintBox, paintTexture } from '../art/canvasKit';
 import { paintHouse } from '../art/houses';
-import { brick, planks, plaster } from '../art/materials';
-import { archPath, band, beamEnds, latticeWindow, parapetRoof, walls } from '../art/ornaments';
+import { drawShutteredShop, drawStreetArch, TEHRAN_MUD } from '../art/tehran';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH10_PRISON_TEXTURE_GENERATORS } from './chapter10Prison';
 import { CH10_ROAD_TEXTURE_GENERATORS } from './chapter10Road';
 
 /**
  * Chapter 10: the Ṭihrán prison quarter, the Síyáh-Chál pit, and the snowy
- * western gate where the road to Baghdád begins. This file holds the street
- * facades and shuttered shops; the prison architecture, chains, straw and
- * the shaft of light live in `chapter10Prison.ts`, the city wall and the
+ * western gate where the road to Baghdád begins. This file registers the
+ * street buildings, drawn in `art/tehran.ts`; the prison architecture,
+ * chains, straw and the shaft of light live in `chapter10Prison.ts`, the
  * snow in `chapter10Road.ts`.
  *
  * Note: `closed-door`, `lamp`, and `crowd-shadow` are intentionally not
  * redefined here. The shared registry owns them.
  */
-
-const MUD = 0x9c8466;
-const BRICK = 0x9a7656;
-
-/** A vaulted passage (sābāṭ) carrying rooms over the street. */
-function drawStreetArch(ctx: Ctx, box: IsoBox): void {
-  groundShadow(ctx, box, 8);
-  walls(ctx, box, (c, w, h, light) => plaster(c, w, h, { base: MUD, light, seed: light === 1 ? 71 : 72 }), {
-    left: (c, w, h, l) => {
-      beamEnds(c, w, 5, l, 11);
-      band(c, w, h * 0.42, 2, shade(MUD, 0.8), l);
-      // Blind arcade along the street front.
-      const bays = 3;
-      for (let i = 0; i < bays; i++) {
-        const u = (w / bays) * (i + 0.5);
-        archPath(c, u - 13, h, 26, h * 0.5);
-        c.fillStyle = css(shade(BRICK, l));
-        c.fill();
-        archPath(c, u - 10, h, 20, h * 0.45);
-        c.fillStyle = css(shade(MUD, l * 0.7));
-        c.fill();
-        latticeWindow(c, u - 4, h * 0.16, 8, 10, { frame: 0x6a5038, light: l, arched: true });
-      }
-    },
-    right: (c, w, h, l) => {
-      beamEnds(c, w, 5, l, 11);
-      // The passage itself: a brick arch opening onto a dim vault and the
-      // daylight of the street beyond.
-      const aw = w * 0.62;
-      const x = w / 2 - aw / 2;
-      archPath(c, x - 4, h, aw + 8, h * 0.78 + 4);
-      c.save();
-      c.clip();
-      brick(c, w, h, { base: BRICK, light: l, seed: 73 }, 3.5, 8);
-      c.restore();
-      archPath(c, x, h, aw, h * 0.78);
-      const dark = c.createLinearGradient(0, h * 0.2, 0, h);
-      dark.addColorStop(0, '#0c0806');
-      dark.addColorStop(1, '#2a1e14');
-      c.fillStyle = dark;
-      c.fill();
-      archPath(c, w / 2 - aw * 0.18, h - 2, aw * 0.36, h * 0.38);
-      c.fillStyle = css(shade(0xc8b08a, l), 0.55);
-      c.fill();
-    },
-  });
-  parapetRoof(ctx, box, shade(MUD, 0.95), { base: shade(MUD, 0.78), light: 1, seed: 74 }, 4, 5);
-  outlineBox(ctx, box);
-}
-
-/** A bazaar shop front: brick arch, plank shutters barred and padlocked. */
-function drawShuttered(ctx: Ctx, box: IsoBox): void {
-  groundShadow(ctx, box, 5);
-  walls(ctx, box, (c, w, h, light) => plaster(c, w, h, { base: MUD, light, seed: light === 1 ? 81 : 82 }), {
-    left: (c, w, h, l) => {
-      archPath(c, w / 2 - 6, h * 0.7, 12, 18);
-      c.fillStyle = css(shade(MUD, l * 0.62));
-      c.fill();
-    },
-    right: (c, w, h, l) => {
-      beamEnds(c, w, 3, l, 8);
-      const x = 3;
-      const aw = w - 6;
-      archPath(c, x - 1, h, aw + 2, h * 0.82 + 1);
-      c.save();
-      c.clip();
-      brick(c, w, h, { base: BRICK, light: l, seed: 83 }, 3.5, 8);
-      c.restore();
-      archPath(c, x + 2, h - 2, aw - 4, h * 0.76);
-      c.save();
-      c.clip();
-      planks(c, w, h, { base: 0x5a3c26, light: l, seed: 84 }, true, 4);
-      c.fillStyle = 'rgba(20,12,6,0.35)';
-      c.fillRect(0, h * 0.35, w, 1);
-      c.restore();
-      // Iron bar and padlock across the shutters.
-      c.fillStyle = css(shade(0x2a2a2a, l));
-      c.fillRect(x, h * 0.55, aw, 2.2);
-      c.fillStyle = css(shade(0x8a867d, l));
-      c.fillRect(w / 2 - 2, h * 0.55 + 1, 4, 5);
-      c.strokeStyle = css(shade(0x8a867d, l));
-      c.lineWidth = 0.9;
-      c.beginPath();
-      c.arc(w / 2, h * 0.55 + 1, 1.6, Math.PI, 0);
-      c.stroke();
-      // A worn stone step.
-      c.fillStyle = css(shade(0x8a8070, l));
-      c.fillRect(0, h - 2, w, 2);
-    },
-  });
-  parapetRoof(ctx, box, shade(MUD, 0.95), { base: shade(MUD, 0.78), light: 1, seed: 85 }, 3, 3);
-  outlineBox(ctx, box);
-}
 
 export const CH10_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH10_PRISON_TEXTURE_GENERATORS,
@@ -118,17 +24,17 @@ export const CH10_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   // barred, the shutters closed.
   'ch10-street-house': (scene, def) => paintHouse(scene, def.texture, {
     cellsW: def.footprint?.w ?? 3, cellsD: def.footprint?.h ?? 2,
-    wallH: 62, wall: MUD, door: 0x3a2a1c, frame: 0x6a5038, roof: 'stair', seed: 53, beams: true, shutters: 0x4a4038,
+    wallH: 62, wall: TEHRAN_MUD, door: 0x3a2a1c, frame: 0x6a5038, roof: 'stair', seed: 53, beams: true, shutters: 0x4a4038,
   }),
 
   'ch10-street-arch': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 4, def.footprint?.h ?? 2, 72, 14);
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 4, def.footprint?.h ?? 2, 102, 10);
     paintTexture(scene, def.texture, texW, texH, ctx => drawStreetArch(ctx, box));
   },
 
   'ch10-shuttered-shop': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 44, 14);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawShuttered(ctx, box));
+    const { box, texW, texH } = footprintBox(1, 1, 58, 8);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawShutteredShop(ctx, box));
   },
 };
 

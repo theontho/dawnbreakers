@@ -1,124 +1,41 @@
 import type Phaser from 'phaser';
-import { CELL, css, footprintBox, groundShadow, onRoof, outlineBox, paintTexture, shade, type Ctx, type IsoBox } from '../art/canvasKit';
-import { brick } from '../art/materials';
-import { archPath, band, beamEnds, doorway, latticeWindow, LIGHT, merlons, parapetRoof, walls } from '../art/ornaments';
+import { footprintBox, paintTexture } from '../art/canvasKit';
+import { BARRACK_H, drawBarrack, drawRoofParapet, parapetPart, ROOF_PARAPET_H, type BarrackStyle, type ParapetSide } from '../art/tabriz';
 import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
 import { CH09_PROP_TEXTURE_GENERATORS } from './chapter09Props';
 
 /**
  * Chapter 9: the barrack square of Tabríz and the rooftops above it, 9 July
- * 1850. This file holds the barrack buildings and the roof walls in the
- * buff fired brick of Tabríz; threshold objects and rooftop props live in
- * `chapter09Props.ts`.
+ * 1850. The barrack and the roof parapets are drawn in `art/tabriz.ts`;
+ * threshold objects and rooftop props live in `chapter09Props.ts`.
  *
  * Each roof wall size is its own MapObjectId so the dimensions and texture
  * key stay paired.
  */
 
-const BRICK = 0xb08458;
-const COPING = 0xd8c8a4;
-const DOOR = 0x4a2e1c;
-const FRAME = 0x8a6440;
-
-/** Brick parapet with a lime coping and a wooden rain spout every few cells. */
-function drawParapet(ctx: Ctx, box: IsoBox, seed: number): void {
-  groundShadow(ctx, box, 4, 0.2);
-  const spouts = (c: Ctx, w: number, h: number, l: number) => {
-    band(c, w, 0, 3, COPING, l);
-    if (w > CELL * 3) beamEnds(c, w, h * 0.45, l, CELL * 5);
-  };
-  walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: seed + (light === 1 ? 0 : 1) }), { left: spouts, right: spouts });
-  // The wall top: worn brick between lime-washed edges.
-  onRoof(ctx, box, (w, d) => {
-    brick(ctx, w, d, { base: shade(BRICK, 0.92), light: LIGHT.roof, seed: seed + 2 });
-    ctx.strokeStyle = css(shade(COPING, LIGHT.roof), 0.9);
-    ctx.lineWidth = 2;
-    ctx.strokeRect(1, 1, w - 2, d - 2);
-  });
-  outlineBox(ctx, box);
+function paintRoofParapet(scene: Phaser.Scene, def: MapObjectDefinition, side: ParapetSide): void {
+  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 1, ROOF_PARAPET_H, 6);
+  paintTexture(scene, def.texture, texW, texH, ctx => drawRoofParapet(ctx, parapetPart(box, side), side === 'divider'));
 }
 
-function makeRoofParapet(scene: Phaser.Scene, def: MapObjectDefinition, wallH: number): void {
-  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 1, wallH, 8);
-  paintTexture(scene, def.texture, texW, texH, ctx => drawParapet(ctx, box, wallH));
-}
-
-interface BarrackStyle {
-  seed: number;
-  /** A grand arched gate in the middle of the left face. */
-  gate?: boolean;
-}
-
-/**
- * Barrack rooms: two storeys of brick, an arched door per cell below and a
- * latticed window per cell above, under a crenellated parapet. The barrack
- * is laid down as several runs so that doors and the pillar in front of it
- * sort correctly in depth; every run shares heights so the facade reads as
- * one building.
- */
-function drawBarrack(ctx: Ctx, box: IsoBox, style: BarrackStyle): void {
-  const course = box.h * 0.46;
-  groundShadow(ctx, box, 8);
-  const bays = (c: Ctx, w: number, h: number, l: number, doors: boolean) => {
-    band(c, w, 4, 3, COPING, l);
-    band(c, w, h - course, 3, COPING, l);
-    const cells = Math.max(1, Math.round(w / CELL));
-    const bay = w / cells;
-    for (let i = 0; i < cells; i++) {
-      const u = i * bay + bay / 2;
-      latticeWindow(c, u - 4, h - course - 24, 8, 13, { frame: FRAME, light: l, arched: true, shutters: 0x5a3a24 });
-      if (doors) {
-        // A recessed arch with the room's door set deep inside it.
-        archPath(c, u - 11, h, 22, course - 8);
-        c.fillStyle = css(shade(BRICK, l * 0.55));
-        c.fill();
-        doorway(c, u - 7, h, 14, course - 14, { frame: shade(BRICK, 0.7), door: DOOR, light: l * 0.8, seed: style.seed + i });
-      }
-    }
-  };
-  walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: style.seed + (light === 1 ? 0 : 5) }), {
-    left: (c, w, h, l) => {
-      bays(c, w, h, l, !style.gate);
-      if (style.gate) gate(c, w, h, l, style.seed);
-    },
-    right: (c, w, h, l) => bays(c, w, h, l, false),
-  });
-  parapetRoof(ctx, box, COPING, { base: 0x9a8064, light: 1, seed: style.seed + 2 }, 4, 5);
-  merlons(ctx, box, shade(BRICK, 1.05), 4, 4);
-  outlineBox(ctx, box);
-}
-
-/** The barrack gate: a tall pointed arch in a brick frame with a lime border. */
-function gate(c: Ctx, w: number, h: number, l: number, seed: number): void {
-  const gw = 26;
-  const x = w / 2 - gw / 2;
-  c.fillStyle = css(shade(BRICK, l * 0.9));
-  c.fillRect(x - 8, h - h * 0.78, gw + 16, h * 0.78);
-  c.strokeStyle = css(shade(COPING, l));
-  c.lineWidth = 1.5;
-  c.strokeRect(x - 6, h - h * 0.76, gw + 12, h * 0.76);
-  doorway(c, x, h, gw, h * 0.62, { frame: COPING, door: DOOR, light: l, seed });
-}
-
-function paintBarrack(scene: Phaser.Scene, def: MapObjectDefinition, wallH: number, style: BarrackStyle): void {
-  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, wallH, 16);
+function paintBarrack(scene: Phaser.Scene, def: MapObjectDefinition, topPad: number, style: BarrackStyle): void {
+  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, BARRACK_H, topPad);
   paintTexture(scene, def.texture, texW, texH, ctx => drawBarrack(ctx, box, style));
 }
 
 export const CH09_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH09_PROP_TEXTURE_GENERATORS,
 
-  'ch9-barrack-2': (scene, def) => paintBarrack(scene, def, 72, { seed: 2 }),
-  'ch9-barrack-3': (scene, def) => paintBarrack(scene, def, 72, { seed: 3 }),
-  'ch9-barrack-front': (scene, def) => paintBarrack(scene, def, 76, { seed: 9, gate: true }),
+  // The wings close the square's north side: the outer runs end in piers
+  // and carry the roof stair; the inner runs continue them unbroken.
+  'ch9-barrack-2': (scene, def) => paintBarrack(scene, def, 12, { seed: 2 }),
+  'ch9-barrack-3': (scene, def) => paintBarrack(scene, def, 46, { seed: 3, ends: true, stairHouse: true }),
+  'ch9-barrack-front': (scene, def) => paintBarrack(scene, def, 30, { seed: 9, gate: true, ends: true }),
 
-  'ch9-parapet-low': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 14, 4);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawParapet(ctx, box, 14));
-  },
-  'ch9-roof-wall-north': (scene, def) => makeRoofParapet(scene, def, 26),
-  'ch9-roof-wall-east': (scene, def) => makeRoofParapet(scene, def, 12),
-  'ch9-roof-wall-south': (scene, def) => makeRoofParapet(scene, def, 10),
+  'ch9-parapet-low': (scene, def) => paintRoofParapet(scene, def, 'divider'),
+  'ch9-roof-wall-north': (scene, def) => paintRoofParapet(scene, def, 'north'),
+  'ch9-roof-wall-east': (scene, def) => paintRoofParapet(scene, def, 'east'),
+  'ch9-roof-wall-south': (scene, def) => paintRoofParapet(scene, def, 'south'),
 };
 
 /** Placeable map objects owned by chapter 9. */

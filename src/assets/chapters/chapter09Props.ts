@@ -2,7 +2,9 @@ import type Phaser from 'phaser';
 import { css, footprintBox, groundShadow, mix, outlineBox, paintTexture, polygon, rng, shade, type Ctx, type IsoBox } from '../art/canvasKit';
 import { coilPath, rope, sagPath } from '../art/cordage';
 import { brick, plaster } from '../art/materials';
-import { archPath, doorway, flatTop, LIGHT, merlons, walls } from '../art/ornaments';
+import { edges, recess, slab } from '../art/massing';
+import { archPath, band, doorway, flatTop, latticeWindow, LIGHT, merlons, walls } from '../art/ornaments';
+import { subBox } from '../art/structureParts';
 import { contactShadow } from '../art/woodland';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
@@ -80,40 +82,48 @@ function frayed(ctx: Ctx, x: number, y: number): void {
   }
 }
 
-/** A porch set against the barrack, its door facing the square. */
+/**
+ * The cell's vestibule, built out from the barrack wall into the square: a
+ * narrow brick porch with a person-sized door deep in its arch and a worn
+ * step before it. It reaches back past its own cell to meet the facade,
+ * which stands a few pixels behind the footprint edge.
+ */
 function paintCellDoor(scene: Phaser.Scene, key: string, open: boolean): void {
-  const { box, texW, texH } = footprintBox(1, 1, 46, 10);
+  const { box, texW, texH } = footprintBox(1, 1, 54, 8);
+  const porch = subBox(box, 4, 28, 4, 36, 52);
   paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, box, 5);
-    walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: open ? 31 : 29 }), {
+    groundShadow(ctx, porch, 5);
+    walls(ctx, porch, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: open ? 31 : 29 }), {
       left: (c, w, h, l) => {
+        band(c, w, 4, 2, LIME, l);
+        recess(c, w / 2 - 9.5, h, 19, 44, BRICK, l);
         if (!open) {
-          doorway(c, w / 2 - 9, h, 18, 34, { frame: LIME, door: 0x4a2e1c, light: l, seed: 3 });
+          doorway(c, w / 2 - 6.5, h, 13, 35, { frame: LIME, door: 0x4a2e1c, light: l * 0.85, seed: 3 });
           return;
         }
-        doorway(c, w / 2 - 9, h, 18, 34, { frame: LIME, light: l, open: true });
+        doorway(c, w / 2 - 6.5, h, 13, 35, { frame: LIME, light: l, open: true });
         // Faint daylight on the floor of the empty cell, and the leaf swung in.
         c.save();
-        archPath(c, w / 2 - 9, h, 18, 34);
+        archPath(c, w / 2 - 6.5, h, 13, 35);
         c.clip();
-        const glow = c.createRadialGradient(w / 2, h - 4, 1, w / 2, h - 10, 22);
+        const glow = c.createRadialGradient(w / 2, h - 3, 1, w / 2, h - 8, 18);
         glow.addColorStop(0, 'rgba(243,217,138,0.4)');
         glow.addColorStop(1, 'rgba(243,217,138,0)');
         c.fillStyle = glow;
         c.fillRect(0, 0, w, h);
         c.fillStyle = css(shade(0x4a2e1c, l * 0.7));
-        c.fillRect(w / 2 + 4, h - 32, 4, 32);
+        c.fillRect(w / 2 + 3, h - 33, 3, 33);
         c.restore();
       },
-      right: (c, w, h, l) => {
-        archPath(c, w / 2 - 5, h * 0.62, 10, 16);
-        c.fillStyle = css(shade(BRICK, l * 0.55));
-        c.fill();
+      right: (c, w, _h, l) => {
+        band(c, w, 4, 2, LIME, l);
+        latticeWindow(c, w / 2 - 3, 14, 6, 8, { frame: 0x8a6440, light: l });
       },
     });
-    flatTop(ctx, box, LIME);
-    merlons(ctx, box, shade(BRICK, 1.05), 4, 4);
-    outlineBox(ctx, box);
+    flatTop(ctx, porch, LIME);
+    merlons(ctx, porch, shade(BRICK, 1.05), 3, 3);
+    edges(ctx, porch);
+    slab(ctx, subBox(box, 7, 25, 0, 4, 3), 0x9a8a70, 5);
   });
 }
 

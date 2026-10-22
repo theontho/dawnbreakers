@@ -1,104 +1,28 @@
-import { css, footprintBox, groundShadow, outlineBox, paintTexture, rng, shade, type Ctx, type IsoBox } from '../art/canvasKit';
+import { css, footprintBox, groundShadow, outlineBox, paintTexture, rng, shade, type IsoBox } from '../art/canvasKit';
 import { chain, coilPath, sagPath, shackle } from '../art/cordage';
-import { brick, planks, stone } from '../art/materials';
-import { archPath, flatTop, walls } from '../art/ornaments';
+import { planks } from '../art/materials';
+import { flatTop, walls } from '../art/ornaments';
+import { drawLowArch, drawStonePillar, stonePost } from '../art/siyahChal';
 import { contactShadow } from '../art/woodland';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
- * Chapter 10, the Síyáh-Chál: a disused reservoir under Ṭihrán, its vaults
- * of sooty brick and damp stone, the pillars to which the prisoners were
- * chained, their straw, and the one shaft of light from the stair.
+ * Chapter 10, the Síyáh-Chál: a disused reservoir under Ṭihrán. Its arcade
+ * and vault piers are drawn in `art/siyahChal.ts`; this file holds the
+ * pillars to which the prisoners were chained, their straw, and the one
+ * shaft of light from the stair.
  */
-
-const SOOT_BRICK = 0x6a5a4c;
-const DAMP_STONE = 0x5a5650;
-
-/** Water stains, lime bloom and a dark tide line at the foot of a damp wall. */
-function damp(c: Ctx, w: number, h: number, seed: number): void {
-  const rand = rng(seed);
-  for (let i = 0; i < w / 14; i++) {
-    const x = rand() * w;
-    const top = h * (0.1 + rand() * 0.4);
-    const g = c.createLinearGradient(0, top, 0, h);
-    g.addColorStop(0, 'rgba(20,24,22,0)');
-    g.addColorStop(1, 'rgba(20,24,22,0.45)');
-    c.fillStyle = g;
-    c.fillRect(x, top, 2 + rand() * 4, h - top);
-  }
-  c.fillStyle = 'rgba(230,228,215,0.18)';
-  for (let i = 0; i < w / 3; i++) c.fillRect(rand() * w, h * 0.55 + rand() * h * 0.35, 1.2, 1);
-  const tide = c.createLinearGradient(0, h - 14, 0, h);
-  tide.addColorStop(0, 'rgba(30,38,34,0)');
-  tide.addColorStop(1, 'rgba(30,38,34,0.55)');
-  c.fillStyle = tide;
-  c.fillRect(0, h - 14, w, 14);
-}
-
-/** Recessed arches: the reservoir's arcade, blind and black. */
-function blindArches(c: Ctx, w: number, h: number, l: number, bays: number, height: number): void {
-  for (let i = 0; i < bays; i++) {
-    const bw = Math.min(26, (w / bays) * 0.7);
-    const u = (w / bays) * (i + 0.5);
-    archPath(c, u - bw / 2 - 2, h, bw + 4, height + 2);
-    c.fillStyle = css(shade(SOOT_BRICK, l * 1.15));
-    c.fill();
-    archPath(c, u - bw / 2, h, bw, height);
-    const g = c.createLinearGradient(0, h - height, 0, h);
-    g.addColorStop(0, '#060504');
-    g.addColorStop(1, '#1a1612');
-    c.fillStyle = g;
-    c.fill();
-  }
-}
-
-/** A square post of damp stone at the cell's centre. */
-function stonePost(ctx: Ctx, box: IsoBox, seed: number): void {
-  walls(ctx, box, (c, w, h, light) => {
-    stone(c, w, h, { base: DAMP_STONE, light, seed: seed + (light === 1 ? 0 : 1) }, 7);
-    damp(c, w, h, seed);
-  });
-  flatTop(ctx, box, DAMP_STONE);
-  outlineBox(ctx, box, 0x0c0c0b);
-}
 
 export const CH10_PRISON_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
 
   'ch10-low-arch': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 4, def.footprint?.h ?? 1, 46, 12);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 6, 0.32);
-      walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: SOOT_BRICK, light, seed: light === 1 ? 51 : 52 }, 4, 9), {
-        left: (c, w, h, l) => {
-          blindArches(c, w, h, l, Math.round(w / 40), 28);
-          damp(c, w, h, 53);
-        },
-        right: (c, w, h, l) => {
-          blindArches(c, w, h, l, 1, 32);
-          damp(c, w, h, 54);
-        },
-      });
-      flatTop(ctx, box, shade(SOOT_BRICK, 0.85));
-      outlineBox(ctx, box, 0x0b0b0a);
-    });
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 4, def.footprint?.h ?? 1, 62, 6);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawLowArch(ctx, box));
   },
 
-  // A massive vault pier: plinth, shaft of dressed stone, impost slab.
   'ch10-stone-pillar': (scene, def) => {
-    const cw = def.footprint?.w ?? 2;
-    const cd = def.footprint?.h ?? 2;
-    const { box, texW, texH } = footprintBox(cw, cd, 76, 8);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 8, 0.35);
-      const inset = 6;
-      const plinth: IsoBox = { ...box, h: 9 };
-      // Inset on every side and standing on the plinth.
-      const shaft: IsoBox = { x: box.x, y: box.y - inset - plinth.h, w: box.w - inset * 2, d: box.d - inset * 2, h: box.h - 18 };
-      const impost: IsoBox = { ...box, y: box.y - box.h + 9, h: 9 };
-      stonePost(ctx, plinth, 61);
-      stonePost(ctx, shaft, 63);
-      stonePost(ctx, impost, 65);
-    });
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 95, 6);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawStonePillar(ctx, box));
   },
 
   // A squat stone post with heavy chains drooping to the floor on both sides.
