@@ -18,6 +18,9 @@ import { ch6ChihriqMap } from './ch6Chihriq';
 import { ch7BadashtHamletMap } from './ch7BadashtHamlet';
 import { ch7BadashtCampMap } from './ch7BadashtCamp';
 import { ch7QuddusTentMap } from './ch7QuddusTent';
+import { trialStreetMap } from './trialStreet';
+import { trialCourtMap } from './trialCourt';
+import { trialLaneMap } from './trialLane';
 import { ch8ForestRoadMap } from './ch8ForestRoad';
 import { ch8TabarsiFortMap } from './ch8TabarsiFort';
 import { ch8TabarsiShrineMap } from './ch8TabarsiShrine';
@@ -54,6 +57,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch7BadashtHamletMap,
   ch7BadashtCampMap,
   ch7QuddusTentMap,
+  trialStreetMap,
+  trialCourtMap,
+  trialLaneMap,
   ch8ForestRoadMap,
   ch8TabarsiFortMap,
   ch8TabarsiShrineMap,

@@ -54,6 +54,12 @@ export const WORDS: readonly GlossaryEntry[] = [
     'A Sufi mystic who has taken a vow of poverty, often wandering from town to town with a staff and a begging bowl.'),
   term('ulama', 'ʿUlamá', ['ʿulamá', 'ʿUlamá'],
     'The learned men of religion as a body: the clerics, jurists and teachers whose word carried great weight in Persia.'),
+  term('vali-ahd', 'Valí-ʿAhd', ['Valí-ʿAhd'],
+    'The heir to the throne. In 1848 he was Náṣiri\'d-Dín Mírzá, seventeen years old, who held court at Tabríz as governor of Ádhirbáyján and became Sháh that September.'),
+  term('shaykhu-l-islam', 'Shaykhu\'l-Islám', ['Shaykhu\'l-Islám'],
+    'The chief religious judge of a city, appointed by the Sháh.'),
+  term('bastinado', 'Bastinado', ['bastinado'],
+    'A beating with rods on the soles of the feet, a common punishment in Qajar Persia.'),
   term('mujtahid', 'Mujtahid', ['mujtahid', 'mujtahids', 'Mujtahid'],
     'A senior jurist, qualified to give binding rulings on religious law. A mujtahid\'s verdict could send a man to his death.'),
 

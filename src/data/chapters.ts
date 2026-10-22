@@ -10,6 +10,7 @@ export type ChapterId =
   | 'isfahan'
   | 'mountain-prisons'
   | 'badasht'
+  | 'tabriz-trial'
   | 'tabarsi'
   | 'tabriz'
   | 'siyah-chal';
@@ -28,6 +29,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   isfahan: 'isfahanComplete',
   'mountain-prisons': 'bayanComplete',
   badasht: 'badashtComplete',
+  'tabriz-trial': 'trialComplete',
   tabarsi: 'tabarsiComplete',
   tabriz: 'martyrdomComplete',
   'siyah-chal': 'dawnComplete',
@@ -127,6 +129,16 @@ const SPECS: ChapterSpec[] = [
     description: 'Eighty-one believers gather in three rented gardens. Each day brings a new name; one day brings a proclamation that breaks with the past, and Bahá’u’lláh draws the shaken friends back together.',
     startScene: 'Ch7BadashtHamlet',
     scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp', 'Ch7QuddusTent'],
+  },
+  {
+    id: 'tabriz-trial',
+    number: 0, // renumbered by the manager
+    story: CHAPTER_STORIES['tabriz-trial'],
+    title: 'The Trial at Tabríz',
+    subtitle: 'Tabríz, summer 1848',
+    description: 'Brought down from Chihríq, the Báb is examined before the Crown Prince and the divines of Ádhirbáyján. You carry coffee in the residence courtyard, wait at the foot of the hall steps, and hear from those who come out what was declared within.',
+    startScene: 'TrialStreet',
+    scenes: ['TrialStreet', 'TrialCourt', 'TrialLane'],
   },
   {
     id: 'tabarsi',

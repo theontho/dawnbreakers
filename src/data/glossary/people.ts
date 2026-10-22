@@ -24,6 +24,8 @@ export const PEOPLE: readonly GlossaryEntry[] = [
     'Siyyid Yaḥyá of Dáráb, one of the most learned men in Persia, sent by Muḥammad Sháh to examine the Báb\'s claim. He became a believer, and was slain at Nayríz in 1850.'),
   person('anis', 'Anís', ['Anís'],
     'Mírzá Muḥammad-ʿAlí of Zunúz, a young disciple who asked to share the Báb\'s fate, and was executed with Him in Tabríz on 9 July 1850.'),
+  person('azim', 'ʿAẓím', ['ʿAẓím'],
+    'Mullá Shaykh ʿAlí of Khurásán, whom the Báb named ʿAẓím, "the Great". On the eve of the examination at Tabríz in 1848 the Báb told him that He was the Qáʾim. He was put to death in Ṭihrán in 1852.'),
   person('mulla-sadiq', 'Mullá Ṣádiq', ['Mullá Ṣádiq'],
     'Mullá Ṣádiq of Khurásán, a revered teacher who added the Báb\'s words to the call to prayer in Shíráz in 1845, and was beaten and driven from the city with Quddús.'),
   person('dayyan', 'Dayyán', ['Dayyán'],
@@ -54,6 +56,8 @@ export const PEOPLE: readonly GlossaryEntry[] = [
     'Manúchihr Khán\'s nephew and heir, who on his uncle\'s death sent the Báb out of Iṣfahán under guard.'),
   person('husayn-khan', 'Ḥusayn Khán', ['Ḥusayn Khán'],
     'The governor of Fárs, who had the Báb struck in his presence and kept Him under watch in Shíráz.'),
+  person('cormick', 'Dr Cormick', ['Dr Cormick', 'Cormick'],
+    'William Cormick, a British physician to the Crown Prince\'s household in Tabríz, who examined the Báb in 1848 and treated Him after the bastinado. His letter is the only account of the Báb by a Westerner who met Him.'),
   person('sam-khan', 'Sám Khán', ['Sám Khán'],
     'The Christian colonel of the Armenian regiment ordered to shoot the Báb in Tabríz. When the first volley left the Báb unharmed, he refused to fire again.'),
 
@@ -66,6 +70,10 @@ export const PEOPLE: readonly GlossaryEntry[] = [
     'Mírzá Muḥíṭ of Kirmán, a Shaykhí leader whom the Báb challenged at the Kaʿba in 1844 to accept or deny His claim. He gave no answer.'),
   person('mamaqani', 'Mullá Muḥammad of Mamaqán', ['Mullá Muḥammad of Mamaqán'],
     'A Shaykhí leader of Tabríz, who wrote the Báb\'s death sentence.'),
+  person('nizamu-l-ulama', 'Niẓámu\'l-ʿUlamá', ['Niẓámu\'l-ʿUlamá'],
+    'Ḥájí Mullá Maḥmúd, called the Niẓámu\'l-ʿUlamá, tutor to the Crown Prince Náṣiri\'d-Dín Mírzá. He presided at the examination of the Báb in Tabríz in 1848.'),
+  person('ali-asghar', 'Mírzá ʿAlí-Aṣghar', ['Mírzá ʿAlí-Aṣghar'],
+    'The Shaykhu\'l-Islám of Tabríz. In 1848, when the governor\'s bodyguard refused, he applied the rods to the Báb\'s feet with his own hand.'),
 
   // Poets.
   person('hafiz', 'Ḥáfiẓ', ['Ḥáfiẓ'],

@@ -41,6 +41,7 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('nishapur', 'Nishápúr', [58.8, 36.21], 'An old city of Khurásán, west of Mashhad, famous for its turquoise.'),
   place('shimiran', 'Shimírán', [51.45, 35.8], 'The cooler foothills north of Ṭihrán, where the court and the wealthy kept summer gardens.'),
   place('niyavaran', 'Níyávarán', [51.47, 35.81], 'The Sháh\'s summer palace in the hills of Shimírán, where two Bábís fired on him in August 1852.'),
+  place('urumiyyih', 'Urúmíyyih', [45.07, 37.55], 'A town of Ádhirbáyján near the great salt lake of the same name, south of Chihríq.'),
   place('khuy', 'Khuy', [44.95, 38.55], 'A town of Ádhirbáyján on the road to Mákú.'),
   place('mamaqan', 'Mamaqán', [45.97, 37.84], 'A town near Tabríz.'),
   place('darab', 'Dáráb', [54.55, 28.75], 'A town in Fárs, east of Shíráz.'),
