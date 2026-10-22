@@ -22,7 +22,7 @@ let shownId: string | undefined;
 let pinned = false;
 let hideTimer = 0;
 
-const KIND_LABEL = { term: 'Word', place: 'Place', region: 'Province' } as const;
+const KIND_LABEL = { term: 'Word', person: 'Person', place: 'Place', region: 'Province' } as const;
 
 function ensureElement(): HTMLDivElement {
   if (tip) return tip;
@@ -67,7 +67,7 @@ export function showGlossaryTip(entry: GlossaryEntry, anchor: Anchor, pin: boole
     el.dir = rtl ? 'rtl' : 'ltr';
     el.style.fontFamily = localizedFont();
     el.innerHTML = `<h3>${escape(t(entry.title))}</h3><div class="gloss-kind">${escape(t(KIND_LABEL[entry.kind]))}</div>`
-      + `<p>${escape(t(entry.body))}</p>${entry.kind === 'term' ? '' : glossaryMapSvg(entry)}`;
+      + `<p>${escape(t(entry.body))}</p>${entry.kind === 'place' || entry.kind === 'region' ? glossaryMapSvg(entry) : ''}`;
     shownId = entry.id;
   }
   pinned = pin || pinned;

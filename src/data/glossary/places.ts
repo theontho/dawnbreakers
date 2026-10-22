@@ -1,0 +1,58 @@
+import { place, region, type GlossaryEntry } from './kinds';
+
+/** Cities, places and provinces, with positions for the card's map. */
+export const PLACES: readonly GlossaryEntry[] = [
+  // Cities and places.
+  place('shiraz', 'Shíráz', [52.53, 29.61], 'The capital of the province of Fárs in southern Persia, city of gardens and poets, where the Báb was born and declared His mission in 1844.'),
+  place('bushihr', 'Búshihr', [50.84, 28.97], 'Persia\'s chief port on the Persian Gulf, where pilgrims took ship for Arabia.'),
+  place('isfahan', 'Iṣfahán', [51.67, 32.65], 'The former Safavid capital in central Persia, famed for its bridges, mosques and great squares.'),
+  place('tihran', 'Ṭihrán', [51.39, 35.69], 'The capital of Qajar Persia and seat of the Sháh.'),
+  place('tabriz', 'Tabríz', [46.29, 38.08], 'The chief city of Ádhirbáyján in north-west Persia, seat of the crown prince.'),
+  place('maku', 'Mákú', [44.52, 39.29], 'A fortress town in the mountains of the far north-west, near the Ottoman and Russian borders.'),
+  place('chihriq', 'Chihríq', [44.75, 38.15], 'A remote mountain fortress in Ádhirbáyján, near Lake Urúmíyyih, called "the Grievous Mountain".'),
+  place('badasht', 'Badasht', [55.05, 36.45], 'A hamlet near Sháhrúd on the road to Khurásán, where the believers gathered in the summer of 1848.'),
+  place('barfurush', 'Bárfurúsh', [52.68, 36.54], 'A market town in Mázindarán, the home of Quddús.'),
+  place('tabarsi', 'Shaykh Ṭabarsí', [52.95, 36.43], 'A shrine in the forests of Mázindarán, round which the believers raised a fort in 1848.', ['Ṭabarsí']),
+  place('mashhad', 'Mashhad', [59.6, 36.3], 'The holy city of Khurásán, around the shrine of the eighth Imám.'),
+  place('karbila', 'Karbilá', [44.03, 32.62], 'A shrine city in Ottoman Iraq, where Siyyid Káẓim taught and Mullá Ḥusayn studied under him.'),
+  place('najaf', 'Najaf', [44.33, 32.0], 'A shrine city in Ottoman Iraq, around the tomb of the Imám ʿAlí.'),
+  place('kufih', 'Kúfih', [44.4, 32.03], 'An old town near Najaf, where Mullá Ḥusayn spent forty days in prayer before seeking the Promised One.'),
+  place('baghdad', 'Baghdád', [44.36, 33.31], 'The great city of Ottoman Iraq, where Bahá\'u\'lláh and His family were exiled in 1853.'),
+  place('mecca', 'Mecca', [39.83, 21.42], 'The holiest city of Islam, in the Ḥijáz of Arabia, goal of the pilgrimage.'),
+  place('medina', 'Medina', [39.61, 24.47], 'The city of the Prophet in the Ḥijáz, where he is buried.'),
+  place('jidda', 'Jidda', [39.19, 21.49], 'The Red Sea port where pilgrims landed for Mecca.'),
+  place('qazvin', 'Qazvín', [50.0, 36.27], 'A city west of Ṭihrán, home of Ṭáhirih.'),
+  place('kashan', 'Káshán', [51.43, 33.98], 'A city on the edge of the central desert, known for its silk and carpets.'),
+  place('yazd', 'Yazd', [54.37, 31.9], 'A desert city of wind-catchers in central Persia.'),
+  place('kazirun', 'Kázirún', [51.65, 29.62], 'A town on the road from Búshihr up into the mountains to Shíráz.'),
+  place('shahrud', 'Sháhrúd', [54.98, 36.42], 'A town on the road east to Khurásán, near Badasht.'),
+  place('kirman', 'Kirmán', [57.08, 30.28], 'A city in south-east Persia.'),
+  place('siyah-chal', 'Síyáh-Chál', [51.42, 35.68], 'The "Black Pit": an underground dungeon in Ṭihrán, once a reservoir, where Bahá\'u\'lláh was imprisoned in 1852.'),
+
+  // Provinces.
+  region('mazindaran', 'Mázindarán', 'The forested province along the Caspian Sea\'s southern shore, between the mountains and the sea.'),
+  region('khurasan', 'Khurásán', 'The great north-eastern province of Persia, around the holy city of Mashhad.'),
+  region('adhirbayjan', 'Ádhirbáyján', 'The mountainous north-western province of Persia, around Tabríz.'),
+  region('fars', 'Fárs', 'The southern province of Persia, around Shíráz.'),
+  place('sari', 'Sárí', [53.06, 36.56], 'The chief town of Mázindarán, near the Caspian shore.'),
+  place('nur', 'Núr', [51.75, 36.3], 'A mountain district of Mázindarán, the home of Bahá\'u\'lláh\'s family.'),
+  place('larijan', 'Láríján', [52.1, 35.95], 'A district of high valleys in the mountains of Mázindarán, below Mount Damávand.'),
+  place('bastam', 'Basṭám', [54.99, 36.48], 'A small town near Sháhrúd, on the road to Khurásán.'),
+  place('nishapur', 'Nishápúr', [58.8, 36.21], 'An old city of Khurásán, west of Mashhad, famous for its turquoise.'),
+  place('shimiran', 'Shimírán', [51.45, 35.8], 'The cooler foothills north of Ṭihrán, where the court and the wealthy kept summer gardens.'),
+  place('niyavaran', 'Níyávarán', [51.47, 35.81], 'The Sháh\'s summer palace in the hills of Shimírán, where two Bábís fired on him in August 1852.'),
+  place('khuy', 'Khuy', [44.95, 38.55], 'A town of Ádhirbáyján on the road to Mákú.'),
+  place('mamaqan', 'Mamaqán', [45.97, 37.84], 'A town near Tabríz.'),
+  place('darab', 'Dáráb', [54.55, 28.75], 'A town in Fárs, east of Shíráz.'),
+  place('nayriz', 'Nayríz', [54.33, 29.2], 'A town in Fárs, where Vaḥíd and his companions were besieged and slain in 1850.'),
+  place('bahrayn', 'Baḥrayn', [50.55, 26.07], 'The islands of the pearl fisheries in the Persian Gulf.'),
+  place('muna', 'Muná', [39.89, 21.41], 'A valley just east of Mecca where pilgrims offer their sacrifice.'),
+  place('hijaz', 'Ḥijáz', [39.8, 23.0], 'The western coast of Arabia along the Red Sea, with the holy cities of Mecca and Medina.'),
+  place('iraq', 'ʿIráq', [44.4, 32.6], 'Ottoman Iraq: the land of the Tigris and Euphrates, with Baghdád and the Shíʿih shrine cities.'),
+
+  // Provinces.
+  region('mazindaran', 'Mázindarán', 'The forested province along the Caspian Sea\'s southern shore, between the mountains and the sea.'),
+  region('khurasan', 'Khurásán', 'The great north-eastern province of Persia, around the holy city of Mashhad.'),
+  region('adhirbayjan', 'Ádhirbáyján', 'The mountainous north-western province of Persia, around Tabríz.', ['Ádhirbáyján', 'Ádharbáyján']),
+  region('fars', 'Fárs', 'The southern province of Persia, around Shíráz.'),
+];

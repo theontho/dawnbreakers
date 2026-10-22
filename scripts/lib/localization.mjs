@@ -329,7 +329,8 @@ function collectUnwrappedText(source, file, errors) {
 }
 
 /**
- * The glossary cards: `term(id, title, match, body)`, `place(id, title, at, body)`
+ * The glossary cards: `term(id, title, match, body)`, `person(id, title, match, body)`,
+ * `place(id, title, at, body)`
  * and `region(id, title, body)` in the glossary data, and the kind labels the
  * tooltip prints. They reach `t()` through fields, not literals.
  */
@@ -340,8 +341,8 @@ function collectFromGlossary(source, file, translationRequired) {
     if (!m) return;
     addRequired(translationRequired, parseStringLiteral(`${m[1]}${m[2]}${m[1]}`), file, lineFor(source, index), kind);
   };
-  const bodyAt = { term: 3, place: 3, region: 2 };
-  const callRe = /^[ \t]*(term|place|region)\(/gm;
+  const bodyAt = { term: 3, person: 3, place: 3, region: 2 };
+  const callRe = /^[ \t]*(term|person|place|region)\(/gm;
   let match;
   while ((match = callRe.exec(source))) {
     const args = extractCallArguments(source, match.index);
@@ -444,7 +445,7 @@ export function analyzeLocalization() {
     collectFromLiteralFields(source, file, translationRequired, namesRequired);
     collectFromNpcPrompts(source, file, translationRequired);
     collectUnwrappedText(source, file, unwrappedTextErrors);
-    if (file.endsWith(join('data', 'glossary', 'entries.ts'))) collectFromGlossary(source, file, translationRequired);
+    if (file.includes(join('data', 'glossary', ''))) collectFromGlossary(source, file, translationRequired);
     collectKindLabels(source, file, translationRequired);
   }
 
