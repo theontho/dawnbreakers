@@ -1,9 +1,11 @@
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
+import { variantKey } from './canvasKit';
 import { paintGate, paintLamp, paintMosque, paintWell } from './civic';
 import { HOUSE_VARIANTS, paintHouseVariants } from './houses';
 import { paintStall } from './stall';
 import { CYPRESS_VARIANTS, paintCypress, paintTree, TREE_VARIANTS } from './nature';
 import { paintCrates, paintRug } from './props';
+import { TOWN_TEXTURE_VARIANTS } from './town';
 import { paintWallBase, WALL_STYLES } from './walls';
 
 /**
@@ -24,9 +26,8 @@ export const TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   tree: TREE_VARIANTS.length,
   cypress: CYPRESS_VARIANTS.length,
   stall: STALLS.length,
+  ...TOWN_TEXTURE_VARIANTS,
 };
-
-const variantKey = (texture: string, i: number) => (i === 0 ? texture : `${texture}~${i}`);
 
 export const BASE_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   house: (scene, def) => paintHouseVariants(scene, def.texture, def.footprint?.w ?? 2, def.footprint?.h ?? 2),

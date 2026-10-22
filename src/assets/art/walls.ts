@@ -10,6 +10,7 @@ import { shrineNicheFace, shrineWallFace } from './shrineInterior';
 import { snowEdge } from './structureParts';
 import { TENT_CLOTH, tentLiningFace } from './tentInterior';
 import { lashing, stakeRow } from './timber';
+import { COMPOUND_WALL, compoundWallFace, TOWN_WALL, townWallFace } from './town/townWalls';
 
 /**
  * Connected walls. A wall is placed one cell at a time, but each cell's
@@ -25,7 +26,10 @@ export const WALL_E = 2;
 export const WALL_S = 4;
 export const WALL_W = 8;
 
-type Cap = 'merlons' | 'snowMerlons' | 'stakes' | 'coping' | 'rail' | 'flat';
+type Cap = 'merlons' | 'snowMerlons' | 'stakes' | 'coping' | 'rail' | 'flat' | 'battlements' | 'mudCoping';
+
+/** Headroom each cap needs above the wall. */
+const CAP_PAD: Record<Cap, number> = { merlons: 8, snowMerlons: 8, stakes: 10, coping: 3, rail: 3, flat: 3, battlements: 18, mudCoping: 6 };
 
 export interface WallStyle {
   height: number;
@@ -185,26 +189,46 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     height: 50, thickness: 0.12, top: TENT_CLOTH, cap: 'flat',
     face: tentLiningFace,
   },
+  // True scale (the Shíráz pilot): the city wall, rammed earth under big merlons; see town/townWalls.
+  'town-wall': {
+    height: TOWN_WALL.height, thickness: 0.8, top: 0xb89670, cap: 'battlements', joins: ['city-gate-large'],
+    face: townWallFace,
+  },
+  // A courtyard or garden wall at true scale, joining the town houses it closes.
+  'compound-wall': {
+    height: COMPOUND_WALL.height, thickness: 0.3, top: 0xc49a68, cap: 'mudCoping',
+    joins: ['town-house-small', 'town-house', 'town-house-large'],
+    face: compoundWallFace,
+  },
 };
 
 export function isWallTexture(texture: string): boolean {
   return texture in WALL_STYLES;
 }
 
-export function wallTextureKey(texture: string, mask: number): string {
-  return `${texture}#${mask}`;
+export function wallTextureKey(texture: string, mask: number, cut = false): string {
+  return `${texture}#${mask}${cut ? 'c' : ''}`;
 }
+
+/**
+ * Walls along the camera-facing edges of a map are drawn cut away: only the
+ * lower courses stand, with the wall's core showing on top, so they frame
+ * the scene instead of hiding everything behind them.
+ */
+const CUT_HEIGHT = 34;
 
 /** The base texture (used by the editor palette) is a straight east-west run. */
 export function paintWallBase(scene: Phaser.Scene, texture: string): void {
-  ensureWallTexture(scene, texture, WALL_E | WALL_W, texture);
+  ensureWallTexture(scene, texture, WALL_E | WALL_W, false, texture);
 }
 
-export function ensureWallTexture(scene: Phaser.Scene, texture: string, mask: number, key = wallTextureKey(texture, mask)): void {
-  const style = WALL_STYLES[texture];
-  if (!style) return;
-  const capPad = style.cap === 'stakes' ? 10 : style.cap === 'merlons' || style.cap === 'snowMerlons' ? 8 : 3;
-  const texH = 32 + style.height + capPad;
+export function ensureWallTexture(scene: Phaser.Scene, texture: string, mask: number, cut = false, key = wallTextureKey(texture, mask, cut)): void {
+  const full = WALL_STYLES[texture];
+  if (!full) return;
+  const style: WallStyle = cut
+    ? { ...full, height: Math.min(full.height, CUT_HEIGHT), cap: 'flat', top: shade(full.top, 0.62) }
+    : full;
+  const texH = 32 + style.height + CAP_PAD[style.cap];
   paintTexture(scene, key, 64, texH, ctx => paintWall(ctx, style, mask, texH - 32));
 }
 
@@ -315,6 +339,43 @@ function capFaces(ctx: Ctx, style: WallStyle, box: IsoBox, p: Part, left: boolea
       case 'rail':
         ctx.fillStyle = css(shade(style.top, light));
         ctx.fillRect(0, -1.5, w, 3);
+        break;
+      case 'battlements':
+        // Rounded merlons a man's height, two to a cell, each with a loophole.
+        for (let k = -1; k < 4; k++) {
+          const u = k * 16 + 3 - (offset % 16);
+          if (u + 10 <= 0 || u >= w) continue;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0, -20, w, 20);
+          ctx.clip();
+          ctx.fillStyle = css(base);
+          ctx.beginPath();
+          ctx.moveTo(u, 0);
+          ctx.lineTo(u, -12);
+          ctx.quadraticCurveTo(u + 5, -19, u + 10, -12);
+          ctx.lineTo(u + 10, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(28,18,10,0.55)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(16,10,4,0.8)';
+          ctx.fillRect(u + 4, -10, 2, 6);
+          ctx.restore();
+        }
+        break;
+      case 'mudCoping':
+        // A rounded cap of mud plaster, bulging a little over the face.
+        {
+          const g = ctx.createLinearGradient(0, -4, 0, 5);
+          g.addColorStop(0, css(shade(style.top, light * 1.2)));
+          g.addColorStop(1, css(shade(style.top, light * 0.85)));
+          ctx.fillStyle = g;
+          ctx.fillRect(0, -4, w, 9);
+          ctx.fillStyle = 'rgba(0,0,0,0.22)';
+          ctx.fillRect(0, 5, w, 1.5);
+        }
         break;
       case 'flat':
         break;

@@ -214,7 +214,7 @@ export class MapScene extends Phaser.Scene {
         this.blocked[spec.gridY]![spec.gridX] = true;
       }
     }
-    connectWalls(this, this.buildings, this.decor);
+    connectWalls(this, this.buildings, this.decor, this.definition);
     this.exits = this.definition.exits.map(exit => ({ ...exit }));
   }
 

@@ -103,7 +103,7 @@ export const houseQuarterMap: MapDefinition = {
   ],
   exits: [
     { fromX: 9, fromY: 17, dx: 0, dy: 1,
-      targetScene: 'City', targetSpawnX: 12, targetSpawnY: 1,
+      targetScene: 'City', targetSpawnX: 18, targetSpawnY: 1,
       label: '↓ Walk back to the city' },
     { fromX: 19, fromY: 9, dx: 1, dy: 0,
       targetScene: 'Road', targetSpawnX: 1, targetSpawnY: 16,

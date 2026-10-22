@@ -2420,6 +2420,18 @@ export const text: TranslationCatalog = {
   "Watch His Eyes": "看他的眼睛",
   "You helped the keeper trim the shrine's lamps, short, so they would drink less oil. The companions prayed at the tomb in turns all night.": "你帮看守人把圣祠的灯芯剪短，好让它们少耗些油。同伴们整夜轮流在陵墓前祈祷。",
   "You were in the court? Then you saw more than I did. I only saw him come back. He washed his hands and face at the ewer, slowly, the way he does before prayer, and sat down on that mattress, and said nothing for a long time.": "你当时在庭院里？那你看到的比我多。我只看见他回来。他在水壶边慢慢地洗了手和脸，就像礼拜前那样，然后在那张垫子上坐下，很久一句话也没说。",
+  "Bazaar Row": "巴扎街廊",
+  "City Gate": "城门",
+  "Courtyard House": "庭院宅邸",
+  "Courtyard Wall": "院墙",
+  "Great Mosque": "大清真寺",
+  "Orange Tree": "橙树",
+  "Plane Tree": "悬铃木",
+  "Pool": "水池",
+  "Small House": "小屋",
+  "Tall Cypress": "高柏树",
+  "Town House": "城中宅",
+  "Town Wall": "城墙",
 };
 
 // Chapter metadata translations.

@@ -1,3 +1,4 @@
+import { ILKHANI_DOOR } from './city';
 import type { DecorSpec, MapDefinition } from './types';
 
 /**
@@ -36,6 +37,7 @@ export const ch1IlkhaniMosqueMap: MapDefinition = {
   height: H,
   spawn: { x: 7, y: 10 },
   interior: true,
+  trueScale: true,
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'floor');
   },
@@ -69,7 +71,7 @@ export const ch1IlkhaniMosqueMap: MapDefinition = {
   ],
   exits: [
     { fromX: 7, fromY: H - 1, dx: 0, dy: 1,
-      targetScene: 'City', targetSpawnX: 17, targetSpawnY: 5,
+      targetScene: 'City', targetSpawnX: ILKHANI_DOOR.x, targetSpawnY: ILKHANI_DOOR.y + 1,
       label: '↓ Out to the mosque court' },
   ],
   ambience: {

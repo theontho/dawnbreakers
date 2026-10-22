@@ -2423,6 +2423,18 @@ export const text: TranslationCatalog = {
   "Watch His Eyes": "به چشمانش بنگر",
   "You helped the keeper trim the shrine's lamps, short, so they would drink less oil. The companions prayed at the tomb in turns all night.": "به کلیددار یاری کردی تا فتیله‌های چراغ‌های بقعه را کوتاه کند، تا روغن کمتری بنوشند. یاران تمام شب به نوبت بر سر آرامگاه نماز می‌گزاردند.",
   "You were in the court? Then you saw more than I did. I only saw him come back. He washed his hands and face at the ewer, slowly, the way he does before prayer, and sat down on that mattress, and said nothing for a long time.": "در صحن بودی؟ پس بیش از من دیدی. من تنها بازگشتنش را دیدم. دست و رویش را با آفتابه آهسته شست، همان‌گونه که پیش از نماز می‌شوید، و بر آن تشک نشست و دیرزمانی هیچ نگفت.",
+  "Bazaar Row": "راسته بازار",
+  "City Gate": "دروازه شهر",
+  "Courtyard House": "خانه حیاط‌دار",
+  "Courtyard Wall": "دیوار حیاط",
+  "Great Mosque": "مسجد جامع",
+  "Orange Tree": "درخت نارنج",
+  "Plane Tree": "درخت چنار",
+  "Pool": "حوض",
+  "Small House": "خانه کوچک",
+  "Tall Cypress": "سرو بلند",
+  "Town House": "خانه شهری",
+  "Town Wall": "باروی شهر",
 };
 
 export const names: TranslationCatalog = {

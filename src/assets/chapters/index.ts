@@ -11,6 +11,7 @@ import { CH09_OBJECTS, CH09_TEXTURE_GENERATORS } from './chapter09';
 import { CH10_OBJECTS, CH10_TEXTURE_GENERATORS } from './chapter10';
 import { SHARED_TEXTURE_GENERATORS } from './shared';
 import { BASE_ART_GENERATORS } from '../art';
+import { TOWN_ART_GENERATORS } from '../art/town';
 
 /**
  * Bespoke texture generators keyed by MapObjectId. The central
@@ -21,6 +22,7 @@ import { BASE_ART_GENERATORS } from '../art';
  */
 export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...BASE_ART_GENERATORS,
+  ...TOWN_ART_GENERATORS,
   ...SHARED_TEXTURE_GENERATORS,
   ...CH01_TEXTURE_GENERATORS,
   ...CH02_TEXTURE_GENERATORS,

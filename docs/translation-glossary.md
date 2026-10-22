@@ -138,7 +138,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | ʿAlí Khán | علی‌خان | 阿里汗 |
 | ʿAlí Khán, Warden of Mákú | علی‌خان، زندانبان ماکو | 阿里汗，马库的狱守 |
 
-## Titles and labels (449)
+## Titles and labels (461)
 
 | English | fa | zh |
 | --- | --- | --- |
@@ -218,6 +218,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Barrack Front | نمای سربازخانه | 营房前方 |
 | Barred Marker | نشان میله‌دار | 封闭标记 |
 | Barriers & Prison | مانع‌ها و زندان | 障碍与监狱 |
+| Bazaar Row | راسته بازار | 巴扎街廊 |
 | Bedroll | بستر سفری | 铺盖卷 |
 | Before First Light | پیش از نخستین روشنایی | 第一缕光之前 |
 | Behind the Curtain | پشت پرده | 帘幕之后 |
@@ -255,6 +256,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Characters | شخصیت‌ها | 角色 |
 | Chihriq Fortress | دژ چهریق | 奇里克堡垒 |
 | Chihríq, the Grievous Mountain | چهریق، جبل شدید | 奇赫里格，苦难之山 |
+| City Gate | دروازه شهر | 城门 |
 | City Wall | باروی شهر | 城墙 |
 | Closed Door | در بسته | 关闭的门 |
 | Cloth Bundle | بقچه پارچه | 布包 |
@@ -267,7 +269,9 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Copied by Night | رونوشتی شبانه | 夜里抄写 |
 | Counting Fires | شمردن آتش‌ها | 数着篝火 |
 | Courier | پیک | 信使 |
+| Courtyard House | خانه حیاط‌دار | 庭院宅邸 |
 | Courtyard Hush | سکوت حیاط | 庭院寂静 |
+| Courtyard Wall | دیوار حیاط | 院墙 |
 | Crates | صندوق‌ها | 木箱 |
 | Crowd | جمعیت | 人群 |
 | Crowd Shadow | سایه جمعیت | 人群阴影 |
@@ -297,6 +301,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | God Is Sufficient | خدا بس است | 上帝已足矣 |
 | Grass | چمن | 草地 |
 | Grave | گور | 坟墓 |
+| Great Mosque | مسجد جامع | 大清真寺 |
 | Guard | نگهبان |  |
 | Guests in Every Direction | مهمانان از هر سو | 四方来客 |
 | Gurgín Khán | گرگین‌خان | 古尔金汗 |
@@ -372,6 +377,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | One Purse | یک کیسه | 同一个钱袋 |
 | One Wick | یک فتیله | 一根灯芯 |
 | Open Door | در باز | 敞开的门 |
+| Orange Tree | درخت نارنج | 橙树 |
 | Out by the Back Gate | بیرون از دروازه پشتی | 从后门离去 |
 | Pages for Najaf | برگ‌هایی برای نجف | 送往纳杰夫的书页 |
 | Palace Portico | رواق کاخ | 宫殿柱廊 |
@@ -385,10 +391,12 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Pilgrimage: Aboard Ship | زیارت: بر عرشه کشتی | 朝圣：船上 |
 | Pilgrimage: The Companions' Cabin | زیارت: اتاقک همراهان | 朝圣：同伴们的舱房 |
 | Pillar | ستون | 柱子 |
+| Plane Tree | درخت چنار | 悬铃木 |
 | Planter | گلدان | 花坛 |
 | Plants | گیاهان | 植物 |
 | Player | بازیکن | 玩家 |
 | Polite Madmen | دیوانگانی مؤدب | 有礼貌的疯子 |
+| Pool | حوض | 水池 |
 | Prayer Arch | محراب | 祈祷拱门 |
 | Prayer Niche | محراب | 礼拜龛 |
 | Prisoner | زندانی | 囚徒 |
@@ -436,6 +444,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Shrines | زیارتگاه‌ها | 圣地 |
 | Siyyid Ḥusayn of Yazd | سید حسین یزدی | 亚兹德的赛义德·侯赛因 |
 | Sleeping Traveller | مسافر خفته | 熟睡的旅人 |
+| Small House | خانه کوچک | 小屋 |
 | Snow Drift | توده برف | 雪堆 |
 | Snow Shrub | بوته برفی | 雪灌木 |
 | Snow Tracks | ردپا در برف | 雪中足迹 |
@@ -452,6 +461,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Tabríz, the Barrack Square | تبریز، میدان سربازخانه | 大不里士，营房广场 |
 | Tabríz, the Rooftops | تبریز، بام‌ها | 大不里士，屋顶 |
 | Tahirih | طاهره | 塔希雷 |
+| Tall Cypress | سرو بلند | 高柏树 |
 | Tamarisk | گز | 柽柳 |
 | Tehran Guard | نگهبان تهران | 德黑兰守卫 |
 | Tehran House | خانه تهران | 德黑兰房屋 |
@@ -547,6 +557,8 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Tomb | آرامگاه | 陵墓 |
 | Toward Home | به سوی خانه | 归途 |
 | Toward the Sea | به سوی دریا | 向着大海 |
+| Town House | خانه شهری | 城中宅 |
+| Town Wall | باروی شهر | 城墙 |
 | Townsman | شهروند | 城镇居民 |
 | Traveller | مسافر | 旅人 |
 | Tree | درخت | 树木 |

@@ -29,6 +29,11 @@ export function paintTexture(scene: Phaser.Scene, key: string, w: number, h: num
   tex.refresh();
 }
 
+/** The key of variant `i` of a texture: the base key, then `key~1`, `key~2`... */
+export function variantKey(texture: string, i: number): string {
+  return i === 0 ? texture : `${texture}~${i}`;
+}
+
 // Colour helpers ------------------------------------------------------------
 
 export function css(color: number, alpha = 1): string {

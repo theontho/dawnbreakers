@@ -6,8 +6,10 @@ import type { Building, Decor } from './baseMapTypes';
  * Joins wall pieces into continuous runs. Each one-cell wall (decor or a
  * 1x1 building) is given the texture painted for the neighbours it touches:
  * the same wall, or anything its style says it joins (a gate, a tower).
+ * Walls on the map's camera-facing edges are cut down so they do not hide
+ * the scene.
  */
-export function connectWalls(scene: Phaser.Scene, buildings: Building[], decor: Decor[]): void {
+export function connectWalls(scene: Phaser.Scene, buildings: Building[], decor: Decor[], size: { width: number; height: number }): void {
   const occupant = new Map<string, string>();
   const key = (x: number, y: number) => `${x},${y}`;
   for (const b of buildings) {
@@ -29,8 +31,10 @@ export function connectWalls(scene: Phaser.Scene, buildings: Building[], decor: 
     const { gridX: x, gridY: y } = item;
     const mask = (joins(x, y - 1) ? WALL_N : 0) | (joins(x + 1, y) ? WALL_E : 0)
       | (joins(x, y + 1) ? WALL_S : 0) | (joins(x - 1, y) ? WALL_W : 0);
-    ensureWallTexture(scene, item.texture, mask);
-    item.texture = wallTextureKey(item.texture, mask);
+    // The south and east edges face the camera: cut those walls away.
+    const cut = y === size.height - 1 || x === size.width - 1;
+    ensureWallTexture(scene, item.texture, mask, cut);
+    item.texture = wallTextureKey(item.texture, mask, cut);
   };
   for (const b of buildings) if (b.w === 1 && b.h === 1) connect(b);
   decor.forEach(connect);
