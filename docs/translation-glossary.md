@@ -33,7 +33,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Shíráz | شیراز | 设拉子 |   |
 | Shaykh Ṭabarsí | شیخ طبرسی | 谢赫·塔巴尔西 |   |
 
-## Speaker names (100)
+## Speaker names (119)
 
 | English | fa | zh |
 | --- | --- | --- |
@@ -59,8 +59,10 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | A Quiet Neighbour | همسایه‌ای آرام | 一位安静的邻人 |
 | A Royal Officer | مأمور دولتی | 一名王室军官 |
 | A Sailor | ملوان | 一名水手 |
+| A Sentinel | نگهبانی | 一名哨兵 |
 | A Shaken Believer | مؤمنی پریشان | 一位震动的信徒 |
 | A Shopkeeper | دکاندار | 一位店主 |
+| A Soldier of ʿIráq | سربازی از عراق | 一名伊拉克士兵 |
 | A Stern Mullá | ملایی سخت‌گیر | 一位严厉的毛拉 |
 | A Student of the Madrasa | طلبه‌ای از مدرسه | 经学院的一位学生 |
 | A Theology Student | طلبه علوم دینی | 一位神学学生 |
@@ -72,35 +74,45 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | A Weary Traveller | مسافری خسته | 一位疲惫的旅人 |
 | A Widow from Lár | بیوه‌ای از لار | 一位来自拉尔的寡妇 |
 | A Woman of Mákú | زنی از ماکو | 一位马库妇人 |
+| A Woman of the Quarter | زنی از محله | 街区里的一位妇人 |
 | A Woodcutter | هیزم‌شکن | 一位樵夫 |
 | A Wounded Believer | مؤمنی زخمی | 一位受伤的信徒 |
 | A Young Companion | یاری جوان | 一位年轻同伴 |
+| A Youth at the Barricade | جوانی در سنگر | 路障旁的一名少年 |
 | An Armenian Soldier | سربازی ارمنی | 一名亚美尼亚士兵 |
+| An Officer of the Bodyguard | افسر گارد محافظ | 一名卫队军官 |
 | An Old Cameleer | شتربان پیر | 老驼夫 |
 | An Old Coppersmith | مسگری پیر | 一位老铜匠 |
 | An Orphan by the Mosque | یتیمی کنار مسجد | 清真寺旁的孤儿 |
 | Anís | انیس | 阿尼斯 |
 | Another Seeker | جوینده‌ای دیگر | 另一位求道者 |
 | Caravan Muleteer | قاطرچی کاروان | 商队赶骡人 |
+| Dr Cormick | دکتر کورمیک | 科米克医生 |
 | Fellow Prisoner | هم‌زندان | 狱友 |
 | Guard | نگهبان | 守卫 |
 | Gurgín Khán | گرگین‌خان | 古尔金汗 |
 | Ḥájí Abu'l-Ḥasan | حاجی ابوالحسن | 哈吉·阿布尔-哈桑 |
 | Ḥájí Mírzá Siyyid ʿAlí | حاجی میرزا سید علی | 哈吉·米尔扎·赛义德·阿里 |
 | Ḥájí Muḥsin | حاجی محسن | 哈吉·穆赫辛 |
+| Ḥujjat | حجت | 胡贾特 |
 | Keeper of the Shrine | کلیددار بقعه | 圣祠看守人 |
+| Khadíjih | خدیجه | 赫蒂彻 |
 | Learned Cleric | عالم دینی | 博学的教士 |
 | Man of Bárfurúsh | مرد بارفروشی | 巴尔弗鲁什人 |
 | Manúchihr Khán, the Muʿtamid | منوچهرخان معتمد | 马努契赫尔汗，穆塔米德 |
 | Market Visitor | رهگذر بازار | 市集来客 |
 | Messenger at the Central Tent | پیام‌آور چادر مرکزی | 中央帐篷的信使 |
+| Mihr-ʿAlí | مهرعلی | 米赫尔-阿里 |
+| Mír Ṣaláḥ | میر صلاح | 米尔·萨拉赫 |
 | Mírzá Asadu'lláh of Khuy | میرزا اسدالله خویی | 霍伊的米尔扎·阿萨杜拉 |
 | Mírzá Ḥasan-i-Núrí | میرزا حسن نوری | 米尔扎·哈桑-努里 |
 | Mírzá Muḥíṭ-i-Kirmání | میرزا محیط کرمانی | 米尔扎穆希特-克尔马尼 |
 | Mosque Witness | شاهد مسجد | 清真寺见证人 |
 | Mubárak, the Household Servant | مبارک، خادم خانه | 家仆穆巴拉克 |
+| Muḥsin | محسن | 穆赫辛 |
 | Mullá Ḥusayn | ملا حسین | 毛拉·侯赛因 |
 | Mullá Ḥusayn's Brother | برادر ملا حسین | 毛拉·侯赛因的兄弟 |
+| Mullá Muḥammad of Mamaqán | ملا محمد ممقانی | 马马甘的毛拉·穆罕默德 |
 | Mullá Ṣádiq | ملا صادق | 毛拉·萨迪格 |
 | Mullá ʿAlíy-i-Basṭámí | ملا علی بسطامی | 毛拉·阿里·巴斯塔米 |
 | Narrator | راوی | 旁白 |
@@ -112,12 +124,14 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Riḍá | رضا | 礼萨 |
 | Sám Khán | سام‌خان | 萨姆汗 |
 | Shaykh Abú-Turáb | شیخ ابوتراب | 谢赫·阿布-图拉布 |
+| Siyyid Ḥasan | سید حسن | 赛义德·哈桑 |
 | Siyyid Ḥusayn | سید حسین | 赛义德·侯赛因 |
 | Siyyid Ḥusayn, the Amanuensis | سید حسین کاتب | 抄写员赛义德·侯赛因 |
 | Ṭáhirih | طاهره | 塔希丽 |
 | The Camp Cook | آشپز اردو | 营地厨子 |
 | The Captain | ناخدا | 船长 |
 | The Caravanserai Keeper | کاروانسرادار | 驿站掌柜 |
+| The Coffee-Maker | قهوه‌چی | 煮咖啡的人 |
 | The Fál-Reader | فال‌گیر | 法尔占卜者 |
 | The Farrásh-Báshí | فراش‌باشی | 法拉什总管 |
 | The First Row | ردیف نخست | 第一排 |
@@ -126,25 +140,31 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | The Jailer | زندانبان | 狱卒 |
 | The Keeper of Names | نگهبان نام‌ها | 名册保管人 |
 | The Mosque Attendant | خادم مسجد | 清真寺侍者 |
+| The Niẓámu'l-ʿUlamá's Secretary | منشی نظام‌العلما | 尼扎姆·乌莱玛的书记 |
 | The Second Row | ردیف دوم | 第二排 |
 | The Ship's Boy | پسر کشتی | 船上的小厮 |
 | The Steward of the Gardens | ناظر باغ‌ها | 园子的管事 |
+| The Valí-ʿAhd's Page | پیشخدمت جوان ولیعهد | 王储的侍童 |
+| Umm-i-Ashraf | ام‌اشرف | 乌姆-伊-阿什拉夫 |
 | Vaḥíd | وحید | 瓦希德 |
 | Wandering Dervish | درویش رهگذر | 云游德尔维希 |
 | Witness in the Crowd | شاهدی در جمعیت | 人群中的见证人 |
 | Yaḥyá Khán | یحیی‌خان | 叶海亚汗 |
 | Yaḥyá Khán, Warden of Chihríq | یحیی‌خان، زندانبان چهریق | 叶海亚汗，奇赫里格狱守 |
 | Zahrá | زهرا | 扎赫拉 |
+| Zaynab | زینب | 宰娜卜 |
 | ʿAlí Khán | علی‌خان | 阿里汗 |
 | ʿAlí Khán, Warden of Mákú | علی‌خان، زندانبان ماکو | 阿里汗，马库的狱守 |
+| ʿAẓím | عظیم | 阿齐姆 |
 
-## Titles and labels (461)
+## Titles and labels (533)
 
 | English | fa | zh |
 | --- | --- | --- |
 | ← Back along the forest road | ← بازگشت از راه جنگل | ← 沿森林小路返回 |
 | ← Back down the Jidda road to the ship | ← بازگشت از راه جده به کشتی | ← 沿吉达之路返回船上 |
 | ← Back through the city to the Quiet Quarter | ← بازگشت از میان شهر به محلهٔ آرام | ← 穿过城市返回宁静街区 |
+| ← Back to the square before the residence | ← بازگشت به میدان پیش اقامتگاه | ← 回到官邸前的广场 |
 | ← Back toward Mákú | ← بازگشت به سوی ماکو | ← 返回马库方向 |
 | ← Down the stair to the square | ← پایین رفتن از پلکان به میدان | ← 下楼梯到广场 |
 | ← To the western gate | ← به سوی دروازهٔ غربی | ← 前往西门 |
@@ -156,6 +176,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | → East to the Vakíl Mosque | → به سوی شرق، تا مسجد وکیل | → 向东前往瓦基勒清真寺 |
 | → On to the shrine of Shaykh Ṭabarsí | → پیش به سوی بقعهٔ شیخ طبرسی | → 前往谢赫·塔巴尔西圣祠 |
 | → Take the road north | → راه شمال را در پیش گیر | → 踏上北去的路 |
+| → The lane to the Shaykhu'l-Islám's house | → کوچه به‌سوی خانهٔ شیخ‌الاسلام | → 通往伊斯兰长老家的巷子 |
 | → The road to Chihríq | → راه چهریق | → 前往奇赫里格之路 |
 | ↑ Climb the stair into the light | ↑ بالا رفتن از پلکان به سوی روشنایی | ↑ 登上楼梯，走进光中 |
 | ↑ The lane to the three gardens | ↑ کوچهٔ سه باغ | ↑ 通往三座花园的小巷 |
@@ -163,12 +184,18 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | ↓ Back out on deck | ↓ بازگشت به عرشه | ↓ 回到甲板上 |
 | ↓ Back to the hamlet and the camp | ↓ بازگشت به دهکده و اردوگاه | ↓ 返回村落与营地 |
 | ↓ Down the stair into the Síyáh-Chál | ↓ پایین رفتن از پلکان به سیاه‌چال | ↓ 走下楼梯，进入黑坑 |
+| ↓ Down to the court | ↓ پایین به حیاط | ↓ 下到庭院 |
 | ↓ Go ashore at Jidda and on to Mecca | ↓ پیاده شدن در جده و رفتن به مکه | ↓ 在吉达上岸，前往麦加 |
+| ↓ Out through the gate to the square | ↓ از دروازه به میدان بیرون برو | ↓ 出大门到广场 |
 | ↓ Out through the gate to the yard | ↓ بیرون رفتن از دروازه به حیاط | ↓ 穿过大门，走向院子 |
 | ↓ Out to Quddús's garden | ↓ بیرون، به باغ قدّوس | ↓ 出去，到古杜斯的园子 |
+| ↓ Out to the chancery court | ↓ بیرون رفتن به حیاط دیوان | ↓ 出去到文书院 |
+| ↓ Out to the courtyard | ↓ بیرون رفتن به حیاط | ↓ 出去到庭院 |
 | ↓ Out to the mosque court | ↓ بیرون رفتن به صحن مسجد | ↓ 出去到清真寺院子 |
+| ↓ Out to the quarter | ↓ بیرون به محله | ↓ 出到街区 |
 | ↓ Out to the shrine court | ↓ بیرون، به صحن بقعه | ↓ 出去，到圣祠庭院 |
 | ↓ Walk back to the city | ↓ بازگشت به شهر | ↓ 步行返回城市 |
+| A Basket of Iron | سبدی از آهن | 一篮铁弹 |
 | A Bound Wound | زخمی بسته | 包扎好的伤口 |
 | A Boy from Láríján | پسری از لاریجان | 来自拉里詹的男孩 |
 | A Clay Jar | کوزه‌ای سفالی | 一只陶罐 |
@@ -180,6 +207,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | A Gate Without a Name | دری بی‌نام | 无名之门 |
 | A Greeting at the Gate | سلامی بر دروازه | 城门前的问候 |
 | A Guarded Lamp | چراغی نگاه‌داشته | 被守护的灯 |
+| A Lamp in the Sacks | چراغی در میان کیسه‌ها | 沙袋间的一盏灯 |
 | A Letter from Qazvín | نامه‌ای از قزوین | 来自加兹温的信 |
 | A Letter Set Aside | نامه‌ای کنار نهاده | 搁置的信 |
 | A Letter Worn Soft | نامه‌ای نرم‌شده از تا | 一封磨软了的信 |
@@ -192,14 +220,18 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | A Pilgrim from Lucknow | زائری از لکهنو | 来自勒克瑙的朝圣者 |
 | A Polite Prisoner | زندانی‌ای مؤدب | 彬彬有礼的囚徒 |
 | A Pupil in His Own House | شاگردی در خانهٔ خویش | 自家宅中的学生 |
+| A Question of Grammar | پرسشی از دستور زبان | 一道语法题 |
+| A quiet lane east, toward the citadel | کوچه‌ای آرام در شرق، به‌سوی ارگ | 东边一条安静的小巷，通向城堡 |
 | A Rolled Carpet | قالیچه‌ای پیچیده | 卷起的地毯 |
 | A Shaken Friend | یاری پریشان | 动摇的朋友 |
 | A Short Flame | شعله‌ای کوتاه | 短短的火焰 |
+| A Soldier of ʿIráq | سربازی از عراق | 一名伊拉克士兵 |
 | A Sprig of Box | شاخه‌ای شمشاد | 一枝黄杨 |
 | A Stone in the Wall | سنگی در دیوار | 墙中的一块石 |
 | A Student's Challenge | چالش یک طلبه | 学生的挑战 |
 | A Swept Room | اتاقی رُفته | 扫净的房间 |
 | A Traveller at the Gate | مسافری بر دروازه | 城门前的旅人 |
+| A Tray to Carry | سینی‌ای برای حمل | 一个要端的托盘 |
 | A Treasure in Mázindarán | گنجی در مازندران | 马赞德兰的珍宝 |
 | A Verse for the Road | آیه‌ای برای راه | 路上的一节经文 |
 | A Wounded Witness | گواهی زخمی | 受伤的见证者 |
@@ -213,11 +245,15 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Anís | انیس | 阿尼斯 |
 | Answering Under His Breath | پاسخی زیر لب | 低声作答 |
 | Army Tent | چادر سپاه | 军帐 |
+| Ashraf | اشرف | 阿什拉夫 |
+| At the Pool | کنار حوض | 在水池边 |
 | Badasht, the Hamlet | بدشت، دهکده | 巴达什特，村落 |
 | Badasht, the Three Gardens | بدشت، سه باغ | 巴达什特，三座花园 |
 | Barrack Front | نمای سربازخانه | 营房前方 |
 | Barred Marker | نشان میله‌دار | 封闭标记 |
+| Barricade | سنگر | 路障 |
 | Barriers & Prison | مانع‌ها و زندان | 障碍与监狱 |
+| Basket of Shot | سبد گلوله | 铁弹篮 |
 | Bazaar Row | راسته بازار | 巴扎街廊 |
 | Bedroll | بستر سفری | 铺盖卷 |
 | Before First Light | پیش از نخستین روشنایی | 第一缕光之前 |
@@ -234,11 +270,13 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Bread for a Prisoner | نانی برای زندانی | 给囚徒的面包 |
 | Bread for Riḍá | نانی برای رضا | 给礼萨的面包 |
 | Bread for the Road | نانی برای راه | 路上的面包 |
+| Bread Oven | تنور نان | 面包烤炉 |
 | Brick Dome | گنبد آجری | 砖砌穹顶 |
 | Bridge | پل | 桥梁 |
 | Bridge Span | دهانه پل | 桥跨 |
 | Bridges & Water | پل‌ها و آب | 桥梁与水 |
 | Brothers by Bread | برادران نان | 以饼为盟的兄弟 |
+| Brought In | آورده شدند | 被带进来 |
 | Buildings | ساختمان‌ها | 建筑 |
 | By the Afternoon | سوگند به عصر | 以时光为誓 |
 | By the Door of the House | کنار در خانهٔ خدا | 在天房门边 |
@@ -256,6 +294,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Characters | شخصیت‌ها | 角色 |
 | Chihriq Fortress | دژ چهریق | 奇里克堡垒 |
 | Chihríq, the Grievous Mountain | چهریق، جبل شدید | 奇赫里格，苦难之山 |
+| Child | کودک | 孩子 |
 | City Gate | دروازه شهر | 城门 |
 | City Wall | باروی شهر | 城墙 |
 | Closed Door | در بسته | 关闭的门 |
@@ -272,11 +311,11 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Courtyard House | خانه حیاط‌دار | 庭院宅邸 |
 | Courtyard Hush | سکوت حیاط | 庭院寂静 |
 | Courtyard Wall | دیوار حیاط | 院墙 |
+| Cradle | گهواره | 摇篮 |
 | Crates | صندوق‌ها | 木箱 |
 | Crowd | جمعیت | 人群 |
 | Crowd Shadow | سایه جمعیت | 人群阴影 |
 | Curtain | پرده | 帘幕 |
-| Cypress | سرو | 柏树 |
 | Dayyán | دیّان | 达扬 |
 | Decree Board | تختهٔ فرمان | 告示板 |
 | Disturbed, Not Persuaded | پریشان، نه قانع | 心有所动，却未被说服 |
@@ -284,15 +323,19 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Dye Vats | خم‌های رنگرزی | 染缸 |
 | Earthwork | خاکریز | 土垒 |
 | Eighty-One Guests | هشتاد و یک مهمان | 八十一位宾客 |
+| Eleven | یازده | 十一 |
 | Empty Space | فضای خالی | 空白区域 |
 | Ewer | آفتابه | 水壶 |
 | Fallen Log | تنه افتاده | 倒木 |
 | Fear Without a Face | ترسی بی‌چهره | 无面之惧 |
 | Fern | سرخس | 蕨草 |
+| Field Gun | توپ صحرایی | 野战炮 |
 | Fifty Pages in an Afternoon | پنجاه صفحه در یک بعدازظهر | 一个午后五十页 |
 | Find Mullá Ḥusayn at the camp before going on | پیش از ادامه راه، ملا حسین را در اردوگاه بیاب | 继续前行之前，到营地找毛拉·侯赛因 |
+| Five Names in the Night | پنج نام در شب | 夜里的五个名号 |
 | Fort Shaykh Ṭabarsí | قلعه شیخ طبرسی | 谢赫·塔巴尔西堡 |
 | Fortress Wall | دیوار دژ | 堡垒城墙 |
+| Forty Cups | چهل فنجان | 四十杯 |
 | Furnishings | لوازم | 陈设 |
 | Garden Canopy | سایبان باغ | 花园华盖 |
 | Garden Wall | دیوار باغ | 花园围墙 |
@@ -307,15 +350,18 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Gurgín Khán | گرگین‌خان | 古尔金汗 |
 | Half a Cup of Tea | نیم فنجان چای | 半杯茶 |
 | Half the Loaf | نیمی از نان | 半块面包 |
+| Hand-Mill | دستاس | 手磨 |
 | Harder Than Snow | سخت‌تر از برف | 比雪更冷硬 |
 | He Did Not Look at the Floor | ایشان به زمین ننگریستند | 祂没有看地面 |
 | Hear the square and find Sám Khán before climbing | پیش از بالا رفتن، سخن میدان را بشنو و سام‌خان را بیاب | 登上之前，听听广场上的声音，找到萨姆汗 |
 | Heavier than Salt | سنگین‌تر از نمک | 比盐还沉 |
 | Hold Hatch | دریچه انبار | 货舱舱口 |
 | Honest Weights | ترازوهای درست | 公道的秤砣 |
-| House | خانه | 房屋 |
 | House Servant | خدمتکار خانه | 家仆 |
 | House Threshold | آستانه خانه | 宅院门槛 |
+| Ḥujjat | حجت | 胡贾特 |
+| Ḥujjat's House | خانهٔ حجت | 胡贾特的家 |
+| I Am the Promised One | من اعلام می‌کنم موعودم | 我是应许者 |
 | Ink on His Fingers | جوهر بر انگشتان ایشان | 祂指间的墨迹 |
 | Interior Wall | دیوار درونی | 内墙 |
 | Ironwood | آهن‌چوب | 铁木 |
@@ -323,9 +369,11 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Iṣfahán, by the River | اصفهان، کنار رود | 伊斯法罕，河畔 |
 | Iṣfahán, the Palace of the Sun | اصفهان، عمارت خورشید | 伊斯法罕，太阳宫 |
 | It Proved Nothing | هیچ چیز را ثابت نکرد | 什么也没证明 |
+| Jewels for Weddings | جواهر برای عروسی‌ها | 首饰换婚礼 |
 | Kaaba | کعبه | 克尔白天房 |
 | Keeper of the Shrine | کلیددار بقعه | 圣祠看守人 |
 | Kin at the Ílkhání | خویشاوندان در ایلخانی | 伊尔汗清真寺的亲人 |
+| Ladder | نردبان | 梯子 |
 | Lamp | چراغ | 灯 |
 | Lamp Niche | طاقچهٔ چراغ | 灯龛 |
 | Lean-to | سایه‌بان | 披棚 |
@@ -336,6 +384,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Low Arch | طاق کوتاه | 低拱门 |
 | Mákú and Chihríq, 1847–1848 | ماکو و چهریق، ۱۸۴۷–۱۸۴۸ | 马库与奇赫里格，1847–1848 |
 | Maku Fortress | دژ ماکو | 马库堡垒 |
+| Mákú, the Amanuensis's Room | ماکو، اتاق کاتب | 马库，抄写员的房间 |
 | Mákú, the Open Mountain | ماکو، کوهستان گشاده | 马库，敞开的山 |
 | Man of Bárfurúsh | مرد بارفروشی | 巴尔弗鲁什人 |
 | Market & Supplies | بازار و آذوقه | 市场与补给 |
@@ -354,15 +403,18 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Mountain Pine | کاج کوهی | 山松 |
 | Mountain Rock | سنگ کوهستان | 山岩 |
 | Mubárak at Another Door | مبارک بر دری دیگر | 穆巴拉克守在另一扇门前 |
+| Muezzin | مؤذن | 宣礼员 |
 | Muhit | محیط | 穆希特 |
 | Mulla | ملا | 毛拉 |
 | Mulla Husayn | ملا حسین | 毛拉·侯赛因 |
+| Mullá Muḥammad of Mamaqán | ملا محمد ممقانی | 马马甘的毛拉·穆罕默德 |
 | Mutamid | معتمد | 穆阿泰米德 |
 | Nineteen Lambs | نوزده بره | 十九只羔羊 |
 | No Lamp After Dark | پس از تاریکی چراغی نیست | 天黑后不许点灯 |
 | Noon Became Night | نیمروز شب شد | 正午化为黑夜 |
 | North from Shíráz | به سوی شمال از شیراز | 从设拉子北上 |
 | Not Hurrying | بی‌شتاب | 不慌不忙 |
+| Not Ours to Do | نه از ما بود | 不是我们分内的事 |
 | Not the Wind | نه باد | 不是风 |
 | Oak | بلوط | 橡树 |
 | Officer | مأمور | 军官 |
@@ -373,12 +425,14 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Old Ṣádiq Laughing | خنده صادق پیر | 老萨迪格的笑 |
 | On Foot from Mashhad | پیاده از مشهد | 从马什哈德徒步而来 |
 | On the Roofs | بر بام‌ها | 屋顶之上 |
+| One Empty Seat | یک جایگاه خالی | 一个空座位 |
 | One Purpose | یک مقصود | 同一目标 |
 | One Purse | یک کیسه | 同一个钱袋 |
 | One Wick | یک فتیله | 一根灯芯 |
 | Open Door | در باز | 敞开的门 |
 | Orange Tree | درخت نارنج | 橙树 |
 | Out by the Back Gate | بیرون از دروازه پشتی | 从后门离去 |
+| Outside the Walls | بیرون حصار | 城墙之外 |
 | Pages for Najaf | برگ‌هایی برای نجف | 送往纳杰夫的书页 |
 | Palace Portico | رواق کاخ | 宫殿柱廊 |
 | Palisade | پالیساد | 栅栏 |
@@ -413,6 +467,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Read in Awe | خواندن با هیبت | 怀着敬畏阅读 |
 | Read in Grief | خواندن با اندوه | 怀着悲伤阅读 |
 | Reconciliation Tent | چادر آشتی | 和解帐篷 |
+| Residence Gate | دروازهٔ اقامتگاه | 官邸大门 |
 | Return to Shíráz | بازگشت به شیراز | 返回设拉子 |
 | Rice for Riḍá | برنج برای رضا | 给礼萨的米 |
 | Riḍá | رضا | 礼萨 |
@@ -422,8 +477,11 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Road Shrine | زیارتگاه راه | 路边圣祠 |
 | Roof Parapet | جان‌پناه بام | 屋顶女儿墙 |
 | Rope Coils | حلقه‌های طناب | 绳圈 |
+| Rope Ladder | نردبان طنابی | 绳梯 |
 | Rosebush | بوته گل سرخ | 玫瑰丛 |
+| Rubble | خرابه | 瓦砾 |
 | Rug | قالی | 地毯 |
+| Rustam-ʿAlí | رستم‌علی | 鲁斯塔姆-阿里 |
 | Sailor | ملوان | 水手 |
 | Sam Khan | سام‌خان | 萨姆汗 |
 | Sám Khán's Plea | درخواست سام‌خان | 萨姆汗的恳求 |
@@ -433,8 +491,8 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Ship Cabin | اتاقک کشتی | 船舱 |
 | Ship Mast | دکل کشتی | 船桅 |
 | Ship Pilgrim | زائر کشتی | 船上朝圣者 |
-| Ship Rail | نرده کشتی | 船栏 |
 | Ship's Boat | قایق کشتی | 小艇 |
+| Ship's Hull | بدنهٔ کشتی | 船体 |
 | Shíráz, 1845 to 1846 | شیراز، ۱۸۴۵ تا ۱۸۴۶ | 设拉子，1845年至1846年 |
 | Shíráz, 22 May 1844 | شیراز، ۲۲ مه ۱۸۴۴ | 设拉子，1844年5月22日 |
 | Shíráz, the Streets in 1845 | شیراز، کوچه‌ها در ۱۸۴۵ | 设拉子，1845年的街巷 |
@@ -444,6 +502,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Shrines | زیارتگاه‌ها | 圣地 |
 | Siyyid Ḥusayn of Yazd | سید حسین یزدی | 亚兹德的赛义德·侯赛因 |
 | Sleeping Traveller | مسافر خفته | 熟睡的旅人 |
+| Slippers | کفش‌ها | 鞋子 |
 | Small House | خانه کوچک | 小屋 |
 | Snow Drift | توده برف | 雪堆 |
 | Snow Shrub | بوته برفی | 雪灌木 |
@@ -458,7 +517,11 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Stump | کنده درخت | 树桩 |
 | Tabarsi Shrine | زیارتگاه طبرسی | 塔巴尔斯圣祠 |
 | Tabríz | تبریز | 大不里士 |
+| Tabríz, before the Governor's Residence | تبریز، پیش اقامتگاه حاکم | 大不里士，总督官邸前 |
+| Tabríz, summer 1848 | تبریز، تابستان 1848 | 大不里士，1848年夏 |
 | Tabríz, the Barrack Square | تبریز، میدان سربازخانه | 大不里士，营房广场 |
+| Tabríz, the Lane of the Shaykhu'l-Islám | تبریز، کوچهٔ شیخ‌الاسلام | 大不里士，伊斯兰长老的巷子 |
+| Tabríz, the Residence Courtyard | تبریز، حیاط اقامتگاه | 大不里士，官邸院子 |
 | Tabríz, the Rooftops | تبریز، بام‌ها | 大不里士，屋顶 |
 | Tahirih | طاهره | 塔希雷 |
 | Tall Cypress | سرو بلند | 高柏树 |
@@ -484,17 +547,26 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | The Cobbler's Witness | گواهی پینه‌دوز | 鞋匠的见证 |
 | The Column in the Forest | ستون در جنگل | 林中的队伍 |
 | The Conference of Badasht | همایش بدشت | 巴达什特会议 |
+| The Crier in the Snow | جارچی در برف | 雪中的传令官 |
 | The Cup of Recognition | جامِ شناخت | 认知之杯 |
 | The Curtain | پرده | 帘子 |
 | The Day the Veil Fell | روزی که حجاب افتاد | 面纱落下之日 |
 | The Ditch | خندق | 壕沟 |
+| The Empty Cradle | گهوارهٔ خالی | 空摇篮 |
+| The Empty Ladder | نردبان خالی | 空梯子 |
 | The Empty Seat of Honour | صدر خالی مجلس | 空着的尊席 |
 | The Empty Wall | دیوار تهی | 空墙 |
+| The Exalted Land | ارض اعلی | 崇高之地 |
 | The First File | صف نخست | 第一列 |
 | The First Volley | شلیک نخست | 第一轮齐射 |
 | The Forest of Mázindarán | جنگل مازندران | 马赞德兰的森林 |
+| The fort gate is barred to strangers | دروازهٔ قلعه به روی بیگانگان بسته است | 堡垒的大门对陌生人紧闭着 |
+| The Fort of ʿAlí-Mardán Khán | قلعه علی‌مردان‌خان | 阿里-马尔丹汗堡 |
+| The fort of ʿAlí-Mardán Khán, 1850 to 1851 | قلعه علی‌مردان‌خان، ۱۸۵۰ تا ۱۸۵۱ | 阿里-马尔丹汗堡，1850年至1851年 |
 | The gardens: the steward receives each guest first | باغ‌ها: ناظر نخست هر مهمان را می‌پذیرد | 园子：管事先接待每一位客人 |
+| The Gate | دروازه | 大门 |
 | The Gate at Dawn | دروازه در سپیده‌دم | 黎明之门 |
+| The gate is barred to the crowd | دروازه به روی جمعیت بسته است | 大门对人群关闭 |
 | The Governor Dislikes Whispers | حاکم از پچ‌پچ بیزار است | 总督不喜欢窃窃私语 |
 | The Governor's Decree | فرمان حاکم | 总督的法令 |
 | The Grievous Mountain | کوه شدید | 沉痛之山 |
@@ -516,20 +588,28 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | The Muʿtamid’s Sanctuary | پناهگاه معتمد | 穆ʿ塔米德的庇护所 |
 | The Muʿtamid's Shelter | پناه معتمد | 穆阿泰米德的庇护 |
 | The Nail | میخ | 钉子 |
+| The News from Tabríz | خبر تبریز | 来自大不里士的消息 |
 | The Night Watch | پاس شب | 夜间守望 |
+| The Oath Broken | عهد شکسته | 被背弃的誓言 |
 | The Oath Doubted | سوگندی که در آن شک رفت | 誓言受疑 |
 | The Oath Received | سوگندی که پذیرفته شد | 誓言被接受 |
 | The Open Cell | سلول گشوده | 敞开的牢房 |
 | The Order from Ṭihrán | فرمان تهران | 来自德黑兰的命令 |
+| The Palace of the Sun, the Reception Room | عمارت خورشید، تالار پذیرایی | 太阳宫，会客厅 |
 | The Persian Bayán | بیان فارسی | 波斯文《巴扬经》 |
 | The Physician's Way | راه پزشک | 医者之道 |
+| The Physician's Witness | گواهی پزشک | 医生的见证 |
 | The prison stair is barred | پله زندان بسته است | 监狱的阶梯被封住了 |
 | The Pulpit of the Vakíl | منبر وکیل | 瓦基勒清真寺的讲坛 |
 | The Road from Shimírán | راه شمیران | 来自希米兰的路 |
 | The road north can wait until dawn | راه شمال تا سپیده‌دم می‌تواند بماند | 北去的路可以等到黎明 |
 | The Road West, at Dawn | راه غرب، در سپیده‌دم | 黎明时分，西去的路 |
+| The Sally Gap | رخنهٔ خروج | 出击的缺口 |
 | The Scribe's Fourth Copy | رونوشت چهارم کاتب | 书记的第四份抄本 |
+| The Sealed Qur'án | قرآن مهرشده | 封印的古兰经 |
+| The Seat Kept for the Heir | جایگاهی که برای وارث نگه داشتند | 为储君留的座位 |
 | The Shrine of Shaykh Ṭabarsí | بقعهٔ شیخ طبرسی | 谢赫·塔巴尔西圣祠 |
+| The Shut Door | در بسته | 紧闭的门 |
 | The Silver Ewer | ابریق سیمین | 银水壶 |
 | The Síyáh-Chál | سیاه‌چال | 黑坑 |
 | The stair is barred above you | پله بالای سرت بسته است | 你上方的阶梯被封住了 |
@@ -538,14 +618,18 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | The Sun Has Gone In | خورشید پنهان شد | 太阳进去了 |
 | The Sun Underground | خورشید در زیر زمین | 地下的太阳 |
 | The Tabríz road: no reason yet to leave Mákú | راه تبریز: هنوز دلیلی برای ترک ماکو نیست | 去大不里士的路：还没有理由离开马库 |
+| The Trial at Tabríz | محاکمه در تبریز | 大不里士的审讯 |
 | The Trimmed Lamp | چراغ پیراسته | 修剪过的灯 |
 | The Two Tongues of the Road | دو زبان راه | 道路的两种语言 |
 | The Uncle's Surety | ضمانت خال | 舅舅的担保 |
 | The Vakíl Mosque | مسجد وکیل | 瓦基勒清真寺 |
+| The Valí-ʿAhd Said No | ولیعهد گفت نه | 王储说不 |
 | The Vigil | شب‌زنده‌داری | 守夜 |
 | The Warden's Change | دگرگونی زندانبان | 典狱官的转变 |
 | The Watch at Chihríq | پاس چهریق | 奇赫里格的守望 |
+| The Way In | راه ورود | 入口 |
 | The western gate can wait | دروازه غربی می‌تواند بماند | 西门可以等一等 |
+| The Women's Corner | گوشهٔ زنان | 妇女们的角落 |
 | The Woodcutter's Judgement | داوری هیزم‌شکن | 樵夫的评判 |
 | The Work That Makes No Noise | کاری که صدایی ندارد | 无声的工作 |
 | Those Who Could Not Stay | آنان که نتوانستند بمانند | 无法留下的人 |
@@ -561,10 +645,10 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Town Wall | باروی شهر | 城墙 |
 | Townsman | شهروند | 城镇居民 |
 | Traveller | مسافر | 旅人 |
-| Tree | درخت | 树木 |
 | Truce Flag | پرچم آتش‌بس | 停战旗 |
 | Two Handfuls of Rice | دو مشت برنج | 两捧米 |
 | Two Right Answers | دو پاسخ درست | 两个正确的答案 |
+| Two Towns | دو شهر | 两座城 |
 | Undergrowth | بوته‌زار | 灌木丛 |
 | Vaḥíd | وحید | 瓦希德 |
 | Village Woman | زن روستایی | 村妇 |
@@ -579,6 +663,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Water Jar | کوزه آب | 水罐 |
 | Water of Zamzam | آب زمزم | 渗渗泉水 |
 | Water-Carrier | سقّا | 送水人 |
+| Water-Skins | مشک‌ها | 水囊 |
 | Well | چاه | 水井 |
 | Wet Lines | سطرهای خیس | 湿漉的绳索 |
 | What Are We? | ما چه هستیم؟ | 我们是什么？ |
@@ -587,13 +672,16 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Whispers Are Counted | پچ‌پچ‌ها شمرده می‌شوند | 低语有人记着 |
 | Wind and Light | باد و نور | 风与光 |
 | Winter Counsel | رایزنی زمستان | 冬日的忠告 |
+| Without Leave | بی اجازه | 未经许可 |
 | Witness | شاهد | 见证者 |
 | Witness Without a Name | گواهی بی‌نام | 无名的见证者 |
+| Woman of the House | بانوی خانه | 一家的主妇 |
 | Woodcutter | هیزم‌شکن | 樵夫 |
 | Wooden Floor | کف چوبی | 木地板 |
 | Woodpile | توده هیزم | 柴堆 |
 | Word of Badasht | خبر بدشت | 巴达什特的消息 |
 | Words Instead of Blood | سخن به جای خون | 以言代血 |
+| Writing Board | تخته‌ی تحریر | 写字板 |
 | Writing Desk | میز تحریر | 书桌 |
 | Your Answer | پاسخ تو | 你的回答 |
 | Your Answer, at Last | پاسخ تو، سرانجام | 你的回答，终于 |
@@ -603,3 +691,6 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Your Silence | سکوت تو | 你的沉默 |
 | Your Unease | دل‌آشوبی تو | 你的不安 |
 | Zahrá at the Stair | زهرا کنار پلکان | 阶梯旁的扎赫拉 |
+| Zanján | زنجان | 赞詹 |
+| Zanján: the Barricaded Quarter | زنجان: محلهٔ سنگربندی‌شده | 赞詹：设有路障的街区 |
+| ʿAẓím's Night | شب عظیم | 阿齐姆之夜 |
