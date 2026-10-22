@@ -56,7 +56,6 @@ export const ch7QuddusTentMap: MapDefinition = {
   height: H,
   spawn: { x: DOOR_X, y: H - 1 },
   interior: true,
-  trueScale: true,
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');
   },

@@ -35,7 +35,6 @@ export const ch2CaravanseraiMap: MapDefinition = {
   height: H,
   spawn: { x: GATE_X, y: H - 2 },
   interior: true,
-  trueScale: true,
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');
     // The raised platform before the rooms.

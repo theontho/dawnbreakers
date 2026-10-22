@@ -25,9 +25,9 @@ export const TOWN_TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   'town-house-small': SMALL_HOUSES.length,
   'town-house': TOWN_HOUSES.length,
   'town-house-large': COURTYARD_HOUSES.length,
-  'market-stall-large': LARGE_STALLS.length,
+  'market-stall': LARGE_STALLS.length,
   'plane-tree': PLANE_VARIANTS.length,
-  'cypress-tall': TALL_CYPRESS_VARIANTS.length,
+  'cypress': TALL_CYPRESS_VARIANTS.length,
   'orange-tree': ORANGE_VARIANTS.length,
 };
 
@@ -44,10 +44,10 @@ export const TOWN_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>>
   'mosque-great': (scene, def) => paintMosqueGreat(scene, def.texture, ...footprint(def)),
   'mosque-local': (scene, def) => paintMosqueLocal(scene, def.texture, ...footprint(def)),
   'bazaar-row': (scene, def) => paintBazaarRow(scene, def.texture, ...footprint(def)),
-  'market-stall-large': (scene, def) => LARGE_STALLS.forEach((s, i) => paintLargeStall(scene, variantKey(def.texture, i), s)),
-  'city-gate-large': (scene, def) => paintCityGateLarge(scene, def.texture, ...footprint(def)),
+  'market-stall': (scene, def) => LARGE_STALLS.forEach((s, i) => paintLargeStall(scene, variantKey(def.texture, i), s)),
+  'city-gate': (scene, def) => paintCityGateLarge(scene, def.texture, ...footprint(def)),
   'fountain-pool': (scene, def) => paintFountainPool(scene, def.texture, ...footprint(def)),
   'plane-tree': (scene, def) => PLANE_VARIANTS.forEach((s, i) => paintPlaneTree(scene, variantKey(def.texture, i), s)),
-  'cypress-tall': (scene, def) => TALL_CYPRESS_VARIANTS.forEach((s, i) => paintTallCypress(scene, variantKey(def.texture, i), s)),
+  'cypress': (scene, def) => TALL_CYPRESS_VARIANTS.forEach((s, i) => paintTallCypress(scene, variantKey(def.texture, i), s)),
   'orange-tree': (scene, def) => ORANGE_VARIANTS.forEach((s, i) => paintOrangeTree(scene, variantKey(def.texture, i), s)),
 };

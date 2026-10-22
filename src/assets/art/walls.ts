@@ -178,7 +178,7 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // True scale (the Shíráz pilot): the city wall, rammed earth under big merlons; see town/townWalls.
   'town-wall': {
-    height: TOWN_WALL.height, thickness: 0.8, top: 0xb89670, cap: 'battlements', joins: ['city-gate-large', 'ch2-quran-gate'],
+    height: TOWN_WALL.height, thickness: 0.8, top: 0xb89670, cap: 'battlements', joins: ['city-gate', 'ch2-quran-gate'],
     face: townWallFace,
   },
   // A courtyard or garden wall at true scale, joining the town houses it closes.

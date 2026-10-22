@@ -19,10 +19,11 @@ export interface MapCameras {
   update(): void;
 }
 
-export function setupMapCameras(scene: Phaser.Scene, trueScale: boolean): MapCameras {
+const ZOOM_KEY = 'dawnbreakers.zoom';
+
+export function setupMapCameras(scene: Phaser.Scene): MapCameras {
   const main = scene.cameras.main;
   const hud = scene.cameras.add(0, 0, scene.scale.width, scene.scale.height).setName('hud');
-  const storageKey = `dawnbreakers.zoom.${trueScale ? 'true' : 'small'}`;
   const routed = new WeakSet<Phaser.GameObjects.GameObject>();
   let lastCount = -1;
 
@@ -38,12 +39,12 @@ export function setupMapCameras(scene: Phaser.Scene, trueScale: boolean): MapCam
     }
   };
 
-  let zoom = readZoom(storageKey) ?? defaultZoom(scene, trueScale);
+  let zoom = readZoom() ?? defaultZoom(scene);
   const setZoom = (value: number): void => {
     zoom = Phaser.Math.Clamp(value, MIN_ZOOM, MAX_ZOOM);
     main.setZoom(zoom);
     try {
-      localStorage.setItem(storageKey, zoom.toFixed(3));
+      localStorage.setItem(ZOOM_KEY, zoom.toFixed(3));
     } catch {
       // Zoom simply is not remembered.
     }
@@ -79,15 +80,14 @@ export function setupMapCameras(scene: Phaser.Scene, trueScale: boolean): MapCam
   };
 }
 
-/** True-scale maps start a little zoomed out on roomy screens, so a square fits. */
-function defaultZoom(scene: Phaser.Scene, trueScale: boolean): number {
-  if (!trueScale) return 1;
+/** Maps start a little zoomed out on roomy screens, so a square fits. */
+function defaultZoom(scene: Phaser.Scene): number {
   return Math.min(scene.scale.width, scene.scale.height * 1.6) >= 1100 ? 0.85 : 0.7;
 }
 
-function readZoom(key: string): number | undefined {
+function readZoom(): number | undefined {
   try {
-    const value = Number(localStorage.getItem(key));
+    const value = Number(localStorage.getItem(ZOOM_KEY));
     return Number.isFinite(value) && value > 0 ? value : undefined;
   } catch {
     return undefined;

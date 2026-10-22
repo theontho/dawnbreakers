@@ -17,14 +17,14 @@ export const TOWN_OBJECTS: MapObjectDefinition[] = [
   { id: 'mosque-local', label: 'Mosque', texture: 'mosque-local', kind: 'structure', category: 'shrines', color: 0xc8a26e, blocks: true, footprint: { w: 8, h: 7 }, isometric: true },
   // The bazaar: vaulted rows of shops, and open stalls in its squares.
   { id: 'bazaar-row', label: 'Bazaar Row', texture: 'bazaar-row', kind: 'structure', category: 'buildings', color: 0xb08a5a, blocks: true, footprint: { w: 8, h: 3 }, isometric: true },
-  { id: 'market-stall-large', label: 'Market Stall', texture: 'market-stall-large', kind: 'structure', category: 'buildings', color: 0xc94f4f, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
+  { id: 'market-stall', label: 'Market Stall', texture: 'market-stall', kind: 'structure', category: 'buildings', color: 0xc94f4f, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   // The city's defences: the gate between two towers, and the wall (one cell at a time; it joins).
-  { id: 'city-gate-large', label: 'City Gate', texture: 'city-gate-large', kind: 'structure', category: 'buildings', color: 0xa08868, blocks: true, footprint: { w: 4, h: 3 }, isometric: true },
+  { id: 'city-gate', label: 'City Gate', texture: 'city-gate', kind: 'structure', category: 'buildings', color: 0xa08868, blocks: true, footprint: { w: 4, h: 3 }, isometric: true },
   { id: 'town-wall', label: 'Town Wall', texture: 'town-wall', kind: 'prop', category: 'barriers-prison', color: 0xa88660, blocks: true },
   { id: 'compound-wall', label: 'Courtyard Wall', texture: 'compound-wall', kind: 'prop', category: 'barriers-prison', color: 0xb88d5c, blocks: true },
   // Water and trees at their real heights.
   { id: 'fountain-pool', label: 'Pool', texture: 'fountain-pool', kind: 'structure', category: 'bridges-water', color: 0x2c4a6b, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
   { id: 'plane-tree', label: 'Plane Tree', texture: 'plane-tree', kind: 'prop', category: 'plants', color: 0x46743f, blocks: true },
-  { id: 'cypress-tall', label: 'Tall Cypress', texture: 'cypress-tall', kind: 'prop', category: 'plants', color: 0x24553a, blocks: true },
+  { id: 'cypress', label: 'Tall Cypress', texture: 'cypress', kind: 'prop', category: 'plants', color: 0x24553a, blocks: true },
   { id: 'orange-tree', label: 'Orange Tree', texture: 'orange-tree', kind: 'prop', category: 'plants', color: 0x3f7a3a, blocks: true },
 ];

@@ -1,8 +1,8 @@
 # True scale
 
-The game is moving from a "small world" (2x2 houses, people drawn at 0.75)
-to true scale, piloted on Shíráz (`src/data/maps/city.ts`). This is the
-contract every converted map and structure follows.
+Every map is built at true scale: people at their real size among
+buildings of real proportions. This is the contract every map and
+structure follows.
 
 ## The scale
 
@@ -17,26 +17,24 @@ contract every converted map and structure follows.
   heights: plane tree 180 to 240 px, cypress 180 to 230 px, orange tree 90 px.
 - Keep any single texture under about 600 px tall and 1024 px wide.
 
-## Converting a map
+## Building a map
 
-1. Set `trueScale: true` on the `MapDefinition` (and on its interiors).
-2. Grow the map so the place keeps everything it has now; city maps end up
-   roughly 50 to 60 cells a side, small scenes 30 to 40. Lanes are 2 to 3
+1. Size the map for the place: city maps run roughly 50 to 60 cells a
+   side, small scenes 30 to 40.
+2. Give the place room for everything it holds. Lanes are 2 to 3
    cells wide, squares larger.
-3. Keep every NPC (texture, prompt, dialogue id, gate, `present`), every
-   flag-driven decor, every door and exit, the ambience and music, and the
-   narrative geography in the file's header comment. Update the spawn
-   cells of exits on other maps that lead here.
+3. Record the narrative geography in the file's header comment. When an
+   exit moves, update the spawn cells of the exits on other maps that lead
+   here.
 4. Use the shared true-scale town buildings (`src/assets/townObjects.ts`,
    art in `src/assets/art/town/`) where they fit: `town-house-small`,
    `town-house`, `town-house-large`, `mosque-great`, `mosque-local`,
-   `bazaar-row`, `market-stall-large`, `city-gate-large`, `town-wall`,
-   `compound-wall`, `fountain-pool`, `plane-tree`, `cypress-tall`,
+   `bazaar-row`, `market-stall`, `city-gate`, `town-wall`,
+   `compound-wall`, `fountain-pool`, `plane-tree`, `cypress`,
    `orange-tree`. `src/data/maps/wallRuns.ts` lays straight wall runs.
-5. Repaint the chapter's own structures at true scale **in place**: same
-   object id and texture key, new footprint in the chapter's
-   `CHxx_OBJECTS`, new art. Do not add `-large` copies of chapter objects;
-   the small versions go away.
+5. A chapter's own structures live in its `CHxx_OBJECTS` with art in
+   `src/assets/art/`; when one changes, repaint it in place (same object id
+   and texture key) rather than adding a second copy.
 6. Walls on a map's south and east edges (`y = height - 1`, `x = width - 1`)
    are drawn cut away so they frame the scene; tall things placed just
    inside those edges still hide what is behind them, so keep people and

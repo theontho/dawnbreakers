@@ -110,7 +110,6 @@ export const ch6ChihriqMap: MapDefinition = {
   title: 'Chihríq, the Grievous Mountain',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: ROAD + 1 },
   build: ({ paintRect, setTile, block }) => {
     paintRect(0, 0, W, H, 'stone');

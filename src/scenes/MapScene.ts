@@ -41,7 +41,6 @@ import { connectWalls } from './mapWalls';
 import { nearestFreeCell, widenExits } from './mapExits';
 import { placeMapDoors, type MapDoors } from './mapDoors';
 import { setupMapCameras, type MapCameras } from './mapCamera';
-import { personScale } from './figureScale';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
@@ -171,7 +170,6 @@ export class MapScene extends Phaser.Scene {
       getFlags(),
       this.occludableSprites,
       this.doors.interactables,
-      !!this.definition.trueScale,
     );
     // Arrivals across a widened exit can land on a blocked cell: step aside.
     this.playerGrid = nearestFreeCell(this.blocked, this.playerGrid.x, this.playerGrid.y);
@@ -184,7 +182,7 @@ export class MapScene extends Phaser.Scene {
     this.setupInput();
     this.setupHUD(width, height);
     this.setupCameraFollow(width, height);
-    this.mapCameras = setupMapCameras(this, !!this.definition.trueScale);
+    this.mapCameras = setupMapCameras(this);
     this.events.on(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
@@ -256,7 +254,6 @@ export class MapScene extends Phaser.Scene {
       originY: this.originY,
       map: this.map,
       interior: this.definition.interior,
-      trueScale: this.definition.trueScale,
       blocked: this.blocked,
       buildings: this.buildings,
       decor: this.decor,
@@ -277,7 +274,7 @@ export class MapScene extends Phaser.Scene {
   private spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
     this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, 'player')
-      .setOrigin(0.5, 1).setScale(personScale(!!this.definition.trueScale)).setDepth(pos.sy + 2);
+      .setOrigin(0.5, 1).setDepth(pos.sy + 2);
   }
 
   // ---------- dialogue ----------
@@ -441,7 +438,7 @@ export class MapScene extends Phaser.Scene {
       transitionTo: exit => this.transitionTo(exit),
       onStep: (x, y) => playFootstep(this.map[y]![x]!),
       // True-scale cells are smaller relative to a stride, so steps come quicker.
-      stepMs: this.definition.trueScale ? 105 : 150,
+      stepMs: 105,
       onLockedExit: () => playSfx('locked'),
       updatePlayerRevealMasks: force => updatePlayerRevealMasks(this.revealMasks, this.player, force),
     });

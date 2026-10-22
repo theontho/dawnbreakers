@@ -112,7 +112,6 @@ export const ch8ForestRoadMap: MapDefinition = {
   title: 'The Forest of Mázindarán',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: 22 },
   build: ({ paintRect, paintPath, setTile, block, unblock }) => {
     // Trampled clearings.

@@ -58,20 +58,20 @@ function walls(): DecorSpec[] {
 
 /** Cypress avenues down the pool, plane trees over the courts, orange trees in the beds. */
 function trees(): DecorSpec[] {
-  const avenue = [14, 16, 18, 26, 28, 30, 32, 34].flatMap(y => [tree(17, y, 'cypress-tall'), tree(26, y, 'cypress-tall')]);
+  const avenue = [14, 16, 18, 26, 28, 30, 32, 34].flatMap(y => [tree(17, y, 'cypress'), tree(26, y, 'cypress')]);
   return [
     ...avenue,
     // Either side of the tālār
-    tree(14, 3, 'cypress-tall'), tree(14, 7, 'plane-tree'), tree(29, 3, 'cypress-tall'), tree(30, 7, 'plane-tree'),
+    tree(14, 3, 'cypress'), tree(14, 7, 'plane-tree'), tree(29, 3, 'cypress'), tree(30, 7, 'plane-tree'),
     // The chancery court
     tree(11, 4, 'plane-tree'), tree(2, 15, 'orange-tree'), tree(12, 17, 'orange-tree'),
     // The gathering terrace
-    tree(31, 11, 'cypress-tall'), tree(41, 11, 'plane-tree'), tree(33, 19, 'orange-tree'),
+    tree(31, 11, 'cypress'), tree(41, 11, 'plane-tree'), tree(33, 19, 'orange-tree'),
     // The rose garden
-    tree(3, 26, 'cypress-tall'), tree(14, 26, 'cypress-tall'), tree(3, 36, 'cypress-tall'), tree(14, 36, 'cypress-tall'),
+    tree(3, 26, 'cypress'), tree(14, 26, 'cypress'), tree(3, 36, 'cypress'), tree(14, 36, 'cypress'),
     tree(6, 29, 'orange-tree'), tree(11, 29, 'orange-tree'), tree(6, 33, 'orange-tree'), tree(11, 33, 'orange-tree'),
     // Behind the inner apartments
-    tree(30, 25, 'cypress-tall'), tree(39, 25, 'cypress-tall'),
+    tree(30, 25, 'cypress'), tree(39, 25, 'cypress'),
   ];
 }
 
@@ -113,7 +113,6 @@ export const ch5MutamidPalaceMap: MapDefinition = {
   title: 'Iṣfahán, the Palace of the Sun',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: 22 },
   build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'grass');

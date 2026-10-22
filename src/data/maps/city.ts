@@ -33,7 +33,7 @@ const buildings: BuildingSpec[] = [
   { ...GREAT_MOSQUE, texture: 'mosque-great' },
   { ...ILKHANI, texture: 'mosque-local' },
   // The Kázirún gate in the south wall, and the pool of the mosque court
-  { gridX: 44, gridY: 49, w: 4, h: 3, texture: 'city-gate-large' },
+  { gridX: 44, gridY: 49, w: 4, h: 3, texture: 'city-gate' },
   { gridX: 8, gridY: 32, w: 3, h: 3, texture: 'fountain-pool' },
   // The bazaar: vaulted rows on both sides of the street, stalls down its middle
   { gridX: 20, gridY: 25, w: 8, h: 3, texture: 'bazaar-row' },
@@ -42,11 +42,11 @@ const buildings: BuildingSpec[] = [
   { gridX: 20, gridY: 35, w: 8, h: 3, texture: 'bazaar-row' },
   { gridX: 28, gridY: 35, w: 8, h: 3, texture: 'bazaar-row' },
   { gridX: 36, gridY: 35, w: 8, h: 3, texture: 'bazaar-row' },
-  { gridX: 22, gridY: 30, w: 2, h: 2, texture: 'market-stall-large' },
-  { gridX: 27, gridY: 30, w: 2, h: 2, texture: 'market-stall-large' },
-  { gridX: 32, gridY: 30, w: 2, h: 2, texture: 'market-stall-large' },
-  { gridX: 37, gridY: 30, w: 2, h: 2, texture: 'market-stall-large' },
-  { gridX: 41, gridY: 30, w: 2, h: 2, texture: 'market-stall-large' },
+  { gridX: 22, gridY: 30, w: 2, h: 2, texture: 'market-stall' },
+  { gridX: 27, gridY: 30, w: 2, h: 2, texture: 'market-stall' },
+  { gridX: 32, gridY: 30, w: 2, h: 2, texture: 'market-stall' },
+  { gridX: 37, gridY: 30, w: 2, h: 2, texture: 'market-stall' },
+  { gridX: 41, gridY: 30, w: 2, h: 2, texture: 'market-stall' },
   // Houses of the north-west quarter
   { gridX: 1, gridY: 0, w: 6, h: 5, texture: 'town-house' },
   { gridX: 9, gridY: 0, w: 5, h: 4, texture: 'town-house-small' },
@@ -111,19 +111,19 @@ function trees(): DecorSpec[] {
   const t = (gridX: number, gridY: number, texture: string): DecorSpec => ({ gridX, gridY, texture, blocks: true });
   return [
     // The walled garden: an avenue of cypress, plane trees, orange trees by the pool house
-    t(39, 2, 'cypress-tall'), t(41, 2, 'cypress-tall'), t(43, 2, 'cypress-tall'),
+    t(39, 2, 'cypress'), t(41, 2, 'cypress'), t(43, 2, 'cypress'),
     t(39, 12, 'plane-tree'), t(44, 14, 'plane-tree'), t(50, 13, 'plane-tree'),
     t(39, 17, 'orange-tree'), t(42, 19, 'orange-tree'), t(47, 18, 'orange-tree'),
     t(51, 17, 'orange-tree'), t(53, 11, 'orange-tree'), t(41, 8, 'orange-tree'),
     // The Ílkhání's garden behind its north wall
-    t(22, 6, 'orange-tree'), t(25, 6, 'cypress-tall'), t(31, 6, 'cypress-tall'), t(34, 6, 'orange-tree'),
+    t(22, 6, 'orange-tree'), t(25, 6, 'cypress'), t(31, 6, 'cypress'), t(34, 6, 'orange-tree'),
     // Gardens behind the north-west houses and beside the great mosque
-    t(8, 2, 'cypress-tall'), t(12, 14, 'plane-tree'), t(9, 15, 'orange-tree'),
-    t(0, 18, 'cypress-tall'), t(1, 24, 'plane-tree'), t(0, 31, 'cypress-tall'), t(1, 36, 'orange-tree'),
+    t(8, 2, 'cypress'), t(12, 14, 'plane-tree'), t(9, 15, 'orange-tree'),
+    t(0, 18, 'cypress'), t(1, 24, 'plane-tree'), t(0, 31, 'cypress'), t(1, 36, 'orange-tree'),
     // The great mosque court
-    t(3, 29, 'plane-tree'), t(4, 37, 'cypress-tall'), t(18, 37, 'plane-tree'),
+    t(3, 29, 'plane-tree'), t(4, 37, 'cypress'), t(18, 37, 'plane-tree'),
     // The gate square and the back lane
-    t(35, 40, 'plane-tree'), t(53, 40, 'plane-tree'), t(21, 23, 'cypress-tall'),
+    t(35, 40, 'plane-tree'), t(53, 40, 'plane-tree'), t(21, 23, 'cypress'),
   ];
 }
 
@@ -178,7 +178,6 @@ export const cityMap: MapDefinition = {
   title: 'Shíráz: the City at Dusk',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 45, y: 46 },
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'path');

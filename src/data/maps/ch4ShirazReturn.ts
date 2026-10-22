@@ -40,13 +40,13 @@ const buildings: BuildingSpec[] = [
   // The bazaar: vaulted rows of shops, stalls down its street
   { gridX: 22, gridY: 2, w: 8, h: 3, texture: 'bazaar-row' },
   { gridX: 30, gridY: 2, w: 8, h: 3, texture: 'bazaar-row' },
-  { gridX: 24, gridY: 6, w: 2, h: 2, texture: 'market-stall-large' },
-  { gridX: 29, gridY: 6, w: 2, h: 2, texture: 'market-stall-large' },
-  { gridX: 34, gridY: 6, w: 2, h: 2, texture: 'market-stall-large' },
+  { gridX: 24, gridY: 6, w: 2, h: 2, texture: 'market-stall' },
+  { gridX: 29, gridY: 6, w: 2, h: 2, texture: 'market-stall' },
+  { gridX: 34, gridY: 6, w: 2, h: 2, texture: 'market-stall' },
   // The governor's seat
   { gridX: 41, gridY: 2, w: 8, h: 7, texture: 'town-house-large' },
   // The Kázirún gate in the south wall
-  { gridX: 16, gridY: 43, w: 4, h: 3, texture: 'city-gate-large' },
+  { gridX: 16, gridY: 43, w: 4, h: 3, texture: 'city-gate' },
   // The walled garden's pool
   { gridX: 6, gridY: 29, w: 3, h: 3, texture: 'fountain-pool' },
   // Houses south of the main street; the uncle's at the head of his lane
@@ -101,18 +101,18 @@ function trees(): DecorSpec[] {
   const t = (gridX: number, gridY: number, texture: string): DecorSpec => ({ gridX, gridY, texture, blocks: true });
   return [
     // The mosque court and behind the mosque
-    t(1, 10, 'cypress-tall'), t(11, 3, 'plane-tree'), t(13, 6, 'cypress-tall'), t(11, 17, 'plane-tree'),
+    t(1, 10, 'cypress'), t(11, 3, 'plane-tree'), t(13, 6, 'cypress'), t(11, 17, 'plane-tree'),
     // Behind the bazaar and the dyer's house
-    t(23, 0, 'plane-tree'), t(33, 0, 'plane-tree'), t(19, 1, 'cypress-tall'),
+    t(23, 0, 'plane-tree'), t(33, 0, 'plane-tree'), t(19, 1, 'cypress'),
     // The governor's forecourt and beyond
-    t(40, 10, 'cypress-tall'), t(49, 10, 'cypress-tall'), t(52, 4, 'plane-tree'), t(52, 13, 'cypress-tall'),
+    t(40, 10, 'cypress'), t(49, 10, 'cypress'), t(52, 4, 'plane-tree'), t(52, 13, 'cypress'),
     // The walled garden
-    t(2, 25, 'cypress-tall'), t(13, 25, 'cypress-tall'), t(2, 36, 'cypress-tall'), t(13, 36, 'cypress-tall'),
+    t(2, 25, 'cypress'), t(13, 25, 'cypress'), t(2, 36, 'cypress'), t(13, 36, 'cypress'),
     t(4, 27, 'orange-tree'), t(10, 27, 'orange-tree'), t(4, 33, 'orange-tree'), t(10, 33, 'orange-tree'),
     t(12, 30, 'plane-tree'),
     // The uncle's lane and the south-east garden
-    t(26, 33, 'cypress-tall'),
-    t(41, 25, 'plane-tree'), t(48, 27, 'plane-tree'), t(51, 25, 'cypress-tall'), t(51, 31, 'cypress-tall'),
+    t(26, 33, 'cypress'),
+    t(41, 25, 'plane-tree'), t(48, 27, 'plane-tree'), t(51, 25, 'cypress'), t(51, 31, 'cypress'),
     t(40, 31, 'orange-tree'), t(44, 29, 'orange-tree'), t(42, 36, 'orange-tree'), t(49, 35, 'orange-tree'),
   ];
 }
@@ -177,7 +177,6 @@ export const ch4ShirazReturnMap: MapDefinition = {
   title: 'Shíráz, the Streets in 1845',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 17, y: 40 },
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'path');

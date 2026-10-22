@@ -37,7 +37,6 @@ export const ch1IlkhaniMosqueMap: MapDefinition = {
   height: H,
   spawn: { x: 7, y: 10 },
   interior: true,
-  trueScale: true,
   build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'floor');
     // The minbar's stair climbs back from (9, 3) to the qibla wall.

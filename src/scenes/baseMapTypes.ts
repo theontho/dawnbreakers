@@ -44,6 +44,12 @@ export interface Decor {
    * way (a lamp on a chain at sea).
    */
   swing?: number;
+  /**
+   * The grid point (fractions allowed) this sprite depth-sorts at, instead
+   * of its own cell: a ship's hull sorts under all its deck, each slice of
+   * a curved bulwark where that stretch of rail really stands.
+   */
+  sortAt?: IsoPoint;
 }
 
 export interface Interactable {

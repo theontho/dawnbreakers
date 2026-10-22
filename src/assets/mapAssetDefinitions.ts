@@ -19,18 +19,10 @@ export const TILE_CODE = Object.fromEntries(TILE_OPTIONS.map(tile => [tile.kind,
 export const CODE_TILE = Object.fromEntries(TILE_OPTIONS.map(tile => [tile.code, tile.kind])) as Record<string, TileKind>;
 
 const BASE_OBJECTS: MapObjectDefinition[] = [
-  { id: 'house', label: 'House', texture: 'house', kind: 'structure', category: 'buildings', color: 0x8a5a2a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'mosque', label: 'Mosque', texture: 'mosque', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'market-stall', label: 'Market Stall', texture: 'stall', kind: 'structure', category: 'buildings', color: 0xc94f4f, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'gate', label: 'Gate', texture: 'gate', kind: 'structure', category: 'buildings', color: 0x8f8068, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'bridge', label: 'Bridge', texture: 'bridge', kind: 'structure', category: 'bridges-water', color: 0x7b6142, blocks: false, footprint: { w: 3, h: 1 }, isometric: true },
-  { id: 'tree', label: 'Tree', texture: 'tree', kind: 'prop', category: 'plants', color: 0x3f6f45, blocks: true },
-  { id: 'cypress', label: 'Cypress', texture: 'cypress', kind: 'prop', category: 'plants', color: 0x234c2f, blocks: true },
   { id: 'crates', label: 'Crates', texture: 'crates', kind: 'prop', category: 'market-supplies', color: 0x8a5a2a, blocks: true },
   { id: 'lamp', label: 'Lamp', texture: 'lamp', kind: 'prop', category: 'lighting-effects', color: 0xd8a23a, blocks: true },
   { id: 'rug', label: 'Rug', texture: 'rug', kind: 'prop', category: 'furnishings', color: 0x7a1f1f, blocks: false },
   { id: 'well', label: 'Well', texture: 'well', kind: 'prop', category: 'bridges-water', color: 0x8f8068, blocks: true },
-  { id: 'closed-door', label: 'Closed Door', texture: 'closed-door', kind: 'prop', category: 'furnishings', color: 0x5b3320, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'interior-mihrab', label: 'Prayer Niche', texture: 'interior-mihrab', kind: 'prop', category: 'shrines', color: 0x24477a, blocks: true },
   { id: 'interior-wall', label: 'Interior Wall', texture: 'interior-wall', kind: 'prop', category: 'barriers-prison', color: 0xd6c9aa, blocks: true },
   { id: 'writing-desk', label: 'Writing Desk', texture: 'writing-desk', kind: 'prop', category: 'furnishings', color: 0x8a5a2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },

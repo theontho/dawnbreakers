@@ -61,7 +61,7 @@ const FIELDS: DecorSpec[] = [
 
 /** Poplars and reeds along both banks of the stream. */
 const STREAM_BANKS: DecorSpec[] = [
-  ...blocking('cypress-tall', [[18, 2], [18, 9], [21, 4], [21, 12], [18, 23], [21, 22], [18, 32], [21, 30]]),
+  ...blocking('cypress', [[18, 2], [18, 9], [21, 4], [21, 12], [18, 23], [21, 22], [18, 32], [21, 30]]),
   ...blocking('ch5-river-reeds', [[18, 5], [21, 8], [18, 27], [21, 26], [18, 14], [21, 34]]),
 ];
 
@@ -74,7 +74,7 @@ const CAMP: DecorSpec[] = [
   ...loose('rug', [[30, 14], [28, 16], [30, 16], [36, 20], [26, 27]]),
   ...blocking('ch7-rosebush', [[33, 3], [28, 7], [34, 14]]),
   ...blocking('plane-tree', [[26, 2], [37, 3], [24, 30]]),
-  ...blocking('cypress-tall', [[29, 1], [34, 1]]),
+  ...blocking('cypress', [[29, 1], [34, 1]]),
   ...blocking('orange-tree', [[38, 16], [38, 30], [36, 33], [27, 33], [23, 1]]),
 ];
 
@@ -83,7 +83,6 @@ export const ch7BadashtHamletMap: MapDefinition = {
   title: 'Badasht, the Hamlet',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: 18 },
   build: ({ paintRect, setTile, block }) => {
     // Summer meadow; the village yards, the threshing floor and the camp ground are bare earth.

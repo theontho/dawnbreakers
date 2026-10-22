@@ -107,7 +107,6 @@ export const ch4VakilMosqueMap: MapDefinition = {
   title: 'The Vakíl Mosque',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 3, y: 18 },
   build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'stone');

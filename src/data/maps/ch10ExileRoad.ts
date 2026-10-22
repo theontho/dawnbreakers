@@ -40,7 +40,7 @@ const CITY_WALL: DecorSpec[] = [
 const INSIDE: DecorSpec[] = [
   // Lamps either side of the gate, still lit at dawn.
   ...block('lamp', [[39, 16], [39, 21]]),
-  ...block('cypress-tall', [[47, 8], [47, 28], [40, 34]]),
+  ...block('cypress', [[47, 8], [47, 28], [40, 34]]),
   ...block('crates', [[40, 14]]),
   ...loose('ch10-snow-drift', [[40, 8], [44, 15], [39, 27], [45, 22], [48, 34]]),
 ];
@@ -66,7 +66,7 @@ const FIELDS: DecorSpec[] = [
   ...block('ch6-rock', [[0, 1], [2, 5], [0, 10], [31, 1], [35, 9], [1, 33], [13, 33], [26, 34], [34, 35]]),
   ...block('ch6-snow-shrub', [[3, 11], [29, 4], [33, 2], [30, 14], [8, 23], [16, 26], [23, 31], [31, 28], [6, 35], [17, 36]]),
   ...block('ch2-tamarisk', [[27, 8], [20, 22], [10, 32], [35, 22]]),
-  ...block('cypress-tall', [[26, 21], [3, 21]]),
+  ...block('cypress', [[26, 21], [3, 21]]),
 ];
 
 /** Old snow drifted thinly over the open fields outside the wall, clear of the road, the yard and the pond. */
@@ -88,7 +88,6 @@ export const ch10ExileRoadMap: MapDefinition = {
   title: 'The Road West, at Dawn',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 47, y: ROAD },
   build: ({ paintRect, setTile, block: blockCell }) => {
     paintRect(0, 0, W, H, 'sand');

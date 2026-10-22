@@ -1,11 +1,8 @@
 import { CELL, css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, polygon, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
 import { figure, type FigureStyle } from '../art/crowds';
 import { cellCentredBox, ellipseShadow } from '../art/fieldKit';
-import { brick, planks, plaster, stone } from '../art/materials';
-import { highWindow, plinth, recessedDoor, wornPlaster } from '../art/facade';
-import { archPath, beamEnds, clipped, flatTop, parapetRoof, walls } from '../art/ornaments';
-import { steps } from '../art/streetLife';
-import { subBox } from '../art/structureParts';
+import { brick, planks, stone } from '../art/materials';
+import { archPath, clipped, flatTop, walls } from '../art/ornaments';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
@@ -24,35 +21,6 @@ const LISTENERS: ReadonlyArray<{ dx: number; dy: number; style: FigureStyle }> =
 ];
 
 export const SHARED_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  /**
-   * A house front in a lane: a tall blank plaster wall, a high window, and
-   * a studded door shut in a brick-framed recess with its two knockers.
-   */
-  'closed-door': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 68, 10);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      const wall = 0x9a7e58;
-      const front = subBox(box, 0, box.w - 6, 0, box.d, 68);
-      groundShadow(ctx, front, 5);
-      walls(ctx, front, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 61 : 62 }), {
-        left: (c, w, h, l) => {
-          plinth(c, w, h, 5, 0x8a7a60, l, 66);
-          beamEnds(c, w, 5, l, 10);
-          highWindow(c, w / 2 - 3.5, h, 40, { frame: 0x6a4a2c, light: l, arched: true });
-          wornPlaster(c, 3, h * 0.6, 10, 7, wall, l, 67);
-        },
-        right: (c, w, h, l) => {
-          plinth(c, w, h, 5, 0x8a7a60, l, 68);
-          beamEnds(c, w, 5, l, 10);
-          recessedDoor(c, w / 2, h, { frame: 0x6a4a2c, door: 0x4a2c18, light: l, seed: 63, surround: 0xa8784a });
-        },
-      });
-      parapetRoof(ctx, front, wall, { base: 0x7a6040, light: 1, seed: 65 }, 3, 4);
-      outlineBox(ctx, front);
-      steps(ctx, box, box.w - 6, box.w, box.d / 2 - 9, box.d / 2 + 9, 1, 'p');
-    });
-  },
-
   /** Listeners gathered for a sermon: three standing behind, two seated before them. */
   crowd: (scene, def) => {
     paintTexture(scene, def.texture, 58, 56, ctx => {

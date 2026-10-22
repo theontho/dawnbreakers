@@ -66,7 +66,6 @@ export const ch3MeccaMap: MapDefinition = {
   title: 'Mecca: the Sacred Mosque',
   width: WIDTH,
   height: HEIGHT,
-  trueScale: true,
   spawn: { x: 1, y: GATE_Y },
   build: ({ width, height, paintRect, paintPath }) => {
     paintRect(0, 0, width, height, 'sand');

@@ -143,7 +143,6 @@ export const ch8TabarsiFortMap: MapDefinition = {
   title: 'Fort Shaykh Ṭabarsí',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: GATE_Y },
   build: ({ paintRect, paintPath, setTile, block }) => {
     // Trampled earth inside the walls and on the berm, stone in the shrine court.

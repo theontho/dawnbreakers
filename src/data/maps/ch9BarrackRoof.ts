@@ -68,7 +68,6 @@ export const ch9BarrackRoofMap: MapDefinition = {
   title: 'Tabríz, the Rooftops',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: EXIT_Y },
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');

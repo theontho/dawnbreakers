@@ -63,7 +63,7 @@ const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>)
 
 /** The Host's garden: cypress along the water, lamps, the assembly's carpets, roses. */
 const HOST_GARDEN: DecorSpec[] = [
-  ...blocking('cypress-tall', [[20, 3], [23, 3], [20, 11], [23, 11], [7, 2], [35, 2]]),
+  ...blocking('cypress', [[20, 3], [23, 3], [20, 11], [23, 11], [7, 2], [35, 2]]),
   ...blocking('plane-tree', [[8, 11], [26, 11]]),
   ...blocking('ch7-rosebush', [[8, 5], [8, 8], [12, 11], [16, 11], [25, 10], [33, 8], [33, 4], [25, 3]]),
   ...blocking('lamp', [[9, 3], [17, 3], [26, 7], [32, 7]]),
@@ -73,7 +73,7 @@ const HOST_GARDEN: DecorSpec[] = [
 
 /** Quddús's garden: his pavilion, the old pool, roses and cypress. */
 const QUDDUS_GARDEN: DecorSpec[] = [
-  ...blocking('cypress-tall', [[2, 18], [13, 18], [2, 30]]),
+  ...blocking('cypress', [[2, 18], [13, 18], [2, 30]]),
   ...blocking('orange-tree', [[10, 19], [11, 28]]),
   ...blocking('ch7-rosebush', [[3, 23], [12, 22], [9, 29], [3, 26], [8, 22], [13, 30]]),
   ...blocking('lamp', [[3, 22], [9, 23]]),
@@ -82,7 +82,7 @@ const QUDDUS_GARDEN: DecorSpec[] = [
 
 /** Ṭáhirih's garden: the canopy where she teaches, the best roses, a pool. */
 const TAHIRIH_GARDEN: DecorSpec[] = [
-  ...blocking('cypress-tall', [[28, 18], [39, 18], [28, 30], [39, 24]]),
+  ...blocking('cypress', [[28, 18], [39, 18], [28, 30], [39, 24]]),
   ...blocking('orange-tree', [[30, 20], [31, 29]]),
   ...blocking('ch7-rosebush', [[29, 22], [32, 23], [37, 23], [38, 21], [29, 27], [34, 29], [38, 27], [31, 26], [39, 30]]),
   ...blocking('lamp', [[38, 25]]),
@@ -93,7 +93,7 @@ const TAHIRIH_GARDEN: DecorSpec[] = [
 const MEADOW: DecorSpec[] = [
   ...blocking('plane-tree', [[2, 0], [39, 0], [3, 35]]),
   ...blocking('orange-tree', [[1, 14], [11, 15], [16, 15], [25, 15], [30, 15], [40, 14], [7, 34], [11, 36], [29, 35], [34, 36], [38, 34]]),
-  ...blocking('cypress-tall', [[16, 21], [16, 28], [24, 21], [24, 28]]),
+  ...blocking('cypress', [[16, 21], [16, 28], [24, 21], [24, 28]]),
   ...blocking('ch5-river-reeds', [[23, 17], [20, 30], [23, 34], [20, 19]]),
   ...blocking('writing-desk', [[15, 33]]),
   ...blocking('lamp', [[17, 30], [20, 26], [23, 23], [17, 35]]),
@@ -106,7 +106,6 @@ export const ch7BadashtCampMap: MapDefinition = {
   title: 'Badasht, the Three Gardens',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: LANE_X, y: H - 2 },
   build: ({ paintRect, paintPath, setTile, block }) => {
     // The paved court in the Host's garden where the friends assemble.

@@ -40,8 +40,8 @@ const CITY_WALL: DecorSpec[] = [
 ];
 
 const INSIDE_THE_WALLS: DecorSpec[] = [
-  tree(1, 3, 'plane-tree'), tree(3, 9, 'cypress-tall'), tree(1, 15, 'cypress-tall'),
-  tree(2, 29, 'plane-tree'), tree(3, 36, 'cypress-tall'), tree(1, 42, 'orange-tree'),
+  tree(1, 3, 'plane-tree'), tree(3, 9, 'cypress'), tree(1, 15, 'cypress'),
+  tree(2, 29, 'plane-tree'), tree(3, 36, 'cypress'), tree(1, 42, 'orange-tree'),
   { gridX: 3, gridY: 20, texture: 'lamp', blocks: true },
   { gridX: 1, gridY: 25, texture: 'crates', blocks: true },
 ];
@@ -53,7 +53,7 @@ const FORECOURT: DecorSpec[] = [
   { gridX: 7, gridY: 20, texture: 'lamp', blocks: true },
   { gridX: 7, gridY: 24, texture: 'lamp', blocks: true },
   { gridX: 10, gridY: 27, texture: 'well', blocks: true },
-  tree(8, 15, 'cypress-tall'), tree(13, 28, 'cypress-tall'), tree(8, 29, 'cypress-tall'),
+  tree(8, 15, 'cypress'), tree(13, 28, 'cypress'), tree(8, 29, 'cypress'),
 ];
 
 const YARD: DecorSpec[] = [
@@ -81,7 +81,7 @@ const PASS: DecorSpec[] = [
 
 /** The roadside shrine and the track up to it. */
 const SHRINE: DecorSpec[] = [
-  tree(49, 3, 'cypress-tall'), tree(54, 4, 'cypress-tall'),
+  tree(49, 3, 'cypress'), tree(54, 4, 'cypress'),
   { gridX: 52, gridY: 8, texture: 'rug' },
 ];
 
@@ -95,8 +95,8 @@ const COUNTRY: DecorSpec[] = [
 
 /** The poet's garden: cypresses along the channel, a rug in the shade. */
 const GARDEN: DecorSpec[] = [
-  tree(48, 31, 'cypress-tall'), tree(56, 31, 'cypress-tall'), tree(48, 42, 'cypress-tall'), tree(56, 42, 'cypress-tall'),
-  tree(50, 36, 'orange-tree'), tree(55, 37, 'plane-tree'), tree(57, 35, 'cypress-tall'),
+  tree(48, 31, 'cypress'), tree(56, 31, 'cypress'), tree(48, 42, 'cypress'), tree(56, 42, 'cypress'),
+  tree(50, 36, 'orange-tree'), tree(55, 37, 'plane-tree'), tree(57, 35, 'cypress'),
   { gridX: 49, gridY: 34, texture: 'rug' },
   { gridX: 50, gridY: 33, texture: 'lamp', blocks: true },
 ];
@@ -106,7 +106,6 @@ export const roadMap: MapDefinition = {
   title: 'Beyond the Qur\'án Gate',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: GATE.road },
   build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'sand');

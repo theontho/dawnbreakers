@@ -98,15 +98,15 @@ const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>)
 
 const props: DecorSpec[] = [
   // The garden: cypress and orange, roses and a planter gone to seed, a rug.
-  ...block('cypress-tall', [[2, 8], [2, 11], [10, 3]]),
+  ...block('cypress', [[2, 8], [2, 11], [10, 3]]),
   ...block('orange-tree', [[5, 9], [10, 11]]),
   ...block('ch7-rosebush', [[7, 7]]),
   ...block('ch1-planter', [[10, 7]]),
   ...loose('rug', [[4, 7]]),
   // Plane trees along the Shimírán road.
   ...block('plane-tree', [[14, 2], [17, 1]]),
-  ...block('cypress-tall', [[14, 16]]),
-  ...block('cypress-tall', [[14, 8], [24, 8]]),
+  ...block('cypress', [[14, 16]]),
+  ...block('cypress', [[14, 8], [24, 8]]),
   // The water-seller's well beside the street.
   ...block('well', [[8, 19]]),
   // The shop row: goods left out in haste.
@@ -117,7 +117,7 @@ const props: DecorSpec[] = [
   // Crowds gathering and scattering on the street.
   ...loose('crowd-shadow', [[24, 22], [29, 21], [6, 21], [33, 25]]),
   // The citadel: cypresses either side of the portico, lamps in the forecourt, sentries at its gateway.
-  ...block('cypress-tall', [[35, 3], [35, 8], [50, 3], [50, 8]]),
+  ...block('cypress', [[35, 3], [35, 8], [50, 3], [50, 8]]),
   ...block('lamp', [[37, 13], [48, 13], [40, 18], [44, 18]]),
   ...block('ch9-soldier', [[39, 18], [45, 18], [42, 12]]),
   // The square: a patrol, a barred vent over the pit, coiled chain, a bundle dropped in the flight.
@@ -141,7 +141,7 @@ const props: DecorSpec[] = [
   ...loose('rug', [[11, 35]]),
   // The southern edge of the quarter.
   ...block('plane-tree', [[26, 39], [12, 43]]),
-  ...block('cypress-tall', [[0, 43], [28, 43]]),
+  ...block('cypress', [[0, 43], [28, 43]]),
 ];
 
 export const ch10TehranStreetMap: MapDefinition = {
@@ -149,7 +149,6 @@ export const ch10TehranStreetMap: MapDefinition = {
   title: 'Ṭihrán: the Prison Quarter',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 15, y: 1 },
   build: ({ paintRect, block: blockCell }) => {
     paintRect(0, 0, W, H, 'sand');

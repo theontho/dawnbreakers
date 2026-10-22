@@ -104,9 +104,9 @@ const props: DecorSpec[] = [
   // Trees: plane trees by the street and the stair, cypress in the corners
   { gridX: 4, gridY: 28, texture: 'plane-tree', blocks: true },
   { gridX: 41, gridY: 7, texture: 'plane-tree', blocks: true },
-  { gridX: 41, gridY: 3, texture: 'cypress-tall', blocks: true },
-  { gridX: 40, gridY: 30, texture: 'cypress-tall', blocks: true },
-  { gridX: 41, gridY: 18, texture: 'cypress-tall', blocks: true },
+  { gridX: 41, gridY: 3, texture: 'cypress', blocks: true },
+  { gridX: 40, gridY: 30, texture: 'cypress', blocks: true },
+  { gridX: 41, gridY: 18, texture: 'cypress', blocks: true },
 ];
 
 export const ch9TabrizSquareMap: MapDefinition = {
@@ -114,7 +114,6 @@ export const ch9TabrizSquareMap: MapDefinition = {
   title: 'Tabríz, the Barrack Square',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 1, y: 29 },
   build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'sand');

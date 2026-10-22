@@ -62,10 +62,10 @@ function trees(): DecorSpec[] {
   const t = (gridX: number, gridY: number, texture: string): DecorSpec => ({ gridX, gridY, texture, blocks: true });
   return [
     t(13, 8, 'orange-tree'), t(21, 9, 'orange-tree'),
-    t(1, 1, 'cypress-tall'), t(8, 2, 'cypress-tall'), t(3, 9, 'plane-tree'), t(1, 14, 'cypress-tall'),
-    t(27, 10, 'plane-tree'), t(31, 13, 'cypress-tall'), t(33, 10, 'cypress-tall'), t(28, 15, 'orange-tree'), t(33, 2, 'cypress-tall'),
+    t(1, 1, 'cypress'), t(8, 2, 'cypress'), t(3, 9, 'plane-tree'), t(1, 14, 'cypress'),
+    t(27, 10, 'plane-tree'), t(31, 13, 'cypress'), t(33, 10, 'cypress'), t(28, 15, 'orange-tree'), t(33, 2, 'cypress'),
     t(30, 25, 'orange-tree'), t(33, 26, 'orange-tree'), t(31, 28, 'orange-tree'),
-    t(2, 32, 'cypress-tall'), t(10, 32, 'orange-tree'), t(23, 31, 'plane-tree'), t(30, 32, 'cypress-tall'), t(33, 31, 'orange-tree'),
+    t(2, 32, 'cypress'), t(10, 32, 'orange-tree'), t(23, 31, 'plane-tree'), t(30, 32, 'cypress'), t(33, 31, 'orange-tree'),
   ];
 }
 
@@ -97,7 +97,6 @@ export const houseQuarterMap: MapDefinition = {
   title: 'Shíráz: the Quiet Quarter',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 17, y: H - 2 },
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'path');

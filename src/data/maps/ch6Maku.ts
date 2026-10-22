@@ -112,7 +112,6 @@ export const ch6MakuMap: MapDefinition = {
   title: 'Mákú, the Open Mountain',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 14, y: 44 },
   build: ({ paintRect, setTile, block }) => {
     // Bare mountain everywhere; the town is trodden earth, the courtyard flagstone.
@@ -162,7 +161,7 @@ export const ch6MakuMap: MapDefinition = {
     { gridX: 8, gridY: 40, w: 5, h: 4, texture: 'ch6-mountain-house' },
     { gridX: 16, gridY: 40, w: 5, h: 4, texture: 'ch6-mountain-house' },
     { gridX: 25, gridY: 41, w: 5, h: 4, texture: 'ch6-mountain-house' },
-    { gridX: 22, gridY: 39, w: 2, h: 2, texture: 'market-stall-large' },
+    { gridX: 22, gridY: 39, w: 2, h: 2, texture: 'market-stall' },
     // A khan on the east bank, where the Tabríz road begins.
     { gridX: 37, gridY: 39, w: 5, h: 4, texture: 'ch6-mountain-house' },
   ],

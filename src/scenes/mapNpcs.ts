@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../dialogue/types';
 import type { NpcSpec } from '../data/maps/types';
-import { figureScale, isPersonTexture } from './figureScale';
+import { isPersonTexture } from './personTextures';
 import { makeTextureGraphics } from './graphicsFactory';
 import { TILE_H, type Interactable } from './baseMapTypes';
 
@@ -57,7 +57,6 @@ export function placeMapNpcs(
   occluders: readonly Phaser.GameObjects.Image[],
   /** Other interactables (doors) listed after the people. */
   extras: readonly Interactable[],
-  trueScale: boolean,
 ): MapNpcs {
   ensureMarkerTexture(scene);
   const placed: PlacedNpc[] = specs.map(spec => {
@@ -65,7 +64,6 @@ export function placeMapNpcs(
     const footY = pos.sy + TILE_H / 2;
     const sprite = scene.add.image(pos.sx, footY, spec.texture)
       .setOrigin(0.5, 1)
-      .setScale(figureScale(spec.texture, trueScale))
       .setDepth(pos.sy + 1);
     // The speech mark floats above scenery so a hidden speaker is still findable.
     const marker = scene.add.image(pos.sx, footY - sprite.displayHeight - 8, MARKER_TEXTURE)

@@ -74,7 +74,6 @@ export const ch10SiyahChalMap: MapDefinition = {
   width: W,
   height: H,
   interior: true,
-  trueScale: true,
   spawn: { x: STAIR, y: 1 },
   build: ({ paintRect, setTile, block: blockCell }) => {
     paintRect(0, 0, W, H, 'stone');

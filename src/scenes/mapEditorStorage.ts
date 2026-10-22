@@ -131,7 +131,7 @@ export function createDefaultEditorMap(width: number, height: number): EditorMap
     map.tiles[y]![0] = 'sand';
     map.tiles[y]![width - 1] = 'sand';
   }
-  map.objects.push({ id: 'house', x: 3, y: 3 });
+  map.objects.push({ id: 'town-house-small', x: 3, y: 3 });
   map.objects.push({ id: 'cypress', x: width - 4, y: 3 });
   map.objects.push({ id: 'traveller', x: midX + 2, y: midY });
   return map;

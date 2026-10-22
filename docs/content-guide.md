@@ -136,27 +136,27 @@ and `ornaments.ts` has arches, doors, lattice windows, domes, parapets and
 wind-catchers. `facade.ts` has person-scaled openings (a door in a framed
 recess, an iwan, high windows, worn plaster) and `streetLife.ts` the things
 at a building's foot (benches, water jars, potted plants, steps, dust).
-Light comes from the upper left. `house`, `tree`, `cypress`
-and `stall` have variants that maps pick per placement automatically.
+Light comes from the upper left. The town buildings, trees and stalls have
+variants that maps pick per placement automatically.
 Check new art with `npm run gallery -- --filter <id>`.
 
 ### Scale and proportion
 
-Everything is measured against a person. Figures are painted 40 px tall
-and drawn on the maps at 0.75 scale (`PERSON_SCALE` in
-`src/scenes/figureScale.ts`), so a person stands about 30 px: a metre is
-roughly 17 px, and one cell (32 px along a wall face) is about 1.9 m.
-Crowds, pilgrim clusters and animals use the same scale. **Every door must
-be at least 1.1 times a person's height: 33 px of clear opening.**
+Everything is measured against a person, painted and drawn 40 px tall
+(1.75 m): a metre is about 23 px, and one cell (32 px along a wall face)
+is about 1.4 m. Crowds, pilgrim clusters and animals use the same scale.
+**Every door must be at least 1.1 times a person's height: 44 px of clear
+opening.** `docs/true-scale.md` has the full contract, including real
+footprints for each kind of building.
 
 | Element | Size |
 | --- | --- |
-| Single-storey wall | 64 to 72 px (a bālākhāna or second storey: 96 to 110) |
-| Courtyard or garden wall | 30 to 40 px |
-| House door | 12 to 15 px wide, 34 to 40 px tall (never under 33), set in a recess with a frame |
+| Storey | About 80 px (3.5 m) |
+| Courtyard or garden wall | About 80 px (3.5 m, above head height) |
+| House door | About 23 px wide, 48 px tall (never under 44), set in a recess with a frame |
 | Monumental portal (mosque, caravanserai, gate) | Taller than wide, about 1:2; the door inside it still person-sized |
-| Window | 6 to 9 px wide, 9 to 13 px tall, sill at least 22 px above the ground |
-| Beam ends, parapets, steps | Small: 2 to 5 px |
+| Window | About 12 px wide, 18 px tall, sill at least 30 px above the ground |
+| Beam ends, parapets, steps | Small: 3 to 7 px |
 
 Doors and windows read as small openings in a big plain wall; that is
 what makes Persian buildings look massive and private.

@@ -50,11 +50,11 @@ const buildings: BuildingSpec[] = [
   // The caravan market: printers' booths and stalls in rows
   { gridX: 42, gridY: 41, w: 2, h: 2, texture: 'ch5-market-awning' },
   { gridX: 33, gridY: 46, w: 2, h: 2, texture: 'ch5-market-awning' },
-  { gridX: 38, gridY: 46, w: 2, h: 2, texture: 'market-stall-large' },
+  { gridX: 38, gridY: 46, w: 2, h: 2, texture: 'market-stall' },
   { gridX: 43, gridY: 46, w: 2, h: 2, texture: 'ch5-market-awning' },
-  { gridX: 33, gridY: 52, w: 2, h: 2, texture: 'market-stall-large' },
+  { gridX: 33, gridY: 52, w: 2, h: 2, texture: 'market-stall' },
   { gridX: 38, gridY: 52, w: 2, h: 2, texture: 'ch5-market-awning' },
-  { gridX: 43, gridY: 52, w: 2, h: 2, texture: 'market-stall-large' },
+  { gridX: 43, gridY: 52, w: 2, h: 2, texture: 'market-stall' },
   // Houses at the market's east end
   { gridX: 48, gridY: 43, w: 6, h: 5, texture: 'town-house' },
   { gridX: 49, gridY: 51, w: 5, h: 4, texture: 'town-house-small' },
@@ -88,16 +88,16 @@ function trees(): DecorSpec[] {
     // The Chahár-Bágh: plane trees either side of its walks
     ...[1, 4, 7, 10].flatMap(y => [tree(BRIDGE.x0, y, 'plane-tree'), tree(BRIDGE.x1 - 1, y, 'plane-tree')]),
     // The Imám-Jumʿih's court and the garden
-    tree(2, 9, 'cypress-tall'), tree(11, 9, 'orange-tree'), tree(2, 0, 'cypress-tall'),
-    tree(14, 2, 'cypress-tall'), tree(17, 4, 'orange-tree'), tree(20, 2, 'cypress-tall'),
+    tree(2, 9, 'cypress'), tree(11, 9, 'orange-tree'), tree(2, 0, 'cypress'),
+    tree(14, 2, 'cypress'), tree(17, 4, 'orange-tree'), tree(20, 2, 'cypress'),
     tree(15, 8, 'orange-tree'), tree(20, 9, 'orange-tree'), tree(18, 7, 'plane-tree'),
     // The madrasa court and the east house's garden
-    tree(35, 9, 'plane-tree'), tree(44, 8, 'cypress-tall'), tree(47, 9, 'orange-tree'),
-    tree(51, 9, 'orange-tree'), tree(54, 8, 'cypress-tall'),
+    tree(35, 9, 'plane-tree'), tree(44, 8, 'cypress'), tree(47, 9, 'orange-tree'),
+    tree(51, 9, 'orange-tree'), tree(54, 8, 'cypress'),
     // The river road's shingle, and the south bank
-    tree(3, 17, 'plane-tree'), tree(48, 17, 'plane-tree'), tree(19, 16, 'cypress-tall'),
+    tree(3, 17, 'plane-tree'), tree(48, 17, 'plane-tree'), tree(19, 16, 'cypress'),
     tree(24, 47, 'plane-tree'), tree(23, 54, 'plane-tree'),
-    tree(47, 39, 'plane-tree'), tree(52, 40, 'cypress-tall'),
+    tree(47, 39, 'plane-tree'), tree(52, 40, 'cypress'),
   ];
 }
 
@@ -160,7 +160,6 @@ export const ch5IsfahanBridgeMap: MapDefinition = {
   title: 'Iṣfahán, by the River',
   width: W,
   height: H,
-  trueScale: true,
   spawn: { x: 28, y: 56 },
   build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'sand');

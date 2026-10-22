@@ -35,7 +35,6 @@ export const ch3ShipCabinMap: MapDefinition = {
   height: H,
   spawn: { x: EXIT_X, y: H - 2 },
   interior: true,
-  trueScale: true,
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'wood');
   },
