@@ -1,95 +1,103 @@
-import type { DecorSpec, MapDefinition } from './types';
+import type { BuildingSpec, DecorSpec, MapDefinition } from './types';
+import { wallRun } from './wallRuns';
 
 /**
- * The flat roofs of the houses around the barrack square, noon on 9 July
- * 1850. Three roofs, divided by low parapets, packed with watchers. The
- * north parapet overlooks the square; a mat at its foot is where the
- * player keeps watch. The stair down to the square is on the west edge.
+ * The flat roofs on the south side of the barrack square, noon on 9 July
+ * 1850, at true scale. Three roofs, divided by chest-high brick parapets
+ * and packed with watchers; brick domes over the rooms below, washing
+ * lines, bread cooling on the parapet. The north parapet overlooks the
+ * square and the barrack across it; a mat at its foot is where the player
+ * keeps watch. The stair down to the square is on the west edge.
+ *
+ * Districts (x runs east, y runs south):
+ * - West roof: x 1..11, the stair landing at (0, 14).
+ * - Middle roof: x 13..23, the vantage mat at (17, 1) on the north parapet.
+ * - East roof: x 25..34.
+ * Dividers at x 12 and 24 open in two places each.
  */
+
+const W = 36;
+const H = 28;
+const EXIT_Y = 14;
+const VANTAGE = { x: 17, y: 1 };
 
 const after = (f: Record<string, unknown>) => !!f.ch9WitnessedVolleys;
 
-const EXIT_Y = 9;
-
-function parapetLine(x: number, gaps: readonly number[]): DecorSpec[] {
-  const out: DecorSpec[] = [];
-  for (let y = 1; y <= 16; y += 1) {
-    if (!gaps.includes(y)) out.push({ gridX: x, gridY: y, texture: 'ch9-parapet-low', blocks: true });
-  }
-  return out;
+/** The parapets: round the edge, open at the stair landing, and the two dividers. */
+function parapets(): DecorSpec[] {
+  const p = 'ch9-parapet-low';
+  return [
+    ...wallRun(p, 0, 0, W - 1, 0),
+    ...wallRun(p, 0, 1, 0, H - 1, [[0, EXIT_Y]]),
+    ...wallRun(p, W - 1, 1, W - 1, H - 1),
+    ...wallRun(p, 1, H - 1, W - 2, H - 1),
+    ...wallRun(p, 12, 1, 12, H - 2, [[12, 5], [12, 6], [12, 19], [12, 20]]),
+    ...wallRun(p, 24, 1, 24, H - 2, [[24, 8], [24, 9], [24, 21], [24, 22]]),
+  ];
 }
 
 // Watchers pressed against the north parapet, leaving room at the mat.
-const RAIL_CROWD: DecorSpec[] = [1, 2, 4, 5, 6, 9, 10, 14, 15, 17, 18, 20, 21, 22]
+const RAIL_CROWD: DecorSpec[] = [1, 2, 4, 5, 7, 8, 10, 14, 15, 19, 20, 22, 26, 27, 29, 31, 33, 34]
   .map(x => ({ gridX: x, gridY: 1, texture: 'crowd', blocks: true }));
 
 const ROOF_CROWD: DecorSpec[] = [
-  [3, 8], [6, 12], [10, 7], [13, 14], [18, 8], [21, 15], [11, 11],
+  [5, 12], [9, 18], [16, 10], [20, 23], [28, 12], [32, 20], [18, 16], [3, 24],
 ].map(([x, y]) => ({ gridX: x!, gridY: y!, texture: 'crowd', blocks: true }));
 
 const SHADOWS: DecorSpec[] = [
-  [2, 4], [6, 3], [11, 4], [14, 9], [19, 3], [20, 12], [4, 14], [9, 15],
+  [3, 4], [9, 3], [15, 5], [21, 13], [30, 4], [27, 20], [6, 20], [14, 22],
 ].map(([x, y]) => ({ gridX: x!, gridY: y!, texture: 'crowd-shadow' }));
+
+/** Brick domes over the rooms below, 2 x 2 cells each. */
+const domes: BuildingSpec[] = [
+  [4, 20], [19, 6], [29, 7], [28, 22],
+].map(([x, y]) => ({ gridX: x!, gridY: y!, w: 2, h: 2, texture: 'ch9-brick-dome' }));
+
+const props: DecorSpec[] = [
+  { gridX: 7, gridY: 15, texture: 'ch9-washing-line', blocks: true },
+  { gridX: 21, gridY: 19, texture: 'ch9-washing-line', blocks: true },
+  { gridX: 4, gridY: 6, texture: 'ch9-cloth-bundle', blocks: true },
+  { gridX: 9, gridY: 24, texture: 'ch9-water-jar', blocks: true },
+  { gridX: 32, gridY: 15, texture: 'ch9-water-jar', blocks: true },
+  { gridX: 15, gridY: 24, texture: 'rug' },
+  { gridX: 27, gridY: 16, texture: 'rug' },
+];
 
 export const ch9BarrackRoofMap: MapDefinition = {
   key: 'Ch9BarrackRoof',
   title: 'Tabríz, the Rooftops',
-  width: 24,
-  height: 18,
+  width: W,
+  height: H,
+  trueScale: true,
   spawn: { x: 1, y: EXIT_Y },
-  build: ({ width, height, paintRect, paintPath }) => {
-    paintRect(0, 0, width, height, 'sand');
-    paintRect(9, 1, 7, 16, 'stone');
-    paintRect(17, 1, 6, 16, 'sand');
-    paintPath([[0, EXIT_Y], [1, EXIT_Y], [2, EXIT_Y]]);
+  build: ({ paintRect }) => {
+    paintRect(0, 0, W, H, 'sand');
+    paintRect(13, 1, 11, H - 2, 'stone');
+    paintRect(0, EXIT_Y, 3, 1, 'path');
   },
-  buildings: [
-    { gridX: 0, gridY: 0, w: 24, h: 1, texture: 'ch9-roof-wall-north' },
-    { gridX: 23, gridY: 1, w: 1, h: 16, texture: 'ch9-roof-wall-east' },
-    { gridX: 0, gridY: 17, w: 24, h: 1, texture: 'ch9-roof-wall-south' },
-  ],
-  decor: [
-    // West edge parapet with the stair landing open
-    ...[1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16]
-      .map(y => ({ gridX: 0, gridY: y, texture: 'ch9-parapet-low', blocks: true })),
-    ...parapetLine(8, [4, 12]),
-    ...parapetLine(16, [6, 13]),
-    ...RAIL_CROWD,
-    ...ROOF_CROWD,
-    ...SHADOWS,
-    { gridX: 3, gridY: 13, texture: 'ch9-brick-dome', blocks: true },
-    { gridX: 12, gridY: 6, texture: 'ch9-brick-dome', blocks: true },
-    { gridX: 20, gridY: 5, texture: 'ch9-brick-dome', blocks: true },
-    { gridX: 19, gridY: 14, texture: 'ch9-brick-dome', blocks: true },
-    { gridX: 5, gridY: 10, texture: 'ch9-washing-line', blocks: true },
-    { gridX: 14, gridY: 12, texture: 'ch9-washing-line', blocks: true },
-    { gridX: 3, gridY: 5, texture: 'ch9-cloth-bundle', blocks: true },
-    { gridX: 6, gridY: 15, texture: 'ch9-water-jar', blocks: true },
-    { gridX: 21, gridY: 10, texture: 'ch9-water-jar', blocks: true },
-    { gridX: 10, gridY: 15, texture: 'rug' },
-    { gridX: 18, gridY: 11, texture: 'rug' },
-  ],
+  buildings: domes,
+  decor: [...parapets(), ...RAIL_CROWD, ...ROOF_CROWD, ...SHADOWS, ...props],
   npcs: [
-    { gridX: 12, gridY: 1, texture: 'rug',
+    { gridX: VANTAGE.x, gridY: VANTAGE.y, texture: 'rug',
       prompt: 'Look down into the barrack square  [E]',
       dialogue: 'ch9-vantage-after',
       gate: { when: after, lockedDialogue: 'ch9-vantage' } },
-    { gridX: 4, gridY: 5, texture: 'ch9-widow',
+    { gridX: 5, gridY: 6, texture: 'ch9-widow',
       prompt: 'Speak with the Baker\'s Widow  [E]',
       dialogue: 'ch9-widow-after',
       gate: { when: after, lockedDialogue: 'ch9-widow' } },
-    { gridX: 14, gridY: 4, texture: 'ch9-student',
+    { gridX: 20, gridY: 4, texture: 'ch9-student',
       prompt: 'Speak with the Madrasa Student  [E]',
       dialogue: 'ch9-student-after',
       gate: { when: after, lockedDialogue: 'ch9-student' } },
-    { gridX: 19, gridY: 10, texture: 'ch9-witness',
+    { gridX: 29, gridY: 15, texture: 'ch9-witness',
       prompt: 'Speak with the Witness in the Crowd  [E]',
       dialogue: 'ch9-crowd-witness-after',
       gate: { when: after, lockedDialogue: 'ch9-crowd-witness' } },
   ],
   exits: [
     { fromX: 0, fromY: EXIT_Y, dx: -1, dy: 0,
-      targetScene: 'Ch9TabrizSquare', targetSpawnX: 26, targetSpawnY: 12,
+      targetScene: 'Ch9TabrizSquare', targetSpawnX: 42, targetSpawnY: 16,
       label: '← Down the stair to the square' },
   ],
   ambience: {

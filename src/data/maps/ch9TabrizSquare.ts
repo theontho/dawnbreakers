@@ -1,148 +1,189 @@
 import { squareWitnessCount } from '../dialogues_ch/chapter09_tabriz';
-import type { DecorSpec, MapDefinition } from './types';
+import type { BuildingSpec, DecorSpec, MapDefinition } from './types';
+import { wallRun } from './wallRuns';
 
 /**
- * The barrack square of Tabríz, 9 July 1850. The long barrack closes the
- * north side: a low cell door, the pillar with its nail, the next room's
- * door. Sám Khán's regiment stands in file; the crowd presses at the edges
- * and on the houses around. The street from the city comes in from the
- * south-west; a stair to the rooftops leaves from the east.
+ * The barrack square of Tabríz, 9 July 1850, at true scale. The two-storey
+ * barrack closes the north side and turns down the west: an arcaded range
+ * with its gatehouse, and in front of it a low cell door, the pillar with
+ * its nail, the next room's door. Sám Khán's regiment stands in file; the
+ * crowd presses at the edges and watches from the barrack roof and the
+ * houses round the square. The street from the city comes in from the
+ * south-west; the stair to the rooftops leaves from the east.
  *
  * Before the hour (until `ch9WitnessedVolleys`) the square holds Anís, Sám
  * Khán, and his soldier. Afterwards it holds the severed ropes, the open
  * cell, and witnesses.
+ *
+ * Districts (x runs east, y runs south):
+ * - The north range: x 6..39, y 2..6; its gatehouse x 26..31. The cell door,
+ *   pillar and next door stand before it at (13, 7), (15, 7), (17, 7).
+ * - The west wing: x 1..5, y 2..25, facing east across the square.
+ * - The square: x 6..36, y 7..31.
+ * - The street from the city: y 28..30 in from the west edge.
+ * - Houses on the south side (y 32..38) with a lane south at x 19..21, and on
+ *   the east side (x 37..42); the way to the roof stair at y 16..17.
  */
+
+const W = 44;
+const H = 40;
+const CELL_DOOR = { x: 13, y: 7 };
+const PILLAR = { x: 15, y: 7 };
+const ROOF_EXIT_Y = 16;
 
 const after = (f: Record<string, unknown>) => !!f.ch9WitnessedVolleys;
 
+const buildings: BuildingSpec[] = [
+  // The west wing, north to south; its corner run carries the north range's roof round.
+  { gridX: 1, gridY: 2, w: 5, h: 8, texture: 'ch9-barrack-corner' },
+  { gridX: 1, gridY: 10, w: 5, h: 8, texture: 'ch9-barrack-wing' },
+  { gridX: 1, gridY: 18, w: 5, h: 8, texture: 'ch9-barrack-wing-end' },
+  // The north range in runs, each ending at the cell door, the pillar or the next door.
+  { gridX: 6, gridY: 2, w: 8, h: 5, texture: 'ch9-barrack-3' },
+  { gridX: 14, gridY: 2, w: 2, h: 5, texture: 'ch9-barrack-2' },
+  { gridX: 16, gridY: 2, w: 2, h: 5, texture: 'ch9-barrack-2' },
+  { gridX: 18, gridY: 2, w: 8, h: 5, texture: 'ch9-barrack-3' },
+  { gridX: 26, gridY: 2, w: 6, h: 5, texture: 'ch9-barrack-front' },
+  { gridX: 32, gridY: 2, w: 8, h: 5, texture: 'ch9-barrack-end' },
+  // Houses on the south side, their roofs full of watchers
+  { gridX: 0, gridY: 33, w: 5, h: 4, texture: 'town-house-small' },
+  { gridX: 7, gridY: 33, w: 5, h: 4, texture: 'town-house-small' },
+  { gridX: 13, gridY: 33, w: 6, h: 5, texture: 'town-house' },
+  { gridX: 22, gridY: 33, w: 6, h: 5, texture: 'town-house' },
+  { gridX: 29, gridY: 32, w: 8, h: 7, texture: 'town-house-large' },
+  // Houses on the east side, either side of the way to the roof stair
+  { gridX: 37, gridY: 9, w: 6, h: 5, texture: 'town-house' },
+  { gridX: 37, gridY: 19, w: 6, h: 5, texture: 'town-house' },
+  { gridX: 38, gridY: 26, w: 5, h: 4, texture: 'town-house-small' },
+];
+
+/** Garden walls closing the gaps between the houses, open at the lane and the stair. */
+function compoundWalls(): DecorSpec[] {
+  const w = 'compound-wall';
+  return [
+    ...wallRun(w, 5, 33, 6, 33),
+    ...wallRun(w, 12, 33, 12, 36),
+    ...wallRun(w, 28, 33, 28, 37),
+    ...wallRun(w, 0, H - 1, W - 2, H - 1, [[19, H - 1], [20, H - 1], [21, H - 1]]),
+    ...wallRun(w, W - 1, 0, W - 1, H - 1, [[W - 1, ROOF_EXIT_Y], [W - 1, ROOF_EXIT_Y + 1]]),
+    ...wallRun(w, 37, 14, 37, 15),
+    ...wallRun(w, 37, 24, 37, 25),
+  ];
+}
+
 const CROWD_EDGE: DecorSpec[] = [
-  ...[4, 5, 7, 8, 12, 13, 15, 16, 18, 19].map(x => ({ gridX: x, gridY: 18, texture: 'crowd', blocks: true })),
-  ...[5, 6, 8, 9, 14, 15, 17].map(y => ({ gridX: 21, gridY: y, texture: 'crowd', blocks: true })),
-  ...[10, 11, 13].map(y => ({ gridX: 2, gridY: y, texture: 'crowd', blocks: true })),
+  ...[8, 9, 11, 12, 14, 15, 17, 23, 24, 26, 27, 30, 31, 33, 34].map(x => ({ gridX: x, gridY: 31, texture: 'crowd', blocks: true })),
+  ...[9, 10, 12, 13, 19, 20, 22, 23, 25, 26, 28].map(y => ({ gridX: 35, gridY: y, texture: 'crowd', blocks: true })),
+  ...[13, 14, 16, 17, 19, 20].map(y => ({ gridX: 8, gridY: y, texture: 'crowd', blocks: true })),
 ];
 
 const SHADOWS: DecorSpec[] = [
-  [5, 9], [8, 11], [11, 15], [14, 16], [19, 14], [9, 16], [4, 12], [19, 5],
+  [10, 13], [14, 16], [20, 22], [25, 27], [30, 24], [16, 28], [11, 19], [31, 11], [22, 12],
 ].map(([x, y]) => ({ gridX: x!, gridY: y!, texture: 'crowd-shadow' }));
 
-// Sám Khán's regiment, drawn up facing the pillar.
-// Sám Khán's file stands in the square until his regiment marches out after the first volley.
-const FILE: DecorSpec[] = [7, 8, 10, 11].map(y => ({
-  gridX: 16, gridY: y, texture: 'ch9-soldier', blocks: true, present: f => !f.firstVolleyFailed,
-}));
+// Sám Khán's regiment, drawn up facing the pillar, until it marches out after the first volley.
+const FILE: DecorSpec[] = [25, 27].flatMap(x => [13, 14, 16, 17].map(y => ({
+  gridX: x, gridY: y, texture: 'ch9-soldier', blocks: true, present: (f: Record<string, unknown>) => !f.firstVolleyFailed,
+})));
+
+const props: DecorSpec[] = [
+  // The next room's door beside the pillar, and the guard at the cell
+  { gridX: 17, gridY: 7, texture: 'ch9-cell-door', blocks: true },
+  { gridX: 12, gridY: 9, texture: 'ch9-soldier', blocks: true },
+  // The water-seller's well and jar by the street in
+  { gridX: 9, gridY: 25, texture: 'well', blocks: true },
+  { gridX: 8, gridY: 26, texture: 'ch9-water-jar', blocks: true },
+  // Before the gatehouse: rope and stores
+  { gridX: 33, gridY: 9, texture: 'ch9-rope-coils', blocks: true },
+  { gridX: 31, gridY: 9, texture: 'crates', blocks: true },
+  // Bundles the crowd set down
+  { gridX: 12, gridY: 28, texture: 'ch9-cloth-bundle', blocks: true },
+  { gridX: 32, gridY: 28, texture: 'ch9-cloth-bundle', blocks: true },
+  { gridX: 3, gridY: 30, texture: 'ch9-cloth-bundle', blocks: true },
+  { gridX: 20, gridY: 30, texture: 'ch9-water-jar', blocks: true },
+  // Trees: plane trees by the street and the stair, cypress in the corners
+  { gridX: 4, gridY: 28, texture: 'plane-tree', blocks: true },
+  { gridX: 41, gridY: 7, texture: 'plane-tree', blocks: true },
+  { gridX: 41, gridY: 3, texture: 'cypress-tall', blocks: true },
+  { gridX: 40, gridY: 30, texture: 'cypress-tall', blocks: true },
+  { gridX: 41, gridY: 18, texture: 'cypress-tall', blocks: true },
+];
 
 export const ch9TabrizSquareMap: MapDefinition = {
   key: 'Ch9TabrizSquare',
   title: 'Tabríz, the Barrack Square',
-  width: 28,
-  height: 24,
-  spawn: { x: 1, y: 19 },
-  build: ({ width, height, paintRect, paintPath, block }) => {
-    paintRect(0, 0, width, height, 'sand');
-    paintRect(3, 4, 19, 14, 'stone');
+  width: W,
+  height: H,
+  trueScale: true,
+  spawn: { x: 1, y: 29 },
+  build: ({ paintRect, block }) => {
+    paintRect(0, 0, W, H, 'sand');
+    paintRect(6, 7, 31, 25, 'stone');
     // Packed earth before the barrack where the order is carried out
-    paintRect(6, 4, 7, 2, 'sand');
-    // Street from the city, and the way to the rooftop stair
-    paintPath([[0, 19], [1, 19], [2, 19], [3, 19], [3, 18], [3, 17]]);
-    paintPath([[22, 12], [23, 12], [24, 12], [25, 12], [26, 12], [27, 12]]);
-    paintPath([[10, 18], [10, 19], [10, 20], [10, 21], [10, 22], [10, 23]]);
+    paintRect(9, 7, 12, 3, 'sand');
+    // The street from the city, the lane south, and the way to the rooftop stair
+    paintRect(0, 28, 7, 3, 'path');
+    paintRect(19, 32, 3, H - 32, 'path');
+    paintRect(36, ROOF_EXIT_Y, W - 36, 2, 'path');
     // Keep the cell door and the pillar apart: the wall between them is solid.
-    block(8, 4);
+    block(CELL_DOOR.x + 1, CELL_DOOR.y);
   },
-  buildings: [
-    // The barrack in runs of rooms, each ending at a door or the pillar.
-    { gridX: 5, gridY: 1, w: 3, h: 3, texture: 'ch9-barrack-3' },
-    { gridX: 8, gridY: 1, w: 2, h: 3, texture: 'ch9-barrack-2' },
-    { gridX: 10, gridY: 1, w: 2, h: 3, texture: 'ch9-barrack-2' },
-    { gridX: 12, gridY: 1, w: 3, h: 3, texture: 'ch9-barrack-3' },
-    { gridX: 16, gridY: 2, w: 3, h: 2, texture: 'ch9-barrack-front' },
-    // Houses whose roofs hold the watchers
-    { gridX: 0, gridY: 3, w: 2, h: 2, texture: 'house' },
-    { gridX: 0, gridY: 7, w: 2, h: 2, texture: 'house' },
-    { gridX: 4, gridY: 20, w: 2, h: 2, texture: 'house' },
-    { gridX: 7, gridY: 20, w: 2, h: 2, texture: 'house' },
-    { gridX: 13, gridY: 20, w: 2, h: 2, texture: 'house' },
-    { gridX: 17, gridY: 20, w: 2, h: 2, texture: 'house' },
-    { gridX: 23, gridY: 3, w: 2, h: 2, texture: 'house' },
-    { gridX: 23, gridY: 7, w: 2, h: 2, texture: 'house' },
-    { gridX: 23, gridY: 15, w: 2, h: 2, texture: 'house' },
-    { gridX: 23, gridY: 19, w: 2, h: 2, texture: 'house' },
-  ],
-  decor: [
-    // The next room's door beside the pillar
-    { gridX: 11, gridY: 4, texture: 'ch9-cell-door', blocks: true },
-    { gridX: 4, gridY: 4, texture: 'ch9-soldier', blocks: true },
-    ...FILE,
-    ...CROWD_EDGE,
-    ...SHADOWS,
-    { gridX: 5, gridY: 14, texture: 'well', blocks: true },
-    { gridX: 4, gridY: 15, texture: 'ch9-water-jar', blocks: true },
-    { gridX: 20, gridY: 3, texture: 'ch9-rope-coils', blocks: true },
-    { gridX: 19, gridY: 4, texture: 'crates', blocks: true },
-    { gridX: 2, gridY: 16, texture: 'ch9-cloth-bundle', blocks: true },
-    { gridX: 20, gridY: 17, texture: 'ch9-cloth-bundle', blocks: true },
-    { gridX: 2, gridY: 2, texture: 'cypress', blocks: true },
-    { gridX: 22, gridY: 2, texture: 'cypress', blocks: true },
-    { gridX: 2, gridY: 21, texture: 'cypress', blocks: true },
-    { gridX: 26, gridY: 9, texture: 'cypress', blocks: true },
-    { gridX: 26, gridY: 15, texture: 'cypress', blocks: true },
-    { gridX: 20, gridY: 22, texture: 'cypress', blocks: true },
-    { gridX: 12, gridY: 22, texture: 'ch9-water-jar', blocks: true },
-  ],
+  buildings,
+  decor: [...compoundWalls(), ...CROWD_EDGE, ...SHADOWS, ...FILE, ...props],
   npcs: [
     // Threshold objects: the cell door and the pillar, before and after.
-    { gridX: 7, gridY: 4, texture: 'ch9-cell-door',
+    { gridX: CELL_DOOR.x, gridY: CELL_DOOR.y, texture: 'ch9-cell-door',
       prompt: 'Stand before the cell door  [E]',
       dialogue: 'ch9-cell-door',
       present: f => !after(f) },
-    { gridX: 7, gridY: 4, texture: 'ch9-open-door',
+    { gridX: CELL_DOOR.x, gridY: CELL_DOOR.y, texture: 'ch9-open-door',
       prompt: 'Look into the open cell  [E]',
       dialogue: 'ch9-open-cell',
       present: after },
-    { gridX: 9, gridY: 4, texture: 'ch9-pillar-ropes',
+    { gridX: PILLAR.x, gridY: PILLAR.y, texture: 'ch9-pillar-ropes',
       prompt: 'Look at the pillar and the nail  [E]',
       dialogue: 'ch9-pillar',
       present: f => !after(f) },
-    { gridX: 9, gridY: 4, texture: 'ch9-severed-ropes',
+    { gridX: PILLAR.x, gridY: PILLAR.y, texture: 'ch9-severed-ropes',
       prompt: 'Stand before the empty wall  [E]',
       dialogue: 'ch9-severed-ropes',
       present: after },
 
     // Before the hour
-    { gridX: 6, gridY: 14, texture: 'ch9-water-seller',
+    { gridX: 10, gridY: 24, texture: 'ch9-water-seller',
       prompt: 'Speak with the Water-Seller  [E]',
       dialogue: 'ch9-water-seller-after',
       gate: { when: after, lockedDialogue: 'ch9-water-seller' } },
-    { gridX: 6, gridY: 6, texture: 'ch9-farrash',
+    { gridX: 11, gridY: 11, texture: 'ch9-farrash',
       prompt: 'Speak with the Farrásh-Báshí  [E]',
       dialogue: 'ch9-farrash-after',
       gate: { when: after, lockedDialogue: 'ch9-farrash' } },
-    { gridX: 10, gridY: 6, texture: 'ch9-anis',
+    { gridX: 16, gridY: 11, texture: 'ch9-anis',
       prompt: 'Speak with Anís  [E]',
       dialogue: 'ch9-anis',
       present: f => !f.firstVolleyFailed },
-    { gridX: 18, gridY: 9, texture: 'ch9-sam-khan',
+    { gridX: 29, gridY: 15, texture: 'ch9-sam-khan',
       prompt: 'Speak with Sám Khán  [E]',
       dialogue: 'ch9-sam-khan',
       present: f => !f.firstVolleyFailed },
-    { gridX: 18, gridY: 12, texture: 'ch9-soldier',
+    { gridX: 29, gridY: 18, texture: 'ch9-soldier',
       prompt: 'Speak with the Armenian Soldier  [E]',
       dialogue: 'ch9-soldier',
       present: f => !f.firstVolleyFailed },
 
     // After
-    { gridX: 8, gridY: 7, texture: 'ch9-amanuensis',
+    { gridX: 13, gridY: 13, texture: 'ch9-amanuensis',
       prompt: 'Speak with Siyyid Ḥusayn  [E]',
       dialogue: 'ch9-amanuensis',
       present: after },
-    { gridX: 13, gridY: 13, texture: 'ch9-coppersmith',
+    { gridX: 21, gridY: 22, texture: 'ch9-coppersmith',
       prompt: 'Speak with the Old Coppersmith  [E]',
       dialogue: 'ch9-coppersmith',
       present: after },
   ],
   exits: [
-    { fromX: 27, fromY: 12, dx: 1, dy: 0,
-      targetScene: 'Ch9BarrackRoof', targetSpawnX: 1, targetSpawnY: 9,
+    { fromX: W - 1, fromY: ROOF_EXIT_Y, dx: 1, dy: 0,
+      targetScene: 'Ch9BarrackRoof', targetSpawnX: 1, targetSpawnY: 14,
       label: '→ Climb the stair to the rooftops',
       requires: f => !!f.samKhanPlea && squareWitnessCount(f) >= 2,
       lockedLabel: 'Hear the square and find Sám Khán before climbing' },

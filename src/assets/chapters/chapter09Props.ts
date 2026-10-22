@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundShadow, mix, outlineBox, paintTexture, polygon, rng, shade, type Ctx, type IsoBox } from '../art/canvasKit';
+import { css, footprintBox, groundShadow, mix, outlineBox, paintTexture, polygon, rng, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
 import { coilPath, rope, sagPath } from '../art/cordage';
 import { brick, plaster } from '../art/materials';
 import { edges, recess, slab } from '../art/massing';
@@ -17,15 +17,19 @@ import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 const BRICK = 0xb08458;
 const LIME = 0xcdb890;
 
-/** The nail on the pillar, in texture pixels, where both ropes hang. */
-const NAIL = { x: 19, y: 30 };
+/** The pillar texture: a little over 5 m of plastered brick between the cell and the next room. */
+const PILLAR_TEX = { w: 60, h: 186 } as const;
+/** The nail on the pillar, in texture pixels, about 4.5 m above the ground, where both ropes hang. */
+const NAIL = { x: 22, y: 76 };
+/** The ground line of the pillar texture. */
+const FOOT = 182;
 
-/** A plastered brick pillar with an iron nail near its head; `pocked` adds the marks of the volley. */
+/** A plastered brick pillar with an iron nail high on it; `pocked` adds the marks of the volley. */
 function drawPillar(ctx: Ctx, pocked: boolean): void {
-  const shaft: IsoBox = { x: 24, y: 118, w: 14, d: 14, h: 94 };
-  const plinth: IsoBox = { x: 24, y: 120, w: 18, d: 18, h: 6 };
-  const capital: IsoBox = { x: 24, y: 31, w: 18, d: 18, h: 7 };
-  groundShadow(ctx, plinth, 5, 0.26);
+  const shaft: IsoBox = { x: 30, y: FOOT - 2, w: 18, d: 18, h: 150 };
+  const plinth: IsoBox = { x: 30, y: FOOT, w: 24, d: 24, h: 9 };
+  const capital: IsoBox = { x: 30, y: FOOT - 152, w: 24, d: 24, h: 10 };
+  groundShadow(ctx, plinth, 6, 0.26);
   const rand = rng(pocked ? 19 : 17);
   const face = (c: Ctx, w: number, h: number, l: number, seed: number, patch: number) => {
     plaster(c, w, h, { base: LIME, light: l, seed });
@@ -33,41 +37,42 @@ function drawPillar(ctx: Ctx, pocked: boolean): void {
     c.save();
     c.beginPath();
     c.moveTo(0, patch);
-    c.lineTo(w * 0.6, patch - 4);
-    c.lineTo(w * 0.8, patch + 5);
-    c.lineTo(w * 0.35, patch + 14);
-    c.lineTo(0, patch + 11);
+    c.lineTo(w * 0.6, patch - 5);
+    c.lineTo(w * 0.8, patch + 6);
+    c.lineTo(w * 0.35, patch + 18);
+    c.lineTo(0, patch + 14);
     c.closePath();
     c.clip();
-    brick(c, w, h, { base: BRICK, light: l, seed }, 3.5, 7);
+    brick(c, w, h, { base: BRICK, light: l, seed }, 4, 8);
     c.restore();
     if (pocked) {
-      for (let i = 0; i < 7; i++) {
+      // The volley struck the pillar and the wall about it, never the two who hung there.
+      for (let i = 0; i < 10; i++) {
         const x = 2 + rand() * (w - 4);
-        const y = 18 + rand() * (h * 0.5);
+        const y = 30 + rand() * (h * 0.55);
         c.fillStyle = 'rgba(30,20,12,0.75)';
         c.beginPath();
-        c.arc(x, y, 0.9, 0, Math.PI * 2);
+        c.arc(x, y, 1, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = 'rgba(255,240,210,0.35)';
-        c.fillRect(x - 1.4, y - 1.4, 1, 1);
+        c.fillRect(x - 1.5, y - 1.5, 1, 1);
       }
     }
   };
-  walls(ctx, plinth, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 4 }, 3, 7));
+  walls(ctx, plinth, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 4 }, 3, 8));
   flatTop(ctx, plinth, BRICK);
   outlineBox(ctx, plinth);
-  walls(ctx, shaft, (c, w, h, light) => (light === 1 ? face(c, w, h, light, 5, 58) : face(c, w, h, light, 6, 80)));
+  walls(ctx, shaft, (c, w, h, light) => (light === 1 ? face(c, w, h, light, 5, 92) : face(c, w, h, light, 6, 118)));
   outlineBox(ctx, shaft);
   walls(ctx, capital, (c, w, h, light) => plaster(c, w, h, { base: shade(LIME, 1.05), light, seed: 8 }));
   flatTop(ctx, capital, LIME);
   outlineBox(ctx, capital);
   ctx.fillStyle = css(0x1e1a16);
-  ctx.fillRect(NAIL.x - 1.5, NAIL.y - 1.5, 3, 3);
+  ctx.fillRect(NAIL.x - 2, NAIL.y - 2, 4, 4);
   ctx.fillStyle = 'rgba(200,200,200,0.5)';
-  ctx.fillRect(NAIL.x - 1.5, NAIL.y - 1.5, 1.5, 1);
+  ctx.fillRect(NAIL.x - 2, NAIL.y - 2, 2, 1);
   ctx.fillStyle = 'rgba(60,30,10,0.35)';
-  ctx.fillRect(NAIL.x - 0.5, NAIL.y + 1.5, 1, 6);
+  ctx.fillRect(NAIL.x - 0.5, NAIL.y + 2, 1, 8);
 }
 
 /** Frayed strands at a cut rope end. */
@@ -83,48 +88,58 @@ function frayed(ctx: Ctx, x: number, y: number): void {
 }
 
 /**
- * The cell's vestibule, built out from the barrack wall into the square: a
- * narrow brick porch with a person-sized door deep in its arch and a worn
- * step before it. It reaches back past its own cell to meet the facade,
- * which stands a few pixels behind the footprint edge.
+ * The cell's vestibule, built out from the barrack arcade into the square: a
+ * narrow brick porch about 3 m high with a door (22 x 48 px, a little over a
+ * man's height) deep in its arch and a worn step before it. It reaches back
+ * past its own cell to meet the facade, which stands behind the footprint edge.
  */
 function paintCellDoor(scene: Phaser.Scene, key: string, open: boolean): void {
-  const { box, texW, texH } = footprintBox(1, 1, 54, 8);
-  const porch = subBox(box, 4, 28, 4, 36, 52);
+  const { box, texW, texH } = footprintBox(1, 1, 72, 18);
+  const porch = subBox(box, 2, 30, 4, 40, 70);
   paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, porch, 5);
-    walls(ctx, porch, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: open ? 31 : 29 }), {
+    groundShadow(ctx, porch, 6);
+    walls(ctx, porch, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: open ? 31 : 29 }, 4, 8), {
       left: (c, w, h, l) => {
-        band(c, w, 4, 2, LIME, l);
-        recess(c, w / 2 - 9.5, h, 19, 44, BRICK, l);
+        band(c, w, 4, 3, LIME, l);
+        recess(c, w / 2 - 13, h, 26, 56, BRICK, l);
         if (!open) {
-          doorway(c, w / 2 - 6.5, h, 13, 35, { frame: LIME, door: 0x4a2e1c, light: l * 0.85, seed: 3 });
+          doorway(c, w / 2 - 11, h, 22, 48, { frame: LIME, door: 0x4a2e1c, light: l * 0.85, seed: 3 });
           return;
         }
-        doorway(c, w / 2 - 6.5, h, 13, 35, { frame: LIME, light: l, open: true });
+        doorway(c, w / 2 - 11, h, 22, 48, { frame: LIME, light: l, open: true });
         // Faint daylight on the floor of the empty cell, and the leaf swung in.
         c.save();
-        archPath(c, w / 2 - 6.5, h, 13, 35);
+        archPath(c, w / 2 - 11, h, 22, 48);
         c.clip();
-        const glow = c.createRadialGradient(w / 2, h - 3, 1, w / 2, h - 8, 18);
+        const glow = c.createRadialGradient(w / 2, h - 3, 1, w / 2, h - 10, 26);
         glow.addColorStop(0, 'rgba(243,217,138,0.4)');
         glow.addColorStop(1, 'rgba(243,217,138,0)');
         c.fillStyle = glow;
         c.fillRect(0, 0, w, h);
         c.fillStyle = css(shade(0x4a2e1c, l * 0.7));
-        c.fillRect(w / 2 + 3, h - 33, 3, 33);
+        c.fillRect(w / 2 + 5, h - 46, 4, 46);
         c.restore();
       },
       right: (c, w, _h, l) => {
-        band(c, w, 4, 2, LIME, l);
-        latticeWindow(c, w / 2 - 3, 14, 6, 8, { frame: 0x8a6440, light: l });
+        band(c, w, 4, 3, LIME, l);
+        latticeWindow(c, w / 2 - 5, 18, 10, 14, { frame: 0x8a6440, light: l });
       },
     });
     flatTop(ctx, porch, LIME);
-    merlons(ctx, porch, shade(BRICK, 1.05), 3, 3);
+    merlons(ctx, porch, shade(BRICK, 1.05), 4, 4);
     edges(ctx, porch);
-    slab(ctx, subBox(box, 7, 25, 0, 4, 3), 0x9a8a70, 5);
+    slab(ctx, subBox(box, 4, 28, 0, 5, 4), 0x9a8a70, 5);
   });
+}
+
+/** Draws `paint` scaled about its foot at (x, y), for props repainted at true size. */
+function scaledAbout(ctx: Ctx, x: number, y: number, k: number, paint: () => void): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(k, k);
+  ctx.translate(-x, -y);
+  paint();
+  ctx.restore();
 }
 
 /** A low brick dome of the Tabríz rooftops, its courses stepping in to an oculus. */
@@ -178,45 +193,52 @@ function brickDome(ctx: Ctx, cx: number, baseY: number, rx: number, h: number, s
 }
 
 export const CH09_PROP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  'ch9-pillar-ropes': (scene, def) => paintTexture(scene, def.texture, 48, 122, ctx => {
+  'ch9-pillar-ropes': (scene, def) => paintTexture(scene, def.texture, PILLAR_TEX.w, PILLAR_TEX.h, ctx => {
     drawPillar(ctx, false);
-    rope(ctx, sagPath(NAIL, { x: 15, y: 112 }, 2), 2.2);
-    rope(ctx, sagPath(NAIL, { x: 30, y: 113 }, 3), 2.2);
-    rope(ctx, coilPath(14, 115, 6, 2.6, 2), 1.8);
-    rope(ctx, coilPath(32, 116, 6, 2.6, 2), 1.8);
+    rope(ctx, sagPath(NAIL, { x: 16, y: FOOT - 8 }, 2), 2.4);
+    rope(ctx, sagPath(NAIL, { x: 34, y: FOOT - 7 }, 3), 2.4);
+    rope(ctx, coilPath(14, FOOT - 5, 7, 3, 2), 2);
+    rope(ctx, coilPath(37, FOOT - 4, 7, 3, 2), 2);
   }),
 
-  'ch9-severed-ropes': (scene, def) => paintTexture(scene, def.texture, 48, 122, ctx => {
+  'ch9-severed-ropes': (scene, def) => paintTexture(scene, def.texture, PILLAR_TEX.w, PILLAR_TEX.h, ctx => {
     drawPillar(ctx, true);
-    rope(ctx, sagPath(NAIL, { x: 18, y: 60 }, 1), 2.2);
-    rope(ctx, sagPath(NAIL, { x: 25, y: 56 }, 1), 2.2);
-    frayed(ctx, 18, 60);
-    frayed(ctx, 25, 56);
+    rope(ctx, sagPath(NAIL, { x: 18, y: NAIL.y + 40 }, 1), 2.4);
+    rope(ctx, sagPath(NAIL, { x: 27, y: NAIL.y + 34 }, 1), 2.4);
+    frayed(ctx, 18, NAIL.y + 40);
+    frayed(ctx, 27, NAIL.y + 34);
     // The cut lengths fallen in the dust.
-    rope(ctx, sagPath({ x: 5, y: 115 }, { x: 21, y: 109 }, -1), 2);
-    rope(ctx, sagPath({ x: 27, y: 117 }, { x: 44, y: 111 }, 1.5), 2);
-    frayed(ctx, 21, 109);
-    frayed(ctx, 27, 117);
+    rope(ctx, sagPath({ x: 4, y: FOOT - 3 }, { x: 24, y: FOOT - 10 }, -1), 2.2);
+    rope(ctx, sagPath({ x: 32, y: FOOT - 1 }, { x: 56, y: FOOT - 9 }, 1.5), 2.2);
+    frayed(ctx, 24, FOOT - 10);
+    frayed(ctx, 32, FOOT - 1);
   }),
 
   'ch9-cell-door': (scene, def) => paintCellDoor(scene, def.texture, false),
   'ch9-open-door': (scene, def) => paintCellDoor(scene, def.texture, true),
 
-  'ch9-brick-dome': (scene, def) => paintTexture(scene, def.texture, 60, 54, ctx => {
-    const drum: IsoBox = { x: 30, y: 52, w: 26, d: 26, h: 7 };
-    groundShadow(ctx, drum, 5, 0.25);
-    walls(ctx, drum, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 12 }, 3.5, 7));
-    flatTop(ctx, drum, shade(BRICK, 0.95));
-    outlineBox(ctx, drum);
-    brickDome(ctx, 30, 33, 19, 26, 12);
-  }),
+  // A brick dome over a room below (2 x 2 cells, about 2.8 m across), rising
+  // a man's height and a half above the roof, its oculus open to the sky.
+  'ch9-brick-dome': (scene, def) => {
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 14, 52);
+    paintTexture(scene, def.texture, texW, texH, ctx => {
+      const drum = subBox(box, 8, box.w - 8, 8, box.d - 8, 14);
+      groundShadow(ctx, drum, 8, 0.25);
+      walls(ctx, drum, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 12 }, 4, 8));
+      flatTop(ctx, drum, shade(BRICK, 0.95));
+      outlineBox(ctx, drum);
+      const top = roofPoint(drum, drum.w / 2, drum.d / 2);
+      brickDome(ctx, top.x, top.y + 2, 30, 40, 12);
+    });
+  },
 
-  'ch9-washing-line': (scene, def) => paintTexture(scene, def.texture, 64, 58, ctx => {
-    contactShadow(ctx, 32, 50, 26, 5, 0.18);
-    const poleA = { x: 8, y: 12 };
-    const poleB = { x: 56, y: 20 };
-    const line = sagPath(poleA, poleB, 3, 24);
-    for (const [p, base] of [[poleA, 52], [poleB, 52]] as const) {
+  'ch9-washing-line': (scene, def) => paintTexture(scene, def.texture, 100, 84, ctx => {
+    // Two poles a little over 2 m tall, about 3.5 m apart, and the day's washing.
+    contactShadow(ctx, 50, 74, 40, 7, 0.18);
+    const poleA = { x: 10, y: 22 };
+    const poleB = { x: 90, y: 34 };
+    const line = sagPath(poleA, poleB, 5, 24);
+    for (const [p, base] of [[poleA, 74], [poleB, 80]] as const) {
       const g = ctx.createLinearGradient(p.x - 2, 0, p.x + 2, 0);
       g.addColorStop(0, '#7a5a40');
       g.addColorStop(1, '#3a2a1a');
@@ -228,7 +250,7 @@ export const CH09_PROP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     ctx.beginPath();
     line.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
     ctx.stroke();
-    const cloths: ReadonlyArray<readonly [number, number, number, number]> = [[4, 0x8a2f2a, 9, 15], [9, 0xe8e2d0, 8, 18], [14, 0x2f4a6a, 9, 14], [19, 0xd9a441, 7, 12]];
+    const cloths: ReadonlyArray<readonly [number, number, number, number]> = [[3, 0x8a2f2a, 13, 22], [8, 0xe8e2d0, 12, 27], [13, 0x2f4a6a, 13, 20], [18, 0xd9a441, 10, 17]];
     for (const [i, color, w, h] of cloths) {
       const a = line[i]!;
       const b = line[Math.min(line.length - 1, i + 3)]!;
@@ -254,8 +276,8 @@ export const CH09_PROP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     }
   }),
 
-  // A tall terracotta water jar with a tin cup at its foot.
-  'ch9-water-jar': (scene, def) => paintTexture(scene, def.texture, 44, 46, ctx => {
+  // A terracotta water jar about 0.9 m tall, a tin cup at its foot.
+  'ch9-water-jar': (scene, def) => paintTexture(scene, def.texture, 44, 46, ctx => scaledAbout(ctx, 22, 44, 0.72, () => {
     contactShadow(ctx, 23, 40, 13, 4);
     const body = () => {
       ctx.beginPath();
@@ -297,10 +319,10 @@ export const CH09_PROP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     ctx.fillRect(33, 37, 5, 4);
     ctx.fillStyle = css(0xd8d8d0);
     ctx.fillRect(33, 37, 5, 1);
-  }),
+  })),
 
-  // A bundle (boqcheh) of patterned cloth knotted at the top.
-  'ch9-cloth-bundle': (scene, def) => paintTexture(scene, def.texture, 52, 46, ctx => {
+  // A bundle (boqcheh) of patterned cloth knotted at the top, knee-high.
+  'ch9-cloth-bundle': (scene, def) => paintTexture(scene, def.texture, 52, 46, ctx => scaledAbout(ctx, 26, 42, 0.7, () => {
     contactShadow(ctx, 27, 38, 19, 5);
     const cloth = 0x8a3a2a;
     const shape = () => {
@@ -355,14 +377,14 @@ export const CH09_PROP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     ctx.beginPath();
     ctx.ellipse(26, 16, 3.5, 2.8, 0, 0, Math.PI * 2);
     ctx.fill();
-  }),
+  })),
 
-  'ch9-rope-coils': (scene, def) => paintTexture(scene, def.texture, 52, 44, ctx => {
+  'ch9-rope-coils': (scene, def) => paintTexture(scene, def.texture, 52, 44, ctx => scaledAbout(ctx, 26, 40, 0.85, () => {
     contactShadow(ctx, 26, 32, 20, 6, 0.22);
     rope(ctx, coilPath(18, 31, 11, 5, 3), 2.4);
     rope(ctx, coilPath(34, 33, 10, 4.5, 3), 2.4);
     rope(ctx, sagPath({ x: 41, y: 34 }, { x: 48, y: 40 }, 1), 2.2);
-  }),
+  })),
 
   // Where something stood and no longer stands: swept, trodden earth.
   'ch9-empty-space': (scene, def) => paintTexture(scene, def.texture, 64, 40, ctx => {

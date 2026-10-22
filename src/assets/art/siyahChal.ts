@@ -5,9 +5,10 @@ import { archPath, band, flatTop, LIGHT, walls } from './ornaments';
 import { subBox } from './structureParts';
 
 /**
- * The Síyáh-Chál: a disused reservoir under Ṭihrán. Its north wall is an
- * arcade of low arches between brick pilasters, black behind; its vault
- * rests on squat stone piers whose arches spring outward into the dark.
+ * The Síyáh-Chál at true scale: a disused reservoir under Ṭihrán. Its walls
+ * are an arcade of low arches onto black galleries (a connected wall, so
+ * runs and corners join); its vault rests on squat stone piers whose arches
+ * spring outward into the dark.
  */
 
 export const SOOT_BRICK = 0x6a5a4c;
@@ -61,53 +62,31 @@ function blackArch(c: Ctx, x: number, base: number, width: number, height: numbe
   c.fill();
 }
 
-const ARCH_WALL_H = 62;
-const ARCH_H = 42;
-const PILASTER = 8;
+/** The arcade wall stands 4.3 m to the haunch of the vault. */
+export const ARCH_WALL_H = 100;
+/** One low arch to each cell (about 1 m wide, 2.2 m high), on the 32 px period of a connected wall. */
+const ARCH = { w: 22, h: 50 } as const;
 
 /**
- * The arcade wall: arches between pilasters that stand proud of it. Runs
- * placed end to end double their pilasters at the join, which reads as a
- * heavier pier.
+ * One face of the arcade wall (the connected `ch10-low-arch` style in
+ * walls.ts): sooty brick, a low arch onto black galleries in every cell,
+ * a pier between each pair with its impost band, damp at the foot.
  */
-export function drawLowArch(ctx: Ctx, box: IsoBox): void {
-  const setBack = 7;
-  const wall = subBox(box, 0, box.w, setBack, box.d, ARCH_WALL_H);
-  const bays = Math.max(1, Math.round(box.w / 42));
-  const span = box.w / bays;
-  groundShadow(ctx, wall, 6, 0.32);
-  walls(ctx, wall, (c, w, h, light) => brick(c, w, h, { base: SOOT_BRICK, light, seed: light === 1 ? 51 : 52 }, 4, 9), {
-    left: (c, w, h, l) => {
-      for (let i = 0; i < bays; i++) {
-        const u0 = i * span + PILASTER / 2 + (i === 0 ? PILASTER / 2 : 0);
-        const u1 = (i + 1) * span - PILASTER / 2 - (i === bays - 1 ? PILASTER / 2 : 0);
-        blackArch(c, u0 + 3, h, u1 - u0 - 6, ARCH_H, l);
-      }
-      damp(c, w, h, 53);
-    },
-    right: (c, w, h) => damp(c, w, h, 54),
-  });
-  // The top of the wall: the haunch of the vault, swept with soot.
-  onRoof(ctx, wall, (w, d) => {
-    brick(ctx, w, d, { base: shade(SOOT_BRICK, 0.85), light: LIGHT.roof, seed: 55 }, 4, 9);
-    ctx.fillStyle = 'rgba(8,6,4,0.35)';
-    ctx.fillRect(0, d * 0.5, w, d * 0.5);
-  });
-  edges(ctx, wall, {}, EDGE);
-  for (let i = 0; i <= bays; i++) {
-    const at = i * span;
-    const p0 = Math.max(0, Math.min(box.w - PILASTER, at - PILASTER / 2));
-    const pilaster = subBox(box, p0, p0 + PILASTER, 0, setBack + 1, ARCH_WALL_H);
-    walls(ctx, pilaster, (c, w, h, light) => brick(c, w, h, { base: shade(SOOT_BRICK, 1.06), light, seed: 56 + i }, 4, 9), {
-      left: (c, w, h, l) => {
-        band(c, w, h - ARCH_H + 6, 3, shade(DAMP_STONE, 1.2), l);
-        damp(c, w, h, 57 + i);
-      },
-      right: (c, w, h, l) => band(c, w, h - ARCH_H + 6, 3, shade(DAMP_STONE, 1.2), l),
-    });
-    flatTop(ctx, pilaster, shade(SOOT_BRICK, 0.95));
-    edges(ctx, pilaster, {}, EDGE);
+export function lowArchFace(c: Ctx, w: number, h: number, l: number): void {
+  brick(c, w, h, { base: SOOT_BRICK, light: l, seed: 51 }, 4, 8);
+  for (let u = 0; u <= w; u += 32) {
+    c.fillStyle = css(shade(SOOT_BRICK, l * 1.1), 0.5);
+    c.fillRect(u - 3, h - ARCH.h - 8, 6, ARCH.h + 8);
   }
+  band(c, w, h - ARCH.h - 8, 3, shade(DAMP_STONE, 1.2), l);
+  for (let u = 16; u < w + 16; u += 32) blackArch(c, u - ARCH.w / 2, h, ARCH.w, ARCH.h, l);
+  damp(c, w, h, 53);
+  // The haunch of the vault above, swept with soot.
+  const soot = c.createLinearGradient(0, 0, 0, 22);
+  soot.addColorStop(0, 'rgba(8,6,4,0.45)');
+  soot.addColorStop(1, 'rgba(8,6,4,0)');
+  c.fillStyle = soot;
+  c.fillRect(0, 0, w, 22);
 }
 
 /**
@@ -149,15 +128,18 @@ function springer(ctx: Ctx, box: IsoBox, seed: number, reach: number): void {
   });
 }
 
-/** A vault pier: a stepped plinth, a dressed shaft, an impost slab and the springing of four arches. */
+/** The pier's full height, from its plinth to the top of the springer. */
+export const PILLAR_H = 116;
+
+/** A vault pier (about 3.7 m to the springing of its arches): a stepped plinth, a dressed shaft, an impost slab and the springing of four arches. */
 export function drawStonePillar(ctx: Ctx, box: IsoBox): void {
   const { w, d } = box;
-  const step = subBox(box, 4, w - 4, 4, d - 4, 4);
+  const step = subBox(box, 4, w - 4, 4, d - 4, 6);
   groundShadow(ctx, step, 8, 0.35);
   stonePost(ctx, step, 60);
-  stonePost(ctx, subBox(box, 11, w - 11, 11, d - 11, 9, 4), 61);
-  stonePost(ctx, subBox(box, 17, w - 17, 17, d - 17, 58, 13), 63);
-  stonePost(ctx, subBox(box, 13, w - 13, 13, d - 13, 6, 71), 65);
+  stonePost(ctx, subBox(box, 10, w - 10, 10, d - 10, 12, 6), 61);
+  stonePost(ctx, subBox(box, 16, w - 16, 16, d - 16, 66, 18), 63);
+  stonePost(ctx, subBox(box, 12, w - 12, 12, d - 12, 8, 84), 65);
   // The springer overhangs the impost by 7 px on every side.
-  springer(ctx, subBox(box, 6, w - 6, 6, d - 6, 18, 77), 67, 7);
+  springer(ctx, subBox(box, 5, w - 5, 5, d - 5, 24, 92), 67, 8);
 }

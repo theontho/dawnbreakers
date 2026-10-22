@@ -1,48 +1,52 @@
 import type Phaser from 'phaser';
 import { footprintBox, paintTexture } from '../art/canvasKit';
-import { BARRACK_H, drawBarrack, drawRoofParapet, parapetPart, ROOF_PARAPET_H, type BarrackStyle, type ParapetSide } from '../art/tabriz';
+import { BARRACK_H, drawBarrack, type BarrackStyle } from '../art/tabriz';
 import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
 import { CH09_PROP_TEXTURE_GENERATORS } from './chapter09Props';
 
 /**
  * Chapter 9: the barrack square of Tabríz and the rooftops above it, 9 July
- * 1850. The barrack and the roof parapets are drawn in `art/tabriz.ts`;
- * threshold objects and rooftop props live in `chapter09Props.ts`.
+ * 1850, at true scale. The barrack is drawn in `art/tabriz.ts`; the roof
+ * parapet is a connected wall (`ch9-parapet-low` in WALL_STYLES); threshold
+ * objects and rooftop props live in `chapter09Props.ts`.
  *
- * Each roof wall size is its own MapObjectId so the dimensions and texture
- * key stay paired.
+ * The barrack is laid as runs of fixed footprints: the north range faces
+ * south (`ch9-barrack-*`), the west wing faces east (`ch9-barrack-wing*`).
  */
 
-function paintRoofParapet(scene: Phaser.Scene, def: MapObjectDefinition, side: ParapetSide): void {
-  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 1, ROOF_PARAPET_H, 6);
-  paintTexture(scene, def.texture, texW, texH, ctx => drawRoofParapet(ctx, parapetPart(box, side), side === 'divider'));
-}
+/** Headroom over the walls for the parapet, a stair hut and watchers on the roof. */
+const ROOF_PAD = 64;
 
-function paintBarrack(scene: Phaser.Scene, def: MapObjectDefinition, topPad: number, style: BarrackStyle): void {
-  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, BARRACK_H, topPad);
+function paintBarrack(scene: Phaser.Scene, def: MapObjectDefinition, style: BarrackStyle, topPad = ROOF_PAD): void {
+  const { box, texW, texH } = footprintBox(def.footprint?.w ?? 8, def.footprint?.h ?? 5, BARRACK_H, topPad);
   paintTexture(scene, def.texture, texW, texH, ctx => drawBarrack(ctx, box, style));
 }
 
 export const CH09_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH09_PROP_TEXTURE_GENERATORS,
 
-  // The wings close the square's north side: the outer runs end in piers
-  // and carry the roof stair; the inner runs continue them unbroken.
-  'ch9-barrack-2': (scene, def) => paintBarrack(scene, def, 12, { seed: 2 }),
-  'ch9-barrack-3': (scene, def) => paintBarrack(scene, def, 46, { seed: 3, ends: true, stairHouse: true }),
-  'ch9-barrack-front': (scene, def) => paintBarrack(scene, def, 30, { seed: 9, gate: true, ends: true }),
-
-  'ch9-parapet-low': (scene, def) => paintRoofParapet(scene, def, 'divider'),
-  'ch9-roof-wall-north': (scene, def) => paintRoofParapet(scene, def, 'north'),
-  'ch9-roof-wall-east': (scene, def) => paintRoofParapet(scene, def, 'east'),
-  'ch9-roof-wall-south': (scene, def) => paintRoofParapet(scene, def, 'south'),
+  // The north range, west to east: long runs with a stair hut, the short
+  // runs either side of the pillar, the gatehouse, and the range's east end.
+  'ch9-barrack-3': (scene, def) => paintBarrack(scene, def, { seed: 3, facing: 'south', stairHouse: true }),
+  'ch9-barrack-2': (scene, def) => paintBarrack(scene, def, { seed: 2, facing: 'south' }, 24),
+  'ch9-barrack-front': (scene, def) => paintBarrack(scene, def, { seed: 9, facing: 'south', gate: true }, 80),
+  'ch9-barrack-end': (scene, def) => paintBarrack(scene, def, { seed: 5, facing: 'south', end: true, watchers: true }),
+  // The west wing, north to south, facing the square across it: the corner
+  // run the north range turns into, a plain run, and the wing's south end.
+  'ch9-barrack-corner': (scene, def) => paintBarrack(scene, def, { seed: 4, facing: 'east', corner: true }),
+  'ch9-barrack-wing': (scene, def) => paintBarrack(scene, def, { seed: 6, facing: 'east', watchers: true }),
+  'ch9-barrack-wing-end': (scene, def) => paintBarrack(scene, def, { seed: 8, facing: 'east', end: true, stairHouse: true }),
 };
 
 /** Placeable map objects owned by chapter 9. */
 export const CH09_OBJECTS: MapObjectDefinition[] = [
-  { id: 'ch9-barrack-front', label: 'Barrack Front', texture: 'ch9-barrack-front', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
-  { id: 'ch9-barrack-2', label: 'Barrack Front', texture: 'ch9-barrack-2', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 2, h: 3 }, isometric: true },
-  { id: 'ch9-barrack-3', label: 'Barrack Front', texture: 'ch9-barrack-3', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch9-barrack-front', label: 'Barrack Front', texture: 'ch9-barrack-front', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 6, h: 5 }, isometric: true },
+  { id: 'ch9-barrack-2', label: 'Barrack Front', texture: 'ch9-barrack-2', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 2, h: 5 }, isometric: true },
+  { id: 'ch9-barrack-3', label: 'Barrack Front', texture: 'ch9-barrack-3', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 8, h: 5 }, isometric: true },
+  { id: 'ch9-barrack-end', label: 'Barrack Front', texture: 'ch9-barrack-end', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 8, h: 5 }, isometric: true },
+  { id: 'ch9-barrack-corner', label: 'Barrack Front', texture: 'ch9-barrack-corner', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 5, h: 8 }, isometric: true },
+  { id: 'ch9-barrack-wing', label: 'Barrack Front', texture: 'ch9-barrack-wing', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 5, h: 8 }, isometric: true },
+  { id: 'ch9-barrack-wing-end', label: 'Barrack Front', texture: 'ch9-barrack-wing-end', kind: 'structure', category: 'buildings', color: 0x8c7f6a, blocks: true, footprint: { w: 5, h: 8 }, isometric: true },
   { id: 'ch9-cell-door', label: 'Closed Door', texture: 'ch9-cell-door', kind: 'prop', category: 'furnishings', color: 0x5b3320, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch9-cloth-bundle', label: 'Cloth Bundle', texture: 'ch9-cloth-bundle', kind: 'prop', category: 'market-supplies', color: 0xd0c1a0, blocks: true },
   { id: 'ch9-rope-coils', label: 'Rope Coils', texture: 'ch9-rope-coils', kind: 'prop', category: 'market-supplies', color: 0xb88742, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
@@ -50,13 +54,11 @@ export const CH09_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch9-pillar-ropes', label: 'Pillar', texture: 'ch9-pillar-ropes', kind: 'prop', category: 'barriers-prison', color: 0xb8a07a, blocks: true },
   { id: 'ch9-severed-ropes', label: 'Severed Ropes', texture: 'ch9-severed-ropes', kind: 'prop', category: 'barriers-prison', color: 0xbca06d, blocks: true },
   { id: 'ch9-open-door', label: 'Open Door', texture: 'ch9-open-door', kind: 'prop', category: 'furnishings', color: 0x0c0806, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch9-brick-dome', label: 'Brick Dome', texture: 'ch9-brick-dome', kind: 'prop', category: 'buildings', color: 0xb47e52, blocks: true },
+  { id: 'ch9-brick-dome', label: 'Brick Dome', texture: 'ch9-brick-dome', kind: 'structure', category: 'buildings', color: 0xb47e52, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch9-washing-line', label: 'Washing Line', texture: 'ch9-washing-line', kind: 'prop', category: 'furnishings', color: 0x8a2f2a, blocks: true },
   { id: 'ch9-water-jar', label: 'Water Jar', texture: 'ch9-water-jar', kind: 'prop', category: 'market-supplies', color: 0xa86a3e, blocks: true },
-  { id: 'ch9-parapet-low', label: 'Roof Parapet', texture: 'ch9-parapet-low', kind: 'structure', category: 'barriers-prison', color: 0x7a6e5e, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch9-roof-wall-north', label: 'Roof Parapet', texture: 'ch9-roof-wall-north', kind: 'structure', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 24, h: 1 }, isometric: true },
-  { id: 'ch9-roof-wall-east', label: 'Roof Parapet', texture: 'ch9-roof-wall-east', kind: 'structure', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 16 }, isometric: true },
-  { id: 'ch9-roof-wall-south', label: 'Roof Parapet', texture: 'ch9-roof-wall-south', kind: 'structure', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 24, h: 1 }, isometric: true },
+  // The low roof parapet: one cell at a time, it joins (see WALL_STYLES).
+  { id: 'ch9-parapet-low', label: 'Roof Parapet', texture: 'ch9-parapet-low', kind: 'prop', category: 'barriers-prison', color: 0x7a6e5e, blocks: true },
   // People
   { id: 'ch9-witness', label: 'Witness', texture: 'ch9-witness', kind: 'character', category: 'characters', color: 0x6b5a44, blocks: true,
     character: { body: 0x4b3b34, skin: 0xd8c6a0, clothing: { style: 'vest', secondary: 0x7a5a3a, accent: 0xd8c7a0 }, hat: { style: 'cap', color: 0x7a5a3a }, shadow: true } },

@@ -15,6 +15,9 @@ import { glow, liftedPoint } from './structureParts';
 
 const LIMEWASH = 0xece6d4;
 
+/** The chamber's walls, 4.5 m to the springing of the dome. */
+export const SHRINE_WALL_H = 104;
+
 /** A limewashed wall: damp rising from the floor, soot gathered under the dome. */
 export function shrineWallFace(ctx: Ctx, w: number, h: number, l: number): void {
   plaster(ctx, w, h, { base: LIMEWASH, light: l, seed: 811 });
@@ -43,7 +46,7 @@ export function shrineWallFace(ctx: Ctx, w: number, h: number, l: number): void 
 export function shrineNicheFace(ctx: Ctx, w: number, h: number, l: number): void {
   shrineWallFace(ctx, w, h, l);
   const x = 9;
-  const sill = h - 30;
+  const sill = h - 40;
   const plume = ctx.createLinearGradient(0, sill - 40, 0, sill - 14);
   plume.addColorStop(0, 'rgba(30,24,20,0)');
   plume.addColorStop(1, 'rgba(30,24,20,0.45)');
@@ -86,12 +89,13 @@ const at = (box: IsoBox, p: number, q: number, z: number) => liftedPoint(box, p,
  * a green cloth faded almost to grey over it, candle stubs at its head.
  */
 export function paintTomb(scene: Phaser.Scene, key: string): void {
-  const texH = 64;
-  paintTexture(scene, key, 64, texH, ctx => {
-    const step = cellCentredBox(texH, 34, 4, 24);
-    const onStep = cellCentredBox(texH, 28, 17, 17);
+  const texH = 80;
+  paintTexture(scene, key, 80, texH, ctx => {
+    ctx.translate(8, 0);
+    const step = cellCentredBox(texH, 50, 5, 30);
+    const onStep = cellCentredBox(texH, 44, 22, 22);
     const chest = { ...onStep, y: onStep.y - 4 };
-    ellipseShadow(ctx, 34, texH - 16, 28, 11, 0.3);
+    ellipseShadow(ctx, 34, texH - 16, 36, 13, 0.3);
     solidBox(ctx, step, 0x9a9484);
     solidBox(ctx, chest, LIMEWASH);
     // The cloth: over the top and hanging a hand's depth down each side, with a fringe.
@@ -109,7 +113,7 @@ export function paintTomb(scene: Phaser.Scene, key: string): void {
     // Candle stubs and wax at the head (the far end).
     const rand = rng(83);
     for (let i = 0; i < 4; i++) {
-      const base = at(step, 2 + rand() * 4, 4 + i * 4.5, 3);
+      const base = at(step, 2 + rand() * 5, 5 + i * 6, 3);
       const hgt = 3 + rand() * 4;
       ctx.fillStyle = css(0xeee4c8);
       ctx.fillRect(base.x - 0.9, base.y - hgt, 1.8, hgt);
@@ -244,10 +248,12 @@ export function paintOilLamp(scene: Phaser.Scene, key: string): void {
 
 /** A companion's whole estate: a rolled felt, a folded cloak, a wooden bowl. */
 export function paintBedroll(scene: Phaser.Scene, key: string, felt = 0xa8946a, cloak = 0x5a4a3a): void {
-  paintTexture(scene, key, 64, 40, ctx => {
-    const box = cellCentredBox(40, 26, 0, 18);
+  // A felt as long as a man, laid along the wall.
+  paintTexture(scene, key, 80, 44, ctx => {
+    ctx.translate(8, 0);
+    const box = cellCentredBox(44, 40, 0, 20);
     const g = (p: number, q: number, z = 0) => groundPoint({ ...box, y: box.y - z }, p, q);
-    ellipseShadow(ctx, 32, 30, 20, 6, 0.3);
+    ellipseShadow(ctx, 34, 33, 28, 8, 0.3);
     // The felt, unrolled halfway along the wall.
     polygon(ctx, [g(0, 2), g(box.w, 2), g(box.w, box.d - 2), g(0, box.d - 2)]);
     ctx.fillStyle = css(felt);
@@ -259,21 +265,21 @@ export function paintBedroll(scene: Phaser.Scene, key: string, felt = 0xa8946a, 
     const rollEnd = g(3, box.d / 2 + 0.1, 3);
     ctx.fillStyle = css(shade(felt, 0.85));
     ctx.beginPath();
-    ctx.ellipse(roll.x, roll.y, 4.5, 8, 0.9, 0, Math.PI * 2);
+    ctx.ellipse(roll.x, roll.y, 5, 9.5, 0.9, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = css(shade(felt, 0.55));
     ctx.beginPath();
     ctx.ellipse(rollEnd.x - 1, rollEnd.y + 1, 2, 2.6, 0.9, 0, Math.PI * 2);
     ctx.stroke();
     // The cloak, folded square.
-    const c = [g(10, 4, 2), g(20, 4, 2), g(20, 13, 2), g(10, 13, 2)];
+    const c = [g(16, 4, 2), g(28, 4, 2), g(28, 15, 2), g(16, 15, 2)];
     polygon(ctx, c);
     ctx.fillStyle = css(cloak);
     ctx.fill();
     ctx.strokeStyle = css(shade(cloak, 1.5), 0.6);
     ctx.stroke();
     // The bowl.
-    const b = g(22, 15, 0);
+    const b = g(33, 16, 0);
     ctx.fillStyle = css(0x6a4424);
     ctx.beginPath();
     ctx.ellipse(b.x, b.y - 1, 3.4, 1.6, 0, 0, Math.PI);

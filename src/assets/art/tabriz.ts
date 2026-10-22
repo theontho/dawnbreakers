@@ -1,268 +1,172 @@
-import { css, groundShadow, onRoof, shade, type Ctx, type IsoBox } from './canvasKit';
-import { edges, recess, slab, type EdgeSet } from './massing';
-import { brick, earthRoof, glazedTiles, plaster } from './materials';
-import { band, beamEnds, doorway, flatTop, latticeWindow, LIGHT, merlons, walls } from './ornaments';
+import { css, groundShadow, onRoof, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import { figure, type FigureStyle } from './crowds';
+import { edges, slab } from './massing';
+import { brick, earthRoof } from './materials';
+import { band, flatTop, LIGHT, merlons, walls } from './ornaments';
 import { subBox } from './structureParts';
+import {
+  arcadeFront, BARRACK_H, brickWall, endFace, portalFace, TABRIZ_BRICK, TABRIZ_LIME, TABRIZ_STONE,
+} from './tabrizFacade';
+import { stairHut } from './town/townKit';
 
 /**
- * The buff fired brick of Tabríz: the two-storey barrack around the square
- * and the parapets of the roofs above it.
+ * The barrack of Tabríz at true scale: two storeys of buff fired brick,
+ * about 8 m to the top of the parapet, round the square where the Báb was
+ * martyred on 9 July 1850. The north range runs east from the west wing to
+ * the gatehouse and on; the west wing faces the square from the other side.
  *
- * The barrack is laid down as several runs so the cell door and the pillar
- * in front of it sort correctly in depth. Every run shares its storey
- * heights, string courses and cornice, the facades stand back from the
- * footprint edge by the same inset, and the ends of each wing are marked by
- * a projecting brick pier, so the runs read as one building in three wings
- * with a gatehouse.
+ * A range is laid down as several runs, so the cell door and the pillar in
+ * front of it sort correctly in depth. Every run shares its storey heights,
+ * string courses and cornice, the facades stand back from the footprint by
+ * the same inset, and only the true ends of a range carry end parapets and
+ * outlines, so the runs read as one building.
  */
 
-export const TABRIZ_BRICK = 0xb08458;
-export const TABRIZ_LIME = 0xd8c8a4;
-const DOOR = 0x4a2e1c;
-const FRAME = 0x8a6440;
-const PLINTH = 0x9a8a70;
-/** Straw-and-mud plaster of the roof stair-houses. */
-const STAIR_PLASTER = 0xb89c78;
+export { BARRACK_H } from './tabrizFacade';
 
-/** Height of the barrack walls to the roof, and of its ground storey. */
-export const BARRACK_H = 100;
-const GROUND = 54;
 /** How far the facade stands back from the front of the footprint. */
-const INSET = 4;
-const PARAPET = 6;
-const PIER = 6;
+const INSET = 6;
+/** The roof parapet: about 0.6 m above the roof, 7 px thick. */
+const PARAPET = 14;
+const PARAPET_T = 7;
+const PORTAL_H = 236;
+const STAIR_PLASTER = 0xb89c78;
+/** How far the north range reaches south from the back of the wing's corner run (5 cells). */
+const CORNER_DEPTH = 160;
 
 export interface BarrackStyle {
   seed: number;
-  /** A tall portal (pishtaq) rising above the roof in the middle of the facade. */
+  /** Which way the arcade faces: the north range faces south, the west wing east. */
+  facing: 'south' | 'east';
+  /** A tall portal (pishtaq) in the middle of the run. */
   gate?: boolean;
-  /** A stair-house on the roof toward the back. */
+  /** A stair hut on the roof toward the back. */
   stairHouse?: boolean;
-  /** Projecting piers and roof parapets at both ends of the run. */
-  ends?: boolean;
-}
-
-/** Brick with a dressed-stone plinth at the foot. */
-function brickWall(c: Ctx, w: number, h: number, light: number, seed: number): void {
-  brick(c, w, h, { base: TABRIZ_BRICK, light, seed });
-  c.fillStyle = css(shade(PLINTH, light));
-  c.fillRect(0, h - 5, w, 5);
-  c.fillStyle = 'rgba(0,0,0,0.22)';
-  c.fillRect(0, h - 5, w, 0.8);
-}
-
-/** Brick cornice: a lime string course over a row of dentils. */
-function cornice(c: Ctx, w: number, light: number): void {
-  band(c, w, 3, 3, TABRIZ_LIME, light);
-  c.fillStyle = css(shade(TABRIZ_BRICK, light * 0.55));
-  for (let u = 1; u < w - 1; u += 4) c.fillRect(u, 7, 2, 2);
-}
-
-/** One bay of the ground storey: a room door deep in its arch, or a barred guard-room window. */
-function groundBay(c: Ctx, u: number, h: number, light: number, seed: number, door: boolean): void {
-  if (door) {
-    recess(c, u - 10, h - 5, 20, 44, TABRIZ_BRICK, light);
-    doorway(c, u - 6.5, h - 5, 13, 35, { frame: shade(TABRIZ_BRICK, 0.72), door: DOOR, light: light * 0.85, seed });
-    // The threshold stone stepping down to the square.
-    c.fillStyle = css(shade(PLINTH, light * 1.08));
-    c.fillRect(u - 9, h - 5, 18, 2);
-    return;
-  }
-  recess(c, u - 8, h - 5, 16, 40, TABRIZ_BRICK, light);
-  latticeWindow(c, u - 3.5, h - 34, 7, 10, { frame: FRAME, light: light * 0.85, arched: true });
-}
-
-/** One bay of the upper storey: a latticed window in a shallow arched niche. */
-function upperBay(c: Ctx, u: number, h: number, light: number): void {
-  const base = h - GROUND - 4;
-  recess(c, u - 8, base, 16, 30, TABRIZ_BRICK, light);
-  latticeWindow(c, u - 4, base - 21, 8, 12, { frame: FRAME, light, arched: true, shutters: 0x5a3a24 });
-}
-
-/** The front face of a run: two storeys of bays between string courses. */
-function facade(c: Ctx, w: number, h: number, l: number, style: BarrackStyle, portal: readonly [number, number] | null): void {
-  cornice(c, w, l);
-  band(c, w, h - GROUND - 3, 3, TABRIZ_LIME, l);
-  const cells = Math.max(1, Math.round(w / 32));
-  const bay = w / cells;
-  for (let i = 0; i < cells; i++) {
-    const u = i * bay + bay / 2;
-    if (portal && u > portal[0] - 4 && u < portal[1] + 4) continue;
-    upperBay(c, u, h, l);
-    groundBay(c, u, h, l, style.seed + i, !portal);
-  }
-}
-
-/** The end face of a run: a window to each room above, small high windows below. */
-function sideFace(c: Ctx, w: number, h: number, l: number): void {
-  cornice(c, w, l);
-  band(c, w, h - GROUND - 3, 3, TABRIZ_LIME, l);
-  const cells = Math.max(1, Math.round(w / 32));
-  for (let i = 0; i < cells; i++) {
-    const u = (i + 0.5) * (w / cells);
-    upperBay(c, u, h, l);
-    latticeWindow(c, u - 3.5, h - 36, 7, 10, { frame: FRAME, light: l, arched: true });
-  }
-}
-
-/** A low brick wall on the roof edge with a lime coping. */
-function roofWall(ctx: Ctx, box: IsoBox, seed: number, crenellate: boolean, set: EdgeSet = {}): void {
-  walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: TABRIZ_BRICK, light, seed }));
-  flatTop(ctx, box, TABRIZ_LIME);
-  if (crenellate) merlons(ctx, box, shade(TABRIZ_BRICK, 1.05), 4, 4);
-  edges(ctx, box, { farLeft: false, backRight: false, ...set }, 0x1c120a, 0.6);
-}
-
-/** Packed-earth roof with its parapets; end parapets only where the wing ends. */
-function roof(ctx: Ctx, main: IsoBox, style: BarrackStyle): void {
-  onRoof(ctx, main, (w, d) => {
-    earthRoof(ctx, w, d, { base: 0x9a8064, light: LIGHT.roof, seed: style.seed + 2 });
-    // The parapet's shadow falls on the roof behind the front wall.
-    ctx.fillStyle = 'rgba(30,18,8,0.25)';
-    ctx.fillRect(0, 3, w, 4);
-  });
-  const t = 3;
-  roofWall(ctx, subBox(main, 0, main.w, main.d - t, main.d, PARAPET, main.h), style.seed, false);
-  if (style.ends) {
-    roofWall(ctx, subBox(main, 0, t, 0, main.d, PARAPET, main.h), style.seed, false);
-    roofWall(ctx, subBox(main, main.w - t, main.w, 0, main.d, PARAPET, main.h), style.seed, false, { backRight: true });
-  }
-  roofWall(ctx, subBox(main, 0, main.w, 0, t, PARAPET, main.h), style.seed, true);
-}
-
-/** A plastered stair-house on the roof, its door open to the stair. */
-function stairHouse(ctx: Ctx, main: IsoBox, seed: number): void {
-  const hut = subBox(main, main.w - 40, main.w - 14, main.d - 34, main.d - 8, 42, main.h);
-  walls(ctx, hut, (c, w, h, light) => plaster(c, w, h, { base: STAIR_PLASTER, light, seed }), {
-    left: (c, w, h, l) => {
-      recess(c, w / 2 - 6, h, 12, 32, STAIR_PLASTER, l);
-      c.fillStyle = css(0x140c06);
-      c.fill();
-      beamEnds(c, w, 4, l, 8);
-    },
-    right: (c, w, _h, l) => beamEnds(c, w, 4, l, 8),
-  });
-  flatTop(ctx, hut, STAIR_PLASTER);
-  edges(ctx, hut);
-}
-
-/** A brick pier marking the corner of a wing, a little proud of the facade and the roofline. */
-function pier(ctx: Ctx, box: IsoBox, seed: number): void {
-  walls(ctx, box, (c, w, h, light) => brickWall(c, w, h, light, seed), {
-    left: (c, w, _h, l) => cornice(c, w, l),
-    right: (c, w, _h, l) => cornice(c, w, l),
-  });
-  flatTop(ctx, box, TABRIZ_LIME);
-  edges(ctx, box);
+  /** The run ends the range here (east end of the north range, south end of the wing). */
+  end?: boolean;
+  /** Townspeople watching from the roof behind the front parapet. */
+  watchers?: boolean;
+  /**
+   * The wing's north run, where the north range meets it: the roof turns the
+   * corner into the range's roof (no parapet between them) and the wing's
+   * north end carries the range's back parapet on.
+   */
+  corner?: boolean;
 }
 
 /**
- * The barrack gate: a portal taller than it is wide, a lion-and-sun tile
- * over a deep arch, and a person-sized gate inside it.
+ * A low brick wall on the roof edge with a lime coping. Its uprights are
+ * drawn only at `corners` (where the parapet really stops), so parapets of
+ * neighbouring runs read as one wall.
  */
-function gatePortal(ctx: Ctx, box: IsoBox, seed: number): void {
-  walls(ctx, box, (c, w, h, light) => brickWall(c, w, h, light, seed), {
-    left: (c, w, h, l) => {
-      // Lime frame and the tiled panel over the arch.
-      c.strokeStyle = css(shade(TABRIZ_LIME, l));
-      c.lineWidth = 2;
-      c.strokeRect(4, 6, w - 8, h - 11);
-      c.save();
-      c.beginPath();
-      c.rect(9, 11, w - 18, 14);
-      c.clip();
-      glazedTiles(c, w, 30, { base: 0x2c6e8a, light: l, seed }, 5);
-      c.restore();
-      c.fillStyle = css(shade(0xe8b440, l));
-      c.beginPath();
-      c.arc(w / 2, 18, 4, 0, Math.PI * 2);
-      c.fill();
-      c.strokeStyle = css(shade(0xe8b440, l), 0.8);
-      c.lineWidth = 0.8;
-      for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
-        c.beginPath();
-        c.moveTo(w / 2 + Math.cos(a) * 5, 18 + Math.sin(a) * 5);
-        c.lineTo(w / 2 + Math.cos(a) * 7, 18 + Math.sin(a) * 7);
-        c.stroke();
-      }
-      const aw = 30;
-      recess(c, w / 2 - aw / 2, h - 5, aw, h - 36, TABRIZ_BRICK, l);
-      latticeWindow(c, w / 2 - 7, h - 70, 14, 14, { frame: FRAME, light: l * 0.8, arched: true });
-      doorway(c, w / 2 - 9, h - 5, 18, 42, { frame: TABRIZ_LIME, door: DOOR, light: l * 0.85, seed });
-    },
+function roofWall(ctx: Ctx, box: IsoBox, seed: number, crenellate: boolean, corners: { start?: boolean; end?: boolean } = {}): void {
+  walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: TABRIZ_BRICK, light, seed }, 4, 8), {
+    left: (c, w, _h, l) => band(c, w, 0, 2.5, TABRIZ_LIME, l),
+    right: (c, w, _h, l) => band(c, w, 0, 2.5, TABRIZ_LIME, l),
   });
   flatTop(ctx, box, TABRIZ_LIME);
-  merlons(ctx, box, shade(TABRIZ_BRICK, 1.05), 4, 3);
-  edges(ctx, box);
+  if (crenellate) merlons(ctx, box, shade(TABRIZ_BRICK, 1.05), 6, 6);
+  edges(ctx, box, { farLeft: !!corners.start, arris: !!corners.end, backRight: !!corners.end, leftFoot: false }, 0x1c120a, 0.55);
+}
+
+const WATCHERS: FigureStyle[] = [
+  { robe: 0x4a3a2e, head: 'kolah', headColor: 0x2a2018, skin: 0xd0b08a, beard: 0x2a1c12, height: 38 },
+  { robe: 0x1f1f2a, head: 'chador', headColor: 0x1f1f2a, skin: 0xd6b48a, height: 36 },
+  { robe: 0x6a5a44, head: 'turban', headColor: 0xe8e0c8, skin: 0xc8a47a, beard: 0x8a8070, height: 39 },
+  { robe: 0x5a4434, trim: 0x8a6a44, head: 'bare', skin: 0xc49a6c, height: 37 },
+];
+
+/** Watchers along the roof, just behind the front parapet that hides their feet. */
+function watchers(ctx: Ctx, main: IsoBox, style: BarrackStyle): void {
+  const along = style.facing === 'south' ? main.w : main.d;
+  const count = Math.max(2, Math.round(along / 48));
+  for (let i = 0; i < count; i++) {
+    const s = (i + 0.5) * (along / count) + ((style.seed + i * 7) % 11) - 5;
+    const at = style.facing === 'south' ? roofPoint(main, s, PARAPET_T + 7) : roofPoint(main, main.w - PARAPET_T - 7, s);
+    figure(ctx, at.x, at.y, WATCHERS[(style.seed + i) % WATCHERS.length]!);
+  }
+}
+
+/** The roof: packed earth, its parapets, a stair hut and watchers; the front parapet last. */
+function roof(ctx: Ctx, main: IsoBox, style: BarrackStyle): void {
+  onRoof(ctx, main, (w, d) => {
+    earthRoof(ctx, w, d, { base: 0x9a8064, light: LIGHT.roof, seed: style.seed + 2 });
+  });
+  const t = PARAPET_T;
+  const end = !!style.end;
+  const wall = (p0: number, p1: number, q0: number, q1: number, crenellate = false, corners = {}) =>
+    roofWall(ctx, subBox(main, p0, p1, q0, q1, PARAPET, main.h), style.seed, crenellate, corners);
+  const { w, d } = main;
+  const hutAt = style.facing === 'south' ? roofPoint(main, w - 22, d - 46) : roofPoint(main, w - 48, d - 56);
+  if (style.facing === 'south') {
+    // Back, east end, then the front parapet with the end corner it turns.
+    wall(0, w, d - t, d, false, { end });
+    if (end) wall(w - t, w, 0, d, false, { end: true });
+    if (style.stairHouse) stairHut(ctx, hutAt, STAIR_PLASTER, 0x6a4a30, style.seed + 7);
+    if (style.watchers) watchers(ctx, main, style);
+    wall(0, w, 0, t, true, { end });
+  } else {
+    // The wing's back (west) parapet, its north end at the corner, its south end.
+    wall(0, t, 0, d, false, { start: end });
+    if (style.corner) wall(t, w, d - t, d, false, { end: true });
+    if (end) wall(0, w, 0, t, false, { start: true, end: true });
+    if (style.stairHouse) stairHut(ctx, hutAt, STAIR_PLASTER, 0x6a4a30, style.seed + 7);
+    if (style.watchers) watchers(ctx, main, style);
+    // The front parapet stops where the north range's roof runs on from the corner.
+    const q1 = style.corner ? d - CORNER_DEPTH + INSET : d;
+    wall(w - t, w, 0, q1, true, { start: true, end });
+  }
 }
 
 /** Draws one run of the barrack inside its footprint box. */
 export function drawBarrack(ctx: Ctx, box: IsoBox, style: BarrackStyle): void {
-  const main = subBox(box, 0, box.w, INSET, box.d, BARRACK_H);
-  const portalSpan = style.gate ? ([box.w / 2 - 24, box.w / 2 + 24] as const) : null;
-  groundShadow(ctx, main, 8);
-  walls(ctx, main, (c, w, h, light) => brickWall(c, w, h, light, style.seed + (light === 1 ? 0 : 5)), {
-    left: (c, w, h, l) => facade(c, w, h, l, style, portalSpan),
-    right: (c, w, h, l) => sideFace(c, w, h, l),
-  });
+  const south = style.facing === 'south';
+  const main = south ? subBox(box, 0, box.w, INSET, box.d, BARRACK_H) : subBox(box, 0, box.w - INSET, 0, box.d, BARRACK_H);
+  const portal = style.gate ? ([box.w / 2 - 34, box.w / 2 + 34] as const) : null;
+  groundShadow(ctx, main, 12, 0.3);
+  const front = (c: Ctx, w: number, h: number, l: number) => arcadeFront(c, w, h, l, style.seed, portal);
+  walls(ctx, main, (c, w, h, light) => brickWall(c, w, h, light, style.seed + (light === 1 ? 0 : 5)), south
+    ? { left: front, right: endFace }
+    : { left: endFace, right: front });
+  // A step along the foot of the arcade.
+  const step = south ? subBox(box, 2, box.w - 2, INSET - 4, INSET, 3) : subBox(box, box.w - INSET, box.w - INSET + 4, 2, box.d - 2, 3);
+  slab(ctx, step, TABRIZ_STONE, style.seed);
   roof(ctx, main, style);
-  edges(ctx, main, { farLeft: false, farTop: !!style.ends, arris: !!style.ends });
-  if (style.stairHouse) stairHouse(ctx, main, style.seed + 7);
-  if (style.ends) {
-    pier(ctx, subBox(box, 0, PIER, 0, INSET + 3, BARRACK_H + PARAPET), style.seed + 3);
-    pier(ctx, subBox(box, box.w - PIER, box.w, 0, INSET + 3, BARRACK_H + PARAPET), style.seed + 4);
-  }
-  if (portalSpan) {
-    const [p0, p1] = portalSpan;
-    slab(ctx, subBox(box, p0 + 6, p1 - 6, -4, INSET, 3), PLINTH, style.seed);
-    gatePortal(ctx, subBox(box, p0, p1, 0, INSET + 4, BARRACK_H + PARAPET), style.seed + 11);
-  }
+  // Outline only the range's true corners, so joined runs show no seam.
+  edges(ctx, main, south
+    ? { farLeft: false, farTop: false, backRight: !!style.end, arris: !!style.end }
+    : { farTop: false, backRight: false, arris: !!style.end, leftFoot: !!style.end }, 0x1c120a, 0.7);
+  if (portal) gatePortal(ctx, subBox(box, portal[0], portal[1], 0, INSET + 8, PORTAL_H), style.seed + 11);
 }
 
-// Roof parapets ---------------------------------------------------------------
+function gatePortal(ctx: Ctx, box: IsoBox, seed: number): void {
+  groundShadow(ctx, box, 8, 0.25);
+  walls(ctx, box, (c, w, h, light) => brickWall(c, w, h, light, seed), {
+    left: (c, w, h, l) => portalFace(c, w, h, l, seed),
+    right: (c, w, _h, l) => band(c, w, 8, 3, TABRIZ_LIME, l),
+  });
+  flatTop(ctx, box, TABRIZ_LIME);
+  merlons(ctx, box, shade(TABRIZ_BRICK, 1.05), 6, 4);
+  edges(ctx, box);
+}
 
-/** One height for every parapet on the Tabríz roofs, so the edges read as one wall. */
-export const ROOF_PARAPET_H = 20;
-const PARAPET_T = 10;
+// The low parapets of the roofs above the square --------------------------------
+
+/** About a metre: chest-high on a person leaning on it. */
+export const ROOF_PARAPET_H = 24;
 
 /**
- * A run of roof parapet: brick under a lime coping, with a wooden rain
- * spout every few cells. `seamless` pieces are laid one cell at a time, so
- * they draw no uprights where the next piece continues them.
+ * A face of the connected roof parapet (`ch9-parapet-low` in WALL_STYLES):
+ * brick in courses that divide a cell, a lime coping, and a rain spout once
+ * a cell, so a run continues unbroken from piece to piece.
  */
-export function drawRoofParapet(ctx: Ctx, part: IsoBox, seamless: boolean): void {
-  const spouts = (c: Ctx, w: number, h: number, l: number) => {
-    band(c, w, 0, 3, TABRIZ_LIME, l);
-    if (w > 32 * 3) beamEnds(c, w, h * 0.5, l, 32 * 4);
-  };
-  // Courses and bricks sized to divide a cell, so the bond runs on across joins.
-  walls(ctx, part, (c, w, h, light) => brick(c, w, h, { base: TABRIZ_BRICK, light, seed: 41 }, 4, 8), {
-    left: spouts,
-    right: spouts,
-  });
-  onRoof(ctx, part, (w, d) => {
-    ctx.fillStyle = css(shade(TABRIZ_LIME, LIGHT.roof));
-    ctx.fillRect(0, 0, w, d);
-    ctx.fillStyle = css(shade(TABRIZ_LIME, 0.82), 0.6);
-    if (w < d) ctx.fillRect(w / 2 - 0.5, 0, 1, d);
-    else ctx.fillRect(0, d / 2 - 0.5, w, 1);
-  });
-  edges(ctx, part, seamless ? { farLeft: false, backRight: false, arris: false, leftFoot: false } : {}, 0x1c120a, 0.7);
-}
-
-/** Where the parapet stands inside its footprint: hard against the roof it encloses. */
-export type ParapetSide = 'north' | 'east' | 'south' | 'divider';
-
-export function parapetPart(box: IsoBox, side: ParapetSide): IsoBox {
-  const h = ROOF_PARAPET_H;
-  const t = PARAPET_T;
-  // Dividers stand in the middle of their cell; the long runs start and stop
-  // at a divider's centre line and at the east wall's inner face.
-  const mid0 = (32 - t) / 2;
-  switch (side) {
-    case 'north': return subBox(box, mid0, box.w - (32 - t), 0, t, h);
-    case 'south': return subBox(box, mid0, box.w - (32 - t), box.d - t, box.d, h);
-    case 'east': return subBox(box, 0, t, 0, box.d, h);
-    case 'divider': return subBox(box, mid0, mid0 + t, 0, box.d, h);
+export function roofParapetFace(c: Ctx, w: number, h: number, l: number): void {
+  brick(c, w, h, { base: TABRIZ_BRICK, light: l, seed: 41 }, 4, 8);
+  band(c, w, 0, 3, TABRIZ_LIME, l);
+  for (let u = 22; u < w; u += 32) {
+    c.fillStyle = 'rgba(40,24,10,0.25)';
+    c.fillRect(u, 8, 2.5, h - 8);
+    c.fillStyle = css(shade(0x4a2e18, l));
+    c.fillRect(u - 1, 6, 4.5, 3);
   }
 }

@@ -8,12 +8,15 @@ import { SERAI_BAY_H, seraiBayFace, seraiWindowFace } from './seraiWalls';
 import {
   SHIP_BULWARK_H, SHIP_CABIN_WALL_H, shipBulwarkFace, shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace,
 } from './shipCabinWalls';
-import { shrineNicheFace, shrineWallFace } from './shrineInterior';
+import { SHRINE_WALL_H, shrineNicheFace, shrineWallFace } from './shrineInterior';
+import { ARCH_WALL_H, lowArchFace } from './siyahChal';
+import { CITY_WALL_H, cityWallFace, snowyCityWallFace } from './tehranGate';
 import { TENT_CLOTH, TENT_WALL_H, tentLiningFace } from './tentInterior';
-import { lashing, stakeRow } from './timber';
+import { PALISADE, palisadeCap, palisadeFace } from './palisade';
 import { COMPOUND_WALL, compoundWallFace, TOWN_WALL, townWallFace } from './town/townWalls';
 import { vakilWallFace } from './vakilHall';
 import { BRIDGE_GALLERY_H, bridgeGalleryFace } from './isfahanBridge';
+import { ROOF_PARAPET_H, roofParapetFace } from './tabriz';
 
 /**
  * Connected walls. A wall is placed one cell at a time, but each cell's
@@ -55,21 +58,22 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     joins: ['ch6-fortress-gate', 'ch6-maku-fortress', 'ch6-chihriq-fortress'],
     face: rampartFace,
   },
+  // Ṭihrán's city wall (chapter 10), 5.7 m of rammed earth, plain in summer and snowbound in winter; see tehranGate.
   'ch10-city-wall': {
-    height: 60, thickness: 0.55, top: 0xa88660, cap: 'merlons', joins: ['gate'],
-    face: (ctx, w, h, l) => {
-      rammedEarth(ctx, w, h, 0xa88660, l, 91);
-      // Putlog holes from the formwork, and loopholes under the merlons.
-      ctx.fillStyle = 'rgba(30,18,8,0.55)';
-      for (let v = h - 11; v > 14; v -= 18) for (let u = 6; u < w; u += 16) ctx.fillRect(u, v - 3, 2, 2);
-      ctx.fillStyle = 'rgba(20,12,6,0.8)';
-      for (let u = 14; u < w; u += 32) ctx.fillRect(u, 9, 2, 8);
-      ctx.fillStyle = 'rgba(240,242,246,0.55)';
-      ctx.fillRect(0, h - 5, w, 5);
-    },
+    height: CITY_WALL_H, thickness: 0.6, top: 0xb89670, cap: 'battlements', joins: ['ch10-west-gate'],
+    face: cityWallFace,
+  },
+  'ch10-city-wall-snow': {
+    height: CITY_WALL_H, thickness: 0.6, top: 0xb89670, cap: 'snowMerlons', joins: ['ch10-west-gate'],
+    face: snowyCityWallFace,
+  },
+  // The Síyáh-Chál's walls, as high as its arcade (4.3 m); see siyahChal.
+  'ch10-low-arch': {
+    height: ARCH_WALL_H, thickness: 0.6, top: 0x2a2826, cap: 'flat', joins: ['ch10-vault-wall'],
+    face: lowArchFace,
   },
   'ch10-vault-wall': {
-    height: 84, thickness: 0.6, top: 0x2a2826, cap: 'flat',
+    height: ARCH_WALL_H, thickness: 0.6, top: 0x2a2826, cap: 'flat', joins: ['ch10-low-arch'],
     face: (ctx, w, h, l) => {
       brick(ctx, w, h, surf(0x3e3a36, l, 41), 4, 8);
       clipped(ctx, w, h, () => {
@@ -91,12 +95,10 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     height: GARDEN_WALL_H, thickness: 0.34, top: 0xa88456, cap: 'mudCoping',
     face: gardenWallFace,
   },
+  // Ṭabarsí's palisade (chapter 8): 3.5 m of stakes on an earth bank; see palisade.ts.
   'ch8-palisade': {
-    height: 42, thickness: 0.3, top: 0x5a4028, cap: 'stakes', joins: ['ch8-watchtower'],
-    face: (ctx, w, h) => {
-      ctx.fillStyle = css(0x1a120a);
-      ctx.fillRect(0, 0, w, h);
-    },
+    height: PALISADE.height, thickness: 0.36, top: 0x5a4028, cap: 'stakes', joins: ['ch8-watchtower'],
+    face: palisadeFace,
   },
   // Indoors; see interiorFace.
   'interior-wall': {
@@ -157,11 +159,11 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // The shrine of Shaykh Ṭabarsí: limewash, damp and lamp smoke; see shrineInterior.
   'ch8-shrine-wall': {
-    height: 80, thickness: 0.34, top: 0xcfc8b4, cap: 'flat', joins: ['ch8-shrine-niche'],
+    height: SHRINE_WALL_H, thickness: 0.34, top: 0xcfc8b4, cap: 'flat', joins: ['ch8-shrine-niche'],
     face: shrineWallFace,
   },
   'ch8-shrine-niche': {
-    height: 80, thickness: 0.34, top: 0xcfc8b4, cap: 'flat', joins: ['ch8-shrine-wall'],
+    height: SHRINE_WALL_H, thickness: 0.34, top: 0xcfc8b4, cap: 'flat', joins: ['ch8-shrine-wall'],
     face: shrineNicheFace,
   },
   // A Badasht pavilion seen from inside: printed cotton lining; see tentInterior.
@@ -189,6 +191,11 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   'ch5-bridge-gallery': {
     height: BRIDGE_GALLERY_H, thickness: 0.9, top: 0xc9a46a, cap: 'coping',
     face: (ctx, w, h, l) => bridgeGalleryFace(ctx, w, h, l),
+  },
+  // The low brick parapets of the Tabríz roofs (chapter 9), chest-high at true scale; see tabriz.ts.
+  'ch9-parapet-low': {
+    height: ROOF_PARAPET_H, thickness: 0.3, top: 0xd8c8a4, cap: 'coping',
+    face: roofParapetFace,
   },
 };
 
@@ -307,16 +314,7 @@ function capFaces(ctx: Ctx, style: WallStyle, box: IsoBox, p: Part, left: boolea
         rampartMerlons(ctx, w, base, offset);
         break;
       case 'stakes':
-        ctx.save();
-        ctx.translate(-(offset % 8), 0);
-        stakeRow(ctx, w + 8, box.h, light, 5 + Math.round(offset), 8, 7);
-        lashing(ctx, w + 8, box.h * 0.28, light);
-        lashing(ctx, w + 8, box.h * 0.62, light);
-        ctx.restore();
-        clipped(ctx, w, box.h, () => {
-          ctx.translate(0, box.h - 7);
-          stone(ctx, w, 7, surf(0x8a8578, light, 2), 3.5);
-        });
+        palisadeCap(ctx, w, box.h, light, offset);
         break;
       case 'coping':
         ctx.fillStyle = css(shade(style.top, light * 1.05));
@@ -440,13 +438,4 @@ function glazedFrame(ctx: Ctx, x: number, y: number, w: number, h: number, l: nu
   ctx.strokeStyle = css(shade(0xe8d9a8, l), 0.9);
   ctx.lineWidth = 0.8;
   ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-}
-
-/** Rammed earth: plaster with the horizontal lift lines of the formwork. */
-function rammedEarth(ctx: Ctx, w: number, h: number, base: number, light: number, seed: number): void {
-  plaster(ctx, w, h, surf(base, light, seed));
-  ctx.fillStyle = 'rgba(40,24,10,0.22)';
-  for (let v = 9; v < h - 2; v += 9) ctx.fillRect(0, v, w, 1);
-  ctx.fillStyle = 'rgba(255,240,210,0.1)';
-  for (let v = 10; v < h - 2; v += 9) ctx.fillRect(0, v, w, 0.8);
 }

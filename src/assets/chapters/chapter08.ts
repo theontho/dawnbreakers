@@ -1,6 +1,6 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
 import { standard } from '../art/banners';
-import { drawShrine } from '../art/shrine';
+import { drawShrine, SHRINE_DOME_PAD, SHRINE_WALL } from '../art/shrine';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH08_FOREST_TEXTURE_GENERATORS } from './chapter08Forest';
 import { CH08_FORT_TEXTURE_GENERATORS } from './chapter08Fort';
@@ -16,31 +16,32 @@ export const CH08_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   ...CH08_FOREST_TEXTURE_GENERATORS,
   ...CH08_FORT_TEXTURE_GENERATORS,
   ...CH08_SHRINE_TEXTURE_GENERATORS,
-  // The shrine seen from the forest road, greened by the damp.
+  // The shrine seen from the forest road, greened by the damp: the same building, half lost in the trees.
   'ch8-shrine-glimpse': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 64, 30);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, 58, { wall: 0xa49a7a, plinth: 0x7a7468, dome: 0x9a9a82, seed: 61, overgrown: true }));
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 6, def.footprint?.h ?? 6, SHRINE_WALL + SHRINE_DOME_PAD, 10);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, SHRINE_WALL, { wall: 0xa49a7a, plinth: 0x7a7468, dome: 0x9a9a82, seed: 61, overgrown: true }));
   },
 
   'ch8-shrine': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, 78, 30);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, 72, { wall: 0xcdbf98, plinth: 0x8a8578, dome: 0xb8b090, seed: 67, veranda: true }));
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 6, def.footprint?.h ?? 6, SHRINE_WALL + SHRINE_DOME_PAD, 10);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, SHRINE_WALL, { wall: 0xcdbf98, plinth: 0x8a8578, dome: 0xb8b090, seed: 67, veranda: true }));
   },
 
-
-  'ch8-truce-flag': (scene, def) => paintTexture(scene, def.texture, 64, 64, ctx => {
-    standard(ctx, 24, 59, 50, { cloth: 0xe8dec1, w: 32, h: 18, waves: 2, finial: 'knob' });
+  // A white cloth on a lance-pole about 3 m high.
+  'ch8-truce-flag': (scene, def) => paintTexture(scene, def.texture, 72, 96, ctx => {
+    standard(ctx, 22, 84, 72, { cloth: 0xe8dec1, w: 38, h: 26, waves: 2, finial: 'knob' });
   }),
 };
 
 /** Placeable map objects owned by chapter 8. */
 export const CH08_OBJECTS: MapObjectDefinition[] = [
   ...CH08_SHRINE_OBJECTS,
-  { id: 'ch8-shrine-glimpse', label: 'Shrine Glimpse', texture: 'ch8-shrine-glimpse', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
+  { id: 'ch8-shrine-glimpse', label: 'Shrine Glimpse', texture: 'ch8-shrine-glimpse', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 6, h: 6 }, isometric: true },
   { id: 'ch8-palisade', label: 'Palisade', texture: 'ch8-palisade', kind: 'prop', category: 'barriers-prison', color: 0x6b5136, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch8-shrine', label: 'Tabarsi Shrine', texture: 'ch8-shrine', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch8-shrine', label: 'Tabarsi Shrine', texture: 'ch8-shrine', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 6, h: 6 }, isometric: true },
   { id: 'ch8-truce-flag', label: 'Truce Flag', texture: 'ch8-truce-flag', kind: 'prop', category: 'barriers-prison', color: 0xf2ead6, blocks: true },
   // Forest
+  { id: 'ch8-woodcutter-house', label: 'Small House', texture: 'ch8-woodcutter-house', kind: 'structure', category: 'buildings', color: 0xb89a72, blocks: true, footprint: { w: 5, h: 4 }, isometric: true },
   { id: 'ch8-oak', label: 'Oak', texture: 'ch8-oak', kind: 'prop', category: 'plants', color: 0x274322, blocks: true },
   { id: 'ch8-ironwood', label: 'Ironwood', texture: 'ch8-ironwood', kind: 'prop', category: 'plants', color: 0x9a4a24, blocks: true },
   { id: 'ch8-alder', label: 'Alder', texture: 'ch8-alder', kind: 'prop', category: 'plants', color: 0x6f8a3c, blocks: true },
@@ -53,13 +54,13 @@ export const CH08_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch8-campfire', label: 'Campfire', texture: 'ch8-campfire', kind: 'prop', category: 'lighting-effects', color: 0xd0461c, blocks: true },
   // Fort and siege
   { id: 'ch8-black-standard', label: 'Black Standard', texture: 'ch8-black-standard', kind: 'prop', category: 'shrines', color: 0x1a1a1a, blocks: true },
-  { id: 'ch8-watchtower', label: 'Watchtower', texture: 'ch8-watchtower', kind: 'structure', category: 'barriers-prison', color: 0x5b3d22, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch8-lean-to', label: 'Lean-to', texture: 'ch8-lean-to', kind: 'structure', category: 'buildings', color: 0x6b5136, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch8-watchtower', label: 'Watchtower', texture: 'ch8-watchtower', kind: 'structure', category: 'barriers-prison', color: 0x5b3d22, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
+  { id: 'ch8-lean-to', label: 'Lean-to', texture: 'ch8-lean-to', kind: 'structure', category: 'buildings', color: 0x6b5136, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch8-cauldron', label: 'Cauldron', texture: 'ch8-cauldron', kind: 'prop', category: 'market-supplies', color: 0x2a2a2a, blocks: true },
   { id: 'ch8-grave', label: 'Grave', texture: 'ch8-grave', kind: 'prop', category: 'shrines', color: 0x6b4a2a, blocks: true },
   { id: 'ch8-earthwork', label: 'Earthwork', texture: 'ch8-earthwork', kind: 'prop', category: 'barriers-prison', color: 0x6b4a2a, blocks: true },
-  { id: 'ch8-army-tent', label: 'Army Tent', texture: 'ch8-army-tent', kind: 'structure', category: 'buildings', color: 0xd8cba8, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'ch8-log-bridge', label: 'Bridge', texture: 'ch8-log-bridge', kind: 'structure', category: 'bridges-water', color: 0x8a6440, blocks: false, footprint: { w: 3, h: 1 }, isometric: true },
+  { id: 'ch8-army-tent', label: 'Army Tent', texture: 'ch8-army-tent', kind: 'structure', category: 'buildings', color: 0xd8cba8, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch8-log-bridge', label: 'Bridge', texture: 'ch8-log-bridge', kind: 'structure', category: 'bridges-water', color: 0x8a6440, blocks: false, footprint: { w: 4, h: 2 }, isometric: true },
   { id: 'ch8-stone-pile', label: 'Stone Pile', texture: 'ch8-stone-pile', kind: 'prop', category: 'market-supplies', color: 0x8c8c82, blocks: true },
   // People
   { id: 'ch8-mulla-husayn', label: 'Mulla Husayn', texture: 'ch8-mulla-husayn', kind: 'character', category: 'characters', color: 0x2f4a5f, blocks: true,

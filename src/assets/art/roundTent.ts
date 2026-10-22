@@ -16,6 +16,8 @@ export interface RoundTentStyle {
   /** Height of the cone's apex above the ground. */
   apex?: number;
   pennant?: number;
+  /** Height of the canvas drum below the eave. */
+  wall?: number;
 }
 
 export function drawRoundTent(ctx: Ctx, box: IsoBox, style: RoundTentStyle = {}): void {
@@ -23,7 +25,7 @@ export function drawRoundTent(ctx: Ctx, box: IsoBox, style: RoundTentStyle = {})
   const cp = box.w / 2;
   const cq = box.d / 2;
   const R = Math.min(box.w, box.d) / 2 - 5;
-  const E = 18;
+  const E = style.wall ?? 18;
   const apexZ = style.apex ?? 80;
   const ribSag = (theta: number) => Math.abs(Math.sin((RIBS / 2) * theta));
   const at = (theta: number, r: number, z: number): WorldPt => ({ p: cp + Math.cos(theta) * r, q: cq + Math.sin(theta) * r, z });
@@ -81,7 +83,7 @@ export function drawRoundTent(ctx: Ctx, box: IsoBox, style: RoundTentStyle = {})
     ctx.quadraticCurveTo((a.x + b.x) / 2, (a.y + b.y) / 2 + 7, a.x, a.y);
     ctx.fill();
   }
-  door(ctx, box, onCloth, -Math.PI * 0.62, canvas);
+  door(ctx, box, onCloth, -Math.PI * 0.62, canvas, E * 2.6);
   pegs(ctx, box, at, R, apexZ, 'front');
   // Pole cap and pennant.
   const top = toScreen(box, { p: cp, q: cq, z: apexZ });
@@ -101,12 +103,12 @@ export function drawRoundTent(ctx: Ctx, box: IsoBox, style: RoundTentStyle = {})
 }
 
 /** A person-high slit in the canvas, its flap pinned back, dark within. */
-function door(ctx: Ctx, box: IsoBox, onCloth: (theta: number, z: number) => WorldPt, theta: number, canvas: number): void {
+function door(ctx: Ctx, box: IsoBox, onCloth: (theta: number, z: number) => WorldPt, theta: number, canvas: number, height: number): void {
   const half = 0.2;
   const s = (t: number, z: number) => toScreen(box, onCloth(t, z));
   const l = s(theta - half, 0);
   const r = s(theta + half, 0);
-  const top = s(theta, 36);
+  const top = s(theta, Math.max(36, height * 0.5));
   ctx.fillStyle = css(0x1c120a);
   ctx.beginPath();
   ctx.moveTo(l.x, l.y);

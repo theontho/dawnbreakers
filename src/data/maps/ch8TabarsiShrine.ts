@@ -2,19 +2,23 @@ import type { FlagState } from '../../dialogue/types';
 import type { DecorSpec, MapAmbience, MapDefinition } from './types';
 
 /**
- * Inside the shrine of Shaykh Ṭabarsí, autumn 1848 to spring 1849. A
- * cut-away chamber under the plain dome: the old scholar's tomb in the
- * middle, limewashed walls with lamp niches along the back, the companions'
- * bedrolls by the west wall. It follows the fort's three phases by flag:
- * building (until `ch8QuddusArrived`), winter (until `ch8MullaHusaynFell`),
- * and hunger, when the oil runs out.
+ * Inside the shrine of Shaykh Ṭabarsí, autumn 1848 to spring 1849, at true
+ * scale: a chamber about 6 m square and 4.5 m to the springing of the plain
+ * dome, seen cut away. The old scholar's tomb stands in the middle,
+ * limewashed walls with lamp niches along the back, the companions'
+ * bedrolls by the west and north walls. It follows the fort's three phases
+ * by flag: building (until `ch8QuddusArrived`), winter (until
+ * `ch8MullaHusaynFell`), and hunger, when the oil runs out.
+ *
+ * Layout: walls along y = 0 and x = 0, niches at (2, 0), (5, 0), (0, 3);
+ * the tomb at (3, 3); the doorway out at (3, 6).
  */
 
-const W = 11;
-const H = 10;
-const DOOR_X = 5;
-const TOMB = { x: 5, y: 3 };
-const NICHES = new Set(['3,0', '8,0', '0,4']);
+const W = 7;
+const H = 7;
+const DOOR_X = 3;
+const TOMB = { x: 3, y: 3 };
+const NICHES = new Set(['2,0', '5,0', '0,3']);
 
 const building = (f: FlagState) => !f.ch8QuddusArrived;
 const winter = (f: FlagState) => !!f.ch8QuddusArrived && !f.ch8MullaHusaynFell;
@@ -43,6 +47,7 @@ export const ch8TabarsiShrineMap: MapDefinition = {
   height: H,
   spawn: { x: DOOR_X, y: H - 2 },
   interior: true,
+  trueScale: true,
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'stone');
   },
@@ -52,21 +57,21 @@ export const ch8TabarsiShrineMap: MapDefinition = {
     // Under the dome: lamps at the tomb's head and foot, a Qur'án stand on its mat.
     { gridX: TOMB.x - 1, gridY: TOMB.y, texture: 'ch8-oil-lamp', blocks: true },
     { gridX: TOMB.x + 1, gridY: TOMB.y, texture: 'ch8-oil-lamp', blocks: true, present: f => !hunger(f) },
-    { gridX: 7, gridY: 5, texture: 'ch8-rahl', blocks: true },
-    { gridX: 4, gridY: 5, texture: 'ch8-kneeling-companions', blocks: true },
-    { gridX: 8, gridY: 6, texture: 'ch8-kneeling-companions', blocks: true, present: f => !hunger(f) },
+    { gridX: 5, gridY: 4, texture: 'ch8-rahl', blocks: true },
+    { gridX: 2, gridY: 5, texture: 'ch8-kneeling-companions', blocks: true },
+    { gridX: 5, gridY: 3, texture: 'ch8-kneeling-companions', blocks: true, present: f => !hunger(f) },
     // The companions' sleeping places along the west and north walls.
-    { gridX: 1, gridY: 5, texture: 'ch8-bedroll', blocks: true },
-    { gridX: 1, gridY: 6, texture: 'ch8-bedroll-dark', blocks: true },
-    { gridX: 1, gridY: 7, texture: 'ch8-bedroll', blocks: true, present: f => !hunger(f) },
-    { gridX: 1, gridY: 8, texture: 'ch8-bedroll-dark', blocks: true },
-    { gridX: 8, gridY: 1, texture: 'ch8-bedroll', blocks: true },
-    { gridX: 9, gridY: 1, texture: 'ch8-bedroll-dark', blocks: true },
-    { gridX: 10, gridY: 1, texture: 'ch8-bedroll', blocks: true },
-    { gridX: 9, gridY: 2, texture: 'ch1-sleeping-nephew', blocks: true },
-    { gridX: 1, gridY: 2, texture: 'ch9-water-jar', blocks: true },
+    { gridX: 1, gridY: 2, texture: 'ch8-bedroll', blocks: true },
+    { gridX: 1, gridY: 3, texture: 'ch8-bedroll-dark', blocks: true },
+    { gridX: 1, gridY: 4, texture: 'ch8-bedroll', blocks: true, present: f => !hunger(f) },
+    { gridX: 1, gridY: 5, texture: 'ch8-bedroll-dark', blocks: true },
+    { gridX: 4, gridY: 1, texture: 'ch8-bedroll', blocks: true },
+    { gridX: 5, gridY: 1, texture: 'ch8-bedroll-dark', blocks: true },
+    { gridX: 6, gridY: 1, texture: 'ch8-bedroll', blocks: true },
+    { gridX: 5, gridY: 2, texture: 'ch1-sleeping-nephew', blocks: true },
+    { gridX: 1, gridY: 1, texture: 'ch9-water-jar', blocks: true },
     { gridX: 2, gridY: 1, texture: 'ch2-bundles', blocks: true, present: f => !hunger(f) },
-    { gridX: 10, gridY: 4, texture: 'ch9-cloth-bundle', blocks: true },
+    { gridX: 6, gridY: 3, texture: 'ch9-cloth-bundle', blocks: true },
   ],
   npcs: [
     { gridX: TOMB.x, gridY: TOMB.y, texture: 'ch8-tomb',
@@ -76,24 +81,24 @@ export const ch8TabarsiShrineMap: MapDefinition = {
     // The keeper, through every season.
     ...([['ch8-keeper-autumn', building], ['ch8-keeper-winter', winter], ['ch8-keeper-hunger', hunger]] as const)
       .map(([dialogue, present]) => ({
-        gridX: 6, gridY: 6, texture: 'ch8-shrine-keeper',
+        gridX: 4, gridY: 5, texture: 'ch8-shrine-keeper',
         prompt: 'Speak with the Keeper of the Shrine  [E]',
         dialogue, present,
       })),
 
     // The old man from Qazvín coughs by the west wall until the spring.
-    { gridX: 2, gridY: 7, texture: 'ch8-qazvini-elder',
+    { gridX: 2, gridY: 4, texture: 'ch8-qazvini-elder',
       prompt: 'Speak with the Old Man of Qazvín  [E]',
       dialogue: 'ch8-qazvini-elder',
       present: f => !hunger(f) },
-    { gridX: 1, gridY: 7, texture: 'ch8-bedroll',
+    { gridX: 1, gridY: 4, texture: 'ch8-bedroll',
       prompt: 'Look at the empty bedroll  [E]',
       dialogue: 'ch8-empty-bedroll',
       present: hunger },
   ],
   exits: [
     { fromX: DOOR_X, fromY: H - 1, dx: 0, dy: 1,
-      targetScene: 'Ch8TabarsiFort', targetSpawnX: 14, targetSpawnY: 11,
+      targetScene: 'Ch8TabarsiFort', targetSpawnX: 21, targetSpawnY: 19,
       label: '↓ Out to the shrine court' },
   ],
   ambience: f => shrineAmbience(f),
@@ -101,7 +106,7 @@ export const ch8TabarsiShrineMap: MapDefinition = {
 
 /** Lamplit in autumn, cold in winter, and in the hungry months a single wick at the tomb. */
 function shrineAmbience(f: FlagState): MapAmbience {
-  const tomb = { gridX: TOMB.x, gridY: TOMB.y, radius: 120, color: 0xffd8a0, intensity: 0.32 };
+  const tomb = { gridX: TOMB.x, gridY: TOMB.y, radius: 150, color: 0xffd8a0, intensity: 0.32 };
   const lamp = (gridX: number, gridY: number, radius: number, intensity: number) =>
     ({ gridX, gridY, radius, color: 0xffb860, intensity });
   if (hunger(f)) {
@@ -117,9 +122,9 @@ function shrineAmbience(f: FlagState): MapAmbience {
       tomb,
       lamp(TOMB.x - 1, TOMB.y, 80, 0.5),
       lamp(TOMB.x + 1, TOMB.y, 80, 0.5),
-      lamp(3, 1, 60, 0.35),
-      lamp(8, 1, 60, 0.35),
-      lamp(1, 4, 60, 0.35),
+      lamp(2, 1, 70, 0.35),
+      lamp(5, 1, 70, 0.35),
+      lamp(1, 3, 70, 0.35),
     ],
     particles: 'motes', music: winter(f) ? 'night' : 'pilgrimage', sound: [winter(f) ? 'wind' : 'rain'],
     vignette: 0.65,

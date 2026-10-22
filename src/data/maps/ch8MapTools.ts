@@ -59,18 +59,50 @@ export class CellSet {
   has(x: number, y: number): boolean { return this.keys.has(`${x},${y}`); }
 }
 
+/** Widen a one-cell route into a lane two cells wide (each cell and its east and south neighbours). */
+export function widen(cells: readonly Cell[]): Cell[] {
+  const set = new CellSet();
+  const out: Cell[] = [];
+  for (const [x, y] of cells) {
+    for (const c of [[x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]] as const) {
+      if (!set.has(c[0], c[1])) { set.add(c[0], c[1]); out.push(c); }
+    }
+  }
+  return out;
+}
+
+/**
+ * Cells where a tall tree would stand between the camera and one of
+ * `watched`: in front of it on screen (larger x + y, up to `reach` steps)
+ * and within `width` steps across. Trees are kept out of these so people,
+ * doors and bridges are not lost under a 20 m crown.
+ */
+export function sightlines(watched: Iterable<Cell>, reach: number, width: number, w: number, h: number): CellSet {
+  const out = new CellSet();
+  for (const [px, py] of watched) {
+    for (let y = 0; y < h; y += 1) {
+      for (let x = 0; x < w; x += 1) {
+        const s = (x + y) - (px + py);
+        const d = (x - y) - (px - py);
+        if (s > 0 && s <= reach && Math.abs(d) <= width) out.add(x, y);
+      }
+    }
+  }
+  return out;
+}
+
 export interface WoodlandPalette {
-  /** Blocking textures, weighted. */
+  /** Tall trees, weighted: spaced apart, never on sightlines. */
+  trees: ReadonlyArray<readonly [string, number]>;
+  /** Low blocking cover (thickets, logs, rocks), weighted. */
   solid: ReadonlyArray<readonly [string, number]>;
   /** Non-blocking ground cover, weighted. */
   cover: ReadonlyArray<readonly [string, number]>;
 }
 
 export const MAZINDARAN_WOODS: WoodlandPalette = {
-  solid: [
-    ['ch8-oak', 30], ['ch8-ironwood', 20], ['ch8-alder', 14], ['tree', 10],
-    ['ch8-undergrowth', 16], ['ch8-log', 4], ['ch8-mossy-rock', 4],
-  ],
+  trees: [['ch8-oak', 5], ['ch8-ironwood', 3], ['ch8-alder', 2]],
+  solid: [['ch8-undergrowth', 6], ['ch8-log', 2], ['ch8-mossy-rock', 2]],
   cover: [['ch8-fern', 1]],
 };
 
@@ -91,25 +123,35 @@ export interface WoodlandOptions {
   palette: WoodlandPalette;
   /** Cells that must stay empty (paths, clearings, people, exits). */
   clear: CellSet;
-  /** Cells kept free of trees but allowed ferns (path verges). */
+  /** Cells kept free of trees and thickets but allowed ferns (path verges). */
   verge: CellSet;
-  /** Chance a free cell gets a blocking plant. */
+  /** Cells where no tall tree may stand (see `sightlines`). */
+  open: CellSet;
+  /** Chance a free cell gets a tall tree, if none stands within `spacing`. */
+  treeDensity: number;
+  /** Minimum steps between tall trees. */
+  spacing: number;
+  /** Chance a free cell gets low blocking cover. */
   density: number;
   /** Chance a verge or leftover cell gets ground cover. */
   coverDensity: number;
-  /** Optional per-cell override of density (for thinning toward clearings). */
-  densityAt?: (x: number, y: number) => number;
 }
 
-/** Scatter woodland across the free cells of a map. */
+/** Scatter woodland across the free cells of a map: spaced tall trees, thickets, ferns. */
 export function scatterWoodland(opts: WoodlandOptions): DecorSpec[] {
   const rand = seededRandom(opts.seed);
   const decor: DecorSpec[] = [];
+  const trunks: Cell[] = [];
+  const crowded = (x: number, y: number) =>
+    trunks.some(([tx, ty]) => Math.max(Math.abs(tx - x), Math.abs(ty - y)) < opts.spacing);
   for (let y = 0; y < opts.height; y += 1) {
     for (let x = 0; x < opts.width; x += 1) {
       if (opts.clear.has(x, y)) continue;
-      const roll = rand();
-      if (!opts.verge.has(x, y) && roll < (opts.densityAt?.(x, y) ?? opts.density)) {
+      const free = !opts.verge.has(x, y);
+      if (free && !opts.open.has(x, y) && rand() < opts.treeDensity && !crowded(x, y)) {
+        trunks.push([x, y]);
+        decor.push({ gridX: x, gridY: y, texture: pick(rand, opts.palette.trees), blocks: true });
+      } else if (free && rand() < opts.density) {
         decor.push({ gridX: x, gridY: y, texture: pick(rand, opts.palette.solid), blocks: true });
       } else if (rand() < opts.coverDensity) {
         decor.push({ gridX: x, gridY: y, texture: pick(rand, opts.palette.cover) });

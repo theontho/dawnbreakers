@@ -1,6 +1,8 @@
-import { css, paintTexture, rng, shade, type Ctx } from '../art/canvasKit';
+import { css, paintTexture, rng, shade, variantKey, type Ctx } from '../art/canvasKit';
+import { paintMazandaranCottage } from '../art/mazandaranCottage';
+import { ALDER_VARIANTS, IRONWOOD_VARIANTS, OAK_VARIANTS, paintForestTree } from '../art/hyrcanianWoods';
 import { endGrain, roundLog, SAWN } from '../art/timber';
-import { boulder, contactShadow, crown, frond, limb, moss, trunk } from '../art/woodland';
+import { boulder, contactShadow, crown, frond, moss } from '../art/woodland';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
@@ -10,38 +12,13 @@ import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
  * with its foot near the bottom centre so it sits on its cell.
  */
 
-const OAK_LEAVES = [0x2f5a2a, 0x3b6331, 0x274322, 0x4a6a2c, 0x5f7a32];
-const IRONWOOD_LEAVES = [0x9a3a1c, 0xb35a26, 0xc4762e, 0xd9a441, 0x7f3a1c, 0x6a5a2a];
-const ALDER_LEAVES = [0x4c6a2e, 0x5c7c36, 0x6f8a3c, 0x87a04a];
-
 export const CH08_FOREST_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  // Chestnut-leaved oak: a broad, dark crown on a short heavy bole.
-  'ch8-oak': (scene, def) => paintTexture(scene, def.texture, 68, 92, ctx => {
-    contactShadow(ctx, 37, 85, 26, 6);
-    trunk(ctx, 34, 87, 44, 9, 0x4a3220);
-    limb(ctx, 33, 58, 24, 52, 18, 40, 3, 0x3e2a1a);
-    limb(ctx, 35, 54, 44, 48, 50, 38, 3, 0x3e2a1a);
-    moss(ctx, 31, 78, 3, 6, 3);
-    crown(ctx, 34, 36, 30, 27, { leaves: OAK_LEAVES, seed: 11, masses: 13 });
-  }),
+  // The forest at its real height: oaks, ironwood and alders of 15 to 24 m; see hyrcanianWoods.
+  'ch8-oak': (scene, def) => OAK_VARIANTS.forEach((s, i) => paintForestTree(scene, variantKey(def.texture, i), s)),
+  'ch8-ironwood': (scene, def) => IRONWOOD_VARIANTS.forEach((s, i) => paintForestTree(scene, variantKey(def.texture, i), s)),
+  'ch8-alder': (scene, def) => ALDER_VARIANTS.forEach((s, i) => paintForestTree(scene, variantKey(def.texture, i), s)),
 
-  // Persian ironwood: several grey stems under a blaze of red and gold.
-  'ch8-ironwood': (scene, def) => paintTexture(scene, def.texture, 60, 84, ctx => {
-    contactShadow(ctx, 32, 78, 20, 5);
-    for (const [x, top, lean] of [[26, 44, -6], [31, 40, 1], [36, 46, 6]] as const) trunk(ctx, x, 80, top, 4, 0x7a6e60, lean);
-    ctx.fillStyle = 'rgba(40,30,20,0.35)';
-    for (const [x, y] of [[25, 62], [31, 55], [36, 66]] as const) ctx.fillRect(x, y, 2, 2);
-    crown(ctx, 30, 32, 27, 23, { leaves: IRONWOOD_LEAVES, seed: 23, masses: 12 });
-  }),
-
-  // Alder by the streams: a pale, dotted bole and a tall narrow crown.
-  'ch8-alder': (scene, def) => paintTexture(scene, def.texture, 44, 100, ctx => {
-    contactShadow(ctx, 24, 95, 14, 4);
-    trunk(ctx, 22, 97, 40, 6, 0x9a958a);
-    ctx.fillStyle = 'rgba(40,36,30,0.6)';
-    for (const y of [58, 66, 74, 83, 90]) ctx.fillRect(19 + (y % 3), y, 3, 1);
-    crown(ctx, 22, 36, 17, 31, { leaves: ALDER_LEAVES, seed: 31, masses: 10 });
-  }),
+  'ch8-woodcutter-house': (scene, def) => paintMazandaranCottage(scene, def.texture, def.footprint?.w ?? 5, def.footprint?.h ?? 4),
 
   'ch8-fern': (scene, def) => paintTexture(scene, def.texture, 48, 34, ctx => {
     contactShadow(ctx, 24, 29, 16, 4, 0.2);

@@ -1,48 +1,57 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
-import { paintHouse } from '../art/houses';
-import { drawShutteredShop, drawStreetArch, TEHRAN_MUD } from '../art/tehran';
+import { BROKEN_DOOR_TEX, drawBrokenDoor, drawShutteredShop, TEHRAN_HOUSES } from '../art/tehran';
+import { paintTehranGate } from '../art/tehranGate';
+import { drawSabat, SABAT_TOP } from '../art/tehranSabat';
+import { paintHouseSet } from '../art/town/townHouses';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH10_PRISON_TEXTURE_GENERATORS } from './chapter10Prison';
 import { CH10_ROAD_TEXTURE_GENERATORS } from './chapter10Road';
 
 /**
- * Chapter 10: the Ṭihrán prison quarter, the Síyáh-Chál pit, and the snowy
- * western gate where the road to Baghdád begins. This file registers the
- * street buildings, drawn in `art/tehran.ts`; the prison architecture,
+ * Chapter 10, at true scale: the Ṭihrán prison quarter, the Síyáh-Chál pit,
+ * and the snowy western gate where the road to Baghdád begins. This file
+ * registers the street buildings, drawn in `art/tehran.ts`,
+ * `art/tehranSabat.ts` and `art/tehranGate.ts`; the prison architecture,
  * chains, straw and the shaft of light live in `chapter10Prison.ts`, the
- * snow in `chapter10Road.ts`.
+ * snow in `chapter10Road.ts`. The city wall is a connected wall style
+ * (`ch10-city-wall`, `ch10-city-wall-snow` in walls.ts), as are the
+ * pit's arcade and vault walls (`ch10-low-arch`, `ch10-vault-wall`).
  *
- * Note: `closed-door`, `lamp`, and `crowd-shadow` are intentionally not
- * redefined here. The shared registry owns them.
+ * Note: `lamp` and `crowd-shadow` are intentionally not redefined here.
+ * The shared registry owns them.
  */
+
+const footprint = (def: Parameters<TextureGenerator>[1]): [number, number] => [def.footprint?.w ?? 1, def.footprint?.h ?? 1];
 
 export const CH10_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH10_PRISON_TEXTURE_GENERATORS,
   ...CH10_ROAD_TEXTURE_GENERATORS,
 
-  // A shut, plundered-looking house of the quarter: mud plaster, the door
-  // barred, the shutters closed.
-  'ch10-street-house': (scene, def) => paintHouse(scene, def.texture, {
-    cellsW: def.footprint?.w ?? 3, cellsD: def.footprint?.h ?? 2,
-    wallH: 62, wall: TEHRAN_MUD, door: 0x3a2a1c, frame: 0x6a5038, roof: 'stair', seed: 53, beams: true, shutters: 0x4a4038,
-  }),
+  // Houses of the quarter shut against the street: doors barred, shutters closed.
+  'ch10-street-house': (scene, def) => paintHouseSet(scene, def.texture, ...footprint(def), TEHRAN_HOUSES),
 
+  // A sābāṭ: rooms over the lane on a vault; the lane runs through its middle two columns.
   'ch10-street-arch': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 4, def.footprint?.h ?? 2, 102, 10);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawStreetArch(ctx, box));
+    const { box, texW, texH } = footprintBox(...footprint(def), SABAT_TOP, 6);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawSabat(ctx, box));
   },
 
   'ch10-shuttered-shop': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 58, 8);
+    const { box, texW, texH } = footprintBox(...footprint(def), 100, 6);
     paintTexture(scene, def.texture, texW, texH, ctx => drawShutteredShop(ctx, box));
   },
+
+  'ch10-broken-door': (scene, def) => paintTexture(scene, def.texture, BROKEN_DOOR_TEX.w, BROKEN_DOOR_TEX.h, drawBrokenDoor),
+
+  'ch10-west-gate': (scene, def) => paintTehranGate(scene, def.texture, ...footprint(def)),
 };
 
 /** Placeable map objects owned by chapter 10. */
 export const CH10_OBJECTS: MapObjectDefinition[] = [
-  { id: 'ch10-street-house', label: 'Tehran House', texture: 'ch10-street-house', kind: 'structure', category: 'buildings', color: 0x8a5a2a, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
-  { id: 'ch10-street-arch', label: 'Street Arch', texture: 'ch10-street-arch', kind: 'structure', category: 'buildings', color: 0x6b6258, blocks: true, footprint: { w: 4, h: 2 }, isometric: true },
-  { id: 'ch10-low-arch', label: 'Low Arch', texture: 'ch10-low-arch', kind: 'structure', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 4, h: 1 }, isometric: true },
+  { id: 'ch10-street-house', label: 'Tehran House', texture: 'ch10-street-house', kind: 'structure', category: 'buildings', color: 0x8a5a2a, blocks: true, footprint: { w: 6, h: 4 }, isometric: true },
+  { id: 'ch10-street-arch', label: 'Street Arch', texture: 'ch10-street-arch', kind: 'structure', category: 'buildings', color: 0x6b6258, blocks: true, footprint: { w: 6, h: 4 }, isometric: true },
+  { id: 'ch10-west-gate', label: 'City Gate', texture: 'ch10-west-gate', kind: 'structure', category: 'buildings', color: 0xa88660, blocks: true, footprint: { w: 3, h: 4 }, isometric: true },
+  { id: 'ch10-broken-door', label: 'Closed Door', texture: 'ch10-broken-door', kind: 'prop', category: 'furnishings', color: 0x4a3424, blocks: true },
   { id: 'ch10-stone-pillar', label: 'Stone Pillar', texture: 'ch10-stone-pillar', kind: 'structure', category: 'barriers-prison', color: 0x8f897c, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch10-chain-pillar', label: 'Chain Pillar', texture: 'ch10-chain-pillar', kind: 'prop', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch10-chain-post', label: 'Chain Post', texture: 'ch10-chain-post', kind: 'prop', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
@@ -52,10 +61,13 @@ export const CH10_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0x39404a, skin: 0xc8b48d, clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x242932 }, shadow: true } },
   { id: 'ch10-prisoner', label: 'Prisoner', texture: 'ch10-prisoner', kind: 'character', category: 'characters', color: 0x6b6258, blocks: true,
     character: { body: 0x3a3836, skin: 0xbda982, clothing: { style: 'robe', secondary: 0x5b554e, accent: 0x8a867d }, hat: { style: 'none' }, hair: 0x1f1b18, shadow: true } },
-  { id: 'ch10-shuttered-shop', label: 'Market Stall', texture: 'ch10-shuttered-shop', kind: 'structure', category: 'buildings', color: 0x6e5a44, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch10-shuttered-shop', label: 'Market Stall', texture: 'ch10-shuttered-shop', kind: 'structure', category: 'buildings', color: 0x6e5a44, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch10-straw', label: 'Rug', texture: 'ch10-straw', kind: 'prop', category: 'furnishings', color: 0x6f6040, blocks: false },
-  { id: 'ch10-city-wall', label: 'City Wall', texture: 'ch10-city-wall', kind: 'structure', category: 'barriers-prison', color: 0x9a7a56, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch10-vault-wall', label: 'Stone Pillar', texture: 'ch10-vault-wall', kind: 'structure', category: 'barriers-prison', color: 0x2e2c2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  // Connected walls, one cell at a time (see WALL_STYLES).
+  { id: 'ch10-city-wall', label: 'City Wall', texture: 'ch10-city-wall', kind: 'prop', category: 'barriers-prison', color: 0x9a7a56, blocks: true },
+  { id: 'ch10-city-wall-snow', label: 'City Wall', texture: 'ch10-city-wall-snow', kind: 'prop', category: 'barriers-prison', color: 0xd8d4cc, blocks: true },
+  { id: 'ch10-low-arch', label: 'Low Arch', texture: 'ch10-low-arch', kind: 'prop', category: 'barriers-prison', color: 0x6b6258, blocks: true },
+  { id: 'ch10-vault-wall', label: 'Stone Pillar', texture: 'ch10-vault-wall', kind: 'prop', category: 'barriers-prison', color: 0x2e2c2a, blocks: true },
   { id: 'ch10-snow-drift', label: 'Snow Drift', texture: 'ch10-snow-drift', kind: 'prop', category: 'lighting-effects', color: 0xe8ecf0, blocks: false },
   { id: 'ch10-snow-tracks', label: 'Snow Tracks', texture: 'ch10-snow-tracks', kind: 'prop', category: 'lighting-effects', color: 0xf2f0ea, blocks: false },
   { id: 'ch10-shopkeeper', label: 'Merchant', texture: 'ch10-shopkeeper', kind: 'character', category: 'characters', color: 0x7a5a3a, blocks: true,

@@ -22,20 +22,22 @@ const lift = (box: IsoBox, p: number, q: number, z: number) => {
 };
 
 export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  'ch8-black-standard': (scene, def) => paintTexture(scene, def.texture, 48, 116, ctx => {
-    standard(ctx, 16, 112, 100, { cloth: 0x161616, w: 28, h: 42, waves: 2, forked: true, finial: 'spear' });
+  // The Black Standard on a lance-pole some 6 m high, its cloth longer than a man.
+  'ch8-black-standard': (scene, def) => paintTexture(scene, def.texture, 72, 176, ctx => {
+    standard(ctx, 22, 160, 138, { cloth: 0x161616, w: 44, h: 64, waves: 2, forked: true, finial: 'spear' });
   }),
 
   'ch8-watchtower': (scene, def) => paintWatchtower(scene, def.texture),
 
   // Boughs laid over a ridge pole: high at the back, open at the side.
   'ch8-lean-to': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 0, 50);
+    // Two cells of boughs: high enough at the back for a man to sit up under.
+    const { box, texW, texH } = footprintBox(2, 2, 0, 70);
     paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, { ...box, h: 0 }, 6, 0.24);
+      groundShadow(ctx, { ...box, h: 0 }, 8, 0.24);
       const { w, d } = box;
-      const high = 42;
-      const low = 8;
+      const high = 62;
+      const low = 14;
       // The open end: shadowed interior with a bedroll.
       polygon(ctx, [lift(box, 0, 0, 0), lift(box, w, 0, 0), lift(box, w, 0, low), lift(box, 0, 0, high)]);
       const inside = ctx.createLinearGradient(box.x - w, 0, box.x, 0);
@@ -46,7 +48,7 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
       const roll = lift(box, w * 0.45, 4, 4);
       ctx.fillStyle = css(0x8a3a2a);
       ctx.beginPath();
-      ctx.ellipse(roll.x, roll.y, 7, 3.5, 0.45, 0, Math.PI * 2);
+      ctx.ellipse(roll.x, roll.y, 18, 6, 0.45, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = css(0xd8c8a0, 0.8);
       ctx.lineWidth = 0.8;
@@ -55,7 +57,7 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
         const a = lift(box, p, 0, 0);
         const b = lift(box, p, 0, high - (high - low) * (p / w));
         ctx.strokeStyle = css(0x4a3220);
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3.4;
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
@@ -63,7 +65,7 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
       }
       // Roof of boughs and bracken, sloping toward the viewer.
       const r = (p: number, q: number) => lift(box, p, q, high - (high - low) * (p / w));
-      const roof = [r(-2, -3), r(w + 3, -3), r(w + 3, d + 2), r(-2, d + 2)];
+      const roof = [r(-3, -5), r(w + 5, -5), r(w + 5, d + 3), r(-3, d + 3)];
       polygon(ctx, roof);
       ctx.fillStyle = css(0x4a3a24);
       ctx.fill();
@@ -71,11 +73,11 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
       polygon(ctx, roof);
       ctx.clip();
       const rand = rng(29);
-      for (let i = 0; i < 90; i++) {
+      for (let i = 0; i < 260; i++) {
         const p = rand() * (w + 4) - 3;
         const q = rand() * (d + 4) - 3;
         const a = r(p, q);
-        const b = r(p + 6 + rand() * 8, q + (rand() - 0.5) * 4);
+        const b = r(p + 10 + rand() * 14, q + (rand() - 0.5) * 6);
         ctx.strokeStyle = css(shade(0x6b5136, 0.7 + rand() * 0.6));
         ctx.lineWidth = 0.9;
         ctx.beginPath();
@@ -83,12 +85,12 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
       }
-      for (let i = 0; i < 160; i++) {
+      for (let i = 0; i < 620; i++) {
         const p = rand() * w;
         const pt = r(p, rand() * d);
         const leaf = [0x3f6a32, 0x557f3c, 0x8a7a3a, 0x9a5a2a][Math.floor(rand() * 4)]!;
         ctx.fillStyle = css(shade(leaf, 0.75 + (1 - p / w) * 0.5), 0.95);
-        ctx.fillRect(pt.x, pt.y, 2.2, 1.4);
+        ctx.fillRect(pt.x, pt.y, 3, 1.8);
       }
       ctx.restore();
       ctx.strokeStyle = 'rgba(20,10,4,0.75)';
@@ -96,15 +98,15 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
       polygon(ctx, roof);
       ctx.stroke();
       // A clay pot and a few sticks of kindling by the open end.
-      const pot = lift(box, w * 0.2, -4, 0);
-      contactShadow(ctx, pot.x + 1, pot.y, 4, 1.6, 0.3);
+      const pot = lift(box, w * 0.2, -6, 0);
+      contactShadow(ctx, pot.x + 1, pot.y, 6, 2.4, 0.3);
       ctx.fillStyle = css(0x8a5030);
       ctx.beginPath();
-      ctx.ellipse(pot.x, pot.y - 3, 3.4, 3.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(pot.x, pot.y - 5, 5.5, 5.2, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = css(0x3a2010);
-      ctx.fillRect(pot.x - 1.8, pot.y - 7, 3.6, 1.4);
-      for (let i = 0; i < 3; i++) roundLog(ctx, lift(box, w * 0.55 + i * 2, -6, 0.8), lift(box, w * 0.55 + i * 2 + 8, -3, 0.8), 0.8, { ends: 'b', seed: 40 + i });
+      ctx.fillRect(pot.x - 3, pot.y - 11, 6, 2);
+      for (let i = 0; i < 3; i++) roundLog(ctx, lift(box, w * 0.55 + i * 3, -9, 1.2), lift(box, w * 0.55 + i * 3 + 16, -4, 1.2), 1.3, { ends: 'b', seed: 40 + i });
     });
   },
 
@@ -179,12 +181,12 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     flame(ctx, 16, 29, 1.2, 4);
   }),
 
-  // The royal army's bank of rammed earth, stakes pointed at the fort.
+  // The royal army's bank of rammed earth, chest high, stakes pointed at the fort.
   'ch8-earthwork': (scene, def) => {
-    const box: IsoBox = { x: 32, y: 56, w: 32, d: 32, h: 0 };
-    paintTexture(scene, def.texture, 64, 56, ctx => {
+    const box: IsoBox = { x: 32, y: 76, w: 32, d: 32, h: 0 };
+    paintTexture(scene, def.texture, 64, 76, ctx => {
       const e = (p: number, q: number, z: number) => lift(box, p, q, z);
-      const crest = 14;
+      const crest = 32;
       const earth = 0x6b4a2a;
       contactShadow(ctx, 36, 42, 22, 9, 0.18);
       const face = (pts: Array<{ x: number; y: number }>, color: number) => {
@@ -201,52 +203,53 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
       face([e(3, 0, 0), e(29, 0, 0), e(21, 0, crest), e(12, 0, crest)], shade(earth, LIGHT.left * 0.92));
       // Clods and spade marks.
       const rand = rng(51);
-      for (let i = 0; i < 70; i++) {
+      for (let i = 0; i < 140; i++) {
         const pt = e(5 + rand() * 22, rand() * 32, rand() * crest * 0.9);
         ctx.fillStyle = css(rand() < 0.5 ? shade(earth, 1.35) : shade(earth, 0.5), 0.55);
         ctx.fillRect(pt.x, pt.y, 1.2, 1);
       }
       for (let q = 2; q < 32; q += 4) {
         const base = e(14, q, crest - 2);
-        const tip = e(4, q + 0.5, crest + (q % 8 < 4 ? 6 : 4));
-        roundLog(ctx, base, tip, 1.1, { ends: 'none', bark: 0x5a3c22, seed: q });
+        const tip = e(-2, q + 0.5, crest + (q % 8 < 4 ? 12 : 8));
+        roundLog(ctx, base, tip, 1.7, { ends: 'none', bark: 0x5a3c22, seed: q });
         ctx.fillStyle = css(0xc9a46e);
         ctx.fillRect(tip.x - 1, tip.y - 0.5, 1.4, 1.1);
       }
     });
   },
 
-  // A round Qajar army tent of canvas with a painted valance.
+  // A round Qajar army tent of canvas with a painted valance: 4 m across, its pole 4.3 m.
   'ch8-army-tent': (scene, def) => {
-    const { box, texW, texH } = footprintBox(2, 2, 80, 16);
-    paintTexture(scene, def.texture, texW + 16, texH + 4, ctx => {
-      ctx.translate(8, 0);
-      drawRoundTent(ctx, box);
+    const { box, texW, texH } = footprintBox(3, 3, 100, 20);
+    paintTexture(scene, def.texture, texW + 24, texH + 6, ctx => {
+      ctx.translate(12, 0);
+      drawRoundTent(ctx, box, { apex: 100, wall: 36 });
     });
   },
 
   'ch8-log-bridge': (scene, def) => {
-    const { box, texW, texH } = footprintBox(3, 1, 6, 20);
+    // 5.6 m of split logs on two stringers, 2.8 m wide, a hand rail a metre high.
+    const { box, texW, texH } = footprintBox(4, 2, 8, 30);
     paintTexture(scene, def.texture, texW, texH, ctx => {
       groundShadow(ctx, box, 5, 0.25);
       const { w, d, h } = box;
       for (const q of [5, d - 5]) {
-        roundLog(ctx, lift(box, -2, q, 2.5), lift(box, w + 2, q, 2.5), 3, { ends: 'b', seed: q, bark: 0x4a3220 });
+        roundLog(ctx, lift(box, -3, q, 3.5), lift(box, w + 3, q, 3.5), 4.5, { ends: 'b', seed: q, bark: 0x4a3220 });
       }
-      for (let p = 2; p < w; p += 5.4) {
-        roundLog(ctx, lift(box, p, -1, h - 2.6), lift(box, p, d + 1, h - 2.6), 2.7, { ends: 'a', seed: Math.round(p), bark: 0x6b4a2c });
+      for (let p = 2; p < w; p += 7) {
+        roundLog(ctx, lift(box, p, -2, h - 3.5), lift(box, p, d + 2, h - 3.5), 3.5, { ends: 'a', seed: Math.round(p), bark: 0x6b4a2c });
       }
       // Hand rail on the downstream side.
-      const posts = [6, w / 2, w - 6].map(p => [lift(box, p, d - 1, h), lift(box, p, d - 1, h + 17)] as const);
+      const posts = [6, w * 0.35, w * 0.65, w - 6].map(p => [lift(box, p, d - 2, h), lift(box, p, d - 2, h + 24)] as const);
       ctx.strokeStyle = css(0x3d2816);
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 3.4;
       for (const [a, b] of posts) {
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
       }
-      roundLog(ctx, lift(box, 2, d - 1, h + 16), lift(box, w - 2, d - 1, h + 16), 1.6, { ends: 'none', seed: 9 });
+      roundLog(ctx, lift(box, 2, d - 2, h + 23), lift(box, w - 2, d - 2, h + 23), 2.2, { ends: 'none', seed: 9 });
     });
   },
 
