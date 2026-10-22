@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { GARDEN_WALL_H, gardenWallFace } from './badashtProps';
+import { stairDoorFace } from './kalantarHouse';
 import { css, onLeftWall, onRightWall, onRoof, paintTexture, polygon, shade, type Ctx, type IsoBox } from './canvasKit';
 import { FOLD_WALL, foldWallFace, RAMPART, rampartFace, rampartMerlons } from './fortressProps';
 import { brick, glazedTiles, plaster, stone, type Surface } from './materials';
@@ -108,8 +109,13 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // Indoors; see interiorFace.
   'interior-wall': {
-    height: 90, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-mihrab'],
+    height: 90, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-mihrab', 'martyrs-stair-door'],
     face: (ctx, w, h, l) => interiorFace(ctx, w, h, l),
+  },
+  // The door to the stair in the Kalántar's house; see kalantarHouse.
+  'martyrs-stair-door': {
+    height: 90, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-wall'],
+    face: (ctx, w, h, l) => stairDoorFace(ctx, w, h, l, interiorFace),
   },
   // The prayer niche set into the qibla wall: a tiled frame round a pointed arch.
   'interior-mihrab': {

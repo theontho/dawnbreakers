@@ -4,7 +4,7 @@ import type { DialogueTree } from '../../dialogue/types';
  * Chapter 8, the last months at Ṭabarsí: spring 1849. Mullá Ḥusayn rests in
  * the shrine; the companions eat grass and boiled leather; a royal officer
  * brings a Qur'án sealed with a false oath. The violence that follows is
- * told briefly and without spectacle. The ending turns toward Tabríz.
+ * told briefly and without spectacle. The ending turns toward Ṭihrán.
  */
 
 /** A companion wounded in the sortie where Mullá Ḥusayn fell. */
@@ -206,7 +206,7 @@ export const quddusOath: DialogueTree = {
     after: {
       speaker: 'Narrator',
       onEnter: { set: { tabarsiComplete: true, ch8TruceResolved: true } },
-      text: 'When the news reaches the prison of Chihríq, the Báb\'s grief is so deep that for days He will see no one, and for months His pen is still. The forest closes over Ṭabarsí. Another road is already bending west, toward Tabríz.',
+      text: 'When the news reaches the prison of Chihríq, the Báb\'s grief is so deep that for days He will see no one, and for months His pen is still. The forest closes over Ṭabarsí. Another road is already bending south, over the mountains to Ṭihrán.',
     },
   },
 };

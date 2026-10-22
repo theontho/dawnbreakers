@@ -52,6 +52,8 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('urumiyyih', 'Urúmíyyih', [45.07, 37.55], 'A town of Ádhirbáyján near the great salt lake of the same name, south of Chihríq.'),
   place('khuy', 'Khuy', [44.95, 38.55], 'A town of Ádhirbáyján on the road to Mákú.'),
   place('mamaqan', 'Mamaqán', [45.97, 37.84], 'A town near Tabríz.'),
+  place('qum', 'Qum', [50.88, 34.64], 'A shrine city south of Ṭihrán, around the tomb of Fáṭimih, sister of the eighth Imám.'),
+  place('maragha', 'Marágha', [46.24, 37.39], 'A town of Ádhirbáyján south of Tabríz, near the great salt lake.'),
   place('darab', 'Dáráb', [54.55, 28.75], 'A town in Fárs, east of Shíráz.'),
   place('nayriz', 'Nayríz', [54.33, 29.2], 'A town in Fárs, where Vaḥíd and his companions were besieged and slain in 1850.'),
   place('chinar-sukhtih', 'Chinár-Súkhtih', [54.325, 29.198], '"The burnt plane tree": a quarter of Nayríz, where Vaḥíd had his house. About a thousand of its people believed when he preached in its masjid in 1850.'),

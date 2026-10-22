@@ -11,6 +11,7 @@ import { qazvinStory } from './qazvin';
 import { chapter07Story } from './chapter07';
 import { trialStory } from './trial';
 import { chapter08Story } from './chapter08';
+import { martyrsStory } from './martyrs';
 import { nayrizStory } from './nayriz';
 import { chapter09Story } from './chapter09';
 import { zanjanStory } from './zanjan';
@@ -31,6 +32,7 @@ export const CHAPTER_STORIES: Record<ChapterId, ChapterStory> = {
   badasht: chapter07Story,
   'tabriz-trial': trialStory,
   tabarsi: chapter08Story,
+  'seven-martyrs': martyrsStory,
   nayriz: nayrizStory,
   tabriz: chapter09Story,
   zanjan: zanjanStory,

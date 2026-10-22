@@ -15,6 +15,7 @@ export type ChapterId =
   | 'badasht'
   | 'tabriz-trial'
   | 'tabarsi'
+  | 'seven-martyrs'
   | 'nayriz'
   | 'tabriz'
   | 'zanjan'
@@ -39,6 +40,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   badasht: 'badashtComplete',
   'tabriz-trial': 'trialComplete',
   tabarsi: 'tabarsiComplete',
+  'seven-martyrs': 'martyrsComplete',
   nayriz: 'nayrizComplete',
   tabriz: 'martyrdomComplete',
   zanjan: 'zanjanComplete',
@@ -178,6 +180,15 @@ const SPECS: ChapterSpec[] = [
     description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
     startScene: 'Ch8ForestRoad',
     scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort', 'Ch8TabarsiShrine'],
+  },
+  {
+    id: 'seven-martyrs',
+    story: CHAPTER_STORIES['seven-martyrs'],
+    title: 'The Seven Martyrs of Ṭihrán',
+    subtitle: 'Ṭihrán, February 1850',
+    description: 'Fourteen believers are seized in the capital and told to recant. You carry the Shíráz merchants\' ransom to the Báb\'s uncle in the Kalántar\'s house, sit with the prisoners through a winter afternoon, and on the morning they are brought to the Sabzih-Maydán stand at the edge of the crowd, and listen.',
+    startScene: 'MartyrsCity',
+    scenes: ['MartyrsCity', 'MartyrsHouse', 'MartyrsSerai'],
   },
   {
     id: 'nayriz',

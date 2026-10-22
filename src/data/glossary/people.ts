@@ -67,6 +67,26 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('abul-qasim', 'Mírzá Abu\'l-Qásim', ['Mírzá Abu\'l-Qásim'],
     'A son-in-law and disciple of the late mujtahid of Núr, Mullá ʿAbbás\'s companion on the errand of 1844, who vowed the rest of his life to the service of the One he had been sent to examine.'),
 
+  // Ṭihrán, February 1850: the Seven Martyrs.
+  person('khal-i-azam', 'Ḥájí Mírzá Siyyid ʿAlí', ['Ḥájí Mírzá Siyyid ʿAlí', 'Khál-i-Aʿẓam'],
+    'The Báb\'s maternal uncle, a merchant of Shíráz, called the Khál-i-Aʿẓam, "the Greatest Uncle". He raised the Báb after His father\'s death and stood surety for Him in Shíráz. Refusing a ransom and every offer of release, he was the first of the Seven Martyrs of Ṭihrán in February 1850.'),
+  person('qurban-ali', 'Mírzá Qurbán-ʿAlí', ['Mírzá Qurbán-ʿAlí'],
+    'A revered dervish of Bárfurúsh, honoured by notables of Mázindarán, Khurásán and the court. Kept from Ṭabarsí by illness, he was one of the Seven Martyrs of Ṭihrán in 1850. His name means "a sacrifice for ʿAlí".'),
+  person('ismail-i-qumi', 'Ḥájí Mullá Ismáʿíl', ['Ḥájí Mullá Ismáʿíl'],
+    'Ḥájí Mullá Ismáʿíl-i-Qumí, of Faráhán: a student of Siyyid Káẓim who believed in Shíráz and was named Sirru\'l-Vujúd at Badasht. He was one of the Seven Martyrs of Ṭihrán in 1850.'),
+  person('turshizi', 'Siyyid Ḥusayn-i-Turshízí', ['Siyyid Ḥusayn of Turshíz'],
+    'A mujtahid of Turshíz in Khurásán, trained in Najaf, who learned of the Báb on the road from Baghdád and was one of the Seven Martyrs of Ṭihrán in 1850.'),
+  person('kirmani', 'Ḥájí Muḥammad-Taqíy-i-Kirmání', ['Ḥájí Muḥammad-Taqí of Kirmán', 'Ḥájí Muḥammad-Taqí'],
+    'A leading merchant of Kirmán, taught the Cause by the Báb\'s uncle, and one of the Seven Martyrs of Ṭihrán in 1850.'),
+  person('murtada', 'Siyyid Murtaḍáy-i-Zanjání', ['Siyyid Murtaḍá'],
+    'A merchant of Zanján whose brother fell beside Mullá Ḥusayn at Ṭabarsí. He was one of the Seven Martyrs of Ṭihrán in 1850.'),
+  person('maraghii', 'Muḥammad-Ḥusayn-i-Marághiʾí', ['Muḥammad-Ḥusayn of Marágha'],
+    'A young believer of Marágha who would tell his jailers nothing, so that they took him for dumb. He was one of the Seven Martyrs of Ṭihrán in 1850.'),
+  person('amir-nizam', 'Amír-Niẓám', ['Amír-Niẓám', 'Amír Kabír', 'Mírzá Taqí Khán'],
+    'Mírzá Taqí Khán, the Amír-Niẓám, also called the Amír Kabír: Grand Vizier to the young Náṣiri\'d-Dín Sháh from 1848 to 1851, a reformer of the army and the state, who was left to deal with the Bábís as he saw fit. He ordered the deaths of the Seven Martyrs of Ṭihrán and, in 1850, of the Báb.'),
+  person('kalantar', 'Maḥmúd Khán-i-Kalántar', ['Maḥmúd Khán'],
+    'The Kalántar, or mayor, of Ṭihrán. The fourteen believers seized in 1850 were held in his house, and Ṭáhirih was kept a prisoner on its upper floor.'),
+
   // Nayríz, 1850.
   person('zaynul-abidin-khan', 'Zaynu\'l-ʿÁbidín Khán', ['Zaynu\'l-ʿÁbidín Khán'],
     'The governor of Nayríz in 1850, who threatened death to any who welcomed Vaḥíd, besieged him in the fort of Khájih with the help of regiments from Shíráz, and broke the oath sworn on the Qur\'án that drew him out.'),

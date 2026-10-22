@@ -11,6 +11,7 @@ import { qazvinDialogues } from './dialogues_ch/qazvin';
 import { chapter07Dialogues } from './dialogues_ch/chapter07_badasht';
 import { trialDialogues } from './dialogues_ch/trial_tabriz';
 import { chapter08Dialogues } from './dialogues_ch/chapter08_tabarsi';
+import { martyrsDialogues } from './dialogues_ch/martyrs';
 import { nayrizDialogues } from './dialogues_ch/nayriz';
 import { chapter09Dialogues } from './dialogues_ch/chapter09_tabriz';
 import { zanjanDialogues } from './dialogues_ch/zanjan';
@@ -40,6 +41,7 @@ export const dialogues: Record<string, DialogueTree> = {
   ...chapter07Dialogues,
   ...trialDialogues,
   ...chapter08Dialogues,
+  ...martyrsDialogues,
   ...nayrizDialogues,
   ...chapter09Dialogues,
   ...zanjanDialogues,
