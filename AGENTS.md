@@ -28,6 +28,12 @@ Do not perform actions that could cause irreversible data loss.
 - Do not use destructive Git commands unless explicitly requested.
 - If there are files in the source tree that look like code changes and are not just temporary files, it's often ok to commit them as part of your commits, they are probably manual edits by the user or another agent who's work we want to include.
 
+## Processes & Memory
+
+- Leave nothing running when you finish: stop any dev server, browser or watcher you started (do not detach them with `nohup` or `&` and walk away). Before reporting done, check with `ps` that no Vite server, Node script or headless Chromium of yours is still alive.
+- Use the shared harness (`scripts/lib/gameBrowser.mjs`, used by `npm run smoke`, `gallery`, `look`) for headless checks: it closes the browser and server even on errors.
+- Render headless browsers in software by default; use the real GPU (`--gpu`) only to measure frame rate. GPU-backed headless runs leave their textures in the graphics driver's page pool, which adds up to gigabytes over a day of testing.
+
 ## Best Practices
 
 - No MEGAFILES.  If you start making sections in the code, or the code is longer than 500loc, then you can probably refactor and split them.
