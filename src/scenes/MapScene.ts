@@ -66,6 +66,8 @@ export class MapScene extends Phaser.Scene {
   private playerGrid = { x: 0, y: 0 };
   private map: TileKind[][] = [];
   private blocked: boolean[][] = [];
+  /** Blocking from the ground, buildings and fixed props, before anything flag-dependent. */
+  private staticBlocked: boolean[][] = [];
   private npcs!: MapNpcs;
   private buildings: Building[] = [];
   private decor: Decor[] = [];
@@ -219,18 +221,25 @@ export class MapScene extends Phaser.Scene {
     connectWalls(this, this.buildings, this.decor, this.definition);
     connectBuildings(this, this.buildings);
     this.exits = widenExits(this.definition.exits, this.map, this.blocked);
+    this.staticBlocked = this.blocked.map(row => row.slice());
   }
 
-  /** Show or hide flag-dependent props, keeping their cells' blocking in step, and open or close passages. */
+  /**
+   * Open or close passages and show or hide flag-dependent props, rebuilding
+   * blocking from the fixed grid: several props may share a cell (a lit niche
+   * and its dark wall), so a cell is blocked if anything present on it
+   * blocks. People are added on top by `npcs.refresh`, which must follow.
+   */
   private refreshDecor(flags: FlagState): void {
-    for (const { item, sprite } of this.conditionalDecor) {
-      const here = item.present!(flags);
-      sprite.setVisible(here);
-      if (item.blocks) this.blocked[item.gridY]![item.gridX] = here;
-    }
+    this.staticBlocked.forEach((row, y) => row.forEach((b, x) => { this.blocked[y]![x] = b; }));
     for (const passage of this.definition.passages ?? []) {
       const open = passage.open(flags);
       for (const { x, y } of passage.cells) this.blocked[y]![x] = !open;
+    }
+    for (const { item, sprite } of this.conditionalDecor) {
+      const here = item.present!(flags);
+      sprite.setVisible(here);
+      if (item.blocks && here) this.blocked[item.gridY]![item.gridX] = true;
     }
   }
 

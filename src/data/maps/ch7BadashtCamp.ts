@@ -196,7 +196,7 @@ export const ch7BadashtCampMap: MapDefinition = {
   doors: [
     // Quddús's pavilion; the Host's tent is never entered.
     { gridX: QUDDUS_DOOR.x, gridY: QUDDUS_DOOR.y, prompt: 'Enter Quddús\'s tent  [E]',
-      targetScene: 'Ch7QuddusTent', targetSpawnX: 2, targetSpawnY: 3 },
+      targetScene: 'Ch7QuddusTent', targetSpawnX: 3, targetSpawnY: 5 },
   ],
   exits: [
     { fromX: LANE_X, fromY: H - 1, dx: 0, dy: 1,

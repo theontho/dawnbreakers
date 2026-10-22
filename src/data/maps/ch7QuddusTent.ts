@@ -1,21 +1,21 @@
 import type { DecorSpec, MapDefinition } from './types';
 
 /**
- * Inside Quddús's pavilion in the west garden at Badasht, summer 1848, at
- * true scale: a cut-away tent 5.6 by 4.2 m, the size of the pavilion seen
- * from the garden (`ch7-tent-quddus`, 4 x 3 cells). Printed cotton lining
- * along the back walls, mattresses and bolsters against them, carpets laid
+ * Inside Quddús's pavilion in the west garden at Badasht, summer 1848: a
+ * cut-away tent drawn roomier inside (about 8.4 by 7 m) than the pavilion
+ * seen from the garden (`ch7-tent-quddus`), so there is space to move.
+ * Printed cotton lining along the back walls, mattresses and bolsters against them, carpets laid
  * edge to edge on the earth, the pole and its lantern in the middle. The
  * man of Bárfurúsh who keeps the tent is here, and Quddús's papers on a low
  * desk by the door; Quddús himself is out in his garden.
  */
 
-const W = 5;
-const H = 4;
-const DOOR_X = 2;
-const POLE = { x: 2, y: 2 } as const;
-const KEEPER = { x: 4, y: 2 } as const;
-const DESK = { x: 1, y: 3 } as const;
+const W = 7;
+const H = 6;
+const DOOR_X = 3;
+const POLE = { x: 3, y: 3 } as const;
+const KEEPER = { x: 5, y: 3 } as const;
+const DESK = { x: 1, y: 4 } as const;
 
 function liningWalls(): DecorSpec[] {
   const out: DecorSpec[] = [];
@@ -27,12 +27,12 @@ function liningWalls(): DecorSpec[] {
 const FURNISHED: ReadonlyArray<DecorSpec> = [
   { gridX: POLE.x, gridY: POLE.y, texture: 'ch7-tent-pole', blocks: true },
   // Mattresses and bolsters along the walls, where guests sit.
-  ...[2, 3].map(x => ({ gridX: x, gridY: 1, texture: 'ch7-bolster', blocks: true })),
-  { gridX: 1, gridY: 2, texture: 'ch7-bolster-west', blocks: true },
+  ...[3, 4].map(x => ({ gridX: x, gridY: 1, texture: 'ch7-bolster', blocks: true })),
+  ...[2, 3].map(y => ({ gridX: 1, gridY: y, texture: 'ch7-bolster-west', blocks: true })),
   // His few belongings in the corner; coffee kept warm for whoever comes; the ewer by the door.
   { gridX: 1, gridY: 1, texture: 'ch2-bundles', blocks: true },
-  { gridX: 4, gridY: 1, texture: 'ch3-brazier', blocks: true },
-  { gridX: 4, gridY: 3, texture: 'ch5-ewer', blocks: true },
+  { gridX: 6, gridY: 1, texture: 'ch3-brazier', blocks: true },
+  { gridX: 5, gridY: 5, texture: 'ch5-ewer', blocks: true },
 ];
 
 /** Carpets on every open cell, alternating, so the floor reads as overlapping rugs. */

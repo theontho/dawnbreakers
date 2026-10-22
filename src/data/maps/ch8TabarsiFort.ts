@@ -228,7 +228,7 @@ export const ch8TabarsiFortMap: MapDefinition = {
   doors: [
     // The shrine itself: the tomb, the lamps, the men who keep watch inside.
     { gridX: SHRINE_DOOR[0], gridY: SHRINE_DOOR[1], prompt: 'Enter the shrine  [E]',
-      targetScene: 'Ch8TabarsiShrine', targetSpawnX: 3, targetSpawnY: 5 },
+      targetScene: 'Ch8TabarsiShrine', targetSpawnX: 4, targetSpawnY: 7 },
   ],
   exits: [GATE_Y, GATE_Y + 1].map(fromY => ({
     fromX: 0, fromY, dx: -1, dy: 0,

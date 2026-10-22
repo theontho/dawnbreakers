@@ -110,8 +110,8 @@ export function placeMapNpcs(
     refresh: (latest) => {
       handle.interactables.length = 0;
       // Several specs may share a cell (someone who leaves, someone who arrives):
-      // the cell is blocked if anyone present stands on it.
-      for (const npc of placed) blocked[npc.spec.gridY]![npc.spec.gridX] = false;
+      // the cell is blocked if anyone present stands on it. The scene has just
+      // rebuilt blocking without people, so only the present are marked.
       for (const npc of placed) {
         const here = npc.spec.present ? npc.spec.present(latest) : true;
         npc.sprite.setVisible(here);

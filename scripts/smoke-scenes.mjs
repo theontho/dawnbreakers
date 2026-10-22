@@ -2,7 +2,8 @@
 /**
  * Headless smoke test: boots the game in Chromium, starts every map scene,
  * opens every NPC's dialogue and clicks through its first choice, and fails
- * on any page error. Also reports frame rate per scene.
+ * on any page error or on anyone the player cannot walk up to. Also reports
+ * frame rate per scene, and anyone who can be reached from one side only.
  *
  *   npm run smoke                       # all scenes
  *   npm run smoke -- --scenes City,Road # a subset
@@ -66,6 +67,34 @@ try {
     }));
     if (shots) await page.screenshot({ path: join(resolve(root, shots), `${key}.png`) });
 
+    // Reach: from where the player stands, how many sides of each interactable can they step to?
+    const reach = await page.evaluate((k) => {
+      const scene = window.__game.scene.getScene(k);
+      const { blocked, playerGrid } = scene;
+      const seen = new Set([`${playerGrid.x},${playerGrid.y}`]);
+      const queue = [playerGrid];
+      while (queue.length) {
+        const { x, y } = queue.shift();
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (blocked[ny]?.[nx] !== false || seen.has(`${nx},${ny}`)) continue;
+          seen.add(`${nx},${ny}`);
+          queue.push({ x: nx, y: ny });
+        }
+      }
+      // Doors and thresholds are meant to be met from one side.
+      const doorway = (i) => scene.doors.interactables.includes(i) || /door|threshold/.test(i.texture);
+      return scene.npcs.interactables.map((i) => ({
+        doorway: doorway(i),
+        name: i.prompt.replace(/\s*\[E\]$/, ''),
+        at: `${i.gridX},${i.gridY}`,
+        sides: [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => seen.has(`${i.gridX + dx},${i.gridY + dy}`)).length,
+      }));
+    }, key);
+    for (const r of reach.filter((r) => r.sides === 0)) errors.push(`unreachable: ${r.name} at ${r.at}`);
+    const tight = reach.filter((r) => r.sides === 1 && !r.doorway);
+
     // Open each NPC's dialogue and walk the first choice path to its end.
     const talked = await page.evaluate(async (k) => {
       const game = window.__game;
@@ -98,6 +127,7 @@ try {
     if (sceneErrors.length) failed = true;
     console.log(`${status.padEnd(4)} ${key.padEnd(20)} ${String(fps).padStart(4)} fps  ${talked} npc dialogues`);
     for (const e of sceneErrors) console.log(`       ${e}`);
+    for (const r of tight) console.log(`       tight: ${r.name} at ${r.at} is reachable from one side only`);
   }
 } catch (error) {
   failed = true;
