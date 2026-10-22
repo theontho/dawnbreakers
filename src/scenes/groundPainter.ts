@@ -23,6 +23,14 @@ export interface GroundSpec {
   interior?: boolean;
 }
 
+/** A rectangle of the full ground image, painted on its own (large maps are chunked). */
+export interface GroundRegion {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 type Rgb = [number, number, number];
 
 const GRASS: Rgb = [74, 107, 58];
@@ -50,13 +58,13 @@ class CoarseField {
   private readonly cols: number;
   private readonly values: Float32Array;
 
-  constructor(spec: GroundSpec, fn: (fx: number, fy: number) => number) {
-    this.cols = Math.ceil(spec.imageW / STEP) + 2;
-    const rows = Math.ceil(spec.imageH / STEP) + 2;
+  constructor(spec: GroundSpec, region: GroundRegion, fn: (fx: number, fy: number) => number) {
+    this.cols = Math.ceil(region.w / STEP) + 2;
+    const rows = Math.ceil(region.h / STEP) + 2;
     this.values = new Float32Array(this.cols * rows);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < this.cols; c++) {
-        const [fx, fy] = toGrid(spec, c * STEP, r * STEP);
+        const [fx, fy] = toGrid(spec, region.x + c * STEP, region.y + r * STEP);
         this.values[r * this.cols + c] = fn(fx, fy);
       }
     }
@@ -86,34 +94,47 @@ function toGrid(spec: GroundSpec, px: number, py: number): [number, number] {
 }
 
 interface Fields {
+  /** 1 where a cell and its eight neighbours share a terrain: no seam can reach it. */
+  uniform: Uint8Array;
+  /** Map width in cells, the row stride of `uniform`. */
+  width: number;
   wx: CoarseField;
   wy: CoarseField;
   broad: CoarseField;
   mottle: CoarseField;
 }
 
-export function paintGround(spec: GroundSpec): ImageData {
-  const { width: W, height: H, map, imageW, imageH } = spec;
-  const img = new ImageData(imageW, imageH);
-  const fields: Fields = {
-    wx: new CoarseField(spec, (fx, fy) => (fbm(fx * 1.3, fy * 1.3, 11) - 0.5) * 0.7),
-    wy: new CoarseField(spec, (fx, fy) => (fbm(fx * 1.3 + 40, fy * 1.3 - 17, 23) - 0.5) * 0.7),
-    broad: new CoarseField(spec, (fx, fy) => fbm(fx * 0.35, fy * 0.35, 3)),
-    mottle: new CoarseField(spec, (fx, fy) => fbm(fx * 3, fy * 3, 5)),
-  };
-  const data = img.data;
+export function paintGround(spec: GroundSpec, region: GroundRegion = { x: 0, y: 0, w: spec.imageW, h: spec.imageH }): ImageData {
+  const { width: W, height: H, map } = spec;
+  const img = new ImageData(region.w, region.h);
   const kindAt = (x: number, y: number): TileKind | undefined =>
     x >= 0 && y >= 0 && x < W && y < H ? map[y]![x] : undefined;
+  const fields: Fields = {
+    uniform: uniformCells(W, H, kindAt),
+    width: W,
+    wx: new CoarseField(spec, region, (fx, fy) => (fbm(fx * 1.3, fy * 1.3, 11) - 0.5) * 0.7),
+    wy: new CoarseField(spec, region, (fx, fy) => (fbm(fx * 1.3 + 40, fy * 1.3 - 17, 23) - 0.5) * 0.7),
+    broad: new CoarseField(spec, region, (fx, fy) => fbm(fx * 0.35, fy * 0.35, 3)),
+    mottle: new CoarseField(spec, region, (fx, fy) => fbm(fx * 3, fy * 3, 5)),
+  };
+  const data = img.data;
 
-  for (let py = 0; py < imageH; py++) {
-    for (let px = 0; px < imageW; px++) {
+  for (let ry = 0; ry < region.h; ry++) {
+    const py = region.y + ry;
+    for (let rx = 0; rx < region.w; rx++) {
+      const px = region.x + rx;
       // Continuous grid coordinates with cell (x, y) spanning [x, x+1).
       const dx = (px - spec.originX) / 32;
       const dy = (py - spec.originY) / 16;
       const fx = (dx + dy) / 2 + 0.5;
       const fy = (dy - dx) / 2 + 0.5;
-      const o = (py * imageW + px) * 4;
+      const o = (ry * region.w + rx) * 4;
       if (fx < 0 || fy < 0 || fx >= W || fy >= H) {
+        // Only the strip just below the south rims holds the slab's cut face;
+        // the rest of the bounding box stays transparent.
+        const above = (dy - spec.slab / 16 - dx) / 2 + 0.5;
+        const aboveX = (dx + dy - spec.slab / 16) / 2 + 0.5;
+        if ((fy < H && fx < W) || aboveX >= W + 0.01 || above >= H + 0.01) continue;
         const side = slabSide(W, H, spec, px, py, kindAt);
         if (side) {
           data[o] = side[0];
@@ -123,7 +144,7 @@ export function paintGround(spec: GroundSpec): ImageData {
         }
         continue;
       }
-      const c = groundColour(fx, fy, kindAt, fields, px, py);
+      const c = groundColour(fx, fy, kindAt, fields, rx, ry);
       data[o] = c[0];
       data[o + 1] = c[1];
       data[o + 2] = c[2];
@@ -135,13 +156,35 @@ export function paintGround(spec: GroundSpec): ImageData {
 
 type KindAt = (x: number, y: number) => TileKind | undefined;
 
+function uniformCells(W: number, H: number, kindAt: KindAt): Uint8Array {
+  const out = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const k = kindAt(x, y);
+      let same = true;
+      for (let oy = -1; oy <= 1 && same; oy++) {
+        for (let ox = -1; ox <= 1 && same; ox++) {
+          const n = kindAt(x + ox, y + oy);
+          if (n !== undefined && n !== k) same = false;
+        }
+      }
+      out[y * W + x] = same ? 1 : 0;
+    }
+  }
+  return out;
+}
+
 function groundColour(fx: number, fy: number, kindAt: KindAt, fields: Fields, px: number, py: number): Rgb {
-  // Wandering boundaries: sample the terrain through a smooth warp.
-  const built = BUILT.has(kindAt(Math.floor(fx), Math.floor(fy)) ?? 'grass');
-  const wx = built ? 0 : fields.wx.at(px, py);
-  const wy = built ? 0 : fields.wy.at(px, py);
+  const cx = Math.floor(fx);
+  const cy = Math.floor(fy);
   const broad = fields.broad.at(px, py);
   const mottle = fields.mottle.at(px, py);
+  // Deep inside one terrain the warp cannot reach a seam: skip the sampling.
+  if (fields.uniform[cy * fields.width + cx]) return surface(kindAt(cx, cy) ?? 'grass', fx, fy, kindAt, broad, mottle);
+  // Wandering boundaries: sample the terrain through a smooth warp.
+  const built = BUILT.has(kindAt(cx, cy) ?? 'grass');
+  const wx = built ? 0 : fields.wx.at(px, py);
+  const wy = built ? 0 : fields.wy.at(px, py);
   const sample = (ox: number, oy: number): TileKind =>
     kindAt(Math.floor(fx + wx + ox), Math.floor(fy + wy + oy)) ?? kindAt(Math.floor(fx), Math.floor(fy)) ?? 'grass';
   const kind = sample(0, 0);

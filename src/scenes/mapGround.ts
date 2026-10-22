@@ -4,13 +4,15 @@ import { paintGround } from './groundPainter';
 import { TILE_H, TILE_W, type TileKind } from './baseMapTypes';
 
 /**
- * The ground layer of a map, painted once per scene into a single canvas
- * texture (see `groundPainter.ts`): one draw call, and terrain that flows
- * across cell boundaries instead of a grid of identical diamonds. The
- * texture is freed when the scene shuts down.
+ * The ground layer of a map, painted once per scene (see `groundPainter.ts`):
+ * terrain that flows across cell boundaries instead of a grid of identical
+ * diamonds. Large maps are painted in chunks no wider or taller than
+ * `CHUNK` pixels, inside every GPU's texture limit. Textures are freed when
+ * the scene shuts down.
  */
 
 const SLAB_DEPTH = 18;
+const CHUNK = 2048;
 
 interface GroundState {
   mapWidth: number;
@@ -21,12 +23,9 @@ interface GroundState {
   interior?: boolean;
 }
 
-export function renderMapGround(scene: Phaser.Scene, state: GroundState): Phaser.GameObjects.Image {
+export function renderMapGround(scene: Phaser.Scene, state: GroundState): void {
   const bounds = groundBounds(state);
-  const key = `ground-${scene.scene.key}`;
-  if (scene.textures.exists(key)) scene.textures.remove(key);
-  const texture = scene.textures.createCanvas(key, bounds.width, bounds.height)!;
-  texture.context.putImageData(paintGround({
+  const spec = {
     width: state.mapWidth,
     height: state.mapHeight,
     map: state.map,
@@ -36,10 +35,21 @@ export function renderMapGround(scene: Phaser.Scene, state: GroundState): Phaser
     imageH: bounds.height,
     slab: SLAB_DEPTH,
     interior: state.interior,
-  }), 0, 0);
-  texture.refresh();
-  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.textures.remove(key));
-  return scene.add.image(bounds.x, bounds.y, key).setOrigin(0).setDepth(-1000);
+  };
+  const keys: string[] = [];
+  for (let y = 0; y < bounds.height; y += CHUNK) {
+    for (let x = 0; x < bounds.width; x += CHUNK) {
+      const region = { x, y, w: Math.min(CHUNK, bounds.width - x), h: Math.min(CHUNK, bounds.height - y) };
+      const key = `ground-${scene.scene.key}-${keys.length}`;
+      if (scene.textures.exists(key)) scene.textures.remove(key);
+      const texture = scene.textures.createCanvas(key, region.w, region.h)!;
+      texture.context.putImageData(paintGround(spec, region), 0, 0);
+      texture.refresh();
+      scene.add.image(bounds.x + x, bounds.y + y, key).setOrigin(0).setDepth(-1000);
+      keys.push(key);
+    }
+  }
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => keys.forEach(key => scene.textures.remove(key)));
 }
 
 function groundBounds(state: GroundState): Phaser.Geom.Rectangle {
