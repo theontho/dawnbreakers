@@ -20,6 +20,8 @@ export interface CharacterTextureOptions {
     accent?: number;
   };
   hair?: number;
+  /** Overrides the beard the headwear implies: a youth's first moustache, say. */
+  beard?: FigureSpec['beard'];
   shadow?: boolean;
 }
 
@@ -53,7 +55,7 @@ function resolveFigure(options: CharacterTextureOptions): FigureSpec {
     hatColor: options.hat?.color ?? secondary,
     hatAccent: options.hat?.accent ?? accent,
     hair: options.hair ?? DEFAULT_HAIR,
-    beard: beardFor(clothing, hat),
+    beard: options.beard ?? beardFor(clothing, hat),
     shadow: options.shadow ?? false,
   };
 }

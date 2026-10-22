@@ -35,6 +35,8 @@ export const NUR_OBJECTS: MapObjectDefinition[] = [
   person('nur-musa', 'Witness', 0x2f3f52, { body: 0x2f3f52, skin: 0xdcc098, clothing: { style: 'sash', secondary: 0x1e2a38, accent: 0xd8c7a0 }, hat: { style: 'tallHat', color: 0x1a1a1e }, hair: 0x2a1a10, shadow: true }),
   person('nur-baker', 'Townsman', 0x7a6a50, { body: 0x7a6a50, skin: 0xc8a070, clothing: { style: 'apron', secondary: 0xd8cfb8, accent: 0x8a6a3a }, hat: { style: 'cap', color: 0xe8e0cc }, hair: 0x1c120a, shadow: true }),
   person('nur-poor-man', 'Townsman', 0x5a5244, { body: 0x5a5244, skin: 0xc09a70, clothing: { style: 'wrap', secondary: 0x3e382e, accent: 0x8a8070 }, hat: { style: 'cap', color: 0x6a6050 }, hair: 0xa8a29a, shadow: true }),
+  // The chapter's witness: a young student of the madrasa, in a plain robe and a small student's turban.
+  person('nur-witness', 'Player', 0x5a4632, { body: 0x5a4632, skin: 0xd8b68c, clothing: { style: 'robe', secondary: 0x3e3022, accent: 0xb89a62 }, hat: { style: 'turban', color: 0xe4dcc6, accent: 0x5a4632 }, hair: 0x241810, shadow: true }),
   // Núr
   person('nur-woman', 'Village Woman', 0x2f5a4a, { body: 0x2f5a4a, skin: 0xd6b48a, clothing: { style: 'wrap', secondary: 0x8a2f2a, accent: 0xd9a441 }, hat: { style: 'headscarf', color: 0xe8e2d0 }, shadow: true }),
   person('nur-elder', 'Townsman', 0x5a4030, { body: 0x5a4030, skin: 0xd0aa80, clothing: { style: 'sash', secondary: 0x3a5a3a, accent: 0xd8b04a }, hat: { style: 'cap', color: 0x2a2a2e }, hair: 0xc8c0b0, shadow: true }),

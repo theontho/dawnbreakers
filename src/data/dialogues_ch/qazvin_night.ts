@@ -49,7 +49,7 @@ export const hadiWary: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Muḥammad-Hádí',
-      text: '(A man stands under the trees with three saddled horses, and his hand goes to his sash as you come through the postern.) Peace. This is no hour for walking, friend. Go back in, and forget that you saw horses.',
+      text: '(A man stands under the trees with three saddled horses, and his hand goes to his sash as you come through the postern.) Peace. This is no hour for a girl to be walking. Go back in, and forget that you saw horses.',
     },
   },
 };
@@ -118,7 +118,7 @@ export const flight: DialogueTree = {
     },
     speak: {
       speaker: 'Qurratu\'l-ʿAyn',
-      text: 'Karbilá again. You keep finding me in the dark. (She lays a hand on the grey\'s neck.) I told my cousin God would free me within nine days. It has been eight. I did not know how it would be done. I only knew by Whom.',
+      text: 'The daughter of Qazvín. You keep finding me in the dark. (She lays a hand on the grey\'s neck.) I told my cousin God would free me within nine days. It has been eight. I did not know how it would be done. I only knew by Whom.',
       choices: [
         { text: '"Were you afraid?"', next: 'afraid' },
         { text: '"Where will you go?"', next: 'where' },
@@ -147,7 +147,7 @@ export const flight: DialogueTree = {
     close: {
       speaker: 'Narrator',
       onEnter: { set: { qazvinComplete: true } },
-      text: 'Bahá\'u\'lláh follows a few days behind. Summer is coming. In a hamlet called Badasht, between Mázindarán and Khurásán, three gardens are being made ready, and there the Solace of the Eyes will be given another name.',
+      text: 'You slip home before the call to dawn prayer and tell no one, not even your mother. Bahá\'u\'lláh follows her a few days behind. Summer is coming. In a hamlet called Badasht, between Mázindarán and Khurásán, three gardens are being made ready, and there the Solace of the Eyes will be given another name.',
     },
   },
 };

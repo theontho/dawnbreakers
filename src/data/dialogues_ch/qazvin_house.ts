@@ -17,7 +17,7 @@ export const father: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Mullá Ṣáliḥ',
-      text: '(An old man in a white turban sits by the pool with a book he is not reading.) A guest. Forgive me if I do not rise. My brother is three days in his grave, and I have not slept since.',
+      text: '(An old man in a white turban sits by the pool with a book he is not reading.) A daughter of the quarter? Forgive me if I do not rise. My brother is three days in his grave, and I have not slept since.',
       choices: [
         { text: '"I am sorry for your brother."', next: 'brother' },
         { text: '"I came to ask after your daughter."', next: 'daughter' },
@@ -46,7 +46,7 @@ export const father: DialogueTree = {
     speak: {
       speaker: 'Mullá Ṣáliḥ',
       onEnter: { set: { qzMetFather: true } },
-      text: 'Through the door, if she wishes it. Say who you are; she remembers every friend from Karbilá. (He opens the book again.) And if you are one of hers, do not stay long in this town. My nephews have long memories and short tempers.',
+      text: 'Through the door, if she wishes it. Say who you are; she remembers every friend from Karbilá. (He opens the book again.) And if you are one of hers, keep it from your neighbours. My nephews have long memories and short tempers.',
     },
   },
 };
@@ -58,12 +58,12 @@ export const door: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'A plain door of walnut, studded with iron, in the wall of the women\'s court. On the far side, slippers on stone, then stillness. Someone is listening.',
-      choices: [{ text: '(Say your name, and that you came from Karbilá.)', next: 'voice' }],
+      text: 'A plain door of walnut, studded with iron, in the wall of the women\'s court. Her cousins\' women keep the key, and they let no one through, not even a woman. On the far side, slippers on stone, then stillness. Someone is listening.',
+      choices: [{ text: '(Say your name, and that you knelt at her curtain in Karbilá.)', next: 'voice' }],
     },
     voice: {
       speaker: 'Qurratu\'l-ʿAyn',
-      text: 'Karbilá! (A soft laugh through the wood.) The one who knelt in the empty place, on the night of the bright dresses. You have come a long way to find me behind another curtain. This one is made of walnut.',
+      text: 'Karbilá! (A soft laugh through the wood.) The daughter of Qazvín who knelt at the curtain\'s edge, on the night of the bright dresses. And now you find me behind another curtain. This one is made of walnut.',
       choices: [
         { text: '"Are they treating you well?"', next: 'well' },
         { text: '"They say you ordered the killing."', next: 'killing' },

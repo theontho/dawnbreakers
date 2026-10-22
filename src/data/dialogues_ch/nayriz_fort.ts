@@ -178,12 +178,12 @@ export const vahidOath: DialogueTree = {
       text: '(He says it quietly, as a man tells the time of day.) Our appointed hour has struck.',
       choices: [
         { text: '"You cannot trust them."', next: 'trust' },
-        { text: '"Remember the oath they swore at Ṭabarsí."', next: 'tabarsi', requires: f => !!f.tabarsiComplete },
+        { text: '"Men say they swore on the Qur\'án at Ṭabarsí too."', next: 'tabarsi' },
       ],
     },
     tabarsi: {
       speaker: 'Vaḥíd',
-      text: 'I remember it. Quddús went down on such a Book. (He holds it to his chest.) I would have gone to Ṭabarsí myself, if the way had been open. Perhaps this is the way.',
+      text: 'They did. Quddús went down on such a Book. (He holds it to his chest.) I would have gone to Ṭabarsí myself, if the way had been open. Perhaps this is the way.',
       choices: [{ text: '"You cannot trust them."', next: 'trust' }],
     },
     trust: {

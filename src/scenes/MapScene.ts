@@ -18,7 +18,7 @@ import {
 } from './baseMapTypes';
 import { createBaseMapHud } from './baseMapHud';
 import { getBaseMapWorldBounds, renderBaseMapWorld, renderExitGlows, WORLD_BACKDROP_COLOR, type RenderedWorld } from './baseMapWorld';
-import { handleBaseMapEnding, launchBaseMapDialogue, openBaseMapChapterEnd } from './baseMapFlow';
+import { handleBaseMapEnding, launchBaseMapDialogue, openBaseMapChapterEnd, scheduleChapterOpening } from './baseMapFlow';
 import {
   exitIsOpen,
   handleBaseMapMovement,
@@ -193,6 +193,8 @@ export class MapScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.bookmark();
+    scheduleChapterOpening(this, this.chapter, tree =>
+      launchBaseMapDialogue(this, tree, visible => this.setMobileControlsVisible(visible), () => this.afterDialogue()));
   }
 
   private bookmark(): void {
@@ -287,7 +289,7 @@ export class MapScene extends Phaser.Scene {
 
   private spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
-    this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, 'player')
+    this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, this.chapter?.player ?? 'player')
       .setOrigin(0.5, 1).setDepth(pos.sy + 2);
   }
 

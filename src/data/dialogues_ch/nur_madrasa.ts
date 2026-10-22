@@ -7,7 +7,29 @@ import type { DialogueTree } from '../../dialogue/types';
  * room until the next day. Ḥájí Mírzá Muḥammad-i-Khurásání, the leader of
  * the Shaykhís of Ṭihrán, who taught there, has rejected him; his student
  * Mullá Muḥammad-i-Muʿallim of Núr overheard it all through the wall.
+ *
+ * This chapter's witness is not the pilgrim of the other chapters but a
+ * young student of the madrasa, a pupil of the Ḥájí's like the tutor, whose
+ * cell is two doors from his (`nur-opening` says so).
  */
+
+/** The chapter's opening narration: who the player is this time. */
+export const nurOpening: DialogueTree = {
+  id: 'nur-opening',
+  startId: 'g',
+  nodes: {
+    g: {
+      speaker: 'Narrator',
+      text: 'In this chapter you are someone else. The pilgrim you have followed from Shíráz has gone down to Búshihr and the sea. Here in Ṭihrán you are a young student of the madrasa of Mírzá Ṣáliḥ, which the quarter calls Pá-Minár, the foot of the minaret.',
+      choices: [{ text: '(Listen.)', next: 'who' }],
+    },
+    who: {
+      speaker: 'Narrator',
+      onEnter: { set: { nurWitness: true } },
+      text: 'You read with Ḥájí Mírzá Muḥammad, the leader of the Shaykhís of the city, and your cell is two doors from his favoured pupil, a tutor from Núr. For some days a tall mullá from Khurásán has lodged in the west cell. Today your teacher quarrelled with him, and the whole court heard it.',
+    },
+  },
+};
 
 /** The madrasa's porter, sweeping the court at the end of the day. */
 export const nurPorter: DialogueTree = {
@@ -16,21 +38,21 @@ export const nurPorter: DialogueTree = {
   nodes: {
     g: {
       speaker: 'The Porter',
-      text: '(An old man is sweeping plane leaves toward the gate.) A traveller? This is the madrasa of Mírzá Ṣáliḥ. The quarter calls it Pá-Minár, the foot of the minaret, for the minaret there in the corner.',
+      text: '(The old porter is sweeping plane leaves toward the gate.) Still out of your cell, young sir? Your lamp will burn down for nothing. Or are you waiting up for the tall one, like half the court?',
       choices: [
-        { text: '"I am looking for a mullá from Khurásán. Mullá Ḥusayn."', next: 'him' },
-        { text: '"Who teaches here?"', next: 'haji' },
+        { text: '"Is he back yet? Mullá Ḥusayn."', next: 'him' },
+        { text: '"What did he and the Ḥájí talk of today?"', next: 'haji' },
       ],
     },
     him: {
       speaker: 'The Porter',
-      text: 'The tall one with the quiet voice? He has the cell on the west side. He goes out before the bread is baked and comes back an hour after sunset. Then he shuts his door, and that is the last anyone sees of him.',
-      choices: [{ text: '"Who teaches here?"', next: 'haji' }],
+      text: 'The tall one with the quiet voice? Not yet. He goes out before the bread is baked and comes back an hour after sunset. Then he shuts his door, and that is the last anyone sees of him.',
+      choices: [{ text: '"What did he and the Ḥájí talk of today?"', next: 'haji' }],
     },
     haji: {
       speaker: 'The Porter',
       onEnter: { set: { nurHeardPorter: true } },
-      text: 'Ḥájí Mírzá Muḥammad, of Khurásán too, the head of the Shaykhís of Ṭihrán. (He leans on his broom.) Today he and the tall mullá talked a long while, and not sweetly. If you want my advice, do not mention the one to the other.',
+      text: 'Your teacher is of Khurásán too, and the head of the Shaykhís of Ṭihrán, and he thought the tall one had come to serve him. (He leans on his broom.) They talked a long while, and not sweetly. If you want my advice, do not mention the one to the other.',
     },
   },
 };
@@ -42,15 +64,15 @@ export const nurHaji: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Ḥájí Mírzá Muḥammad',
-      text: '(An old divine sits on the rug before his cell, a book open and unread on his knee.) You have the dust of the south road on you. Do not tell me you have come with that man from Bushrúyih.',
+      text: '(Your teacher sits on the rug before his cell, a book open and unread on his knee.) You were at my lesson this morning with your mind in the court. Do not tell me you too have been listening to that man from Bushrúyih.',
       choices: [
-        { text: '"I followed him from Shíráz."', next: 'shiraz' },
-        { text: '"I am a student of the late Siyyid Káẓim, as he is."', next: 'kazim' },
+        { text: '"The whole court is talking of him, Ḥájí."', next: 'shiraz' },
+        { text: '"He was a disciple of the late Siyyid Káẓim, whom you revere."', next: 'kazim' },
       ],
     },
     shiraz: {
       speaker: 'Ḥájí Mírzá Muḥammad',
-      text: 'From Shíráz. Of course. Everything is from Shíráz now.',
+      text: 'Of course it is. He comes from Shíráz, and everything is from Shíráz now.',
       choices: [{ text: '"What has he done to offend you?"', next: 'hope' }],
     },
     kazim: {
@@ -71,7 +93,7 @@ export const nurHaji: DialogueTree = {
     answer: {
       speaker: 'Ḥájí Mírzá Muḥammad',
       onEnter: { set: { nurHeardHaji: true } },
-      text: 'That he does not mean to stay long in Ṭihrán, and that he has no wish to abase the teachings of Shaykh Aḥmad and the Siyyid. (He closes the book.) Courteous. He was always courteous. Good night to you.',
+      text: 'That he does not mean to stay long in Ṭihrán, and that he has no wish to abase the teachings of Shaykh Aḥmad and the Siyyid. (He closes the book.) Courteous. He was always courteous. Go to your cell, boy. Good night.',
     },
   },
 };
@@ -95,9 +117,9 @@ export const nurTutor: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Mullá Muḥammad-i-Muʿallim',
-      text: '(A younger mullá stands at the next door along, as if he had just been about to go in for some time.) Peace be upon you. You are the one who asked for the stranger from Khurásán.',
+      text: '(The tutor from Núr stands at his door, as if he had just been about to go in for some time.) Peace be upon you, brother. You were in the court today. Did you hear them?',
       choices: [
-        { text: '"You know him?"', next: 'wall' },
+        { text: '"Only the Ḥájí\'s voice, raised."', next: 'wall' },
         { text: '"Your teacher was not pleased with him."', next: 'wall' },
       ],
     },
@@ -111,12 +133,12 @@ export const nurTutor: DialogueTree = {
       text: 'A young man speaking with such ardour, such fluency and learning, as I have never heard. And my teacher answering him with evasions, and with contempt. (He lowers his voice.) I was ashamed. I said nothing.',
       choices: [
         { text: '"Go and speak with him."', next: 'notYet' },
-        { text: '"Where are you from?"', next: 'nur' },
+        { text: '"You are a Shaykhí, as he is."', next: 'nur' },
       ],
     },
     nur: {
       speaker: 'Mullá Muḥammad-i-Muʿallim',
-      text: 'From Núr, in Mázindarán. They call me Muʿallim, the teacher; I am a tutor. I loved Shaykh Aḥmad and Siyyid Káẓim as he does. (He glances at his teacher\'s door.) I should go and speak with him, I know it.',
+      text: 'A Shaykhí of Núr, who tutors the sons of the great houses for his bread. I loved Shaykh Aḥmad and Siyyid Káẓim as he does. (He glances at his teacher\'s door.) I should go and speak with him, I know it.',
       choices: [{ text: '"Then go."', next: 'notYet' }],
     },
     notYet: {
@@ -134,7 +156,7 @@ export const nurTutorWaiting: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Mullá Muḥammad-i-Muʿallim',
-      text: 'He has come in. I saw his lamp. (He is very pale.) At midnight, when the Ḥájí\'s lamp is out. Go and sit by him, if you are his friend. I will come.',
+      text: 'He has come in. I saw his lamp. (He is very pale.) At midnight, when the Ḥájí\'s lamp is out. Go and sit by him, brother, so that he is not alone. I will come.',
     },
   },
 };
@@ -158,7 +180,7 @@ export const nurCellWait: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'You sit down by the lamp on the edge of the platform, as once you sat by another door in Shíráz. The sky over the arcade goes from copper to ash. The students go in one by one. The Ḥájí\'s lamp burns on.',
+      text: 'You sit down by the lamp on the edge of the platform, where you have no business to be. The sky over the arcade goes from copper to ash. The other students go in one by one. The Ḥájí\'s lamp burns on.',
       choices: [{ text: '(Wait.)', next: 'comes' }],
     },
     comes: {
@@ -170,6 +192,7 @@ export const nurCellWait: DialogueTree = {
 };
 
 export const nurMadrasaDialogues: Record<string, DialogueTree> = {
+  [nurOpening.id]: nurOpening,
   [nurPorter.id]: nurPorter,
   [nurHaji.id]: nurHaji,
   [nurHajiMorning.id]: nurHajiMorning,

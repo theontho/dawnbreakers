@@ -204,16 +204,14 @@ export const nurHouseTakur: DialogueTree = {
       speaker: 'Narrator',
       text: 'Far to the east, in Khurásán, Mullá Ḥusayn is writing his letter: of Iṣfahán and Káshán, of a scroll carried at dawn, of the journey to Mázindarán and what has happened in Núr. It will go south by way of Yazd, and reach the Báb in Shíráz on a holy night of Ramaḍán, with Quddús beside Him; and Nabíl records that He rejoiced, and spoke of a marvel that had come to pass between the months of Jamádí and Rajab.',
       choices: [
-        { text: '"A secret hidden in Ṭihrán. I stood at its door, and I did not go in."', next: 'end',
-          requires: f => f.recognised === true },
-        { text: '"I still do not know what I saw. But I know where I saw it."', next: 'end',
-          requires: f => f.recognised !== true },
+        { text: '"A secret hidden in Ṭihrán. I stood at its door, and I did not go in."', next: 'end' },
+        { text: '"I still do not know what I saw. But I know where I saw it."', next: 'end' },
       ],
     },
     end: {
       speaker: 'Narrator',
       onEnter: { set: { nurComplete: true } },
-      text: 'You go down out of the hills with the wet woods at your back and take the long road south, across the whole of Persia, to Búshihr and the sea, where pilgrim ships wait for the wind to the Ḥijáz.',
+      text: 'You go down out of the hills with the wet woods at your back, to your cell and your books in Ṭihrán, and you keep the secret as you were charged. Far to the south a pilgrim ship has put out from Búshihr for the Ḥijáz, and the pilgrim you followed from Shíráz is aboard her.',
     },
   },
 };

@@ -4,7 +4,7 @@ import type { ChapterStory } from './types';
 export const qazvinStory: ChapterStory = {
   objectives: [
     {
-      text: 'Sit among the listeners in the house of Siyyid Káẓim',
+      text: 'Kneel at the curtain\'s edge in the house of Siyyid Káẓim',
       done: f => karbilaRounds(f) >= KARBILA_NEEDED && !!f.qzHeardCurtain,
       progress: f => ({ current: Math.min(karbilaRounds(f), KARBILA_NEEDED), total: KARBILA_NEEDED }),
     },
@@ -31,6 +31,11 @@ export const qazvinStory: ChapterStory = {
     },
   ],
   journal: [
+    {
+      flag: 'qzWitness',
+      title: 'A Daughter of Qazvín',
+      body: 'In this chapter you were not the pilgrim from Shíráz but a young woman of Qazvín, in Karbilá with your mother for Muḥarram, who went to hear a woman of your own city teach.',
+    },
     {
       flag: 'qzHeardCurtain',
       title: 'Behind the Curtain',

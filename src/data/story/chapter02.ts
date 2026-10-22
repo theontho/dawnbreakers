@@ -99,8 +99,8 @@ export const chapter02Story: ChapterStory = {
     },
     {
       flag: 'roadComplete',
-      title: 'The Road North',
-      body: 'Mullá Ḥusayn climbed into the pass toward Iṣfahán. The pilgrim ships could wait: you took the same road north, a day behind him, toward the mystery he was sent to find in Ṭihrán.',
+      title: 'The Road to the Sea',
+      body: 'Mullá Ḥusayn climbed into the pass toward Iṣfahán, and the mystery he was sent to find in Ṭihrán. You turned south, down the road to Búshihr and the pilgrim ships.',
     },
   ],
 };

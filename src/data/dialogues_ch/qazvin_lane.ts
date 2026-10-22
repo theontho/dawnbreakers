@@ -16,7 +16,7 @@ export const baker: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Baker',
-      text: 'Bread? Take it, take it, I am not counting coins this week. (He slaps a round of dough onto the oven wall.) You came in on the Hamadán road. Then you have not heard what happened over there. (He nods toward the mosque.)',
+      text: 'Bread? Take it, take it, I am not counting coins this week. (He slaps a round of dough onto the oven wall.) They have kept you indoors since it happened, I suppose, like every daughter in Qazvín. Then you have not heard it properly. (He nods toward the mosque.)',
       choices: [{ text: '"Tell me."', next: 'dawn' }],
     },
     dawn: {
@@ -44,10 +44,10 @@ export const farrash: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Farrásh',
-      text: '(He holds a list, and he is not reading it.) Move on, traveller. Unless your name is on this.',
+      text: '(He holds a list, and he is not reading it.) Go home, daughter. There are no women on this list. Not yet.',
       choices: [
         { text: '"Whose names are on it?"', next: 'names' },
-        { text: '"I am only passing through."', next: 'names' },
+        { text: '"I am on my way home."', next: 'names' },
       ],
     },
     names: {
@@ -58,7 +58,7 @@ export const farrash: DialogueTree = {
     believe: {
       speaker: 'A Farrásh',
       onEnter: { set: { qzMetFarrash: true } },
-      text: '(He looks at the mosque door a long time.) A man has confessed, and the governor has him. And still I am told to bring in more. The heirs want blood for blood, and they are not particular whose. Go along, friend, before I remember to ask your name.',
+      text: '(He looks at the mosque door a long time.) A man has confessed, and the governor has him. And still I am told to bring in more. The heirs want blood for blood, and they are not particular whose. Go along, daughter, before I remember to ask whose house you come from.',
     },
   },
 };

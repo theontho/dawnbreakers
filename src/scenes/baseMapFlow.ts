@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { chapterByScene } from '../data/chapters';
+import { chapterByScene, type Chapter } from '../data/chapters';
+import { dialogues } from '../data/dialogues';
 import type { DialogueTree } from '../dialogue/types';
 import { applyEffect, getFlags } from '../dialogue/flags';
 import type { DialogueLaunch } from './DialogueScene';
@@ -49,4 +50,28 @@ export function openBaseMapChapterEnd(
   setMobileControlsVisible(false);
   scene.scene.launch('ChapterEnd', { chapterId, from: scene.scene.key });
   scene.scene.pause();
+}
+
+/**
+ * Plays a chapter's opening narration once, on the first frame after the
+ * player first arrives in its start scene (see `Chapter.opening`).
+ */
+export function scheduleChapterOpening(
+  scene: Phaser.Scene,
+  chapter: Chapter | undefined,
+  launch: (tree: DialogueTree) => void,
+): void {
+  if (!chapter?.opening || scene.scene.key !== chapter.startScene) return;
+  const tree = dialogues[chapter.opening];
+  if (!tree) {
+    console.error(`Unknown opening dialogue "${chapter.opening}" for chapter ${chapter.id}`);
+    return;
+  }
+  const seen = `opened_${chapter.id}`;
+  if (getFlags()[seen]) return;
+  scene.events.once(Phaser.Scenes.Events.UPDATE, () => {
+    if (scene.scene.isActive('Dialogue')) return;
+    applyEffect({ set: { [seen]: true } });
+    launch(tree);
+  });
 }

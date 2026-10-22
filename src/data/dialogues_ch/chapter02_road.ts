@@ -162,7 +162,7 @@ export const husaynParting: DialogueTree = {
     end: {
       speaker: 'Narrator',
       onEnter: { set: { roadComplete: true } },
-      text: 'He climbs into the pass and does not look back. You watch until he is no larger than a letter on a page. The ships at Búshihr can wait for another wind. You shoulder your bundle and take the same road north, a day behind him, toward Iṣfahán and Ṭihrán.',
+      text: 'He climbs into the pass and does not look back. You watch until he is no larger than a letter on a page. Then you shoulder your bundle and turn south, down the long road to Búshihr, where the pilgrim ships wait for the wind to the Ḥijáz.',
     },
   },
 };

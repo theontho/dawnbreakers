@@ -67,6 +67,32 @@ async function walkDialogues(k) {
   };
   let talked = 0;
   const unfinished = [];
+  const dialogue = game.scene.getScene('Dialogue');
+  // Walk the open dialogue along its first open choices; returns whether it ended.
+  const walkOpen = async () => {
+    for (let step = 0; step < MAX_STEPS; step++) {
+      const node = dialogue.tree.nodes[dialogue.currentId];
+      const flags = JSON.parse(localStorage.getItem('dawnbreakers.flags.v1') ?? '{}');
+      const choices = node?.choices?.filter((c) => !c.requires || c.requires(flags)) ?? [{}];
+      const choice = choices[0] ?? {};
+      // Choosing a choice that leads nowhere finishes the dialogue; its stop lands on the next frame.
+      const ended = !node || !choice.next || !dialogue.tree.nodes[choice.next];
+      dialogue.choose(choice);
+      await new Promise((r) => setTimeout(r, 0));
+      if (ended) return true;
+    }
+    return false;
+  };
+  const closeUnfinished = (who, tree) => {
+    unfinished.push(`${who} ("${tree.id}") did not end in ${MAX_STEPS} first choices; closed it`);
+    game.scene.stop('Dialogue');
+    game.scene.resume(k);
+  };
+  // A chapter's opening narration plays by itself on its first scene (it is open by now).
+  if (game.scene.isActive('Dialogue')) {
+    const tree = dialogue.tree;
+    if (!(await walkOpen())) closeUnfinished('opening', tree);
+  }
   // Doors lead to other maps; only people and story objects open dialogues.
   const people = scene.npcs.interactables.filter((i) => !scene.doors.interactables.includes(i));
   for (const npc of people) {
@@ -75,29 +101,13 @@ async function walkDialogues(k) {
       break;
     }
     npc.action();
-    const dialogue = game.scene.getScene('Dialogue');
     const who = npc.prompt.replace(/\s*\[E\]$/, '');
     if (!(await until(() => game.scene.isActive('Dialogue'), 5000))) {
       unfinished.push(`${who} opened no dialogue`);
       continue;
     }
     const tree = dialogue.tree;
-    let ended = false;
-    for (let step = 0; step < MAX_STEPS && !ended; step++) {
-      const node = dialogue.tree.nodes[dialogue.currentId];
-      const flags = JSON.parse(localStorage.getItem('dawnbreakers.flags.v1') ?? '{}');
-      const choices = node?.choices?.filter((c) => !c.requires || c.requires(flags)) ?? [{}];
-      const choice = choices[0] ?? {};
-      // Choosing a choice that leads nowhere finishes the dialogue; its stop lands on the next frame.
-      ended = !node || !choice.next || !dialogue.tree.nodes[choice.next];
-      dialogue.choose(choice);
-      await new Promise((r) => setTimeout(r, 0));
-    }
-    if (!ended) {
-      unfinished.push(`${who} ("${tree.id}") did not end in ${MAX_STEPS} first choices; closed it`);
-      game.scene.stop('Dialogue');
-      game.scene.resume(k);
-    }
+    if (!(await walkOpen())) closeUnfinished(who, tree);
     talked++;
   }
   await settle();

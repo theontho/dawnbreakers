@@ -220,6 +220,12 @@ for (const file of listTsFiles(mapsDir).sort()) {
   }
 }
 
+// A chapter's opening narration must name a dialogue tree that exists.
+const chaptersFile = join(dirname(dialoguesDir), 'chapters.ts');
+for (const match of readFileSync(chaptersFile, 'utf8').matchAll(/\bopening:\s*'([^']+)'/g)) {
+  if (!treeIds.has(match[1])) errors.push(`${chaptersFile}: opening '${match[1]}' has no matching dialogue tree`);
+}
+
 if (errors.length === 0) {
   console.log(`OK — checked ${files.length} dialogue file(s).`);
   process.exit(0);

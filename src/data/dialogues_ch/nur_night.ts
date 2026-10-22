@@ -16,17 +16,15 @@ export const nurHusaynNight: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Mullá Ḥusayn',
-      text: 'You. (He sets the lamp down.) I told you to take ship from Búshihr, and you have walked the whole of Persia the wrong way to sit on my doorstep.',
+      text: '(He looks a long moment at a face he does not know, and sets the lamp down.) A student of this house, keeping my lamp. Your teacher would not thank you for it.',
       choices: [
-        { text: '"You said a mystery is hidden in Ṭihrán. I wanted to see it found."', next: 'mystery',
-          requires: f => f.recognised === true },
-        { text: '"I still have not found my certainty. I thought I might find it near you."', next: 'certainty',
-          requires: f => f.recognised !== true },
+        { text: '"I heard you in the court today. I wanted to hear the rest."', next: 'mystery' },
+        { text: '"My teacher is certain you are wrong. I am not certain of anything."', next: 'certainty' },
       ],
     },
     mystery: {
       speaker: 'Mullá Ḥusayn',
-      text: 'So did I. (He laughs, quietly.) Sit, then. There is bread, and there is a lamp, and that is the whole of my hospitality.',
+      text: 'Then you have more patience than he has. (He laughs, quietly.) Sit, then. There is bread, and there is a lamp, and that is the whole of my hospitality.',
       choices: [{ text: '"The Ḥájí says you have betrayed the Shaykhís."', next: 'haji' }],
     },
     certainty: {

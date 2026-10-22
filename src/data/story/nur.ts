@@ -4,7 +4,7 @@ import type { ChapterStory } from './types';
 export const nurStory: ChapterStory = {
   objectives: [
     {
-      text: 'Learn how the madrasa has received Mullá Ḥusayn',
+      text: 'Hear how your madrasa has received Mullá Ḥusayn',
       done: f => madrasaRounds(f) >= 2,
       progress: f => ({ current: madrasaRounds(f), total: 2 }),
     },
@@ -41,6 +41,11 @@ export const nurStory: ChapterStory = {
   ],
   journal: [
     {
+      flag: 'nurWitness',
+      title: 'A Student of Pá-Minár',
+      body: 'In this chapter you were not the pilgrim from Shíráz but a young student of the madrasa of Mírzá Ṣáliḥ in Ṭihrán, a pupil of Ḥájí Mírzá Muḥammad, two doors from the tutor of Núr.',
+    },
+    {
       flag: 'nurHeardPorter',
       title: 'The Foot of the Minaret',
       body: 'In Ṭihrán Mullá Ḥusayn lodged in the madrasa of Mírzá Ṣáliḥ, called Pá-Minár. The porter said he went out before dawn and came back an hour after sunset to shut himself in his cell.',
@@ -58,7 +63,7 @@ export const nurStory: ChapterStory = {
     {
       flag: 'nurHusaynBack',
       title: 'An Hour After Sunset',
-      body: 'You kept vigil by a lamp at a shut door, as once in Shíráz. Mullá Ḥusayn came in alone, and held the lamp to your face.',
+      body: 'You kept vigil by the lamp at his shut door. Mullá Ḥusayn came in alone, and held the lamp to the face of a student he did not know.',
     },
     {
       flag: 'nurScrollGiven',
@@ -118,7 +123,7 @@ export const nurStory: ChapterStory = {
     {
       flag: 'nurComplete',
       title: 'The District of Light',
-      body: 'Núr, in the mountains of Mázindarán, was the first district in Persia to embrace the Cause. From Khurásán Mullá Ḥusayn wrote to the Báb of all of it, and the Báb rejoiced. You took the road south to the sea.',
+      body: 'Núr, in the mountains of Mázindarán, was the first district in Persia to embrace the Cause. From Khurásán Mullá Ḥusayn wrote to the Báb of all of it, and the Báb rejoiced. You went back to your books in Ṭihrán, and kept the secret.',
     },
   ],
 };

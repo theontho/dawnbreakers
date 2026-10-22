@@ -6,7 +6,29 @@ import type { DialogueTree } from '../../dialogue/types';
  * the fort of Khájih at dawn. The boy and his mother are fictional; Mullá
  * ʿAbdu'l-Ḥusayn, eighty years old, wounded on his roof at prayer and
  * comforted by a letter from Vaḥíd, is in Nabíl.
+ *
+ * This chapter's witness is not the pilgrim of the other chapters but a
+ * youth of the quarter, a neighbour of the boy and his mother, who went out
+ * on the road with them to meet Vaḥíd (`nz-opening`).
  */
+
+/** The chapter's opening narration: who the player is this time. */
+export const opening: DialogueTree = {
+  id: 'nz-opening',
+  startId: 'g',
+  nodes: {
+    g: {
+      speaker: 'Narrator',
+      text: 'In this chapter you are someone else. The pilgrim you have followed is far to the north. You are a youth of Chinár-Súkhtih, the quarter of the burnt plane tree in Nayríz, a weaver\'s son, three doors from the boy who outruns everyone.',
+      choices: [{ text: '(Listen.)', next: 'who' }],
+    },
+    who: {
+      speaker: 'Narrator',
+      onEnter: { set: { nzWitness: true } },
+      text: 'This morning you went out on the Iṣṭahbánát road with half the quarter, though the governor\'s criers had promised death to any who did, to meet Siyyid Yaḥyá of Dáráb, called Vaḥíd, coming home. Now you are walking back in with the crowd.',
+    },
+  },
+};
 
 /** The boy who runs down the road to meet the newcomers. */
 export const boyArrival: DialogueTree = {
@@ -15,12 +37,12 @@ export const boyArrival: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Boy of Chinár-Súkhtih',
-      text: '(A boy pelts down the lane toward you, dust to his knees.) Did you come with them? With the twenty from Iṣṭahbánát? He is here! The Siyyid is here!',
-      choices: [{ text: '"Who is here?"', next: 'who' }],
+      text: '(The boy from three doors down pelts along the lane toward you, dust to his knees.) You went out on the road too! I saw you, behind the twenty from Iṣṭahbánát! He is here! The Siyyid is here!',
+      choices: [{ text: '"Did you get near him?"', next: 'who' }],
     },
     who: {
       speaker: 'A Boy of Chinár-Súkhtih',
-      text: 'Siyyid Yaḥyá! Vaḥíd! His house is in our quarter. The governor sent criers round to say he would kill anyone who went out to meet him, and the whole quarter went out anyway. My mother too.',
+      text: 'I touched his stirrup! The governor sent criers round to say he would kill anyone who went out to meet him, and the whole quarter went out anyway. My mother too. Yours too, I saw her.',
       choices: [{ text: '"Where has he gone?"', next: 'where' }],
     },
     where: {
@@ -38,7 +60,7 @@ export const womanArrival: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Woman of Chinár-Súkhtih',
-      text: '(A woman stands in her doorway with a water-jug on her hip, watching the lane fill.) You have the road on you, so you have come for him like everyone else. Drink first. It is a long way from anywhere to Nayríz.',
+      text: '(The boy\'s mother stands in her doorway with a water-jug on her hip, watching the lane fill.) Neighbour\'s son, you have the road on you like everyone else. Drink first. Your own mother is still at the edge of the town, shouting herself hoarse.',
       choices: [
         { text: '(Drink, and thank her.)', next: 'drink' },
         { text: '"Is it safe for you, to come out like this?"', next: 'safe' },
@@ -198,6 +220,7 @@ export const vahidDawn: DialogueTree = {
 };
 
 export const nayrizQuarterDialogues: Record<string, DialogueTree> = {
+  [opening.id]: opening,
   [boyArrival.id]: boyArrival,
   [womanArrival.id]: womanArrival,
   [elderArrival.id]: elderArrival,

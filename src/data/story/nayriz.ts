@@ -44,14 +44,19 @@ export const nayrizStory: ChapterStory = {
   ],
   journal: [
     {
+      flag: 'nzWitness',
+      title: 'A Son of the Quarter',
+      body: 'In this chapter you were not the pilgrim from Shíráz but a weaver\'s son of Chinár-Súkhtih, who went out on the road with the whole quarter to meet Vaḥíd coming home.',
+    },
+    {
       flag: 'nzMetBoy',
       title: 'The Road from Iṣṭahbánát',
-      body: 'A boy of Chinár-Súkhtih ran to meet you on the road. The whole quarter had gone out to welcome Vaḥíd, though the governor had threatened death to any who did.',
+      body: 'The boy from three doors down had touched Vaḥíd\'s stirrup on the road. The whole quarter had gone out to welcome him, though the governor had threatened death to any who did.',
     },
     {
       flag: 'nzHeardWoman',
       title: 'A Jug of Water',
-      body: 'A woman of the quarter gave you water at her door. Vaḥíd\'s house was in Chinár-Súkhtih, and his wife\'s people were of Nayríz.',
+      body: 'The boy\'s mother gave you water at her door. Vaḥíd\'s house was in Chinár-Súkhtih, and his wife\'s people were of Nayríz.',
     },
     {
       flag: 'nzMetElder',

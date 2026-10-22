@@ -132,7 +132,7 @@ export const nurMadrasaMap: MapDefinition = {
       targetScene: 'NurLane', targetSpawnX: 1, targetSpawnY: 11,
       label: '↓ Out by the gate into the lanes',
       requires: has('nurScrollGiven'),
-      lockedLabel: 'Stay: you came here to find Mullá Ḥusayn' },
+      lockedLabel: 'Stay: the night is not over in the madrasa' },
   ],
   // Dusk when the player comes in; night while the lamp burns; morning when the answer comes.
   ambience: f => madrasaNight(f)

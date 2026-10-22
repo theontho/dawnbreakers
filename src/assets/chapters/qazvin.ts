@@ -19,6 +19,9 @@ export const QAZVIN_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0xb8462a, skin: 0xe2c6a0, clothing: { style: 'wrap', secondary: 0xd89a2a, accent: 0x2a7a6a }, hat: { style: 'headscarf', color: 0xe8c860 }, shadow: true } },
   { id: 'qazvin-mardiyyih', label: 'Woman of the House', texture: 'qazvin-mardiyyih', kind: 'character', category: 'characters', color: 0x4a3a4a, blocks: true,
     character: { body: 0x4a3a4a, skin: 0xe2c6a0, clothing: { style: 'wrap', secondary: 0x2e2430, accent: 0x9a7a5a }, hat: { style: 'headscarf', color: 0x6a5a6a }, shadow: true } },
+  // The chapter's witness: a young woman of Qazvín in an indigo chador.
+  { id: 'qazvin-witness', label: 'Player', texture: 'qazvin-witness', kind: 'character', category: 'characters', color: 0x2e3a5a, blocks: true,
+    character: { body: 0x2e3a5a, skin: 0xe0c29a, clothing: { style: 'wrap', secondary: 0x222c46, accent: 0xc9a55c }, hat: { style: 'veil', color: 0x34406a, accent: 0xc9a55c }, shadow: true } },
   // Qazvín.
   { id: 'qazvin-mulla-salih', label: 'Mulla', texture: 'qazvin-mulla-salih', kind: 'character', category: 'characters', color: 0x2e2a24, blocks: true,
     character: { body: 0x2e2a24, skin: 0xd8bc94, clothing: { style: 'cloak', secondary: 0x4a4236, accent: 0xe8e0cc }, hat: { style: 'turban', color: 0xf4eedc, accent: 0x6a6252 }, hair: 0xc8c4bc, shadow: true } },

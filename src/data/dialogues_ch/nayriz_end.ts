@@ -100,7 +100,7 @@ export const close: DialogueTree = {
     tabriz: {
       speaker: 'Narrator',
       onEnter: { set: { nayrizComplete: true } },
-      text: 'In Chinár-Súkhtih the women keep the lamps. Ten days from now, far to the north, a regiment will be drawn up at noon before a wall in the barrack square of Tabríz.',
+      text: 'In Chinár-Súkhtih the women keep the lamps, and you keep his. Ten days from now, far to the north, a regiment will be drawn up at noon before a wall in the barrack square of Tabríz, and the pilgrim you have followed since Shíráz will be there to see it.',
     },
   },
 };

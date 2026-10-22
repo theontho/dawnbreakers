@@ -8,7 +8,7 @@ import type { DialogueTree } from '../../dialogue/types';
  * later Mullá Ḥusayn left for Khurásán, charging him to keep the secret
  * and not to divulge the name, and foretelling that much blood would be
  * shed in that city in this path. Bahá'u'lláh, Nabíl goes on, then set out
- * for Núr; the player follows.
+ * for Núr; the student follows.
  */
 
 export const nurHusaynGift: DialogueTree = {
@@ -45,7 +45,7 @@ export const nurHusaynGift: DialogueTree = {
     },
     farewell: {
       speaker: 'Narrator',
-      text: 'A few days later he stands at the gate with his staff, as he stood by the milestone outside Shíráz. He takes the tutor\'s hands, and yours, and speaks low.',
+      text: 'A few days later he stands at the gate with his staff, dust already on his hem. He takes the tutor\'s hands, and then, as if you had always been one of his, yours, and speaks low.',
       choices: [{ text: '(Listen.)', next: 'charge' }],
     },
     charge: {
@@ -56,7 +56,7 @@ export const nurHusaynGift: DialogueTree = {
     blood: {
       speaker: 'Mullá Ḥusayn',
       text: '(He looks past you, at the city.) Many a soul in this city will shed his blood in this path. That blood will water the Tree of God, and it will flourish, and overshadow all mankind.',
-      choices: [{ text: '"Go with God, Mullá Ḥusayn. Again."', next: 'gone' }],
+      choices: [{ text: '"Go with God, Mullá Ḥusayn."', next: 'gone' }],
     },
     gone: {
       speaker: 'Narrator',

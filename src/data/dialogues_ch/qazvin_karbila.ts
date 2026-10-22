@@ -8,7 +8,29 @@ import type { DialogueTree } from '../../dialogue/types';
  * bright clothes for the Báb's birthday while the city mourns the Imám
  * Ḥusayn (Nabíl, chapter XV and its notes). The close tells the road through
  * Baghdád, Kirmánsháh and Hamadán to Qazvín.
+ *
+ * This chapter's witness is not the pilgrim of the other chapters but a
+ * young woman of Qazvín, in Karbilá with her mother for Muḥarram, who sits
+ * at the edge of the curtain where a woman may hear (`qz-opening`).
  */
+
+/** The chapter's opening narration: who the player is this time. */
+export const opening: DialogueTree = {
+  id: 'qz-opening',
+  startId: 'g',
+  nodes: {
+    g: {
+      speaker: 'Narrator',
+      text: 'This chapter goes back to Karbilá, and in it you are someone else: not the pilgrim from Shíráz, but a young woman of Qazvín, come to the shrine city with your mother for the mourning of Muḥarram.',
+      choices: [{ text: '(Listen.)', next: 'who' }],
+    },
+    who: {
+      speaker: 'Narrator',
+      onEnter: { set: { qzWitness: true } },
+      text: 'The women of Qazvín speak this year of one woman: Fáṭimih, daughter of Ḥájí Mullá Ṣáliḥ, who teaches the learned men of Karbilá from behind a curtain. Tonight, the first of Muḥarram, you have slipped away to the house of the late Siyyid Káẓim to hear her.',
+    },
+  },
+};
 
 /** The empty place before the curtain: her voice. */
 export const curtain: DialogueTree = {
@@ -17,25 +39,25 @@ export const curtain: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'You kneel in the empty place at the front. Beyond the curtain a lamp burns, and a woman\'s shadow moves across the cloth as she turns a page. The men around you go still. Then the voice begins, clear and unhurried, in Arabic first and then in Persian.',
+      text: 'You kneel in the empty place at the curtain\'s edge, half in its shadow, where a woman may sit and hear. Beyond the cloth a lamp burns, and a woman\'s shadow moves across it as she turns a page. The men on the near side go still. Then the voice begins, clear and unhurried, in Arabic first and then in Persian.',
       choices: [{ text: '(Listen.)', next: 'voice' }],
     },
     voice: {
       speaker: 'Qurratu\'l-ʿAyn',
-      text: 'The Book says the Hour will come suddenly. Our fathers read that and waited for the sky to split. I tell you it has come as the Book said: suddenly, and to people who were not looking. (A pause.) There is someone new at the front. Who are you, friend?',
+      text: 'The Book says the Hour will come suddenly. Our fathers read that and waited for the sky to split. I tell you it has come as the Book said: suddenly, and to people who were not looking. (A pause.) There is someone new at the curtain\'s edge. Who are you, child?',
       choices: [
-        { text: '"I sat at Siyyid Káẓim\'s feet in this house, years ago."', next: 'student' },
-        { text: '"Only a traveller, with letters for the friends."', next: 'traveller' },
+        { text: '"A daughter of Qazvín, lady, as you are."', next: 'student' },
+        { text: '"Only a pilgrim, here with my mother for Muḥarram."', next: 'traveller' },
       ],
     },
     student: {
       speaker: 'Qurratu\'l-ʿAyn',
-      text: 'Then you heard him say it too: that the One we sought was near, and that we must not wait for Him to come to us. I came from Qazvín too late to hear him. His widow let me sit where his voice had been.',
+      text: 'Of Qazvín! Then you have walked past my father\'s gate a hundred times. (A soft laugh.) I came from Qazvín too late to hear Siyyid Káẓim. His widow let me sit where his voice had been. Now you sit where mine is.',
       choices: [{ text: '"How did you come to believe?"', next: 'never' }],
     },
     traveller: {
       speaker: 'Qurratu\'l-ʿAyn',
-      text: 'Letters are a good beginning. Mine went out of this city sealed, to a Man I had never seen. (The shadow lifts its head.) Shall I tell you how?',
+      text: 'A pilgrim comes looking for something. So did I, and I never left my room to do it. My letter went out of this city sealed, to a Man I had never seen. (The shadow lifts its head.) Shall I tell you how?',
       choices: [{ text: '"Please."', next: 'never' }],
     },
     never: {
@@ -71,9 +93,9 @@ export const salih: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Shaykh Ṣáliḥ',
-      text: 'Peace be upon you. Sit, there is room on my bolster. (He speaks Persian with an Arab\'s care.) You are new. Have you heard her before?',
+      text: '(He speaks Persian with an Arab\'s care, and keeps a courteous distance.) Peace be upon you, daughter. You are new at the curtain. Have you heard her before?',
       choices: [
-        { text: '"Never. Who is she?"', next: 'who' },
+        { text: '"Never. Only of her."', next: 'who' },
         { text: '"Who are you?"', next: 'me' },
       ],
     },
@@ -107,7 +129,7 @@ export const doubter: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Disciple of the Late Siyyid',
-      text: '(He speaks low, so the curtain will not hear.) You were one of us, were you not? One of the Siyyid\'s. Then tell me honestly. Is this what he meant?',
+      text: '(An older man by the curtain\'s edge speaks low, so the voice behind it will not hear.) You are of her city, I heard you say it. Then tell me honestly: in Qazvín, do they laugh at her, or are they afraid of her?',
       choices: [{ text: '"What troubles you?"', next: 'troubles' }],
     },
     troubles: {
@@ -185,17 +207,18 @@ export const karbilaClose: DialogueTree = {
     road: {
       speaker: 'Narrator',
       text: 'Early in 1847 she crossed into Persia, teaching as she went. In Kirmánsháh and Hamadán some divines honoured her and some stirred the crowds against her. At Hamadán her father\'s men found her and begged her to come home. She sent most of her companions back to their own lands; Shaykh Ṣáliḥ stayed.',
-      choices: [{ text: '(Go after her.)', next: 'home' }],
+      choices: [{ text: '(Go home to Qazvín.)', next: 'home' }],
     },
     home: {
       speaker: 'Narrator',
       onEnter: { set: { qzLeftKarbila: true } },
-      text: 'In Qazvín wait her father, who loves her; her husband, her cousin, from whom she has long lived apart; and his father, her uncle Mullá Taqí, the foremost divine of the city, who curses the name of Shaykh Aḥmad from the pulpit. The street door stands open. The road is long.',
+      text: 'You go home with your mother by the caravan road, long before she does. In Qazvín wait her father, who loves her; her husband, her cousin, from whom she has long lived apart; and his father, her uncle Mullá Taqí, the foremost divine of the city, who curses the name of Shaykh Aḥmad from the pulpit.',
     },
   },
 };
 
 export const qazvinKarbilaDialogues: Record<string, DialogueTree> = {
+  [opening.id]: opening,
   [curtain.id]: curtain,
   [salih.id]: salih,
   [doubter.id]: doubter,

@@ -30,6 +30,17 @@ the Báb's door on the night of 22 May 1844 and hear Mullá Ḥusayn's testimony
 at dawn. Across later chapters they are a witness and messenger moving
 through the events Nabíl records; they are never a famous historical figure.
 
+Where the pilgrim cannot have been present (Ṭihrán and Núr while they sail
+for Mecca; Karbilá and Qazvín while they are in Shíráz, Iṣfahán and the
+mountain prisons; Nayríz days before Tabríz), the chapter has its own
+witness: a student of the Ṭihrán madrasa, a young woman of Qazvín, a youth
+of Chinár-Súkhtih. Such a chapter says so in its `description`, in an
+`opening` narration (a dialogue id on the chapter in `src/data/chapters.ts`,
+played once on first arrival in its start scene, setting a flag that reveals
+a first journal entry), and gives the witness a `player` figure. Its
+dialogue never recognises the player from other chapters or gates on their
+flags.
+
 Flags carried forward:
 
 - `recognised === true`: the player believed at dawn in chapter 1;

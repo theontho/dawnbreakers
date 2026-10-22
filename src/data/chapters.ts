@@ -63,6 +63,14 @@ export interface Chapter {
   startSpawnY?: number;
   /** All scene keys that belong to this chapter. */
   scenes: string[];
+  /**
+   * Narration shown once, on first arrival in `startScene`: for a chapter
+   * whose witness is not the pilgrim of the other chapters, it says who the
+   * player is this time.
+   */
+  opening?: string;
+  /** Texture of the player's figure, when this chapter's witness is someone else. */
+  player?: string;
   /** Objectives for the HUD tracker and journal entries for this chapter. */
   story: ChapterStory;
   /** Returns true when the chapter is finished, based on flags. */
@@ -96,8 +104,10 @@ const SPECS: ChapterSpec[] = [
     story: CHAPTER_STORIES['tehran-nur'],
     title: 'Ṭihrán and Núr',
     subtitle: 'Ṭihrán and Mázindarán, 1844',
-    description: 'You follow Mullá Ḥusayn north to Ṭihrán, where a Shaykhí teacher turns him away and a tutor from Núr knocks at his door at midnight. At dawn a scroll goes in at a door you may not enter, and in the green hills of Núr you hear how a whole district was won.',
+    description: 'In this chapter you are someone else: a young student of the madrasa where Mullá Ḥusayn lodges in Ṭihrán. Your own teacher turns him away, and the tutor from Núr in the cell beside yours knocks at his door at midnight. At dawn a scroll goes in at a door you may not enter, and in the green hills of Núr you hear how a whole district was won.',
     startScene: 'NurMadrasa',
+    opening: 'nur-opening',
+    player: 'nur-witness',
     scenes: ['NurMadrasa', 'NurLane', 'NurTakur'],
   },
   {
@@ -150,8 +160,10 @@ const SPECS: ChapterSpec[] = [
     story: CHAPTER_STORIES['tahirih'],
     title: 'The Solace of the Eyes',
     subtitle: 'Karbilá and Qazvín, 1845 to 1848',
-    description: 'Go back to Karbilá, where a woman who never saw the Báb teaches His Cause from behind a curtain. Follow her home to Qazvín, where her uncle is struck down at dawn prayer and she is shut in her father\'s house, and keep watch in the lane on the night a beggar woman comes to the gate.',
+    description: 'In this chapter you are someone else: a young woman of Qazvín. On pilgrimage in Karbilá you kneel at the edge of the curtain behind which a woman who never saw the Báb teaches His Cause. Home again in Qazvín, her uncle is struck down at dawn prayer and she is shut in her father\'s house, and you keep watch in the lane on the night a beggar woman comes to the gate.',
     startScene: 'QazvinKarbila',
+    opening: 'qz-opening',
+    player: 'qazvin-witness',
     scenes: ['QazvinKarbila', 'QazvinLane', 'QazvinHouse'],
   },
   {
@@ -195,8 +207,10 @@ const SPECS: ChapterSpec[] = [
     story: CHAPTER_STORIES['nayriz'],
     title: 'Nayríz',
     subtitle: 'Fárs, May and June 1850',
-    description: 'In the quarter of the burnt plane tree, Vaḥíd comes in from the road and goes straight to the masjid. You carry his letter to a wounded old man, follow him up to the fort of Khájih, dig a cistern when the water is cut, and carry a sealed Qur\'án across the court to him.',
+    description: 'In this chapter you are someone else: a youth of Chinár-Súkhtih, the quarter of the burnt plane tree, where Vaḥíd comes in from the road and goes straight to the masjid. You carry his letter to a wounded old man, follow him up to the fort of Khájih, dig a cistern when the water is cut, and carry a sealed Qur\'án across the court to him.',
     startScene: 'NayrizQuarter',
+    opening: 'nz-opening',
+    player: 'nayriz-witness',
     scenes: ['NayrizQuarter', 'NayrizMosque', 'NayrizFort'],
   },
   {

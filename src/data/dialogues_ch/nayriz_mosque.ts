@@ -29,19 +29,11 @@ export const vahidSermon: DialogueTree = {
       speaker: 'Narrator',
       onEnter: { set: { nzHeardSermon: true } },
       text: 'When he ends, one voice cries out, and then the whole hall: "We have heard, and we obey!" Before many days are out, some fifteen hundred souls of Nayríz will have answered so, a thousand of them of this one quarter.',
-      choices: [
-        { text: '(Go to him when the crowd thins.)', next: 'shiraz', requires: f => f.vahidTestimony === true },
-        { text: '(Go to him when the crowd thins.)', next: 'peace', requires: f => f.vahidTestimony !== true },
-      ],
-    },
-    shiraz: {
-      speaker: 'Vaḥíd',
-      text: '(He looks hard at you, then laughs and takes both your hands.) The uncle\'s door in Shíráz! You stood there beside me. Four years, and that door has opened on half of Persia. Mullá Ḥusayn and Quddús have gone ahead of us since. And I have come home.',
-      choices: [{ text: '"Is this home?"', next: 'home' }],
+      choices: [{ text: '(Go to him when the crowd thins.)', next: 'peace' }],
     },
     peace: {
       speaker: 'Vaḥíd',
-      text: '(He is older than his voice, grey in the beard, the road still in the creases of his cloak.) You have come a long way to hear an old scholar talk. Sit, sit. I have come home, you see.',
+      text: '(He is older than his voice, grey in the beard, the road still in the creases of his cloak.) A son of this quarter. You walked out on the road to meet me, I think, against the governor\'s word. Sit, sit. I have come home, you see.',
       choices: [{ text: '"Is this home?"', next: 'home' }],
     },
     home: {

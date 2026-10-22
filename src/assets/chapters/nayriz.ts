@@ -36,5 +36,8 @@ export const NAYRIZ_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0x5a4430, skin: 0xc49e72, clothing: { style: 'sash', secondary: 0x7a6448, accent: 0x6a2a22 }, hat: { style: 'cap', color: 0x2a2018 }, hair: 0x1c120a, shadow: true } },
   { id: 'nayriz-soldier', label: 'Soldier', texture: 'nayriz-soldier', kind: 'character', category: 'characters', color: 0x3a3a4a, blocks: true,
     character: { body: 0x3a3a4a, skin: 0xc8a47a, clothing: { style: 'uniform', secondary: 0x2a2a36, accent: 0xb8944c }, hat: { style: 'tallHat', color: 0x1f1f1c }, shadow: true } },
+  // The chapter's witness: a youth of Chinár-Súkhtih in a madder-red vest and a felt cap, with only a first moustache.
+  { id: 'nayriz-witness', label: 'Player', texture: 'nayriz-witness', kind: 'character', category: 'characters', color: 0x8a3a2a, blocks: true,
+    character: { body: 0x8a3a2a, skin: 0xcca47a, clothing: { style: 'vest', secondary: 0x5a4a36, accent: 0xd8c8a0 }, hat: { style: 'cap', color: 0x4a3a28 }, hair: 0x1c120a, beard: 'moustache', shadow: true } },
   { id: 'nayriz-boy', label: 'Child', texture: 'nayriz-boy', kind: 'character', category: 'characters', color: 0x7a5a3a, blocks: true },
 ];
