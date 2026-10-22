@@ -51,12 +51,14 @@ export function createMapAmbience(
   const { width, height } = scene.scale;
   const objects: Phaser.GameObjects.GameObject[] = [];
 
+  let wash: Phaser.GameObjects.Rectangle | undefined;
   if (ambience?.wash) {
-    objects.push(scene.add.rectangle(0, 0, width, height, ambience.wash.color, ambience.wash.alpha)
+    wash = scene.add.rectangle(0, 0, width, height, ambience.wash.color, ambience.wash.alpha)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(WASH_DEPTH)
-      .setBlendMode(Phaser.BlendModes.MULTIPLY));
+      .setBlendMode(Phaser.BlendModes.MULTIPLY);
+    objects.push(wash);
   }
 
   const lights: MapLight[] = [...(ambience?.lights ?? [])];
@@ -87,16 +89,31 @@ export function createMapAmbience(
 
   if (ambience?.particles) objects.push(createParticles(scene, ambience.particles, mapSize, gridToScreen));
 
+  let vignette: Phaser.GameObjects.Image | undefined;
   if (ambience?.vignette !== false) {
-    objects.push(scene.add.image(width / 2, height / 2, 'fx-vignette')
+    vignette = scene.add.image(width / 2, height / 2, 'fx-vignette')
       .setDisplaySize(width, height)
       .setScrollFactor(0)
       .setAlpha(ambience?.vignette ?? 0.55)
-      .setDepth(VIGNETTE_DEPTH));
+      .setDepth(VIGNETTE_DEPTH);
+    objects.push(vignette);
   }
+
+  // The screen-sized layers follow the window (rotation, browser chrome).
+  const fitScreen = (size: Phaser.Structs.Size): void => {
+    wash?.setSize(size.width, size.height);
+    vignette?.setPosition(size.width / 2, size.height / 2).setDisplaySize(size.width, size.height);
+  };
+  const unhook = (): void => {
+    scene.scale.off(Phaser.Scale.Events.RESIZE, fitScreen);
+  };
+  scene.scale.on(Phaser.Scale.Events.RESIZE, fitScreen);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, unhook);
 
   return {
     destroy: () => {
+      unhook();
+      scene.events.off(Phaser.Scenes.Events.SHUTDOWN, unhook);
       scene.tweens.killTweensOf(objects);
       objects.forEach(o => o.destroy());
     },

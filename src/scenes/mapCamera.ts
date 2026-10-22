@@ -6,6 +6,12 @@ import Phaser from 'phaser';
  * the colour wash and the vignette at screen size, so zooming the world never
  * scales the interface. Objects are routed by scroll factor: anything pinned
  * to the screen (`scrollFactor 0`) belongs to the HUD camera.
+ *
+ * Every object added to the scene is queued as it arrives and routed just
+ * before the next render, once its creator has had the chance to pin it.
+ * (Counting the display list is not enough: rebuilding the ambience destroys
+ * and creates the same number of objects, which would leave a fresh wash
+ * unrouted and drawn by the zoomed world camera as a floating rectangle.)
  */
 
 const MIN_ZOOM = 0.45;
@@ -15,8 +21,6 @@ const STEP = 1.15;
 export interface MapCameras {
   /** World position under a pointer, through the zoomed camera. */
   worldPoint(pointer: Phaser.Input.Pointer): Phaser.Math.Vector2;
-  /** Route objects created since the last call to the right camera. */
-  update(): void;
 }
 
 const ZOOM_KEY = 'dawnbreakers.zoom';
@@ -24,20 +28,26 @@ const ZOOM_KEY = 'dawnbreakers.zoom';
 export function setupMapCameras(scene: Phaser.Scene): MapCameras {
   const main = scene.cameras.main;
   const hud = scene.cameras.add(0, 0, scene.scale.width, scene.scale.height).setName('hud');
-  const routed = new WeakSet<Phaser.GameObjects.GameObject>();
-  let lastCount = -1;
+  let pending: Phaser.GameObjects.GameObject[] = [...scene.children.list];
 
+  const queue = (object: Phaser.GameObjects.GameObject): void => {
+    pending.push(object);
+  };
   const route = (): void => {
-    const list = scene.children.list;
-    if (list.length === lastCount) return;
-    lastCount = list.length;
-    for (const object of list) {
-      if (routed.has(object)) continue;
-      routed.add(object);
+    if (pending.length === 0) return;
+    for (const object of pending) {
+      if (!object.scene) continue;
       const pinned = (object as unknown as { scrollFactorX?: number }).scrollFactorX === 0;
       (pinned ? main : hud).ignore(object);
     }
+    pending = [];
   };
+  scene.events.on(Phaser.Scenes.Events.ADDED_TO_SCENE, queue);
+  scene.events.on(Phaser.Scenes.Events.PRE_RENDER, route);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    scene.events.off(Phaser.Scenes.Events.ADDED_TO_SCENE, queue);
+    scene.events.off(Phaser.Scenes.Events.PRE_RENDER, route);
+  });
 
   let zoom = readZoom() ?? defaultZoom(scene);
   const setZoom = (value: number): void => {
@@ -73,10 +83,8 @@ export function setupMapCameras(scene: Phaser.Scene): MapCameras {
     else if (e.key === '-' || e.key === '_') setZoom(zoom / STEP);
   });
 
-  route();
   return {
     worldPoint: pointer => main.getWorldPoint(pointer.x, pointer.y),
-    update: route,
   };
 }
 

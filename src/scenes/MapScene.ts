@@ -399,7 +399,6 @@ export class MapScene extends Phaser.Scene {
   // ---------- update / movement ----------
 
   update(_time: number, delta: number): void {
-    this.mapCameras.update();
     this.moveCooldown -= delta;
     this.handleMovement();
     updatePlayerRevealMasks(this.revealMasks, this.player);
