@@ -2648,6 +2648,7 @@ export const text: TranslationCatalog = {
   "Yá Ṣáḥibu'z-Zamán": "یا صاحب‌الزمان",
   "ʿIráq": "عراق",
   "ʿUlamá": "علما",
+  "Ship's Hull": "بدنهٔ کشتی",
 };
 
 export const names: TranslationCatalog = {

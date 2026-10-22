@@ -2645,6 +2645,7 @@ export const text: TranslationCatalog = {
   "Yá Ṣáḥibu'z-Zamán": "呼求时代之主",
   "ʿIráq": "伊拉克",
   "ʿUlamá": "乌莱玛",
+  "Ship's Hull": "船体",
 };
 
 // Chapter metadata translations.
