@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { variantTexture } from '../assets/art';
 import { applyMapAudio, playFootstep, playSfx } from '../audio';
 import { chapterByScene, type Chapter } from '../data/chapters';
 import { dialogues } from '../data/dialogues';
@@ -35,18 +34,15 @@ import {
   type InteractableHighlightHandle,
   type RevealMaskHandle,
 } from './baseMapInteractables';
-import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
-import { connectBuildings } from './mapJoins';
-import { connectWalls } from './mapWalls';
-import { nearestFreeCell, widenExits } from './mapExits';
-import { checkDoorVariants, placeMapDoors, type MapDoors } from './mapDoors';
-import { checkExitBearings } from './mapExitBearings';
+import { inBounds } from './baseMapTileCanvas';
+import { nearestFreeCell } from './mapExits';
+import { placeMapDoors, type MapDoors } from './mapDoors';
+import { buildWorldData, refreshBlocking } from './mapWorldData';
 import { setupMapCameras, type MapCameras } from './mapCamera';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
 import { findPath, screenToGrid, type GridPoint } from './mapPathing';
-import { checkWallSeams } from './mapSeams';
 import { streetFronts } from './streetFronts';
 import type { DoorSpec, MapDefinition, NpcSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
@@ -209,50 +205,13 @@ export class MapScene extends Phaser.Scene {
   // ---------- world ----------
 
   private buildWorldData(): void {
-    const { width, height } = this.definition;
-    const grids = emptyMap(width, height);
-    this.map = grids.map;
-    this.blocked = grids.blocked;
-    this.definition.build(makeTileCanvas(width, height, this.map, this.blocked));
-
-    if (import.meta.env.DEV) checkDoorVariants(this.definition.key, this.definition.buildings, this.definition.doors ?? []);
-    if (import.meta.env.DEV) checkExitBearings(this.definition.key, this.definition.exits);
-    for (const spec of this.definition.buildings) {
-      this.buildings.push({ gridX: spec.gridX, gridY: spec.gridY, w: spec.w, h: spec.h, texture: variantTexture(spec.texture, spec.gridX, spec.gridY, spec.variant) });
-      if (spec.blocks !== false) blockFootprintInto(this.blocked, width, height, spec.gridX, spec.gridY, spec.w, spec.h);
-    }
-    for (const spec of this.definition.decor) {
-      const { variant, ...decor } = spec;
-      this.decor.push({ ...decor, texture: variantTexture(spec.texture, spec.gridX, spec.gridY, variant) });
-      if (spec.blocks && !spec.present && inBounds(width, height, spec.gridX, spec.gridY)) {
-        this.blocked[spec.gridY]![spec.gridX] = true;
-      }
-    }
-    // Doors and gates in walls are wall pieces; a block pasted into a wall fails in development.
-    if (import.meta.env.DEV) checkWallSeams(this.definition);
-    connectWalls(this, this.buildings, this.decor, this.definition);
-    connectBuildings(this, this.buildings);
-    this.exits = widenExits(this.definition.exits, this.map, this.blocked);
-    this.staticBlocked = this.blocked.map(row => row.slice());
+    const world = buildWorldData(this, this.definition);
+    ({ map: this.map, blocked: this.blocked, staticBlocked: this.staticBlocked, buildings: this.buildings, decor: this.decor, exits: this.exits } = world);
   }
 
-  /**
-   * Open or close passages and show or hide flag-dependent props, rebuilding
-   * blocking from the fixed grid: several props may share a cell (a lit niche
-   * and its dark wall), so a cell is blocked if anything present on it
-   * blocks. People are added on top by `npcs.refresh`, which must follow.
-   */
+  /** Brings blocking and flag-dependent props in step with the story; see refreshBlocking. */
   private refreshDecor(flags: FlagState): void {
-    this.staticBlocked.forEach((row, y) => row.forEach((b, x) => { this.blocked[y]![x] = b; }));
-    for (const passage of this.definition.passages ?? []) {
-      const open = passage.open(flags);
-      for (const { x, y } of passage.cells) this.blocked[y]![x] = !open;
-    }
-    for (const { item, sprite } of this.conditionalDecor) {
-      const here = item.present!(flags);
-      sprite.setVisible(here);
-      if (item.blocks && here) this.blocked[item.gridY]![item.gridX] = true;
-    }
+    refreshBlocking({ blocked: this.blocked, staticBlocked: this.staticBlocked }, this.definition, this.conditionalDecor, flags);
   }
 
   private applyAmbience(flags: FlagState): void {
