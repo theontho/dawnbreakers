@@ -43,10 +43,7 @@ export const ch10SiyahChalMap: MapDefinition = {
     { gridX: 12, gridY: 0, w: 4, h: 1, texture: 'ch10-low-arch' },
     { gridX: 16, gridY: 0, w: 4, h: 1, texture: 'ch10-low-arch' },
     // The west wall of the old reservoir.
-    { gridX: 0, gridY: 1, w: 1, h: 4, texture: 'ch10-vault-wall' },
-    { gridX: 0, gridY: 5, w: 1, h: 4, texture: 'ch10-vault-wall' },
-    { gridX: 0, gridY: 9, w: 1, h: 4, texture: 'ch10-vault-wall' },
-    { gridX: 0, gridY: 13, w: 1, h: 4, texture: 'ch10-vault-wall' },
+    ...Array.from({ length: 16 }, (_, i) => ({ gridX: 0, gridY: 1 + i, w: 1, h: 1, texture: 'ch10-vault-wall' })),
     // Pillars holding up the vault.
     { gridX: 3, gridY: 2, w: 2, h: 2, texture: 'ch10-stone-pillar' },
     { gridX: 16, gridY: 2, w: 2, h: 2, texture: 'ch10-stone-pillar' },

@@ -35,13 +35,10 @@ export const ch10ExileRoadMap: MapDefinition = {
   },
   buildings: [
     // The city wall, broken by the gate towers.
-    { gridX: 20, gridY: 0, w: 1, h: 3, texture: 'ch10-city-wall' },
-    { gridX: 20, gridY: 3, w: 1, h: 3, texture: 'ch10-city-wall' },
-    { gridX: 20, gridY: 6, w: 1, h: 3, texture: 'ch10-city-wall' },
+    ...Array.from({ length: 9 }, (_, i) => ({ gridX: 20, gridY: i, w: 1, h: 1, texture: 'ch10-city-wall' })),
     { gridX: 20, gridY: 9, w: 1, h: 1, texture: 'gate' },
     { gridX: 20, gridY: 11, w: 1, h: 1, texture: 'gate' },
-    { gridX: 20, gridY: 12, w: 1, h: 3, texture: 'ch10-city-wall' },
-    { gridX: 20, gridY: 15, w: 1, h: 3, texture: 'ch10-city-wall' },
+    ...Array.from({ length: 6 }, (_, i) => ({ gridX: 20, gridY: 12 + i, w: 1, h: 1, texture: 'ch10-city-wall' })),
     // Houses inside the gate.
     { gridX: 22, gridY: 2, w: 3, h: 2, texture: 'ch10-street-house' },
     { gridX: 22, gridY: 15, w: 2, h: 2, texture: 'house' },

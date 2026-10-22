@@ -36,6 +36,7 @@ import {
   type RevealMaskHandle,
 } from './baseMapInteractables';
 import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
+import { connectWalls } from './mapWalls';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
@@ -197,6 +198,7 @@ export class MapScene extends Phaser.Scene {
         this.blocked[spec.gridY]![spec.gridX] = true;
       }
     }
+    connectWalls(this, this.buildings, this.decor);
     this.exits = this.definition.exits.map(exit => ({ ...exit }));
   }
 

@@ -1,6 +1,4 @@
-import { footprintBox, groundShadow, onRoof, outlineBox, paintTexture, rng, type Ctx } from '../art/canvasKit';
-import { earthRoof, plaster } from '../art/materials';
-import { LIGHT, merlons, walls } from '../art/ornaments';
+import { paintTexture, rng, type Ctx } from '../art/canvasKit';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
@@ -8,28 +6,6 @@ import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
  * city wall, drifted snow, and the tracks the exiles' caravan cut in it on
  * the road toward Baghdád.
  */
-
-const RAMMED_EARTH = 0xa88660;
-
-/** Layers of rammed earth (chineh), putlog holes and loopholes near the top. */
-function earthWall(c: Ctx, w: number, h: number, light: number, seed: number): void {
-  plaster(c, w, h, { base: RAMMED_EARTH, light, seed });
-  const rand = rng(seed + 1);
-  for (let v = h - 11; v > 6; v -= 11) {
-    c.fillStyle = 'rgba(60,40,20,0.28)';
-    c.fillRect(0, v, w, 1.2);
-    c.fillStyle = 'rgba(255,236,200,0.12)';
-    c.fillRect(0, v + 1.2, w, 0.8);
-    for (let u = 4 + rand() * 8; u < w - 2; u += 14 + rand() * 6) {
-      c.fillStyle = 'rgba(30,18,8,0.55)';
-      c.fillRect(u, v - 3, 2, 2);
-    }
-  }
-  for (let u = 10; u < w - 6; u += 24) {
-    c.fillStyle = 'rgba(20,12,6,0.8)';
-    c.fillRect(u, 9, 2, 8);
-  }
-}
 
 /** Soft heaped snow: overlapping mounds, blue in their shadows. */
 function snowMounds(ctx: Ctx, mounds: ReadonlyArray<readonly [number, number, number, number]>): void {
@@ -53,16 +29,6 @@ function snowMounds(ctx: Ctx, mounds: ReadonlyArray<readonly [number, number, nu
 }
 
 export const CH10_ROAD_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  'ch10-city-wall': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 3, 70, 14);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 8);
-      walls(ctx, box, (c, w, h, light) => earthWall(c, w, h, light, light === 1 ? 91 : 92));
-      onRoof(ctx, box, (w, d) => earthRoof(ctx, w, d, { base: 0x8a6c4a, light: LIGHT.roof, seed: 93 }));
-      merlons(ctx, box, RAMMED_EARTH, 6, 4);
-      outlineBox(ctx, box, 0x2a1c12);
-    });
-  },
 
   'ch10-snow-drift': (scene, def) => paintTexture(scene, def.texture, 64, 36, ctx => {
     snowMounds(ctx, [[22, 22, 15, 8], [40, 24, 18, 9], [30, 27, 13, 5], [52, 27, 9, 4]]);

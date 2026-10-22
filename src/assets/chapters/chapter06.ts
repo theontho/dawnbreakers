@@ -1,4 +1,4 @@
-import { CHIHRIQ_FORTRESS, MAKU_FORTRESS, paintBarredMarker, paintFootbridge, paintFortress, paintRampart } from '../art/fortresses';
+import { CHIHRIQ_FORTRESS, MAKU_FORTRESS, paintBarredMarker, paintFootbridge, paintFortress } from '../art/fortresses';
 import { paintBrazier, paintPine, paintRock, paintSnowDrift, paintSnowShrub } from '../art/mountain';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
@@ -13,7 +13,6 @@ export const CH06_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   'ch6-rock': (scene, def) => paintRock(scene, def.texture),
   'ch6-snow-shrub': (scene, def) => paintSnowShrub(scene, def.texture),
   'ch6-barred-marker': (scene, def) => paintBarredMarker(scene, def.texture),
-  'ch6-rampart': (scene, def) => paintRampart(scene, def.texture),
   'ch6-snow-drift': (scene, def) => paintSnowDrift(scene, def.texture),
   'ch6-pine': (scene, def) => paintPine(scene, def.texture),
   'ch6-brazier': (scene, def) => paintBrazier(scene, def.texture),

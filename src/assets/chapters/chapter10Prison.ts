@@ -63,30 +63,6 @@ function stonePost(ctx: Ctx, box: IsoBox, seed: number): void {
 }
 
 export const CH10_PRISON_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  'ch10-vault-wall': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 4, 84, 8);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 6, 0.35);
-      const face = (c: Ctx, w: number, h: number, light: number) => {
-        brick(c, w, h, { base: SOOT_BRICK, light, seed: light === 1 ? 41 : 42 }, 4, 9);
-        c.save();
-        c.beginPath();
-        c.rect(0, h - 22, w, 22);
-        c.clip();
-        stone(c, w, h, { base: DAMP_STONE, light, seed: 43 }, 7);
-        c.restore();
-      };
-      walls(ctx, box, face, {
-        left: (c, w, h) => damp(c, w, h, 44),
-        right: (c, w, h, l) => {
-          blindArches(c, w, h - 22, l, Math.round(w / 64), 36);
-          damp(c, w, h, 45);
-        },
-      });
-      flatTop(ctx, box, shade(SOOT_BRICK, 0.8));
-      outlineBox(ctx, box, 0x0b0b0a);
-    });
-  },
 
   'ch10-low-arch': (scene, def) => {
     const { box, texW, texH } = footprintBox(def.footprint?.w ?? 4, def.footprint?.h ?? 1, 46, 12);

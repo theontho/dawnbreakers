@@ -1,7 +1,7 @@
 import { css, footprintBox, onRoof, outlineBox, paintTexture, shade, type Ctx } from '../art/canvasKit';
 import { cellCentredBox, ellipseShadow, litGradient, rope, sideGradient } from '../art/fieldKit';
 import { planks } from '../art/materials';
-import { flatTop, LIGHT, walls } from '../art/ornaments';
+import { flatTop, walls } from '../art/ornaments';
 import { drawCabin, drawLateenMast, drawSkiff } from '../art/ship';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
@@ -56,17 +56,7 @@ export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     });
   },
 
-  /** Rail running along the x axis (screen down-right). */
-  'ch3-ship-rail': (scene, def) => paintTexture(scene, def.texture, 64, 48, ctx => shipRail(ctx, LIGHT.left)),
 
-  /** Rail running along the y axis (screen down-left): the same rail, mirrored and in shade. */
-  'ch3-ship-rail-y': (scene, def) => {
-    paintTexture(scene, def.texture, 64, 48, ctx => {
-      ctx.translate(64, 0);
-      ctx.scale(-1, 1);
-      shipRail(ctx, LIGHT.right);
-    });
-  },
 
   'ch3-mast': (scene, def) => paintTexture(scene, def.texture, 64, 122, ctx => drawLateenMast(ctx, 30, 118)),
 
@@ -241,36 +231,6 @@ export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
   'ch3-skiff': (scene, def) => paintTexture(scene, def.texture, 68, 40, ctx => drawSkiff(ctx)),
 };
 
-/**
- * A ship's rail along the cell's centre line: a planked bulwark, turned
- * stanchions and a capping rail. It runs from the middle of one cell edge
- * to the middle of the opposite one, so neighbouring rails join.
- */
-function shipRail(ctx: Ctx, light: number): void {
-  const y = (x: number) => 24 + (x - 16) / 2;
-  ctx.save();
-  ctx.transform(1, 0.5, 0, 1, 16, y(16) - 6);
-  planks(ctx, 32, 6, { base: TEAK, light, seed: 5 }, false, 3);
-  ctx.restore();
-  for (const x of [24, 40]) {
-    ctx.fillStyle = css(shade(0x5a3a1f, light));
-    ctx.fillRect(x - 1.2, y(x) - 15, 2.4, 10);
-    ctx.fillStyle = css(shade(0x9a6a3a, light), 0.8);
-    ctx.fillRect(x - 1.2, y(x) - 15, 0.8, 10);
-  }
-  ctx.strokeStyle = css(shade(0x3a2412, light));
-  ctx.lineWidth = 3.2;
-  ctx.beginPath();
-  ctx.moveTo(16, y(16) - 15);
-  ctx.lineTo(48, y(48) - 15);
-  ctx.stroke();
-  ctx.strokeStyle = css(shade(0xa87440, light));
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(16, y(16) - 16.3);
-  ctx.lineTo(48, y(48) - 16.3);
-  ctx.stroke();
-}
 
 /** A tall peg with a hooded brass lantern, glowing. */
 function lanternPost(ctx: Ctx, x: number, ground: number): void {

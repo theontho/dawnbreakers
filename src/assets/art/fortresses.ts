@@ -58,7 +58,7 @@ export function paintFortress(scene: Phaser.Scene, key: string, cellsW: number, 
   });
 }
 
-function fortressStone(ctx: Ctx, w: number, h: number, color: number, light: number, seed: number): void {
+export function fortressStone(ctx: Ctx, w: number, h: number, color: number, light: number, seed: number): void {
   stone(ctx, w, h, { base: color, light, seed }, 8);
   // Battered talus: the lower courses are larger and darker.
   ctx.fillStyle = 'rgba(20,24,30,0.22)';
@@ -308,29 +308,6 @@ function snowBank(ctx: Ctx, box: IsoBox, seed: number): void {
       ctx.fill();
     }
   }
-}
-
-/** One block of fortress wall: coursed stone, crenellations, snow on every ledge. */
-export function paintRampart(scene: Phaser.Scene, key: string): void {
-  const { box, texW, texH } = footprintBox(1, 1, 30, 14);
-  paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, box, 4, 0.28);
-    walls(ctx, box, (c, w, h, light) => fortressStone(c, w, h, 0x6a737a, light, 141), {
-      left: (c, w, _h, l) => {
-        slit(c, w / 2, 10, l);
-        snowEdge(c, w, 2.5, 142, l);
-      },
-      right: (c, w, _h, l) => snowEdge(c, w, 2.5, 143, l),
-    });
-    onRoof(ctx, box, (w, d) => {
-      ctx.fillStyle = css(shade(0xe6edf1, LIGHT.roof));
-      ctx.fillRect(0, 0, w, d);
-      ctx.fillStyle = 'rgba(150,170,190,0.35)';
-      ctx.fillRect(0, d - 3, w, 3);
-    });
-    snowyMerlons(ctx, box, 0x7a838a, 5, 4);
-    outlineBox(ctx, box, 0x1f252b);
-  });
 }
 
 /** A stone pier pierced by a barred window, a lamp still burning within. */

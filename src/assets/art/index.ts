@@ -3,6 +3,7 @@ import { paintGate, paintLamp, paintMosque, paintWell } from './civic';
 import { HOUSE_VARIANTS, paintHouseVariants, paintStall } from './houses';
 import { CYPRESS_VARIANTS, paintCypress, paintTree, TREE_VARIANTS } from './nature';
 import { paintCrates, paintRug } from './props';
+import { paintWallBase, WALL_STYLES } from './walls';
 
 /**
  * Painted art for the shared base objects. Objects with variants paint
@@ -38,6 +39,7 @@ export const BASE_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>>
   cypress: (scene, def) => CYPRESS_VARIANTS.forEach((s, i) => paintCypress(scene, variantKey(def.texture, i), s)),
   crates: (scene, def) => paintCrates(scene, def.texture),
   rug: (scene, def) => paintRug(scene, def.texture),
+  ...Object.fromEntries(Object.keys(WALL_STYLES).map(id => [id, ((scene, def) => paintWallBase(scene, def.texture)) as TextureGenerator])),
 };
 
 /** The variant of `texture` to use at a grid cell; stable for a given placement. */

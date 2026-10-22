@@ -90,7 +90,6 @@ export const CH03_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch3-cabin-threshold', label: 'House Threshold', texture: 'ch3-cabin-threshold', kind: 'prop', category: 'furnishings', color: 0x2f5a3a, blocks: false },
   { id: 'ch3-mast', label: 'Ship Mast', texture: 'ch3-mast', kind: 'prop', category: 'furnishings', color: 0x8a5a2a, blocks: true },
   { id: 'ch3-ship-rail', label: 'Ship Rail', texture: 'ch3-ship-rail', kind: 'prop', category: 'furnishings', color: 0x6b5136, blocks: false },
-  { id: 'ch3-ship-rail-y', label: 'Ship Rail', texture: 'ch3-ship-rail-y', kind: 'prop', category: 'furnishings', color: 0x6b5136, blocks: false },
   { id: 'ch3-hatch', label: 'Hold Hatch', texture: 'ch3-hatch', kind: 'prop', category: 'furnishings', color: 0x5a3a1f, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch3-water-cask', label: 'Water Cask', texture: 'ch3-water-cask', kind: 'prop', category: 'market-supplies', color: 0x7a5030, blocks: true },
   { id: 'ch3-brazier', label: 'Brazier', texture: 'ch3-brazier', kind: 'prop', category: 'lighting-effects', color: 0xe06a2a, blocks: true },

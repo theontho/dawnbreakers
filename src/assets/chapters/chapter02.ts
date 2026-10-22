@@ -17,7 +17,6 @@ const TURQUOISE = 0x2e8c96;
 const LAPIS = 0x24477a;
 const CREAM = 0xe8d9a8;
 const GATE_BRICK = 0xc8a070;
-const MUD = 0xb08a5a;
 
 export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH02_TRAVEL_TEXTURE_GENERATORS,
@@ -42,43 +41,6 @@ export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     paintTexture(scene, def.texture, texW, texH, ctx => drawQuranGate(ctx, box));
   },
 
-  /** A rammed-earth segment of the Shíráz city wall, laid in courses, with merlons and an arrow slit. */
-  'ch2-city-wall': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 34, 10);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 5);
-      const courses = (c: Ctx, w: number, h: number, light: number) => {
-        plaster(c, w, h, { base: MUD, light, seed: 21 });
-        // Each lift of rammed earth leaves a wavering seam and its own tone.
-        for (let y = 9; y < h - 2; y += 9) {
-          c.fillStyle = css(shade(MUD, light * (y % 18 === 9 ? 0.93 : 1.05)), 0.3);
-          c.fillRect(0, y, w, 9);
-          c.strokeStyle = css(shade(MUD, light * 0.7), 0.45);
-          c.lineWidth = 0.7;
-          c.beginPath();
-          c.moveTo(0, y);
-          for (let u = 4; u <= w; u += 4) c.lineTo(u, y + Math.sin(u * 0.7 + y) * 0.6);
-          c.stroke();
-        }
-        // Rain has cut shallow gullies down from the merlons.
-        for (const u of [6, 14, 22, 30]) {
-          const g = c.createLinearGradient(0, 0, 0, 14);
-          g.addColorStop(0, css(shade(MUD, light * 0.72), 0.55));
-          g.addColorStop(1, css(shade(MUD, light * 0.72), 0));
-          c.fillStyle = g;
-          c.fillRect(u - 1, 0, 2, 14);
-        }
-      };
-      const slit = (c: Ctx, w: number, _h: number, l: number) => {
-        c.fillStyle = css(shade(0x1a100a, l + 0.2));
-        c.fillRect(w / 2 - 1, 11, 2, 9);
-      };
-      walls(ctx, box, courses, { left: slit, right: slit });
-      flatTop(ctx, box, shade(MUD, 0.95));
-      merlons(ctx, box, MUD, 5, 3);
-      outlineBox(ctx, box);
-    });
-  },
 
   /**
    * A roadside imámzádih: a whitewashed cube under a turquoise dome, rags

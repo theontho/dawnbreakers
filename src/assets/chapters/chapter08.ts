@@ -1,8 +1,7 @@
-import { baseCorners, css, footprintBox, groundShadow, onLeftWall, onRightWall, onRoof, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
-import { earthRoof, plaster, stone } from '../art/materials';
+import { css, footprintBox, groundShadow, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
+import { plaster, stone } from '../art/materials';
 import { archPath, band, dome, doorway, parapetRoof, walls } from '../art/ornaments';
 import { standard } from '../art/banners';
-import { lashing, stakeRow } from '../art/timber';
 import { moss } from '../art/woodland';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH08_FOREST_TEXTURE_GENERATORS } from './chapter08Forest';
@@ -72,34 +71,6 @@ export const CH08_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, { wall: 0xcdbf98, plinth: 0x8a8578, dome: 0xb8b090, seed: 67 }));
   },
 
-  // A stone footing and a double stockade of sharpened logs, rammed with
-  // earth between, lashed with rope.
-  'ch8-palisade': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 24, 14);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 4, 0.22);
-      const [, right, , left] = baseCorners(box);
-      const stakes = (c: Ctx, w: number, h: number, l: number, seed: number) => {
-        stakeRow(c, w, h, l, seed);
-        lashing(c, w, 5, l);
-        lashing(c, w, h - 8, l);
-      };
-      const footing: IsoBox = { ...box, h: 7 };
-      walls(ctx, footing, (c, w, h, light) => stone(c, w, h, { base: 0x8a8578, light, seed: 2 }, 3.5));
-      outlineBox(ctx, footing);
-      // The far rows show only their points above the earth fill.
-      onRightWall(ctx, { ...box, x: left!.x, y: left!.y }, (w, h) => stakes(ctx, w, h, 0.62, 5));
-      onLeftWall(ctx, { ...box, x: right!.x, y: right!.y }, (w, h) => stakes(ctx, w, h, 0.75, 6));
-      onRoof(ctx, box, (w, d) => earthRoof(ctx, w, d, { base: 0x6b5236, light: 1, seed: 8 }));
-      walls(ctx, { ...box, y: box.y - footing.h, h: box.h - footing.h }, (c, w, h) => {
-        c.fillStyle = css(0x1a120a);
-        c.fillRect(0, 0, w, h);
-      }, {
-        left: (c, w, h, l) => stakes(c, w, h, l, 3),
-        right: (c, w, h, l) => stakes(c, w, h, l, 4),
-      });
-    });
-  },
 
   'ch8-truce-flag': (scene, def) => paintTexture(scene, def.texture, 64, 64, ctx => {
     standard(ctx, 24, 59, 50, { cloth: 0xe8dec1, w: 32, h: 18, waves: 2, finial: 'knob' });

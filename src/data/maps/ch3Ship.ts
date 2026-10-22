@@ -31,7 +31,7 @@ function isDeck(x: number, y: number): boolean {
 const LADDER_X = 14;
 const LADDER_TOP_Y = 11;
 
-/** Rails on every deck cell along the hull's edge, oriented to the edge they guard. */
+/** Rails on every deck cell along the hull's edge; they join into one run. */
 function hullRails(): DecorSpec[] {
   const rails: DecorSpec[] = [];
   for (let x = 0; x < WIDTH; x++) {
@@ -40,7 +40,7 @@ function hullRails(): DecorSpec[] {
       const openNS = !isDeck(x, y - 1) || !isDeck(x, y + 1);
       const openEW = !isDeck(x - 1, y) || !isDeck(x + 1, y);
       if (!openNS && !openEW) continue;
-      rails.push({ gridX: x, gridY: y, texture: openNS ? 'ch3-ship-rail' : 'ch3-ship-rail-y', blocks: true });
+      rails.push({ gridX: x, gridY: y, texture: 'ch3-ship-rail', blocks: true });
     }
   }
   return rails;

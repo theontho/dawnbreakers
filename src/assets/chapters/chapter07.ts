@@ -1,5 +1,5 @@
 import { paintGardenCanopy, paintTent, QUDDUS_TENT, RECONCILIATION_TENT } from '../art/badasht';
-import { paintCookfire, paintCurtain, paintGardenWall, paintRosebush } from '../art/badashtProps';
+import { paintCookfire, paintCurtain, paintRosebush } from '../art/badashtProps';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
 /**
@@ -13,7 +13,6 @@ export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   'ch7-tent-quddus': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2, QUDDUS_TENT),
   'ch7-garden-canopy': (scene, def) => paintGardenCanopy(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2),
   'ch7-rosebush': (scene, def) => paintRosebush(scene, def.texture),
-  'ch7-garden-wall': (scene, def) => paintGardenWall(scene, def.texture),
   'ch7-curtain': (scene, def) => paintCurtain(scene, def.texture),
   'ch7-cookfire': (scene, def) => paintCookfire(scene, def.texture),
 };

@@ -1,8 +1,7 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundPoint, groundShadow, onRoof, outlineBox, paintTexture, rng, shade, type Ctx } from './canvasKit';
-import { earthRoof, plaster } from './materials';
-import { LIGHT, walls } from './ornaments';
+import { css, paintTexture, rng, shade, type Ctx } from './canvasKit';
 import { ellipseShadow, embers, flames, glow, onPlane, post } from './structureParts';
+import { LIGHT } from './ornaments';
 
 /**
  * Badasht's gardens and camp: damask roses, mud-brick garden walls, the
@@ -62,41 +61,7 @@ export function paintRosebush(scene: Phaser.Scene, key: string): void {
   });
 }
 
-/** A stretch of garden wall in straw-flecked mud plaster with a rounded coping. */
-export function paintGardenWall(scene: Phaser.Scene, key: string): void {
-  const { box, texW, texH } = footprintBox(1, 1, 22, 8);
-  paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, box, 4, 0.24);
-    walls(ctx, box, (c, w, h, light) => {
-      plaster(c, w, h, { base: 0x9c7648, light, seed: 261 });
-      straw(c, w, h, light, 262);
-    }, {
-      left: (c, w, h, l) => mudBrickPatch(c, w * 0.18, h * 0.5, 12, 7, l),
-      right: (c, w, h, l) => mudBrickPatch(c, w * 0.55, h * 0.3, 9, 6, l),
-    });
-    // Packed mud along the top, so a run of blocks reads as one continuous coping.
-    onRoof(ctx, box, (w, d) => {
-      earthRoof(ctx, w, d, { base: 0xa88456, light: LIGHT.roof, seed: 263 });
-      straw(ctx, w, d, LIGHT.roof, 264);
-    });
-    outlineBox(ctx, box, 0x5a4228);
-    // Dry grass tufts at the foot of the wall.
-    const rand = rng(265);
-    for (let i = 0; i < 7; i++) {
-      const at = i < 4 ? groundPoint(box, 4 + rand() * (box.w - 8), 0) : groundPoint(box, box.w, 4 + rand() * (box.d - 8));
-      for (let k = 0; k < 4; k++) {
-        ctx.strokeStyle = css(k % 2 ? 0x8a8a3a : 0x6a7a34, 0.9);
-        ctx.lineWidth = 0.8;
-        ctx.beginPath();
-        ctx.moveTo(at.x + k - 1.5, at.y + 1);
-        ctx.lineTo(at.x + (k - 1.5) * 2, at.y - 3 - rand() * 3);
-        ctx.stroke();
-      }
-    }
-  });
-}
-
-function straw(ctx: Ctx, w: number, h: number, light: number, seed: number): void {
+export function straw(ctx: Ctx, w: number, h: number, light: number, seed: number): void {
   const rand = rng(seed);
   ctx.strokeStyle = css(shade(0xe0c890, light), 0.55);
   ctx.lineWidth = 0.6;
@@ -112,7 +77,7 @@ function straw(ctx: Ctx, w: number, h: number, light: number, seed: number): voi
 }
 
 /** Where the plaster has fallen away, the mud bricks show. */
-function mudBrickPatch(ctx: Ctx, x: number, y: number, w: number, h: number, light: number): void {
+export function mudBrickPatch(ctx: Ctx, x: number, y: number, w: number, h: number, light: number): void {
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
