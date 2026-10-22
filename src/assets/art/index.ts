@@ -7,7 +7,8 @@ import { ALDER_VARIANTS, IRONWOOD_VARIANTS, OAK_VARIANTS } from './hyrcanianWood
 import { MOUNTAIN_HOUSES } from './mountainHouse';
 import { TEHRAN_HOUSES } from './tehran';
 import { TOWN_TEXTURE_VARIANTS } from './town';
-import { paintWallBase, WALL_STYLES } from './walls';
+import { paintWallBase } from './wallPainter';
+import { WALL_STYLES } from './wallStyles';
 
 /**
  * Painted art for the shared base objects. Objects with variants paint

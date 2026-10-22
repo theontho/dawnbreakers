@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import type { BuildingFaces } from '../walls';
+import type { BuildingFaces } from '../wallPainter';
 import { footprintBox, groundPoint, paintTexture, shade, type Ctx, type IsoBox } from '../canvasKit';
 import { wornPlaster } from '../facade';
 import { band, dome } from '../ornaments';

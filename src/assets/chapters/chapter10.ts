@@ -14,7 +14,7 @@ import { CH10_ROAD_TEXTURE_GENERATORS } from './chapter10Road';
  * `art/tehranSabat.ts` and `art/tehranGate.ts`; the prison architecture,
  * chains, straw and the shaft of light live in `chapter10Prison.ts`, the
  * snow in `chapter10Road.ts`. The city wall is a connected wall style
- * (`ch10-city-wall`, `ch10-city-wall-snow` in walls.ts), as are the
+ * (`ch10-city-wall`, `ch10-city-wall-snow` in wallStyles.ts), as are the
  * pit's arcade and vault walls (`ch10-low-arch`, `ch10-vault-wall`).
  *
  * Note: `lamp` and `crowd-shadow` are intentionally not redefined here.

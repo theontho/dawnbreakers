@@ -5,7 +5,7 @@ import { archPath, clipped, latticeWindow } from './ornaments';
 
 /**
  * Wall faces for the arcade of lodging rooms round a caravanserai court (see
- * `WALL_STYLES` in `walls.ts`), at true scale and painted in cell-aligned
+ * `WALL_STYLES` in `wallStyles.ts`), at true scale and painted in cell-aligned
  * pattern space: one arched bay per cell (1.4 m), a storey and its parapet
  * high, the rooms' doors 22 x 48 px at the back of the bays.
  */

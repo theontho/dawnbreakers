@@ -4,7 +4,7 @@ import { straw } from '../badashtProps';
 import { clipped } from '../ornaments';
 
 /**
- * Faces of the true-scale connected walls (see `WALL_STYLES` in walls.ts).
+ * Faces of the true-scale connected walls (see `WALL_STYLES` in wallStyles.ts).
  * Every pattern repeats on a period that divides a cell (32 px), so the
  * courses run on unbroken from one cell's piece to the next.
  */

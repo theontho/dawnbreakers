@@ -52,7 +52,7 @@ function loophole(c: Ctx, u: number, v: number, l: number): void {
   c.fillRect(u + 1.5, v, 0.8, 16);
 }
 
-/** The city wall's height to the wall-walk, shared with its connected wall styles in walls.ts. */
+/** The city wall's height to the wall-walk, shared with its connected wall styles in wallStyles.ts. */
 export const CITY_WALL_H = 130;
 
 /** One face of the city wall: rammed earth, a loophole every cell, on a 32 px period so runs join. */

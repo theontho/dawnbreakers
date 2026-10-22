@@ -7,7 +7,7 @@ import { archPath, clipped } from './ornaments';
  * Wall faces for the court of a Ṭihrán madrasa (the Madrasa of Mírzá Ṣáliḥ,
  * chapter "Ṭihrán and Núr"), one arched bay to a cell (1.4 m), painted in
  * cell-aligned pattern space so a run of bays reads as one arcade (see
- * `WALL_STYLES` in `walls.ts`). Two storeys of students' cells: below, a
+ * `WALL_STYLES` in `wallStyles.ts`). Two storeys of students' cells: below, a
  * pointed bay with the cell's two-leaf door at the back of it; above, a
  * smaller arched balcony. A turquoise band runs under the cornice and the
  * spandrels are tiled. A lit cell stands with one leaf open on lamplight.

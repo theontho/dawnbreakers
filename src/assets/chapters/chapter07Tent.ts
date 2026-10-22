@@ -6,7 +6,7 @@ import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapA
  * Chapter 7, inside Quddús's pavilion at Badasht: the tent pole and its
  * lantern, mattresses and bolsters along the walls, carpets laid edge to
  * edge, and the man of Bárfurúsh who keeps the tent. The printed lining is
- * a connected wall style in `art/walls.ts`.
+ * a connected wall style in `art/wallStyles.ts`.
  */
 export const CH07_TENT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   'ch7-tent-pole': (scene, def) => paintTentPole(scene, def.texture),

@@ -3,7 +3,7 @@ import { planks } from './materials';
 
 /**
  * Wall faces for the cabin of the pilgrim ship (see `WALL_STYLES` in
- * `walls.ts`), at true scale: a person is 40 px. Each
+ * `wallStyles.ts`), at true scale: a person is 40 px. Each
  * face is painted in cell-aligned pattern space (0..32 across one cell), so
  * a feature centred on u = 16 sits in the middle of its cell and plain runs
  * join seamlessly.

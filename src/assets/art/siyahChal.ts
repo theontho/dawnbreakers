@@ -69,7 +69,7 @@ const ARCH = { w: 22, h: 50 } as const;
 
 /**
  * One face of the arcade wall (the connected `ch10-low-arch` style in
- * walls.ts): sooty brick, a low arch onto black galleries in every cell,
+ * wallStyles.ts): sooty brick, a low arch onto black galleries in every cell,
  * a pier between each pair with its impost band, damp at the foot.
  */
 export function lowArchFace(c: Ctx, w: number, h: number, l: number): void {

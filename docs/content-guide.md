@@ -165,7 +165,8 @@ Buildings should not look like boxes stamped on the grid. Inset the main
 block from some footprint edges (3 to 8 px), add a lower wing, porch, steps
 or courtyard wall, vary roof heights, and let something sit at the foot
 (a bench, plants, a water jar, dust). Walls that run for several cells are
-placed one cell at a time and join automatically; see `src/assets/art/walls.ts`.
+placed one cell at a time and join automatically; the styles are in
+`src/assets/art/wallStyles.ts`, the joining painter in `wallPainter.ts`.
 
 Prefer existing objects (see `src/assets/mapAssetDefinitions.ts` and each
 `src/assets/chapters/chapterNN.ts`). New characters are cheap: add an entry

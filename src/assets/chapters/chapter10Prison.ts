@@ -9,7 +9,7 @@ import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 /**
  * Chapter 10, the Síyáh-Chál at true scale: a disused reservoir under
  * Ṭihrán. Its vault piers are drawn in `art/siyahChal.ts` (its arcade walls
- * are connected wall styles in walls.ts); this
+ * are connected wall styles in wallStyles.ts); this
  * file holds the pillars to which the prisoners were chained, their straw,
  * and the one shaft of light from a crack in the vault.
  */

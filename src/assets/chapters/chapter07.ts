@@ -6,7 +6,7 @@ import { CH07_TENT_OBJECTS, CH07_TENT_TEXTURE_GENERATORS } from './chapter07Tent
 /**
  * Chapter 7: the Conference of Badasht, at true scale. Adds the encampment
  * tents (a guest's pavilion 5.6 x 4.2 m, the larger one with its awning
- * 7 x 5.6 m), the garden canopy, mud-brick garden walls (in `art/walls.ts`),
+ * 7 x 5.6 m), the garden canopy, mud-brick garden walls (in `art/wallStyles.ts`),
  * the curtain behind which Ṭáhirih first speaks, a cookfire for eighty-one
  * guests, and the rosebush. Carpet and lamp fall through to the shared base
  * art.

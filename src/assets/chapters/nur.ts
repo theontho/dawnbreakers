@@ -4,7 +4,7 @@ import { paintCellLamp } from './nurProps';
 
 /**
  * Ṭihrán and Núr, 1844: the madrasa of Mírzá Ṣáliḥ (its arcade of cells is
- * a connected wall, `nur-madrasa-*` in `art/walls.ts`), the lamp by Mullá
+ * a connected wall, `nur-madrasa-*` in `art/wallStyles.ts`), the lamp by Mullá
  * Ḥusayn's door, the house of the late Vazír at Tákur and the footings of
  * the half of it the flood took, and the people who carry the story.
  * Bahá'u'lláh is never a sprite: His house is seen from the lane, His

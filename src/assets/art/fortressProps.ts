@@ -11,7 +11,7 @@ import { liftedPoint, post, snowEdge, subBox } from './structureParts';
  * the plank footbridge over a mountain stream.
  */
 
-/** The rampart's stone, shared with its connected wall style in walls.ts: 7.3 m to the wall-walk. */
+/** The rampart's stone, shared with its connected wall style in wallStyles.ts: 7.3 m to the wall-walk. */
 export const RAMPART = { color: 0x6a737a, height: 168 } as const;
 
 /**

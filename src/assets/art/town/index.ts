@@ -1,6 +1,6 @@
 import type { MapObjectId, TextureGenerator } from '../../mapAssetTypes';
 import { variantKey } from '../canvasKit';
-import type { BuildingFaces } from '../walls';
+import type { BuildingFaces } from '../wallPainter';
 import { LARGE_STALLS, paintBazaarRow, paintLargeStall } from './bazaar';
 import { paintCityGateLarge } from './cityGate';
 import { COURTYARD_HOUSES } from './courtyardHouse';
@@ -14,7 +14,7 @@ import {
 
 /**
  * Generators for the true-scale town objects (`src/assets/townObjects.ts`).
- * The connected `town-wall` and `compound-wall` are styles in walls.ts and
+ * The connected `town-wall` and `compound-wall` are styles in wallStyles.ts and
  * are registered with the other walls.
  */
 

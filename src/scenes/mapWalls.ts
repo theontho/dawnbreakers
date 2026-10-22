@@ -1,6 +1,7 @@
 import type Phaser from 'phaser';
 import { TOWN_BUILDING_FACES } from '../assets/art/town';
-import { ensureWallTexture, wallTextureKey, WALL_E, WALL_N, WALL_S, WALL_STYLES, WALL_W, type WallReach } from '../assets/art/walls';
+import { ensureWallTexture, wallTextureKey, WALL_E, WALL_N, WALL_S, WALL_W, type WallReach } from '../assets/art/wallPainter';
+import { WALL_STYLES } from '../assets/art/wallStyles';
 import type { Building, Decor } from './baseMapTypes';
 
 /**

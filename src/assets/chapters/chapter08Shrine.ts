@@ -5,7 +5,7 @@ import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapA
  * Chapter 8, inside the shrine of Shaykh Ṭabarsí: the tomb, its lamps and
  * Qur'án stand, the companions' bedrolls, the men who pray there through
  * the night, and the keeper of the shrine. The limewashed walls are
- * connected wall styles in `art/walls.ts`.
+ * connected wall styles in `art/wallStyles.ts`.
  */
 export const CH08_SHRINE_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   'ch8-tomb': (scene, def) => paintTomb(scene, def.texture),
