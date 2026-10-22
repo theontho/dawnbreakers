@@ -23,18 +23,18 @@ export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   ...CH03_SHIP_TEXTURE_GENERATORS,
 
   'ch3-kaaba': (scene, def) => {
-    const { box, texW, texH } = footprintBox(2, 2, 74, 8);
+    const { box, texW, texH } = footprintBox(2, 2, 88, 8);
     paintTexture(scene, def.texture, texW, texH, ctx => drawKaaba(ctx, box));
   },
 
   'ch3-arcade': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 32, 28);
+    const { box, texW, texH } = footprintBox(1, 1, 60, 28);
     paintTexture(scene, def.texture, texW, texH, ctx => drawArcadeBay(ctx, box));
   },
 
-  'ch3-minaret': (scene, def) => paintTexture(scene, def.texture, 48, 156, ctx => drawMinaret(ctx, 24, 154)),
+  'ch3-minaret': (scene, def) => paintTexture(scene, def.texture, 48, 160, ctx => drawMinaret(ctx, 24, 158)),
 
-  'ch3-maqam': (scene, def) => paintTexture(scene, def.texture, 40, 56, ctx => drawMaqam(ctx, 20, 54)),
+  'ch3-maqam': (scene, def) => paintTexture(scene, def.texture, 40, 68, ctx => drawMaqam(ctx, 20, 66)),
 
   'ch3-pilgrim-cluster': (scene, def) => {
     paintTexture(scene, def.texture, 58, 56, ctx => {

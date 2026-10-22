@@ -1,121 +1,14 @@
-import { css, groundPoint, onRoof, onRightWall, outlineBox, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
+import { css, shade, type Ctx } from './canvasKit';
 import { ellipseShadow } from './fieldKit';
-import { planks } from './materials';
-import { band, latticeWindow, LIGHT, walls } from './ornaments';
 
 /**
- * The pilgrim baghla out of Búshihr: a teak stern cabin with carved and
- * painted bands and lamplit lattices, a lateen-rigged mast, and the ship's
- * boat. Painted in the deck plane where that is what the eye expects.
+ * The pilgrim baghla out of Búshihr: a lateen-rigged mast and the ship's
+ * boat, painted in the deck plane where that is what the eye expects. The
+ * stern deckhouse is in `shipCabin.ts`.
  */
 
-const TEAK = 0x7a4f2c;
 const DARK_TEAK = 0x4a2e18;
 const CANVAS = 0xd8c7a0;
-
-export function drawCabin(ctx: Ctx, box: IsoBox): void {
-  const [ft, rt, bt, lt] = topCorners(box);
-  ellipseShadow(ctx, box.x + 6, box.y - box.w / 2 + 6, box.w * 0.9, box.w * 0.35, 0.22);
-  walls(ctx, box, (c, w, h, light) => planks(c, w, h, { base: TEAK, light, seed: light === 1 ? 31 : 32 }, false, 4), {
-    left: (c, w, h, l) => {
-      trim(c, w, h, l);
-      latticeWindow(c, w * 0.42, h - 30, 14, 12, { frame: 0xc9a55c, light: l, lit: true });
-    },
-    right: (c, w, h, l) => {
-      trim(c, w, h, l);
-      for (const t of [0.14, 0.8]) latticeWindow(c, w * t, h - 30, 14, 12, { frame: 0xc9a55c, light: l, lit: true });
-      cabinDoor(c, w * 0.5, h, w * 0.18, l);
-    },
-  });
-  // Poop deck on the roof.
-  onRoof(ctx, box, (w, d) => {
-    planks(ctx, w, d, { base: 0x8a6038, light: LIGHT.roof, seed: 33 }, true, 5);
-    ctx.strokeStyle = 'rgba(20,10,4,0.35)';
-    ctx.strokeRect(0.5, 0.5, w - 1, d - 1);
-  });
-  outlineBox(ctx, box);
-  // Taffrail round the poop: the far run first, then the near.
-  railRun(ctx, [lt!, bt!, rt!], 7);
-  railRun(ctx, [lt!, ft!, rt!], 7);
-  // Lamplight spilling from the door onto the deck.
-  onRightWall(ctx, box, (w, h) => {
-    const g = ctx.createRadialGradient(w * 0.59, h - 16, 2, w * 0.59, h - 16, 26);
-    g.addColorStop(0, 'rgba(255,214,140,0.35)');
-    g.addColorStop(1, 'rgba(255,214,140,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(w * 0.59 - 26, h - 42, 52, 42);
-  });
-  const sill = groundPoint(box, box.w + 6, box.d * 0.59);
-  const pool = ctx.createRadialGradient(sill.x, sill.y, 1, sill.x, sill.y, 14);
-  pool.addColorStop(0, 'rgba(255,214,140,0.4)');
-  pool.addColorStop(1, 'rgba(255,214,140,0)');
-  ctx.fillStyle = pool;
-  ctx.beginPath();
-  ctx.ellipse(sill.x, sill.y, 14, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-/** A carved and painted frieze under the roof and a rubbing strake at the foot. */
-function trim(c: Ctx, w: number, h: number, l: number): void {
-  band(c, w, 2, 4, 0xe8dcc0, l);
-  c.fillStyle = css(shade(0xa83a2a, l));
-  for (let u = 2; u < w; u += 6) c.fillRect(u, 3, 3, 2);
-  band(c, w, h - 5, 3, DARK_TEAK, l);
-}
-
-/** The cabin door: a carved frame, the upper leaves a lattice with the lamp behind. */
-function cabinDoor(c: Ctx, x: number, h: number, w: number, l: number): void {
-  const top = h - 34;
-  c.fillStyle = css(shade(0xc9a55c, l * 0.9));
-  c.fillRect(x - 2, top - 2, w + 4, 34);
-  c.fillStyle = css(shade(DARK_TEAK, l));
-  c.fillRect(x, top, w, 32);
-  latticeWindow(c, x + 2, top + 2, w - 4, 13, { frame: 0x5a3418, light: l, lit: true });
-  c.strokeStyle = css(0x1a0f08, 0.9);
-  c.lineWidth = 0.8;
-  c.strokeRect(x + 2, top + 18, w / 2 - 3, 11);
-  c.strokeRect(x + w / 2 + 1, top + 18, w / 2 - 3, 11);
-  c.beginPath();
-  c.moveTo(x + w / 2, top);
-  c.lineTo(x + w / 2, h - 2);
-  c.stroke();
-  // A small lantern hung beside the door.
-  c.fillStyle = 'rgba(255,214,140,0.35)';
-  c.beginPath();
-  c.arc(x + w + 6, top + 6, 6, 0, Math.PI * 2);
-  c.fill();
-  c.fillStyle = '#ffd98a';
-  c.fillRect(x + w + 4, top + 3, 4, 6);
-  c.fillStyle = css(0x2a1a0a);
-  c.fillRect(x + w + 3.5, top + 2, 5, 1.2);
-}
-
-/** Stanchions and a capping rail along a polyline of roof corners. */
-function railRun(ctx: Ctx, corners: ReadonlyArray<{ x: number; y: number }>, h: number): void {
-  for (let i = 0; i < corners.length - 1; i++) {
-    const a = corners[i]!;
-    const b = corners[i + 1]!;
-    const n = Math.max(2, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / 12));
-    for (let k = 0; k <= n; k++) {
-      const x = a.x + ((b.x - a.x) * k) / n;
-      const y = a.y + ((b.y - a.y) * k) / n;
-      ctx.fillStyle = css(DARK_TEAK);
-      ctx.fillRect(x - 0.8, y - h, 1.6, h);
-    }
-    ctx.strokeStyle = css(0x3a2412);
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y - h);
-    ctx.lineTo(b.x, b.y - h);
-    ctx.stroke();
-    ctx.strokeStyle = css(0xa87440, 0.9);
-    ctx.lineWidth = 0.7;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y - h - 0.8);
-    ctx.lineTo(b.x, b.y - h - 0.8);
-    ctx.stroke();
-  }
-}
 
 /** A mast with its lateen yard and sail, shrouds and a pennant. */
 export function drawLateenMast(ctx: Ctx, x: number, deck: number): void {

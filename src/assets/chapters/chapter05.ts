@@ -1,5 +1,7 @@
-import { paintEwer, paintPalacePortico, paintSeatOfHonour } from '../art/isfahanPalace';
-import { paintBridgeSpan, paintMarketAwning, paintRiverReeds } from '../art/isfahanRiver';
+import { paintEwer, paintSeatOfHonour } from '../art/isfahanFurnishings';
+import { paintPalacePortico } from '../art/isfahanPalace';
+import { paintBridgeSpan } from '../art/isfahanBridge';
+import { paintMarketAwning, paintRiverReeds } from '../art/isfahanRiver';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
 /**

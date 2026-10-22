@@ -1,5 +1,6 @@
 import { css, groundPoint, groundShadow, mix, onLeftWall, onRightWall, outlineBox, rng, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
 import { ellipseShadow } from './fieldKit';
+import { subBox } from './structureParts';
 import { stone } from './materials';
 import { archPath, band, clipped, cylinder, dome, flatTop, LIGHT, walls } from './ornaments';
 
@@ -16,8 +17,14 @@ const LIMESTONE = 0xd8c7a0;
 const WHITEWASH = 0xe8e4d8;
 
 /** The Kaʿba. The door is raised on the x-facing (right) wall, as the map expects. */
-export function drawKaaba(ctx: Ctx, box: IsoBox): void {
-  groundShadow(ctx, box, 9, 0.32);
+export function drawKaaba(ctx: Ctx, footprint: IsoBox): void {
+  groundShadow(ctx, footprint, 9, 0.32);
+  // The shádhirwán: a sloping marble skirt a step proud of the walls all round.
+  const skirt = subBox(footprint, 0, footprint.w, 0, footprint.d, 4);
+  walls(ctx, skirt, (c, w, h, light) => stone(c, w, h, { base: 0xdcd8d0, light, seed: 13 }, 4));
+  flatTop(ctx, skirt, 0xcfcbc2);
+  outlineBox(ctx, skirt, 0x5a564e);
+  const box = subBox(footprint, 3, footprint.w - 3, 3, footprint.d - 3, footprint.h);
   const kiswa = (c: Ctx, w: number, h: number, light: number) => {
     const rand = rng(light === 1 ? 3 : 4);
     const base = shade(KISWA, light * (light === 1 ? 1.25 : 0.85));
@@ -60,15 +67,14 @@ export function drawKaaba(ctx: Ctx, box: IsoBox): void {
       if (rand() < 0.4) c.lineTo(x + 2.4, by + 2);
       c.stroke();
     }
-    // Marble shádhirwán at the foot, with the rings the cloth is tied to.
-    c.fillStyle = css(shade(0xd8d4cc, light));
-    c.fillRect(0, h - 5, w, 5);
-    c.fillStyle = css(shade(0x9a968e, light));
-    c.fillRect(0, h - 5, w, 1);
-    c.strokeStyle = css(shade(0x8a7a5a, light), 0.9);
+    // The hem, tied down to brass rings set in the marble skirt.
+    c.fillStyle = css(shade(0x0c0b0a, light));
+    c.fillRect(0, h - 2, w, 2);
+    c.strokeStyle = css(shade(0xb89a5a, light), 0.9);
+    c.lineWidth = 0.7;
     for (let x = 4; x < w; x += 8) {
       c.beginPath();
-      c.arc(x, h - 4, 1, 0, Math.PI * 2);
+      c.arc(x, h - 1.5, 1, 0, Math.PI * 2);
       c.stroke();
     }
   };
@@ -76,23 +82,23 @@ export function drawKaaba(ctx: Ctx, box: IsoBox): void {
   onRightWall(ctx, box, (w, h) => kaabaDoor(ctx, w * 0.3, h, LIGHT.right));
   flatTop(ctx, box, 0x4e4a47);
   outlineBox(ctx, box, 0x050404);
-  // The Black Stone in its silver frame at the eastern corner.
+  // The Black Stone in its silver frame at the eastern corner, at a pilgrim's chest height.
   const corner = groundPoint(box, box.w, 0);
   ctx.fillStyle = css(0xa8a8a4);
   ctx.beginPath();
-  ctx.ellipse(corner.x, corner.y - 22, 1.8, 2.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(corner.x, corner.y - 28, 2, 2.8, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = css(0x161212);
   ctx.beginPath();
-  ctx.ellipse(corner.x, corner.y - 22, 1.1, 1.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(corner.x, corner.y - 28, 1.2, 1.8, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
-/** The raised golden door, reached by a wheeled stair on feast days. */
+/** The golden door, raised above a man's head and reached by a wheeled stair on feast days. */
 function kaabaDoor(c: Ctx, x: number, h: number, l: number): void {
-  const w = 13;
-  const top = h - 42;
-  const bottom = h - 14;
+  const w = 12;
+  const top = h - 68;
+  const bottom = h - 34;
   c.fillStyle = css(shade(0x6a4c1a, l));
   c.fillRect(x - 1.5, top - 1.5, w + 3, bottom - top + 3);
   const g = c.createLinearGradient(x, top, x + w, bottom);
@@ -106,60 +112,81 @@ function kaabaDoor(c: Ctx, x: number, h: number, l: number): void {
   c.beginPath();
   c.moveTo(x + w / 2, top);
   c.lineTo(x + w / 2, bottom);
-  for (const y of [top + 6, top + 15, top + 22]) {
+  for (const y of [top + 6, top + 15, top + 24]) {
     c.rect(x + 1.5, y - 3, w / 2 - 3, 5);
     c.rect(x + w / 2 + 1.5, y - 3, w / 2 - 3, 5);
   }
   c.stroke();
 }
 
-/** One bay of the colonnade: striped pointed arches on columns, a white dome above. */
+/**
+ * One bay of the colonnade: a tall pointed arch of striped voussoirs on
+ * slender marble columns, a white dome above, the floor raised a step.
+ * Bays join along a run, so the box fills its cell edge to edge.
+ */
 export function drawArcadeBay(ctx: Ctx, box: IsoBox): void {
   groundShadow(ctx, box, 4, 0.22);
   const bay = (c: Ctx, w: number, h: number, l: number) => {
     stone(c, w, h, { base: LIMESTONE, light: l, seed: l === 1 ? 7 : 8 }, 6);
-    const aw = w - 8;
-    // The shadowed hall behind the arch.
-    archPath(c, 4, h, aw, h - 7);
-    const inside = c.createLinearGradient(0, 6, 0, h);
-    inside.addColorStop(0, css(shade(0x3a2e22, l)));
-    inside.addColorStop(1, css(shade(0x5a4a38, l)));
+    const aw = w - 9;
+    const step = 3;
+    const springH = h - 16;
+    // The shadowed hall behind the arch, lighter toward the paved floor.
+    archPath(c, 4.5, h - step, aw, springH);
+    const inside = c.createLinearGradient(0, h - springH, 0, h);
+    inside.addColorStop(0, css(shade(0x2a2018, l)));
+    inside.addColorStop(1, css(shade(0x6a5a46, l)));
     c.fillStyle = inside;
     c.fill();
+    // The inner arcade glimpsed through the opening.
+    c.save();
+    archPath(c, 4.5, h - step, aw, springH);
+    c.clip();
+    archPath(c, 9, h - step - 4, aw - 9, springH - 12);
+    c.strokeStyle = css(shade(LIMESTONE, l * 0.45), 0.8);
+    c.lineWidth = 1.4;
+    c.stroke();
+    c.restore();
     // Ablaq voussoirs: alternating pale and red-brown stones round the arch.
-    archPath(c, 3, h, aw + 2, h - 6);
+    archPath(c, 3.5, h - step, aw + 2, springH + 1);
     c.strokeStyle = css(shade(0xefe6cf, l));
-    c.lineWidth = 2;
+    c.lineWidth = 2.2;
     c.stroke();
     c.setLineDash([2.5, 2.5]);
     c.strokeStyle = css(shade(0x9a5a3a, l));
     c.stroke();
     c.setLineDash([]);
-    // Columns at the bay corners, with a capital.
-    for (const x of [1, w - 4]) {
+    // Slender columns at the bay corners, with a capital and a base.
+    for (const x of [0.5, w - 3.5]) {
       c.fillStyle = css(shade(0xd0ccc0, l));
-      c.fillRect(x, 10, 3, h - 10);
-      c.fillStyle = css(shade(0xf0ead8, l));
-      c.fillRect(x, 10, 1, h - 10);
+      c.fillRect(x, h - springH + 10, 3, springH - 10 - step);
+      c.fillStyle = css(shade(0xf4efe2, l));
+      c.fillRect(x, h - springH + 10, 1, springH - 10 - step);
       c.fillStyle = css(shade(LIMESTONE, l * 0.85));
-      c.fillRect(x - 0.5, 9, 4, 2);
+      c.fillRect(x - 0.5, h - springH + 9, 4, 2);
+      c.fillRect(x - 0.5, h - step - 2, 4, 2);
     }
-    band(c, w, 1, 2, shade(LIMESTONE, 0.85), l);
+    // A cornice under the roof and the raised floor's step at the foot.
+    band(c, w, 2, 2, shade(LIMESTONE, 0.85), l);
+    c.fillStyle = css(shade(0xd8d4cc, l));
+    c.fillRect(0, h - step, w, step);
+    c.fillStyle = 'rgba(0,0,0,0.22)';
+    c.fillRect(0, h - step, w, 0.8);
   };
   walls(ctx, box, (c, w, h, light) => bay(c, w, h, light));
   flatTop(ctx, box, LIMESTONE);
   outlineBox(ctx, box, 0x4a3a24);
   const top = roofPoint(box, box.w / 2, box.d / 2);
-  dome(ctx, top.x, top.y + 1, 11, { color: WHITEWASH, drum: 3, drumColor: LIMESTONE, bulb: 0.95, finial: true });
+  dome(ctx, top.x, top.y + 1, 11, { color: WHITEWASH, drum: 4, drumColor: LIMESTONE, bulb: 0.95, finial: true });
 }
 
 /** An Ottoman minaret: square base, banded shaft, two balconies and a pencil spire. */
 export function drawMinaret(ctx: Ctx, cx: number, ground: number): void {
   ellipseShadow(ctx, cx + 3, ground - 6, 18, 6, 0.3);
-  const base: IsoBox = { x: cx, y: ground - 2, w: 18, d: 18, h: 34 };
+  const base: IsoBox = { x: cx, y: ground - 2, w: 18, d: 18, h: 38 };
   walls(ctx, base, (c, w, h, light) => stone(c, w, h, { base: LIMESTONE, light, seed: 9 }, 6), {
     left: (c, w, h, l) => {
-      archPath(c, w / 2 - 3, h - 8, 6, 12);
+      archPath(c, w / 2 - 4.5, h, 9, 22);
       c.fillStyle = css(shade(0x3a2e22, l));
       c.fill();
     },
@@ -227,7 +254,7 @@ export function drawMaqam(ctx: Ctx, cx: number, ground: number): void {
   flatTop(ctx, plinth, 0xe0dcd4);
   outlineBox(ctx, plinth, 0x4a3a24);
   const at = roofPoint(plinth, 16, 2);
-  const kiosk: IsoBox = { x: at.x, y: at.y, w: 14, d: 14, h: 18 };
+  const kiosk: IsoBox = { x: at.x, y: at.y, w: 14, d: 14, h: 30 };
   const grille = (c: Ctx, w: number, h: number, l: number) => clipped(c, w, h, () => {
     c.fillStyle = css(shade(0x2a1e14, l));
     c.fillRect(0, 0, w, h);

@@ -1,84 +1,15 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundShadow, mix, onRoof, outlineBox, paintTexture, polygon, rng, roofPoint, shade, type Ctx } from './canvasKit';
-import { brick, planks, stone } from './materials';
-import { archPath, band, clipped, flatTop, LIGHT, walls } from './ornaments';
+import { css, footprintBox, groundShadow, mix, outlineBox, paintTexture, polygon, rng, roofPoint, shade, type Ctx } from './canvasKit';
+import { planks } from './materials';
+import { flatTop, LIGHT, walls } from './ornaments';
 import { post, subBox } from './structureParts';
 
 /**
- * The Zāyandih-Rūd at Iṣfahán: the great bridge of thirty-three arches
- * with its double arcade, reeds at the water's edge, and a cloth-printer's
- * awning in the bazaar.
+ * The Zāyandih-Rūd at Iṣfahán: reeds at the water's edge and a
+ * cloth-printer's awning in the bazaar. The bridge is in `isfahanBridge.ts`.
  */
 
-const BRIDGE_BRICK = 0xc9a46a;
 const RIVER = 0x2c4a6b;
-
-/** A walkable bridge span: water arches below, a gallery of small arches above, paved deck between low parapets. */
-export function paintBridgeSpan(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
-  const { box, texW, texH } = footprintBox(cellsW, cellsD, 24, 16);
-  paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, box, 4, 0.2);
-    walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: BRIDGE_BRICK, light, seed: 51 }, 3, 7), {
-      left: (c, w, h, l) => arcades(c, w, h, l, 32),
-      right: (c, w, h, l) => arcades(c, w, h, l, w),
-    });
-    onRoof(ctx, box, (w, d) => clipped(ctx, w, d, () => {
-      brick(ctx, w, d, { base: shade(BRIDGE_BRICK, 0.92), light: LIGHT.roof, seed: 52 }, 4, 8);
-      // Worn stone flags down the middle where the traffic runs.
-      ctx.beginPath();
-      ctx.rect(0, d * 0.34, w, d * 0.32);
-      ctx.clip();
-      ctx.globalAlpha = 0.55;
-      stone(ctx, w, d, { base: 0xb8a684, light: LIGHT.roof, seed: 53 }, 6);
-    }));
-    outlineBox(ctx, box);
-    // Low parapets along both long edges, pierced with little arches.
-    const rim = 4;
-    const back = subBox(box, 0, box.w, box.d - rim, box.d, 6, box.h);
-    const front = subBox(box, 0, box.w, 0, rim, 6, box.h);
-    for (const p of [back, front]) {
-      walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: shade(BRIDGE_BRICK, 1.04), light, seed: 54 }, 3, 7));
-      flatTop(ctx, p, shade(BRIDGE_BRICK, 1.05));
-      outlineBox(ctx, p);
-    }
-  });
-}
-
-/** The double arcade: river arches between piers, a band, then the upper gallery. */
-function arcades(ctx: Ctx, w: number, h: number, light: number, bay: number): void {
-  const gallery = 9;
-  band(ctx, w, gallery + 1, 2, shade(BRIDGE_BRICK, 0.82), light);
-  for (let u = 2.5; u + 5 < w; u += 8) {
-    archPath(ctx, u - 0.8, gallery + 0.5, 6.6, 7.5);
-    ctx.fillStyle = css(shade(0xe0c890, light * 0.85));
-    ctx.fill();
-    archPath(ctx, u, gallery, 5, 6.5);
-    ctx.fillStyle = css(shade(0x2a1a10, light + 0.15));
-    ctx.fill();
-  }
-  const bays = Math.max(1, Math.round(w / bay));
-  const step = w / bays;
-  for (let i = 0; i < bays; i++) {
-    const aw = step * 0.66;
-    const ax = i * step + (step - aw) / 2;
-    archPath(ctx, ax - 1.5, h, aw + 3, h - gallery - 1);
-    ctx.fillStyle = css(shade(0xe0c890, light * 0.85));
-    ctx.fill();
-    archPath(ctx, ax, h, aw, h - gallery - 3);
-    const g = ctx.createLinearGradient(0, gallery, 0, h);
-    g.addColorStop(0, css(0x120c08));
-    g.addColorStop(1, css(shade(RIVER, light * 0.8)));
-    ctx.fillStyle = g;
-    ctx.fill();
-    // Light on the water beyond the arch, and foam at the cutwater.
-    ctx.fillStyle = 'rgba(190,220,235,0.45)';
-    ctx.fillRect(ax + aw * 0.25, h - 2.5, aw * 0.5, 0.8);
-    ctx.fillStyle = 'rgba(235,245,250,0.55)';
-    ctx.beginPath();
-    ctx.ellipse(i * step, h - 0.5, 3, 1.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
 
 /** Reeds and bulrushes standing in a shallow pool at the river's edge. */
 export function paintRiverReeds(scene: Phaser.Scene, key: string): void {
@@ -142,7 +73,8 @@ export function paintRiverReeds(scene: Phaser.Scene, key: string): void {
 
 /** A cloth-printer's booth: a peaked canvas roof on posts over a counter of block-printed cotton. */
 export function paintMarketAwning(scene: Phaser.Scene, key: string): void {
-  const { box, texW, texH } = footprintBox(1, 1, 24, 26);
+  // The eave stands a little above a man's head, so the printer works in its shade.
+  const { box, texW, texH } = footprintBox(1, 1, 42, 26);
   paintTexture(scene, key, texW, texH, ctx => {
     groundShadow(ctx, box, 4, 0.22);
     const cloth = 0x315f68;
@@ -153,7 +85,7 @@ export function paintMarketAwning(scene: Phaser.Scene, key: string): void {
     const backPost = corner(0, box.d);
     post(ctx, backPost.x, backPost.y + box.h, box.h, 2.5, wood);
     // Counter with bolts of qalamkār cloth, madder red and indigo.
-    const counter = subBox(box, 5, box.w - 5, 5, box.d - 5, 11);
+    const counter = subBox(box, 5, box.w - 5, 5, box.d - 5, 15);
     walls(ctx, counter, (c, w, h, light) => planks(c, w, h, { base: 0x7a5232, light, seed: 61 }, false, 3), {
       left: (c, w, h, l) => drapedPrint(c, w, h, l),
     });

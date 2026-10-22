@@ -15,14 +15,14 @@ const DYES = [0x24406e, 0x7a2236, 0xc9a23a] as const;
 
 export const CH04_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   'ch4-pulpit': (scene, def) => {
-    const texH = 84;
-    // Long and narrow, centred on the cell: 30 deep along the stair, 12 across.
-    paintTexture(scene, def.texture, 64, texH, ctx => drawMinbar(ctx, { x: 41, y: texH - 5.5, w: 30, d: 12, h: 34 }));
+    const texH = 92;
+    // Long and narrow, centred on the cell: 32 deep along the stair, 12 across, the seat above a man's head.
+    paintTexture(scene, def.texture, 64, texH, ctx => drawMinbar(ctx, { x: 42, y: texH - 5.5, w: 32, d: 12, h: 44 }));
   },
 
   /** A run of the Vakíl prayer-hall arcade. Placed as a 4x2 building. */
   'ch4-prayer-arch': (scene, def) => {
-    const { box, texW, texH } = footprintBox(4, 2, 58, 22);
+    const { box, texW, texH } = footprintBox(4, 2, 84, 24);
     paintTexture(scene, def.texture, texW, texH, ctx => drawPrayerArcade(ctx, box));
   },
 

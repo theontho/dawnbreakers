@@ -2,7 +2,8 @@ import { css, footprintBox, onRoof, outlineBox, paintTexture, shade, type Ctx } 
 import { cellCentredBox, ellipseShadow, litGradient, rope, sideGradient } from '../art/fieldKit';
 import { planks } from '../art/materials';
 import { flatTop, walls } from '../art/ornaments';
-import { drawCabin, drawLateenMast, drawSkiff } from '../art/ship';
+import { drawLateenMast, drawSkiff } from '../art/ship';
+import { drawCabin } from '../art/shipCabin';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
@@ -15,9 +16,9 @@ const TEAK = 0x7a4f2c;
 const IRON = 0x2e2a26;
 
 export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  /** Stern deckhouse. The door is on the x-facing wall, a lamp behind its lattice. */
+  /** Stern deckhouse. The door is on the x-facing wall, facing the threshold mat. */
   'ch3-cabin': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 4, 44, 16);
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 4, 76, 24);
     paintTexture(scene, def.texture, texW, texH, ctx => drawCabin(ctx, box));
   },
 
