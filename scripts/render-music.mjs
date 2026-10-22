@@ -9,12 +9,9 @@
  * Prints peak and RMS level per file; fails if anything clips or is silent.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright-core';
-import { createServer } from 'vite';
+import { join, resolve } from 'node:path';
+import { openGame, root } from './lib/gameBrowser.mjs';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const args = process.argv.slice(2);
 const argValue = (name) => {
   const i = args.indexOf(name);
@@ -25,14 +22,11 @@ const only = argValue('--moods')?.split(',').filter(Boolean);
 const outDir = resolve(root, argValue('--out') ?? 'out/music');
 mkdirSync(outDir, { recursive: true });
 
-const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null } });
-await server.listen();
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium' });
+const { page, url, close } = await openGame();
 let failed = false;
 try {
-  const page = await browser.newPage();
   page.on('pageerror', (e) => console.error(`pageerror: ${e.message}`));
-  await page.goto(`${server.resolvedUrls.local[0]}scripts/render-music.html`);
+  await page.goto(`${url}scripts/render-music.html`);
   const results = await page.evaluate(async ({ seconds, only }) => {
     const engine = await import('/src/audio/engine.ts');
     const music = await import('/src/audio/music.ts');
@@ -92,7 +86,6 @@ try {
     console.log(`${bad.padEnd(9)} ${r.name.padEnd(22)} peak ${db(r.peak)} dBFS  rms ${db(r.rms)} dBFS  ${file}`);
   }
 } finally {
-  await browser.close();
-  await server.close();
+  await close();
 }
 process.exit(failed ? 1 : 0);

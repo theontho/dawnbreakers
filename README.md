@@ -19,11 +19,16 @@ Useful checks:
 ```bash
 npm run typecheck
 npm run lint      # eslint, localization coverage, dialogue references, content rules
-npm run smoke     # headless: boots every map, opens every NPC dialogue, reports fps
+npm run smoke     # headless: boots every map, opens every NPC dialogue (add -- --gpu for real fps)
 npm run build
 npm run gallery       # contact sheets of every generated texture -> out/gallery/
 npm run render:music  # the synthesized score and sound effects as WAV -> out/music/
+npm run look -- City:8:13  # screenshot with the player at a cell -> out/look-*.png
 ```
+
+The headless scripts render in software by default and always close their
+browser; GPU runs leave memory in the graphics driver's page pool, so use
+`--gpu` only when measuring frame rate.
 
 All art and sound are generated at runtime: textures are painted with the
 canvas API at boot, and the music is a generative Persian ensemble (santur,

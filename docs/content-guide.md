@@ -174,4 +174,5 @@ npm run typecheck
 npm run lint            # eslint, localization, dialogue references, content rules
 npm run smoke           # boots every map, opens every NPC dialogue
 npm run smoke -- --scenes City,Road --shots out/shots   # screenshots to inspect
+npm run look -- City:8:13                                # one spot, up close
 ```

@@ -8,12 +8,9 @@
  *   npm run gallery -- --scale 2            # magnify
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright-core';
-import { createServer } from 'vite';
+import { join, resolve } from 'node:path';
+import { openGame, root, waitForBoot } from './lib/gameBrowser.mjs';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const args = process.argv.slice(2);
 const argValue = (name) => {
   const i = args.indexOf(name);
@@ -24,17 +21,11 @@ const scale = Number(argValue('--scale') ?? 1.5);
 const outDir = resolve(root, argValue('--out') ?? 'out/gallery');
 mkdirSync(outDir, { recursive: true });
 
-const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null } });
-await server.listen();
-const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',
-  args: ['--enable-gpu', '--use-angle=gl', '--ignore-gpu-blocklist'],
-});
+const { page, url, close } = await openGame();
 try {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   page.on('pageerror', (e) => console.error(`pageerror: ${e.message}`));
-  await page.goto(server.resolvedUrls.local[0]);
-  await page.waitForFunction(() => window.__game?.scene?.isActive('Title'), null, { timeout: 30000 });
+  await page.goto(url);
+  await waitForBoot(page);
   const sheets = await page.evaluate(({ filters, scale }) => {
     const textures = window.__game.textures;
     const keys = textures.getTextureKeys()
@@ -94,6 +85,5 @@ try {
     console.log(file);
   });
 } finally {
-  await browser.close();
-  await server.close();
+  await close();
 }

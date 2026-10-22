@@ -7,17 +7,15 @@
  *   npm run smoke                       # all scenes
  *   npm run smoke -- --scenes City,Road # a subset
  *   npm run smoke -- --shots out/shots  # also save a screenshot per scene
+ *   npm run smoke -- --gpu              # real GPU, for meaningful frame rates
  *
- * Uses the system Chromium (override with CHROMIUM_PATH). Starts its own
- * Vite dev server on a free port.
+ * Uses the system Chromium (override with CHROMIUM_PATH) through
+ * `lib/gameBrowser.mjs`, which starts its own Vite server and always cleans up.
  */
 import { mkdirSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright-core';
-import { createServer } from 'vite';
+import { join, resolve } from 'node:path';
+import { openGame, root, waitForBoot } from './lib/gameBrowser.mjs';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const args = process.argv.slice(2);
 const argValue = (name) => {
   const i = args.indexOf(name);
@@ -27,15 +25,8 @@ const only = argValue('--scenes')?.split(',').filter(Boolean);
 const shots = argValue('--shots');
 if (shots) mkdirSync(resolve(root, shots), { recursive: true });
 
-const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null } });
-await server.listen();
-const url = server.resolvedUrls.local[0];
-
-const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',
-  args: ['--enable-gpu', '--use-angle=gl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'],
-});
-const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+// Frame rates are only meaningful on the real GPU (`--gpu`); software rendering is the default.
+const { page, url, close } = await openGame({ gpu: args.includes('--gpu'), args: ['--autoplay-policy=no-user-gesture-required'] });
 const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 page.on('console', (m) => {
@@ -49,7 +40,7 @@ await page.addInitScript(() => {
 let failed = false;
 try {
   await page.goto(url);
-  await page.waitForFunction(() => window.__game?.scene?.isActive('Title'), null, { timeout: 30000 });
+  await waitForBoot(page);
   const keys = only ?? await page.evaluate(() => window.__game.scene.scenes
     .filter((s) => s.constructor.name === 'MapScene')
     .map((s) => s.scene.key));
@@ -112,8 +103,7 @@ try {
   failed = true;
   console.error(error);
 } finally {
-  await browser.close();
-  await server.close();
+  await close();
 }
 
 if (errors.length) console.error(`\n${errors.length} error(s):\n${errors.join("\n")}`);
