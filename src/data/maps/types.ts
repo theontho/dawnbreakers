@@ -36,12 +36,23 @@ export interface MapDefinition {
   ambience?: MapAmbience | ((flags: FlagState) => MapAmbience);
   /** Doorways into other maps (usually a building's interior). */
   doors?: DoorSpec[];
+  /** Cells that open only as the story allows (a ladder rigged after a storm). */
+  passages?: PassageSpec[];
   /**
    * An indoor map: the cut edge of the slab is drawn as masonry rather than
    * earth. Pair it with interior walls along the back edges and a door or
    * edge exit back outside.
    */
   interior?: boolean;
+}
+
+/**
+ * Cells walkable only while `open` holds and blocked otherwise, re-checked
+ * after every dialogue. Pair with props whose `present` follows the same flag.
+ */
+export interface PassageSpec {
+  cells: Array<{ x: number; y: number }>;
+  open: (flags: FlagState) => boolean;
 }
 
 /**

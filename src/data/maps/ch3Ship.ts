@@ -1,4 +1,5 @@
-import { isDeckCell, LADDER_X, SHIP_SPRITES } from '../../assets/art/shipHullPlan';
+import { isDeckCell, LADDER_SPRITE, LADDER_X, SHIP_SPRITES } from '../../assets/art/shipHullPlan';
+import type { FlagState } from '../../dialogue/types';
 import type { DecorSpec, MapDefinition } from './types';
 
 /**
@@ -9,8 +10,8 @@ import type { DecorSpec, MapDefinition } from './types';
  * where the Báb keeps prayer and reveals verses through every storm; He is
  * never on deck. Midships: the main hatch, the galley brazier, the mainmast
  * under its reefed lateen sail. At the bow, pilgrims huddle out of the spray.
- * A gangway in the near rail leads down a rope ladder to the ship's boat for
- * Jidda once the storm is weathered.
+ * Once the storm is weathered the ship's boat comes alongside, and a gangway
+ * in the near rail leads down a rope ladder to it for Jidda.
  *
  * The hull is curved, not built from grid cells: its lines are in
  * `shipHullPlan.ts`, which says which cells are deck, and it is painted as a
@@ -34,6 +35,8 @@ const CABIN = { gridX: 5, gridY: 6, w: 6, h: 4 };
 /** The deck cell before the lamplit door, and the plank door on the deckhouse's side. */
 const THRESHOLD = { x: CABIN.gridX + CABIN.w, y: 8 };
 const PORT_DOOR = { x: 9, y: CABIN.gridY + CABIN.h - 1 };
+/** The boat is lowered and the ladder rigged only after the storm. */
+const boatAlongside = (f: FlagState): boolean => !!f.ch3StormWeathered;
 
 /** The hull and the slices of its near bulwark, each sorting where it stands. */
 const hull: DecorSpec[] = SHIP_SPRITES.map(s => ({ gridX: s.gridX, gridY: s.gridY, texture: s.texture, sortAt: s.sortAt }));
@@ -44,15 +47,13 @@ export const ch3ShipMap: MapDefinition = {
   width: WIDTH,
   height: HEIGHT,
   spawn: { x: 13, y: 8 },
-  build: ({ width, height, paintRect, block, unblock }) => {
+  build: ({ width, height, paintRect, block }) => {
     paintRect(0, 0, width, height, 'water');
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         if (!isDeckCell(x, y)) block(x, y);
       }
     }
-    // The rope ladder and the boat's thwarts below the gangway.
-    for (let y = LADDER_TOP_Y + 1; y <= BOAT_Y; y++) unblock(LADDER_X, y);
   },
   buildings: [
     { ...CABIN, texture: 'ch3-cabin' },
@@ -81,8 +82,10 @@ export const ch3ShipMap: MapDefinition = {
     { gridX: 23, gridY: 9, texture: 'ch3-pilgrim-cluster', blocks: true },
     { gridX: 21, gridY: 9, texture: 'rug' },
     { gridX: 7, gridY: 10, texture: 'rug' },
-    // The ship's boat at the foot of the ladder.
-    { gridX: LADDER_X, gridY: BOAT_Y, texture: 'ch3-skiff' },
+    // After the storm: the ship's boat at the foot of the ladder.
+    { gridX: LADDER_X, gridY: BOAT_Y, texture: 'ch3-skiff', present: boatAlongside },
+    { gridX: LADDER_SPRITE.gridX, gridY: LADDER_SPRITE.gridY, texture: LADDER_SPRITE.texture, sortAt: LADDER_SPRITE.sortAt,
+      present: boatAlongside },
   ],
   npcs: [
     // The lamplit cabin door: a threshold, never a character.
@@ -118,6 +121,11 @@ export const ch3ShipMap: MapDefinition = {
     // The plank door on the deckhouse's side, into the companions' cabin.
     { gridX: PORT_DOOR.x, gridY: PORT_DOOR.y, prompt: 'Go into the companions\' cabin  [E]',
       targetScene: 'Ch3ShipCabin', targetSpawnX: 4, targetSpawnY: 5 },
+  ],
+  // The ladder and the boat's thwarts below the gangway, once the boat is alongside.
+  passages: [
+    { cells: Array.from({ length: BOAT_Y - LADDER_TOP_Y }, (_, i) => ({ x: LADDER_X, y: LADDER_TOP_Y + 1 + i })),
+      open: boatAlongside },
   ],
   exits: [
     { fromX: LADDER_X, fromY: BOAT_Y, dx: 0, dy: 1,

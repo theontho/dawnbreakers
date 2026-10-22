@@ -221,12 +221,16 @@ export class MapScene extends Phaser.Scene {
     this.exits = widenExits(this.definition.exits, this.map, this.blocked);
   }
 
-  /** Show or hide flag-dependent props, keeping their cells' blocking in step. */
+  /** Show or hide flag-dependent props, keeping their cells' blocking in step, and open or close passages. */
   private refreshDecor(flags: FlagState): void {
     for (const { item, sprite } of this.conditionalDecor) {
       const here = item.present!(flags);
       sprite.setVisible(here);
       if (item.blocks) this.blocked[item.gridY]![item.gridX] = here;
+    }
+    for (const passage of this.definition.passages ?? []) {
+      const open = passage.open(flags);
+      for (const { x, y } of passage.cells) this.blocked[y]![x] = !open;
     }
   }
 

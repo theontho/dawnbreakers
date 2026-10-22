@@ -263,3 +263,18 @@ export function bulwarkSprites(): ShipSprite[] {
 
 /** Every sprite of the ship, the hull first. */
 export const SHIP_SPRITES: readonly ShipSprite[] = [...hullSprites(), ...bulwarkSprites()];
+
+/** Where the rope ladder hangs from the gangway: its two tops, and how far it drops and drifts aft. */
+export const LADDER = {
+  tops: [toScreen(SHIP.gangway.fx - 0.22, SHIP.axis + SHIP.beam), toScreen(SHIP.gangway.fx + 0.22, SHIP.axis + SHIP.beam)],
+  drop: SHIP.freeboard + 4,
+  drift: 6,
+} as const;
+
+/**
+ * The rope ladder over the side, rigged only once the boat is alongside. It
+ * sorts with the hull, under anyone climbing it.
+ */
+export const LADDER_SPRITE: ShipSprite = anchored('ch3-ship-ladder',
+  LADDER.tops[0].x - LADDER.drift - 4, LADDER.tops[1].x + 4, Math.min(LADDER.tops[0].y, LADDER.tops[1].y) - 4,
+  Math.max(LADDER.tops[0].y, LADDER.tops[1].y) + LADDER.drop + 4, { x: 0, y: 0 });

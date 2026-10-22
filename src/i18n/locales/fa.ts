@@ -2649,6 +2649,7 @@ export const text: TranslationCatalog = {
   "ʿIráq": "عراق",
   "ʿUlamá": "علما",
   "Ship's Hull": "بدنهٔ کشتی",
+  "Rope Ladder": "نردبان طنابی",
 };
 
 export const names: TranslationCatalog = {

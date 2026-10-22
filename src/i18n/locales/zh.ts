@@ -2646,6 +2646,7 @@ export const text: TranslationCatalog = {
   "ʿIráq": "伊拉克",
   "ʿUlamá": "乌莱玛",
   "Ship's Hull": "船体",
+  "Rope Ladder": "绳梯",
 };
 
 // Chapter metadata translations.

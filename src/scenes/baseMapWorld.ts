@@ -102,8 +102,11 @@ function naturalOffset(texture: string, gx: number, gy: number): { x: number; y:
   return { x: ((h & 0xff) / 255 - 0.5) * 18, y: (((h >>> 8) & 0xff) / 255 - 0.5) * 8 };
 }
 
-/** Pulsing ground glow on each exit tile; dimmed and still while the exit is closed. */
-export function renderExitGlows(scene: Phaser.Scene, state: Pick<BaseMapWorldState, 'originX' | 'originY' | 'exits'>): () => void {
+/**
+ * Pulsing ground glow on each exit tile; dimmed and still while the exit is
+ * closed, and hidden while its cell cannot be reached (a passage not yet open).
+ */
+export function renderExitGlows(scene: Phaser.Scene, state: Pick<BaseMapWorldState, 'originX' | 'originY' | 'exits' | 'blocked'>): () => void {
   const glows = state.exits.map(exit => {
     const pos = gridToIsoScreen(state.originX, state.originY, exit.fromX, exit.fromY);
     const glow = scene.add.ellipse(pos.sx, pos.sy, 40, 18, 0xc9a55c, 0.35).setDepth(pos.sy + 0.5);
@@ -114,6 +117,7 @@ export function renderExitGlows(scene: Phaser.Scene, state: Pick<BaseMapWorldSta
     for (const { exit, glow, tween } of glows) {
       const open = exitIsOpen(exit);
       glow.setFillStyle(open ? 0xc9a55c : 0x6b6258, open ? 0.35 : 0.2);
+      glow.setVisible(!state.blocked[exit.fromY]![exit.fromX]);
       if (open) tween.resume();
       else tween.pause();
     }

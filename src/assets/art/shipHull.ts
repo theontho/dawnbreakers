@@ -2,7 +2,7 @@ import { css, mix, rng, shade, type Ctx } from './canvasKit';
 import {
   CAP, CHUNAM, DARK_TEAK, DECK, RING_LEN, TEAK, faceLight, fillQuad, grain, hullAt, inboard, lineAlong, outerBand, polyline, runs,
 } from './shipHullKit';
-import { SHIP, sheer, toScreen, type Pt } from './shipHullPlan';
+import { LADDER, SHIP, sheer, toScreen, type Pt } from './shipHullPlan';
 
 /**
  * The lower layer of the baghla, sorted under everything aboard: the sea
@@ -27,7 +27,6 @@ export function drawHullLayer(ctx: Ctx): void {
   topsides(ctx);
   deck(ctx);
   farBulwark(ctx);
-  ladder(ctx);
 }
 
 const nearRuns = (): number[][] => runs(p => p.near);
@@ -359,16 +358,14 @@ function transomCrest(ctx: Ctx): void {
 }
 
 /** A rope ladder hanging from the gangway down to the boat. */
-function ladder(ctx: Ctx): void {
-  const fx = SHIP.gangway.fx;
-  const fy = SHIP.axis + SHIP.beam;
-  const top = [toScreen(fx - 0.22, fy), toScreen(fx + 0.22, fy)];
-  const foot = (p: Pt): Pt => ({ x: p.x - 6, y: p.y + D + 4 });
-  for (const p of top) polyline(ctx, [p, { x: p.x - 3, y: p.y + D / 2 + 2 }, foot(p)], css(0xb89a68), 1.4);
+export function drawLadder(ctx: Ctx): void {
+  const { tops, drop, drift } = LADDER;
+  const foot = (p: Pt): Pt => ({ x: p.x - drift, y: p.y + drop });
+  for (const p of tops) polyline(ctx, [p, { x: p.x - drift / 2, y: p.y + drop / 2 }, foot(p)], css(0xb89a68), 1.4);
   for (let k = 1; k <= 6; k++) {
     const t = k / 7;
-    const a = { x: top[0]!.x - 6 * t, y: top[0]!.y + (D + 4) * t };
-    const b = { x: top[1]!.x - 6 * t, y: top[1]!.y + (D + 4) * t };
+    const a = { x: tops[0].x - drift * t, y: tops[0].y + drop * t };
+    const b = { x: tops[1].x - drift * t, y: tops[1].y + drop * t };
     polyline(ctx, [a, b], css(0x8a6038), 2.2);
   }
 }

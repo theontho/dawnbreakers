@@ -4,7 +4,8 @@ import { planks } from '../art/materials';
 import { flatTop, walls } from '../art/ornaments';
 import { drawLateenMast, drawSkiff, MAST_TEXTURE, SKIFF_TEXTURE } from '../art/ship';
 import { paintShipSprite } from '../art/shipBulwark';
-import { SHIP_SPRITES } from '../art/shipHullPlan';
+import { drawLadder } from '../art/shipHull';
+import { LADDER_SPRITE, SHIP_SPRITES } from '../art/shipHullPlan';
 import { subBox } from '../art/structureParts';
 import { drawCabin } from '../art/shipCabin';
 import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
@@ -25,10 +26,19 @@ export const CH03_SHIP_OBJECTS: MapObjectDefinition[] = SHIP_SPRITES.map(sprite 
   id: sprite.texture, label: 'Ship\'s Hull', texture: sprite.texture, kind: 'prop', category: 'bridges-water',
   color: TEAK, blocks: false,
 }));
+CH03_SHIP_OBJECTS.push({
+  id: LADDER_SPRITE.texture, label: 'Rope Ladder', texture: LADDER_SPRITE.texture, kind: 'prop', category: 'bridges-water',
+  color: 0xb89a68, blocks: false,
+});
 
 export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...Object.fromEntries(SHIP_SPRITES.map((sprite): [string, TextureGenerator] => [sprite.texture,
     scene => paintTexture(scene, sprite.texture, sprite.width, sprite.height, ctx => paintShipSprite(ctx, sprite))])),
+  /** The rope ladder over the side, painted in the hull's own coordinates. */
+  [LADDER_SPRITE.texture]: scene => paintTexture(scene, LADDER_SPRITE.texture, LADDER_SPRITE.width, LADDER_SPRITE.height, ctx => {
+    ctx.translate(-LADDER_SPRITE.left, -LADDER_SPRITE.top);
+    drawLadder(ctx);
+  }),
   /** Stern deckhouse (6 x 4). The plank door is on deck cell x 9, the lamplit door faces cell y 8. */
   'ch3-cabin': (scene, def) => {
     const { box, texW, texH } = footprintBox(def.footprint?.w ?? 6, def.footprint?.h ?? 4, 112, 52);
