@@ -10,7 +10,7 @@ export const SUPPORTED_LOCALES = ['en', 'fa', 'zh'] as const;
 export type Locale = typeof SUPPORTED_LOCALES[number];
 
 const LOCALE_STORAGE_KEY = 'dawnbreakers.locale';
-const DEFAULT_LOCALE: Locale = 'fa';
+const DEFAULT_LOCALE: Locale = 'en';
 
 interface LocaleConfig {
   name: string;
