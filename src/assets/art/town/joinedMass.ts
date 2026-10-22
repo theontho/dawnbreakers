@@ -1,4 +1,4 @@
-import { css, onRoof, roofPoint, shade, type Ctx, type IsoBox } from '../canvasKit';
+import { baseCorners, css, onRoof, roofPoint, shade, topCorners, type Ctx, type IsoBox } from '../canvasKit';
 import { earthRoof } from '../materials';
 import { flatTop, LIGHT } from '../ornaments';
 import { subBox } from '../structureParts';
@@ -56,7 +56,7 @@ export function continuations(box: IsoBox, part: MassPart, mask: number, reach =
  */
 export function joinedMass(ctx: Ctx, parent: IsoBox, parts: readonly MassPart[], others: readonly MassPart[] = []): void {
   const all = [...parts, ...others];
-  for (const part of paintOrder(parts)) {
+  const paint = (part: MassPart): void => {
     const box = subBox(parent, part.p0, part.p1, part.q0, part.q1, part.h);
     const roof = part.spec.roof ?? 'parapet';
     townBlock(ctx, box, { ...part.spec, roof: 'none', outline: false, merlons: false });
@@ -64,7 +64,45 @@ export function joinedMass(ctx: Ctx, parent: IsoBox, parts: readonly MassPart[],
     else if (roof === 'flat') flatTop(ctx, box, shade(part.spec.wall, 0.95));
     if (part.spec.merlons) townMerlons(ctx, box, part.spec.wall);
     silhouette(ctx, box, part, all);
+  };
+  for (const part of paintOrder(parts)) {
+    paint(part);
+    // A portal set into a range is painted after it, so its east side would
+    // show through the range: repaint the range's stretch east of the portal
+    // over it, leaving only what rises above the range.
+    for (const range of parts) {
+      if (range === part || !setInto(part, range) || part.p1 >= range.p1 - EPS) continue;
+      ctx.save();
+      hull(ctx, subBox(parent, part.p1, range.p1, range.q0, range.q1, range.h));
+      ctx.clip();
+      paint(range);
+      ctx.restore();
+    }
   }
+}
+
+/** A smaller part standing within a range's length and reaching into its depth: a portal through it. */
+function setInto(part: MassPart, range: MassPart): boolean {
+  return part.p0 > range.p0 + EPS && part.p1 < range.p1 + EPS && part.q1 > range.q0 + EPS && part.q0 < range.q1 - EPS
+    && (part.p1 - part.p0) * (part.q1 - part.q0) < (range.p1 - range.p0) * (range.q1 - range.q0);
+}
+
+/** The outline of a box on screen, as a path: its ground and roof corners, wrapped. */
+function hull(ctx: Ctx, box: IsoBox): void {
+  const points = [...baseCorners(box), ...topCorners(box)].sort((a, b) => a.x - b.x || a.y - b.y);
+  const cross = (o: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }) =>
+    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const half = (list: typeof points) => list.reduce<typeof points>((acc, pt) => {
+    while (acc.length >= 2 && cross(acc[acc.length - 2]!, acc[acc.length - 1]!, pt) <= 0) acc.pop();
+    acc.push(pt);
+    return acc;
+  }, []);
+  const lower = half(points);
+  const upper = half([...points].reverse());
+  const ring = [...lower.slice(0, -1), ...upper.slice(0, -1)];
+  ctx.beginPath();
+  ring.forEach((pt, i) => (i ? ctx.lineTo(pt.x, pt.y) : ctx.moveTo(pt.x, pt.y)));
+  ctx.closePath();
 }
 
 /**

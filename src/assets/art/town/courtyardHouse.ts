@@ -21,9 +21,13 @@ import { inscriptionBand, townIwan } from './monumentKit';
 
 const RANGE_H = 92;
 const GATE_H = 116;
-/** The gateway's door along the street face, and how far the gateway stands proud of the range (q 12). */
+/**
+ * The gateway's door along the street face. The gateway is a portal in the
+ * street range's own wall, flush with it (q 12), rising above its parapet:
+ * standing proud it read as a separate block stuck on the house.
+ */
 const GATE_P = 172;
-const GATE_Q = 6;
+const GATE_Q = 12;
 /** The house is its own street wall: the gateway on its south face is the way in. */
 const STREET_FRONT: BuildingFront = { side: 's', door: GATE_P };
 
@@ -65,10 +69,10 @@ function rightRange(s: TownHouseStyle): MassPart {
   };
 }
 
-/** The street range, and its gateway standing proud of it; `upper` adds a room over the gateway. */
+/** The street range, and its gateway rising through it; `upper` adds a room over the gateway. */
 function streetFront(s: TownHouseStyle, upper: boolean): MassPart[] {
   const street: MassPart = {
-    p0: 0, p1: 256, q0: 12, q1: 50, h: RANGE_H,
+    p0: 0, p1: 256, q0: GATE_Q, q1: 50, h: RANGE_H,
     spec: {
       wall: s.wall, seed: s.seed + 47, material: s.material, beams: 14,
       left: (c, w, h, l) => {
