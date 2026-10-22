@@ -155,7 +155,7 @@ function portal(ctx: Ctx, box: IsoBox): void {
       c.fillStyle = css(shade(0x3a2616, l));
       c.fill();
       // The gate within the iwan, its leaves standing open.
-      doorway(c, w / 2 - 7, h, 14, h * 0.48, { frame: 0x8a6440, light: l, open: true });
+      doorway(c, w / 2 - 7, h, 14, Math.max(36, h * 0.48), { frame: 0x8a6440, light: l, open: true });
       c.fillStyle = css(shade(0x5b3a20, l));
       c.fillRect(w / 2 - 11, h - h * 0.46, 3.5, h * 0.46);
       c.fillRect(w / 2 + 7.5, h - h * 0.46, 3.5, h * 0.46);

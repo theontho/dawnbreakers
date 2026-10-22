@@ -108,7 +108,7 @@ function hemTrim(ctx: Ctx, box: IsoBox, f: (t: number) => WorldPt, trim: number)
 function doorway(ctx: Ctx, box: IsoBox, pc: number, q: number, style: TentStyle): void {
   const at = (p: number, z: number) => toScreen(box, { p, q: q - (z < 6 ? 2.5 * (1 - z / 6) : 0), z });
   const half = 8;
-  const top = 31;
+  const top = 35;
   const opening = [at(pc - half, 0), at(pc - 2, top), at(pc + 2, top), at(pc + half, 0)];
   ctx.fillStyle = css(0x1e140c);
   ctx.beginPath();

@@ -35,7 +35,7 @@ const ROOF_DEPTH = 5;
 const ROOF_INSET = 4;
 
 /** Headroom each roof feature needs above its block. */
-export const ROOF_PAD: Record<RoofFeature, number> = { windcatcher: 46, dome: 30, stair: 22, none: 10 };
+export const ROOF_PAD: Record<RoofFeature, number> = { windcatcher: 46, dome: 30, stair: 46, none: 10 };
 
 export interface BlockDecor {
   left?: FacePainter;
@@ -109,10 +109,11 @@ export function roofFeature(ctx: Ctx, b: IsoBox, style: HouseStyle, feature: Roo
       break;
     }
     case 'stair': {
-      const at = onRoofFloor(b, 14 + ROOF_INSET + 2, b.d - 14 - ROOF_INSET - 4);
-      const hut: IsoBox = { x: at.x, y: at.y, w: 14, d: 14, h: 18 };
+      const at = onRoofFloor(b, 16 + ROOF_INSET + 2, b.d - 16 - ROOF_INSET - 4);
+      // Tall enough to walk out of onto the roof.
+      const hut: IsoBox = { x: at.x, y: at.y, w: 16, d: 16, h: 40 };
       walls(ctx, hut, (c, w, h, light) => plaster(c, w, h, { base: style.wall, light, seed: style.seed + 21 }), {
-        left: (c, w, h, l) => doorway(c, w / 2 - 4, h, 8, 13, { frame: style.frame, light: l, open: true }),
+        left: (c, w, h, l) => doorway(c, w / 2 - 6, h, 12, 34, { frame: style.frame, light: l, open: true }),
       });
       flatTop(ctx, hut, style.wall);
       outlineBox(ctx, hut);

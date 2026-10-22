@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../dialogue/types';
 import type { NpcSpec } from '../data/maps/types';
+import { figureScale } from './figureScale';
 import { makeTextureGraphics } from './graphicsFactory';
 import { TILE_H, type Interactable } from './baseMapTypes';
 
@@ -61,6 +62,7 @@ export function placeMapNpcs(
     const footY = pos.sy + TILE_H / 2;
     const sprite = scene.add.image(pos.sx, footY, spec.texture)
       .setOrigin(0.5, 1)
+      .setScale(figureScale(spec.texture))
       .setDepth(pos.sy + 1);
     // The speech mark floats above scenery so a hidden speaker is still findable.
     const marker = scene.add.image(pos.sx, footY - sprite.displayHeight - 8, MARKER_TEXTURE)
@@ -76,7 +78,7 @@ export function placeMapNpcs(
     });
     const sway = scene.tweens.add({
       targets: sprite,
-      scaleY: 1.025,
+      scaleY: sprite.scaleY * 1.025,
       duration: Phaser.Math.Between(1500, 2100),
       yoyo: true,
       repeat: -1,
@@ -142,6 +144,7 @@ function isOccluded(sprite: Phaser.GameObjects.Image, occluders: readonly Phaser
 function addGhost(scene: Phaser.Scene, sprite: Phaser.GameObjects.Image): Phaser.GameObjects.Image {
   return scene.add.image(sprite.x, sprite.y, sprite.texture.key)
     .setOrigin(sprite.originX, sprite.originY)
+    .setScale(sprite.scaleX, sprite.scaleY)
     .setDepth(GHOST_DEPTH)
     .setTint(0xf3d98a)
     .setAlpha(0.42);

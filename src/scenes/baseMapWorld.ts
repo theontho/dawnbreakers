@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { MAP_OBJECTS } from '../assets/mapAssetLibrary';
+import { figureScale } from './figureScale';
 import { gridToIsoScreen } from './isoGeometry';
 import { renderMapGround } from './mapGround';
 import { exitIsOpen } from './baseMapMovement';
@@ -58,6 +59,7 @@ export function renderBaseMapWorld(
     const nudge = naturalOffset(item.texture, item.gridX, item.gridY);
     const sprite = scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture)
       .setOrigin(0.5, 1)
+      .setScale(figureScale(item.texture))
       .setDepth(pos.sy + 1 + nudge.y);
     occludableSprites.push(sprite);
     if (item.present) conditionalDecor.push({ item, sprite });

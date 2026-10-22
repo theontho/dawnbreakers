@@ -130,15 +130,18 @@ Check new art with `npm run gallery -- --filter <id>`.
 
 ### Scale and proportion
 
-Everything is measured against a person: a figure stands about 38 px
-tall, so a metre is roughly 20 px vertically, and one cell runs 32 px
-along a wall face.
+Everything is measured against a person. Figures are painted 40 px tall
+and drawn on the maps at 0.75 scale (`PERSON_SCALE` in
+`src/scenes/figureScale.ts`), so a person stands about 30 px: a metre is
+roughly 17 px, and one cell (32 px along a wall face) is about 1.9 m.
+Crowds, pilgrim clusters and animals use the same scale. **Every door must
+be at least 1.1 times a person's height: 33 px of clear opening.**
 
 | Element | Size |
 | --- | --- |
 | Single-storey wall | 64 to 72 px (a bālākhāna or second storey: 96 to 110) |
 | Courtyard or garden wall | 30 to 40 px |
-| House door | 12 to 15 px wide, 34 to 38 px tall, set in a recess with a frame |
+| House door | 12 to 15 px wide, 34 to 40 px tall (never under 33), set in a recess with a frame |
 | Monumental portal (mosque, caravanserai, gate) | Taller than wide, about 1:2; the door inside it still person-sized |
 | Window | 6 to 9 px wide, 9 to 13 px tall, sill at least 22 px above the ground |
 | Beam ends, parapets, steps | Small: 2 to 5 px |

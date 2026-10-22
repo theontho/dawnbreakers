@@ -37,6 +37,7 @@ import {
 } from './baseMapInteractables';
 import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
 import { connectWalls } from './mapWalls';
+import { PERSON_SCALE } from './figureScale';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
@@ -254,7 +255,7 @@ export class MapScene extends Phaser.Scene {
   private spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
     this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, 'player')
-      .setOrigin(0.5, 1).setDepth(pos.sy + 2);
+      .setOrigin(0.5, 1).setScale(PERSON_SCALE).setDepth(pos.sy + 2);
   }
 
   // ---------- dialogue ----------
