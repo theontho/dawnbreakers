@@ -170,7 +170,7 @@ function drawDryingPole(ctx: Ctx, far: boolean): void {
 /** Placeable map objects owned by chapter 4. */
 export const CH04_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch4-pulpit', label: 'Pulpit', texture: 'ch4-pulpit', kind: 'prop', category: 'shrines', color: 0x8a5a2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch4-prayer-arch', label: 'Prayer Arch', texture: 'ch4-prayer-arch', kind: 'prop', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch4-prayer-arch', label: 'Prayer Arch', texture: 'ch4-prayer-arch', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 4, h: 2 }, isometric: true },
   { id: 'ch4-officer', label: 'Officer', texture: 'ch4-officer', kind: 'character', category: 'characters', color: 0x39404a, blocks: true,
     character: { body: 0x31424a, skin: 0xd9c79a, clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x6f2222 }, shadow: true } },
   { id: 'ch4-witness', label: 'Witness', texture: 'ch4-witness', kind: 'character', category: 'characters', color: 0x6b5a44, blocks: true,

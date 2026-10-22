@@ -56,7 +56,7 @@ export const ch10TehranStreetMap: MapDefinition = {
     { gridX: 14, gridY: 9, w: 1, h: 1, texture: 'ch10-shuttered-shop' },
     { gridX: 15, gridY: 9, w: 1, h: 1, texture: 'ch10-shuttered-shop' },
     // The royal citadel: a palace portico behind a mud-brick wall.
-    { gridX: 20, gridY: 2, w: 3, h: 2, texture: 'ch5-palace-portico' },
+    { gridX: 18, gridY: 1, w: 5, h: 3, texture: 'ch5-palace-portico' },
     ...Array.from({ length: 3 }, (_, i) => ({ gridX: 17, gridY: 1 + i, w: 1, h: 1, texture: 'ch10-city-wall' })),
     { gridX: 24, gridY: 1, w: 4, h: 2, texture: 'ch10-street-arch' },
     // Houses south of the street.
