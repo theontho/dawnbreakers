@@ -1,3 +1,5 @@
+import type { FlagState } from '../../dialogue/types';
+import type { MusicMood, SoundLayer } from '../../audio';
 import type { Building, Decor, MapExit, TileKind } from '../../scenes/baseMapTypes';
 
 /**
@@ -26,6 +28,41 @@ export interface MapDefinition {
   decor: DecorSpec[];
   npcs: NpcSpec[];
   exits: MapExit[];
+  /**
+   * Lighting, colour wash, and weather. Omit for a plain daylit map. A
+   * function lets the mood follow the story (a dust storm after an event,
+   * winter after a siege); it is re-evaluated after every dialogue.
+   */
+  ambience?: MapAmbience | ((flags: FlagState) => MapAmbience);
+}
+
+export type ParticleKind = 'dust' | 'motes' | 'fireflies' | 'snow' | 'embers' | 'spray' | 'leaves' | 'rain';
+
+/** A warm (or cold) pool of additive light on a cell. */
+export interface MapLight {
+  gridX: number;
+  gridY: number;
+  radius: number;
+  color: number;
+  /** 0..1 peak alpha of the glow. */
+  intensity: number;
+}
+
+export interface MapAmbience {
+  /**
+   * Multiply colour wash over the whole world, under the HUD. Use deep blues
+   * for night, ambers for dusk, greys for prisons. Alpha 0.3..0.7 reads well.
+   */
+  wash?: { color: number; alpha: number };
+  /** Extra light pools. Lamps (`lamp` decor) already glow automatically. */
+  lights?: MapLight[];
+  particles?: ParticleKind;
+  /** Vignette strength 0..1, or false for none. Defaults to 0.55. */
+  vignette?: number | false;
+  /** Score for the map; crossfades when it changes. Defaults to 'dusk'. */
+  music?: MusicMood;
+  /** Ambient bed. Defaults to a sound matching `particles`, plus fire near fires. */
+  sound?: SoundLayer[];
 }
 
 /** A canvas the `build` callback paints onto. */
@@ -53,16 +90,26 @@ export interface BuildingSpec extends Building {
 /** Decor: cosmetic prop on a single cell, optionally blocking. */
 export type DecorSpec = Decor;
 
-/** NPC interaction: dialogue tree id, or special chapter-1 Báb dialogue. */
-export type NpcAction =
-  | { kind: 'dialogue'; id: string }
-  | { kind: 'bab' };
+/** Gate on a dialogue: until `when(flags)` holds, `lockedDialogue` plays instead. */
+export interface DialogueGate {
+  when: (flags: FlagState) => boolean;
+  lockedDialogue: string;
+}
 
+/**
+ * A person or story object the player can face and press E on. Central
+ * figures are never NpcSpecs; they are reached through threshold objects
+ * and narration (see AGENTS.md).
+ */
 export interface NpcSpec {
   gridX: number;
   gridY: number;
   texture: string;
   /** Prompt shown when the player is adjacent. Should end with `[E]`. */
   prompt: string;
-  action: NpcAction;
+  /** Dialogue tree id launched on interaction. */
+  dialogue: string;
+  gate?: DialogueGate;
+  /** When provided, the NPC only stands on the map while this returns true. */
+  present?: (flags: FlagState) => boolean;
 }

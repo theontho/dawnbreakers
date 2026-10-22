@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { DialogueTree, DialogueChoice } from '../dialogue/types';
 import { applyEffect, getFlags } from '../dialogue/flags';
+import { playSfx } from '../audio';
 import { formatNumber, localizedStyle, rtl, t, tName } from '../i18n';
 import { buttonFont, clamp, MIN_TOUCH_TARGET, responsiveFont, safeLayout } from '../ui/responsive';
 
@@ -30,6 +31,7 @@ export class DialogueScene extends Phaser.Scene {
   }
 
   create(): void {
+    playSfx('dialogueOpen');
     this.rebuildLayout(true);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -132,6 +134,7 @@ export class DialogueScene extends Phaser.Scene {
         .setOrigin(rtl ? 1 : 0, 0.5);
       bg
         .on('pointerover', () => {
+          playSfx('uiHover');
           bg.setStrokeStyle(1, 0xf3d98a, 1);
           choiceText.setColor('#fff1c0');
         })
@@ -144,17 +147,32 @@ export class DialogueScene extends Phaser.Scene {
       rowY += rowH + rowGap;
     });
 
-    // keyboard 1-9
+    if (applyOnEnter) {
+      this.bodyText.setAlpha(0);
+      this.tweens.add({ targets: this.bodyText, alpha: 1, duration: 260, ease: 'Sine.easeOut' });
+      this.choiceObjects.forEach((object, i) => {
+        const choiceObject = object as Phaser.GameObjects.Text | Phaser.GameObjects.Rectangle;
+        const targetAlpha = choiceObject.alpha;
+        choiceObject.setAlpha(0);
+        this.tweens.add({ targets: choiceObject, alpha: targetAlpha, duration: 220, delay: 140 + Math.floor(i / 2) * 70 });
+      });
+    }
+
+    // Keyboard: 1-9 pick a choice; Space or Enter take the only choice.
     this.input.keyboard?.removeAllListeners('keydown');
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       const n = parseInt(e.key, 10);
       if (!isNaN(n) && n >= 1 && n <= choices.length) {
         this.choose(choices[n - 1]!);
+      } else if ((e.key === ' ' || e.key === 'Enter') && choices.length === 1 && !e.repeat) {
+        this.choose(choices[0]!);
       }
     });
   }
 
   private choose(choice: DialogueChoice): void {
+    const node = this.tree.nodes[this.currentId];
+    playSfx((node?.choices?.length ?? 0) > 1 ? 'choice' : 'dialogueAdvance');
     if (choice.effect) applyEffect(choice.effect);
 
     if (!choice.next) {

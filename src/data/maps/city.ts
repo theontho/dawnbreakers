@@ -1,110 +1,172 @@
 import type { MapDefinition } from './types';
 
 /**
- * The lower city of Shíráz: gate, bazaar, mosque, fountain.
- * North edge exits to the Quiet Quarter where the Báb's house stands.
+ * Shíráz at dusk, 22 May 1844. The Kázirún gate in the south-east, the
+ * bazaar under its awnings, the great mosque and its fountain to the west,
+ * the Masjid-i-Ílkhání where Mullá Ḥusayn's kin lodge in the north, and the
+ * road north to the Quiet Quarter.
  */
 export const cityMap: MapDefinition = {
   key: 'City',
-  title: 'Shíráz — the City',
-  width: 18,
-  height: 14,
-  spawn: { x: 16, y: 12 },
+  title: 'Shíráz: the City at Dusk',
+  width: 26,
+  height: 22,
+  spawn: { x: 20, y: 19 },
   build: ({ paintRect, paintPath, setTile, block }) => {
-    // Mosque court (stone)
-    paintRect(5, 5, 5, 3, 'stone');
-    // Bazaar plaza (sand)
-    paintRect(10, 9, 7, 4, 'sand');
-    // Gate forecourt (sand)
-    paintRect(12, 13, 4, 1, 'sand');
-    // Small bookbinder's mat off the bazaar
-    paintRect(14, 8, 2, 1, 'sand');
-
-    // Main thoroughfare: north entry → mosque side → bazaar → gate row
+    // Gate forecourt and the road in from the Kázirún gate
+    paintRect(17, 18, 5, 4, 'sand');
     paintPath([
-      [8, 0], [8, 1], [8, 2], [8, 3], [8, 4],
-      [8, 5], [8, 6], [8, 7], [8, 8],
-      [9, 8], [10, 8], [11, 8], [12, 8], [13, 8],
-      [13, 9], [13, 10], [13, 11], [13, 12],
+      [19, 17], [19, 16], [19, 15], [19, 14],
+      [18, 14], [17, 14], [16, 14], [15, 14], [14, 14], [13, 14], [12, 14],
     ]);
-    paintPath([[4, 6], [4, 7], [5, 8], [6, 8], [7, 8]]);
 
-    // Fountain west of the mosque
-    setTile(3, 6, 'water'); block(3, 6);
-    setTile(3, 7, 'water'); block(3, 7);
-    // sand rim around the fountain
-    setTile(3, 5, 'sand'); setTile(3, 8, 'sand');
-    setTile(2, 6, 'sand'); setTile(2, 7, 'sand');
-    setTile(4, 6, 'sand'); setTile(4, 7, 'sand');
+    // The bazaar: a sand plaza between stall rows
+    paintRect(14, 8, 9, 6, 'sand');
+    paintPath([[15, 11], [16, 11], [17, 11], [18, 11], [19, 11], [20, 11], [21, 11]]);
+
+    // The great mosque court and its fountain
+    paintRect(3, 9, 7, 7, 'stone');
+    paintRect(2, 13, 3, 3, 'sand');
+    setTile(3, 14, 'water'); block(3, 14);
+    setTile(3, 13, 'water'); block(3, 13);
+    setTile(2, 14, 'water'); block(2, 14);
+
+    // Masjid-i-Ílkhání court in the north-east
+    paintRect(15, 2, 6, 5, 'stone');
+
+    // Main thoroughfare north to the Quiet Quarter
+    paintPath([
+      [12, 0], [12, 1], [12, 2], [12, 3], [12, 4], [12, 5], [12, 6], [12, 7],
+      [12, 8], [12, 9], [12, 10], [12, 11], [12, 12], [12, 13],
+    ]);
+    // Lanes: to the mosque, to the Ílkhání, and along the bazaar's north side
+    paintPath([[11, 12], [10, 12], [9, 12]]);
+    paintPath([[13, 4], [14, 4]]);
+    paintPath([[13, 7], [14, 7], [15, 7], [16, 7], [17, 7], [18, 7], [19, 7], [20, 7]]);
+
+    // Garden beds of the northern houses
+    paintRect(1, 2, 7, 5, 'grass');
+    paintPath([[4, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7]]);
   },
   buildings: [
-    // Mosque (2×2)
-    { gridX: 6, gridY: 5, w: 2, h: 2, texture: 'mosque' },
-    // Bazaar stalls
-    { gridX: 11, gridY: 10, w: 1, h: 1, texture: 'stall' },
-    { gridX: 15, gridY: 10, w: 1, h: 1, texture: 'stall' },
-    { gridX: 11, gridY: 12, w: 1, h: 1, texture: 'stall' },
-    // City gate at south-east
-    { gridX: 14, gridY: 13, w: 1, h: 1, texture: 'gate' },
+    // The great mosque and the Masjid-i-Ílkhání
+    { gridX: 5, gridY: 10, w: 2, h: 2, texture: 'mosque' },
+    { gridX: 17, gridY: 3, w: 2, h: 2, texture: 'mosque' },
+    // City gate
+    { gridX: 21, gridY: 21, w: 1, h: 1, texture: 'gate' },
+    // Bazaar stalls and awnings
+    { gridX: 15, gridY: 9, w: 1, h: 1, texture: 'stall' },
+    { gridX: 17, gridY: 9, w: 1, h: 1, texture: 'ch5-market-awning' },
+    { gridX: 19, gridY: 9, w: 1, h: 1, texture: 'stall' },
+    { gridX: 21, gridY: 9, w: 1, h: 1, texture: 'ch5-market-awning' },
+    { gridX: 15, gridY: 13, w: 1, h: 1, texture: 'ch5-market-awning' },
+    { gridX: 18, gridY: 13, w: 1, h: 1, texture: 'stall' },
+    { gridX: 21, gridY: 13, w: 1, h: 1, texture: 'stall' },
+    // Houses along the edges of the city
+    { gridX: 1, gridY: 17, w: 2, h: 2, texture: 'house' },
+    { gridX: 5, gridY: 18, w: 2, h: 2, texture: 'house' },
+    { gridX: 9, gridY: 17, w: 2, h: 2, texture: 'house' },
+    { gridX: 23, gridY: 5, w: 2, h: 2, texture: 'house' },
+    { gridX: 23, gridY: 14, w: 2, h: 2, texture: 'house' },
+    { gridX: 8, gridY: 2, w: 2, h: 2, texture: 'house' },
   ],
   decor: [
-    // Trees scattered around the periphery
-    { gridX: 0, gridY: 2, texture: 'tree', blocks: true },
-    { gridX: 1, gridY: 5, texture: 'tree', blocks: true },
-    { gridX: 0, gridY: 10, texture: 'tree', blocks: true },
-    { gridX: 2, gridY: 12, texture: 'tree', blocks: true },
-    { gridX: 16, gridY: 1, texture: 'tree', blocks: true },
-    { gridX: 17, gridY: 4, texture: 'tree', blocks: true },
-    { gridX: 16, gridY: 6, texture: 'tree', blocks: true },
-    { gridX: 17, gridY: 9, texture: 'tree', blocks: true },
+    // Cypress garden of the northern houses
+    { gridX: 1, gridY: 3, texture: 'cypress', blocks: true },
+    { gridX: 3, gridY: 3, texture: 'cypress', blocks: true },
+    { gridX: 5, gridY: 3, texture: 'cypress', blocks: true },
+    { gridX: 2, gridY: 5, texture: 'ch7-rosebush', blocks: true },
+    { gridX: 4, gridY: 5, texture: 'ch1-planter', blocks: true },
+    { gridX: 6, gridY: 5, texture: 'ch7-rosebush', blocks: true },
+    { gridX: 7, gridY: 3, texture: 'cypress', blocks: true },
+    // Trees around the edges
+    { gridX: 0, gridY: 0, texture: 'tree', blocks: true },
+    { gridX: 3, gridY: 0, texture: 'tree', blocks: true },
+    { gridX: 6, gridY: 0, texture: 'tree', blocks: true },
+    { gridX: 16, gridY: 0, texture: 'tree', blocks: true },
+    { gridX: 20, gridY: 0, texture: 'cypress', blocks: true },
+    { gridX: 24, gridY: 1, texture: 'tree', blocks: true },
+    { gridX: 25, gridY: 9, texture: 'tree', blocks: true },
+    { gridX: 25, gridY: 12, texture: 'cypress', blocks: true },
+    { gridX: 24, gridY: 18, texture: 'tree', blocks: true },
+    { gridX: 0, gridY: 21, texture: 'tree', blocks: true },
+    { gridX: 3, gridY: 21, texture: 'cypress', blocks: true },
+    { gridX: 12, gridY: 20, texture: 'tree', blocks: true },
+    { gridX: 15, gridY: 20, texture: 'cypress', blocks: true },
     { gridX: 0, gridY: 13, texture: 'tree', blocks: true },
-    { gridX: 4, gridY: 12, texture: 'tree', blocks: true },
-    { gridX: 16, gridY: 13, texture: 'tree', blocks: true },
-    // A well outside the mosque court
-    { gridX: 10, gridY: 5, texture: 'well', blocks: true },
-    // Market and evening details (non-blocking)
-    { gridX: 10, gridY: 9, texture: 'crates' },
-    { gridX: 16, gridY: 11, texture: 'crates' },
-    { gridX: 12, gridY: 9, texture: 'rug' },
-    { gridX: 14, gridY: 11, texture: 'rug' },
-    { gridX: 9, gridY: 4, texture: 'lamp' },
-    { gridX: 12, gridY: 13, texture: 'lamp' },
-    { gridX: 4, gridY: 5, texture: 'ch1-birds' },
+    { gridX: 9, gridY: 14, texture: 'cypress', blocks: true },
+    { gridX: 9, gridY: 9, texture: 'cypress', blocks: true },
+    // The mosque court: wells, prayer rugs, a lamp at the steps
+    { gridX: 8, gridY: 10, texture: 'well', blocks: true },
+    { gridX: 4, gridY: 12, texture: 'rug' },
+    { gridX: 7, gridY: 14, texture: 'rug' },
+    { gridX: 9, gridY: 11, texture: 'lamp', blocks: true },
+    { gridX: 4, gridY: 9, texture: 'ch1-birds' },
+    // The Ílkhání court
+    { gridX: 15, gridY: 2, texture: 'lamp', blocks: true },
+    { gridX: 20, gridY: 5, texture: 'rug' },
+    { gridX: 16, gridY: 6, texture: 'crates', blocks: true },
+    // Bazaar goods and evening lamps
+    { gridX: 16, gridY: 9, texture: 'crates', blocks: true },
+    { gridX: 20, gridY: 9, texture: 'ch9-cloth-bundle', blocks: true },
+    { gridX: 22, gridY: 10, texture: 'crates', blocks: true },
+    { gridX: 16, gridY: 12, texture: 'rug' },
+    { gridX: 19, gridY: 12, texture: 'rug' },
+    { gridX: 22, gridY: 12, texture: 'ch9-cloth-bundle', blocks: true },
+    { gridX: 14, gridY: 10, texture: 'lamp', blocks: true },
+    { gridX: 22, gridY: 8, texture: 'lamp', blocks: true },
+    { gridX: 14, gridY: 13, texture: 'lamp', blocks: true },
+    { gridX: 17, gridY: 12, texture: 'ch3-pilgrim-cluster', blocks: true },
+    // Gate forecourt
+    { gridX: 17, gridY: 18, texture: 'crates', blocks: true },
+    { gridX: 22, gridY: 19, texture: 'lamp', blocks: true },
+    { gridX: 20, gridY: 21, texture: 'lamp', blocks: true },
+    { gridX: 17, gridY: 21, texture: 'ch2-milestone', blocks: true },
+    // Lamps along the road north
+    { gridX: 11, gridY: 9, texture: 'lamp', blocks: true },
+    { gridX: 13, gridY: 3, texture: 'lamp', blocks: true },
   ],
   npcs: [
-    // The Weary Traveller — beside the gate
-    { gridX: 15, gridY: 12, texture: 'npc-traveller',
+    // Mullá Ḥusayn, the player's travelling companion; after this he goes ahead to the Quiet Quarter
+    { gridX: 18, gridY: 19, texture: 'ch1-mulla-husayn',
+      prompt: 'Speak with Mullá Ḥusayn  [E]',
+      dialogue: 'ch1-mulla-husayn-gate',
+      present: f => !f.metMullaHusayn },
+    { gridX: 21, gridY: 17, texture: 'npc-traveller',
       prompt: 'Speak with the Weary Traveller  [E]',
-      action: { kind: 'dialogue', id: 'rumour-traveller' } },
-    // The Cloth Merchant — among the stalls
-    { gridX: 12, gridY: 10, texture: 'npc-merchant',
-      prompt: 'Speak with the Cloth Merchant  [E]',
-      action: { kind: 'dialogue', id: 'rumour-merchant' } },
-    // The Stern Mullá — at the foot of the mosque
-    { gridX: 7, gridY: 7, texture: 'npc-mulla',
-      prompt: 'Speak with the Stern Mullá  [E]',
-      action: { kind: 'dialogue', id: 'rumour-mulla' } },
-    // The Water-Carrier — near the fountain
-    { gridX: 4, gridY: 7, texture: 'ch1-npc-water-carrier',
-      prompt: 'Speak with the Water-Carrier  [E]',
-      action: { kind: 'dialogue', id: 'rumour-water-carrier' } },
-    // The Gate Guard — watching late arrivals
-    { gridX: 15, gridY: 13, texture: 'ch1-npc-guard',
+      dialogue: 'rumour-traveller' },
+    { gridX: 20, gridY: 20, texture: 'ch1-npc-guard',
       prompt: 'Speak with the Gate Guard  [E]',
-      action: { kind: 'dialogue', id: 'rumour-gate-guard' } },
-    // The Calligrapher — beside the bazaar cloths
-    { gridX: 14, gridY: 9, texture: 'ch1-npc-calligrapher',
+      dialogue: 'rumour-gate-guard' },
+    { gridX: 16, gridY: 10, texture: 'npc-merchant',
+      prompt: 'Speak with the Cloth Merchant  [E]',
+      dialogue: 'rumour-merchant' },
+    { gridX: 20, gridY: 10, texture: 'ch1-npc-calligrapher',
       prompt: 'Speak with the Calligrapher  [E]',
-      action: { kind: 'dialogue', id: 'rumour-calligrapher' } },
-    // The Mosque Orphan — near the mosque steps
-    { gridX: 5, gridY: 8, texture: 'ch1-npc-beggar',
+      dialogue: 'rumour-calligrapher' },
+    { gridX: 7, gridY: 12, texture: 'npc-mulla',
+      prompt: 'Speak with the Stern Mullá  [E]',
+      dialogue: 'rumour-mulla' },
+    { gridX: 5, gridY: 13, texture: 'ch1-npc-beggar',
       prompt: 'Speak with the Mosque Orphan  [E]',
-      action: { kind: 'dialogue', id: 'rumour-orphan' } },
+      dialogue: 'rumour-orphan' },
+    { gridX: 4, gridY: 14, texture: 'ch1-npc-water-carrier',
+      prompt: 'Speak with the Water-Carrier  [E]',
+      dialogue: 'rumour-water-carrier' },
+    { gridX: 18, gridY: 6, texture: 'ch1-brother',
+      prompt: 'Speak with Mullá Ḥusayn\'s Brother  [E]',
+      dialogue: 'ch1-brother' },
   ],
   exits: [
-    // Walk north off the path tile at (8, 0) → enter the Quiet Quarter
-    { fromX: 8, fromY: 0, dx: 0, dy: -1,
-      targetScene: 'HouseQuarter', targetSpawnX: 6, targetSpawnY: 13,
+    { fromX: 12, fromY: 0, dx: 0, dy: -1,
+      targetScene: 'HouseQuarter', targetSpawnX: 9, targetSpawnY: 16,
       label: '↑ Walk to the Quiet Quarter' },
   ],
+  ambience: {
+    wash: { color: 0xd89060, alpha: 0.32 },
+    particles: 'motes', music: 'dusk',
+    lights: [
+      { gridX: 5, gridY: 10, radius: 120, color: 0xffc070, intensity: 0.25 },
+    ],
+  },
 };

@@ -148,6 +148,7 @@ function extractTreeId(body) {
 }
 
 const files = listTsFiles(dialoguesDir).sort();
+const treeIds = new Map();
 
 for (const file of files) {
   const source = readFileSync(file, 'utf8');
@@ -164,6 +165,8 @@ for (const file of files) {
     const startId = extractStartId(tree.body);
 
     if (!treeId) errors.push(`${file}:${tree.startLine}  ${tree.name}: missing tree id`);
+    else if (treeIds.has(treeId)) errors.push(`${file}:${tree.startLine}  ${tree.name}: duplicate tree id '${treeId}' (also in ${treeIds.get(treeId)})`);
+    else treeIds.set(treeId, file);
     if (!startId) {
       errors.push(`${file}:${tree.startLine}  ${tree.name}: missing startId`);
     } else if (!nodeKeys.has(startId)) {
@@ -175,6 +178,44 @@ for (const file of files) {
         const line = tree.startLine + ref.line - 1;
         errors.push(`${file}:${line}  ${tree.name}: next: '${ref.id}' has no matching node`);
       }
+    }
+  }
+}
+
+// Flags that chapter logic depends on must actually be set by some dialogue.
+const setFlags = new Set();
+for (const file of files) {
+  const source = readFileSync(file, 'utf8');
+  for (const block of source.matchAll(/\bset:\s*\{([^}]*)\}/g)) {
+    for (const key of block[1].matchAll(/(?:^|,)\s*(?:\[`[^`]*`\]|'([^']+)'|([A-Za-z_$][\w$]*))\s*:/g)) {
+      const name = key[1] ?? key[2];
+      if (name) setFlags.add(name);
+    }
+  }
+}
+const requiredFlagSources = [
+  { file: join(dialoguesDir, 'chapter01_rumourFlags.ts'), pattern: /RUMOUR_FLAGS\s*=\s*\[([\s\S]*?)\]/ },
+  { file: join(root, 'src', 'data', 'chapters.ts'), pattern: /CHAPTER_COMPLETION_FLAGS[^=]*=\s*\{([\s\S]*?)\}/ },
+];
+for (const { file, pattern } of requiredFlagSources) {
+  const body = readFileSync(file, 'utf8').match(pattern)?.[1];
+  if (!body) {
+    errors.push(`${file}: could not find required flag list`);
+    continue;
+  }
+  for (const flag of body.matchAll(/'([A-Za-z_$][\w$]*)'(?!\s*:)/g)) {
+    if (!setFlags.has(flag[1])) errors.push(`${file}: flag '${flag[1]}' is never set by any dialogue`);
+  }
+}
+
+// Every NPC on every map must point at a dialogue tree that exists.
+const mapsDir = join(dirname(dialoguesDir), 'maps');
+for (const file of listTsFiles(mapsDir).sort()) {
+  const source = readFileSync(file, 'utf8');
+  for (const match of source.matchAll(/\b(dialogue|lockedDialogue):\s*'([^']+)'/g)) {
+    if (!treeIds.has(match[2])) {
+      const line = source.slice(0, match.index).split('\n').length;
+      errors.push(`${file}:${line}  ${match[1]} '${match[2]}' has no matching dialogue tree`);
     }
   }
 }

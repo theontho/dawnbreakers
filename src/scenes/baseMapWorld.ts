@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { gridToIsoScreen } from './isoGeometry';
+import { renderMapGround } from './mapGround';
+import { exitIsOpen } from './baseMapMovement';
 import {
   TILE_H,
   TILE_W,
@@ -24,20 +26,21 @@ interface BaseMapWorldState {
   exits: MapExit[];
 }
 
+export interface RenderedWorld {
+  occludableSprites: Phaser.GameObjects.Image[];
+  /** Decor whose presence depends on story flags, with its sprite. */
+  conditionalDecor: Array<{ item: Decor; sprite: Phaser.GameObjects.Image }>;
+}
+
 export function renderBaseMapWorld(
   scene: Phaser.Scene,
   state: BaseMapWorldState,
-): Phaser.GameObjects.Image[] {
+): RenderedWorld {
+  const conditionalDecor: RenderedWorld['conditionalDecor'] = [];
   drawWorldBackdrop(scene, state);
   const occludableSprites: Phaser.GameObjects.Image[] = [];
 
-  for (let y = 0; y < state.mapHeight; y++) {
-    for (let x = 0; x < state.mapWidth; x++) {
-      const { sx, sy } = gridToIsoScreen(state.originX, state.originY, x, y);
-      scene.add.image(sx, sy, 'tile-' + state.map[y]![x])
-        .setOrigin(0.5, 0.5).setDepth(sy);
-    }
-  }
+  renderMapGround(scene, state);
 
   for (const building of state.buildings) {
     const frontX = building.gridX + building.w - 1;
@@ -55,17 +58,30 @@ export function renderBaseMapWorld(
       .setOrigin(0.5, 1)
       .setDepth(pos.sy + 1);
     occludableSprites.push(sprite);
-    if (item.blocks && inBounds(state, item.gridX, item.gridY)) state.blocked[item.gridY]![item.gridX] = true;
+    if (item.present) conditionalDecor.push({ item, sprite });
   }
 
-  for (const exit of state.exits) {
+  return { occludableSprites, conditionalDecor };
+}
+
+/** Pulsing ground glow on each exit tile; dimmed and still while the exit is closed. */
+export function renderExitGlows(scene: Phaser.Scene, state: Pick<BaseMapWorldState, 'originX' | 'originY' | 'exits'>): () => void {
+  const glows = state.exits.map(exit => {
     const pos = gridToIsoScreen(state.originX, state.originY, exit.fromX, exit.fromY);
-    const glow = scene.add.ellipse(pos.sx, pos.sy, 40, 18, 0xc9a55c, 0.35)
-      .setDepth(pos.sy + 0.5);
-    scene.tweens.add({ targets: glow, alpha: 0.7, duration: 900, yoyo: true, repeat: -1 });
-  }
-
-  return occludableSprites;
+    const glow = scene.add.ellipse(pos.sx, pos.sy, 40, 18, 0xc9a55c, 0.35).setDepth(pos.sy + 0.5);
+    const tween = scene.tweens.add({ targets: glow, alpha: 0.7, duration: 900, yoyo: true, repeat: -1 });
+    return { exit, glow, tween };
+  });
+  const refresh = (): void => {
+    for (const { exit, glow, tween } of glows) {
+      const open = exitIsOpen(exit);
+      glow.setFillStyle(open ? 0xc9a55c : 0x6b6258, open ? 0.35 : 0.2);
+      if (open) tween.resume();
+      else tween.pause();
+    }
+  };
+  refresh();
+  return refresh;
 }
 
 export function getBaseMapWorldBounds(
@@ -164,8 +180,4 @@ function getTileWorldBounds(state: BaseMapWorldState, width: number, height: num
     maxX - minX + padX * 2,
     maxY - minY + padY * 2,
   );
-}
-
-function inBounds(state: BaseMapWorldState, x: number, y: number): boolean {
-  return x >= 0 && y >= 0 && x < state.mapWidth && y < state.mapHeight;
 }

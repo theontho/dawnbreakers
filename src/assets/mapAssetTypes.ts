@@ -35,6 +35,8 @@ export interface MapObjectDefinition {
   label: string;
   texture: string;
   kind: MapObjectKind;
+  /** Editor palette group this object is listed under. */
+  category: MapAssetCategoryId;
   color: number;
   blocks: boolean;
   footprint?: MapObjectFootprint;

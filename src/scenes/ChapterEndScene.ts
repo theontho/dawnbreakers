@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { playMusic, playSfx } from '../audio';
 import { chapterById, nextChapter, type ChapterId } from '../data/chapters';
 import { localizedStyle, t } from '../i18n';
 import { buttonFont, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
@@ -20,6 +21,8 @@ export class ChapterEndScene extends Phaser.Scene {
   }
 
   create(): void {
+    playSfx('chapterComplete');
+    playMusic('hope');
     restartSceneOnResize(this, () => ({ chapterId: this.chapterId, from: this.fromKey }));
 
     const { width, height } = this.scale;
@@ -68,7 +71,7 @@ export class ChapterEndScene extends Phaser.Scene {
       this.input.keyboard?.once('keydown-SPACE', continueToNext);
       buttonY += 62;
     } else {
-      this.add.text(cx, cy + 10, t('You have reached the end of the current content.'), localizedStyle({
+      this.add.text(cx, cy + 10, t('Here ends this telling of The Dawn-Breakers. The dawn it witnessed is still rising.'), localizedStyle({
         fontFamily: 'Georgia, serif', fontSize: responsiveFont(15, size, 12), color: '#e8d9b0', fontStyle: 'italic',
         align: 'center',
         wordWrap: { width: cardW - 48 },

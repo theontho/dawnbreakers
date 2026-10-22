@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
-import { resetFlags } from '../dialogue/flags';
+import { addAudioControls } from '../ui/audioControls';
+import { isDebugOverlayVisible, setDebugOverlayVisible } from '../ui/debugOverlay';
+import { resetStory } from '../dialogue/progress';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { addLanguageDropdown } from '../ui/languageDropdown';
 import { buttonFont, isNarrowLayout, MIN_TOUCH_TARGET, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
@@ -37,7 +39,7 @@ export class SettingsScene extends Phaser.Scene {
     const safe = safeLayout(size);
     const narrow = isNarrowLayout(size);
     const panelW = Math.min(narrow ? safe.width : 520, safe.width);
-    const panelH = Math.min(safe.height, narrow ? 580 : 600);
+    const panelH = Math.min(safe.height, narrow ? 680 : 700);
     const panelX = safe.x + (safe.width - panelW) / 2;
     const panelY = safe.y + (safe.height - panelH) / 2;
     const contentX = panelX + panelW / 2;
@@ -78,7 +80,9 @@ export class SettingsScene extends Phaser.Scene {
 
     const helpBoxX = panelX + 28;
     const helpBoxW = panelW - 56;
-    const helpY = labelY + (narrow ? 78 : 92);
+    const audioY = labelY + (narrow ? 74 : 84);
+    const audioH = addAudioControls(this, helpBoxX, audioY, helpBoxW, size);
+    const helpY = audioY + audioH + (narrow ? 10 : 16);
     const buttonW = Math.min(280, panelW - 56);
     const buttonX = panelX + (panelW - buttonW) / 2;
     const buttonGap = narrow ? 8 : 12;
@@ -90,11 +94,11 @@ export class SettingsScene extends Phaser.Scene {
     const helpOrigin = textOriginX(0);
     const helpLines = helpBoxH < 128
       ? [
-          t('Move with WASD or arrow keys.'),
+          t('Move with WASD or arrow keys, or click where you want to walk.'),
           t('Press E near people and marked places to interact.'),
         ]
       : [
-          t('Move with WASD or arrow keys.'),
+          t('Move with WASD or arrow keys, or click where you want to walk.'),
           t('Press E near people and marked places to interact.'),
           t('Use H or hold Tab to highlight things you can interact with.'),
           t('Open the journal with J.'),
@@ -129,7 +133,24 @@ export class SettingsScene extends Phaser.Scene {
     y += MIN_TOUCH_TARGET + buttonGap;
     this.makeButton(buttonX, y, buttonW, t('Restart'), () => this.goToTitle(true), '#d7a15c');
 
+    this.addDebugToggle(panelX + panelW - 14, panelY + 14, size);
+
     this.input.keyboard?.once('keydown-ESC', () => this.close());
+  }
+
+  /** Small corner toggle for the developer console and FPS counter. */
+  private addDebugToggle(right: number, top: number, size: { width: number; height: number }): void {
+    const label = (): string => (isDebugOverlayVisible() ? t('Debug ✓') : t('Debug'));
+    const toggle = this.add.text(right, top, label(), localizedStyle({
+      fontFamily: 'Georgia, serif',
+      fontSize: responsiveFont(12, size, 11),
+      color: '#9c8458',
+      padding: { x: 6, y: 6 },
+    })).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    toggle.on('pointerdown', () => {
+      setDebugOverlayVisible(!isDebugOverlayVisible());
+      toggle.setText(label());
+    });
   }
 
   private launchData(): SettingsLaunch {
@@ -167,8 +188,8 @@ export class SettingsScene extends Phaser.Scene {
     this.scene.stop();
   }
 
-  private goToTitle(resetStory: boolean): void {
-    if (resetStory) resetFlags();
+  private goToTitle(restart: boolean): void {
+    if (restart) resetStory();
     this.scene.stop();
     this.scene.stop(this.fromKey);
     this.scene.start('Title');

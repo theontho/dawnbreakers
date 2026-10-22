@@ -19,9 +19,9 @@ export function drawMobileMoveArrow(arrow: Phaser.GameObjects.Graphics, color: n
 }
 
 export interface BaseMapHudHandles {
+  titleText: Phaser.GameObjects.Text;
   promptText: Phaser.GameObjects.Text;
   exitPromptText: Phaser.GameObjects.Text;
-  banner: Phaser.GameObjects.Text;
   mobileControls?: Phaser.GameObjects.Container;
   mobileActionButton?: Phaser.GameObjects.Rectangle;
   mobileActionLabel?: Phaser.GameObjects.Text;
@@ -89,7 +89,7 @@ export function createBaseMapHud(
   };
 
   const titleX = rtl ? safe.right : safe.x;
-  scene.add.text(titleX, safe.y, t(sceneTitle), localizedStyle({
+  const titleText = scene.add.text(titleX, safe.y, t(sceneTitle), localizedStyle({
     fontFamily: 'Georgia, serif', fontSize: responsiveFont(narrow ? 16 : 18, size), color: '#e8d9b0',
     wordWrap: { width: titleW },
   })).setOrigin(textOriginX(0), 0).setScrollFactor(0).setDepth(UI_DEPTH);
@@ -115,17 +115,10 @@ export function createBaseMapHud(
     wordWrap: { width: safe.width },
   }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setVisible(false);
 
-  const banner = scene.add.text(centerX, safe.y + (narrow ? 94 : 58), '', localizedStyle({
-    fontFamily: 'Georgia, serif', fontSize: responsiveFont(22, size, 15), color: '#f3e2b5',
-    fontStyle: 'italic', backgroundColor: '#00000088', padding: { x: 12, y: 6 },
-    align: 'center',
-    wordWrap: { width: safe.width },
-  }, 'center')).setOrigin(0.5).setScrollFactor(0).setDepth(UI_DEPTH).setAlpha(0);
-
   return {
+    titleText,
     promptText,
     exitPromptText,
-    banner,
     ...(mobileControlsEnabled ? createMobileControls(scene, width, height, UI_DEPTH + 5, actions) : {}),
   };
 }

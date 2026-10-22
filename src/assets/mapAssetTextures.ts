@@ -4,7 +4,7 @@ import { createIsoPrism, drawIsoPrismShape, wallInsetPoints } from '../scenes/is
 import type { IsoPoint, IsoPrism } from '../scenes/baseMapTypes';
 import type { MapObjectDefinition } from './mapAssetTypes';
 import { MAP_OBJECTS, TILE_OPTIONS } from './mapAssetDefinitions';
-import { CUSTOM_TEXTURE_GENERATORS } from './textureGenerators';
+import { CUSTOM_TEXTURE_GENERATORS } from './chapters';
 
 const TILE_W = 64;
 const TILE_H = 32;

@@ -4,6 +4,7 @@ import {
   getGameLogEntries,
   subscribeToGameLog,
 } from '../logging/gameLogger';
+import { registerDebugElement } from './debugOverlay';
 
 const panelId = 'dawnbreakers-console-panel';
 const maxVisibleEntries = 80;
@@ -81,6 +82,7 @@ export function attachConsolePanel(): void {
 
   panel.append(header, body);
   document.body.appendChild(panel);
+  registerDebugElement(panel);
   render();
   subscribeToGameLog(render);
 }

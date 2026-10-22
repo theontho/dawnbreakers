@@ -18,8 +18,26 @@ Useful checks:
 
 ```bash
 npm run typecheck
-npm run lint:localization
+npm run lint      # eslint, localization coverage, dialogue references, content rules
+npm run smoke     # headless: boots every map, opens every NPC dialogue, reports fps
 npm run build
+npm run gallery       # contact sheets of every generated texture -> out/gallery/
+npm run render:music  # the synthesized score and sound effects as WAV -> out/music/
+```
+
+All art and sound are generated at runtime: textures are painted with the
+canvas API at boot, and the music is a generative Persian ensemble (santur,
+tār, ney, kamāncheh, daf) synthesized with WebAudio, in modes that keep the
+dastgāhs' quarter tones. If `public/dawnbreakers.mp3` exists, the title screen
+plays that recording instead.
+
+Writing chapters, maps, or dialogue? Read [`docs/content-guide.md`](docs/content-guide.md)
+first. To bring the translations up to date after changing English text:
+
+```bash
+node scripts/i18n-sync.mjs --export out/i18n   # missing keys per locale, as JSON
+node scripts/i18n-sync.mjs --import out/i18n   # merge the translated JSON back
+node scripts/i18n-sync.mjs --prune             # drop keys no source string uses
 ```
 
 ## Native Sky Rewind prototype
@@ -67,11 +85,13 @@ exposure slider adjusts reference brightness without changing simulation data.
 
 ## Controls
 
-- **Arrow keys / WASD** - walk
+- **Arrow keys / WASD** - walk; or **click / tap** a spot to walk there (click a person to walk up and talk)
 - **E** - speak with a nearby character or interactable story object
-- **1-9** - pick a dialogue choice, or click/tap the choice
-- **J** - open the journal
+- **1-9** - pick a dialogue choice, or click/tap the choice; **Space / Enter** continues
+- **J** - open the journal (all chapters, with the current objective)
+- **H / hold Tab** - highlight people, story objects, and exits
 - **Esc** - open settings
+- **`** (backtick) - toggle the developer console and FPS counter (also in Settings)
 
 ## Project structure
 
@@ -79,9 +99,14 @@ exposure slider adjusts reference brightness without changing simulation data.
 src/
   main.ts                 # Phaser game config + scene list
   scenes/
-    BaseMapScene.ts       # shared isometric scene behavior
+    MapScene.ts           # the one walkable map scene, driven by a MapDefinition
+    mapGround.ts          # ground baked into one RenderTexture (tile variants, slab edges)
+    mapAmbience.ts        # colour wash, light pools, vignette, weather particles
+    mapNpcs.ts            # NPC placement, presence, speech marks
+    mapPathing.ts         # click-to-walk picking and pathfinding
+    mapObjectiveHud.ts    # objective tracker under the map title
     baseMapTypes.ts       # shared map, tile, geometry, and spawn types
-    baseMap*.ts           # shared map scene HUD, flow, movement, reveal, types, and world helpers
+    baseMap*.ts           # shared map scene HUD, flow, movement, reveal, and world helpers
     isoGeometry.ts        # shared isometric projection/drawing helpers
     MapEditorScene.ts     # in-game map editor
     mapEditor*.ts         # editor storage, input, palette, geometry, asset picker, and world helpers
@@ -96,35 +121,35 @@ src/
     chapters.ts           # chapter registry and completion predicates
     dialogues.ts          # dialogue registry
     dialogues_ch/         # chapter-owned dialogue modules
+    maps/                 # one MapDefinition per location
+    story/                # per-chapter objectives and journal entries
+  audio/
+    engine.ts             # WebAudio buses, reverb, volume settings, autoplay unlock
+    instruments.ts        # synthesized santur, tār, ney, kamāncheh, drone, daf/tombak
+    scores.ts             # per-mood pieces in Persian modes (cents, with koron)
+    music.ts              # generative phrase composer and look-ahead scheduler
+    sfx.ts                # UI, dialogue, footstep and transition effects
+    soundscape.ts         # ambient beds: wind, rain, sea, fire, crickets, birds
   assets/
+    art/                  # canvas painting kit: iso faces, materials, arches, domes, houses, trees, figures
     mapAssetLibrary.ts    # public map asset exports
     mapAssetDefinitions.ts
+    chapters/             # each chapter's placeable objects and bespoke textures
     mapAssetTextures.ts
     mapAssetTypes.ts
   i18n/
     locales/              # current locale content
 ```
 
-## Adding a new dialogue
+## Adding content
 
-1. Add a `DialogueTree` in `src/data/dialogues.ts`.
-2. For chapter-owned content, prefer a module in `src/data/dialogues_ch/` and
-   register it through the dialogue registry.
-3. Register an NPC or story object in a `BaseMapScene` subclass that calls
-   `this.startSimpleDialogue('dialogue-id')`.
-4. Use `effect: { set: { someFlag: true } }` on choices to record outcomes;
-   read them later with `getFlags()`.
-
-## Adding a new scene / location
-
-1. Create `src/scenes/MyScene.ts` extending `BaseMapScene` for explorable maps.
-2. Register it in the `scene` array in `src/main.ts`.
-3. Add chapter metadata in `src/data/chapters.ts` when it belongs to chapter
-   progression.
-4. Transition with `this.scene.start('MyScene')`.
+See [`docs/content-guide.md`](docs/content-guide.md): dialogue trees, map
+definitions (gates, presence, gated exits, ambience), objectives, journal
+entries, and new characters.
 
 Central figures can be spoken of and represented through setting, narration, or
-threshold objects, but should not be implemented as ordinary interactable NPCs.
+threshold objects, but are never NPCs or dialogue speakers. `npm run lint:content`
+enforces this.
 
 ## Roadmap ideas
 

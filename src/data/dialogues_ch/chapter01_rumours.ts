@@ -1,6 +1,6 @@
 import type { DialogueTree } from '../../dialogue/types';
 
-/** Traveller at the city gate — gives the first rumour. */
+/** Traveller at the city gate: gives the first rumour. */
 export const travellerRumour: DialogueTree = {
   id: 'rumour-traveller',
   startId: 'g',
@@ -16,7 +16,7 @@ export const travellerRumour: DialogueTree = {
     tell: {
       speaker: 'A Weary Traveller',
       onEnter: { set: { rumourTraveller: true } },
-      text: 'They say a young Siyyid of this city — modest, of the line of the Prophet — has returned from pilgrimage and speaks with a strange certainty. The merchants in the bazaar know His name; the mullá at the mosque speaks against Him. Decide for yourself whom to trust.',
+      text: 'They say a young Siyyid of this city, modest and of the line of the Prophet, has returned from pilgrimage and speaks with a strange certainty. The merchants in the bazaar know His name; the mullá at the mosque speaks against Him. Decide for yourself whom to trust.',
       choices: [
         { text: '"Thank you. I will look for them."' },
       ],
@@ -24,23 +24,23 @@ export const travellerRumour: DialogueTree = {
   },
 };
 
-/** Merchant in the bazaar — gives the second rumour. */
+/** Merchant in the bazaar: gives the second rumour. */
 export const merchantRumour: DialogueTree = {
   id: 'rumour-merchant',
   startId: 'g',
   nodes: {
     g: {
       speaker: 'A Cloth Merchant',
-      text: 'Welcome, welcome — silk from Yazd, indigo from Hind! Will you buy, or only browse, my friend?',
+      text: 'Welcome, welcome! Silk from Yazd, indigo from Hind! Will you buy, or only browse, my friend?',
       choices: [
-        { text: '"I am looking for someone — a young Siyyid, lately returned to Shíráz."', next: 'know' },
+        { text: '"I am looking for someone: a young Siyyid, lately returned to Shíráz."', next: 'know' },
         { text: '"Only browsing today. Forgive me."' },
       ],
     },
     know: {
       speaker: 'A Cloth Merchant',
       onEnter: { set: { rumourMerchant: true } },
-      text: '(He glances about, then lowers his voice.) Siyyid ʿAlí-Muḥammad. A good man — pays in full, never haggles. His house is in the quarter north of here, past the mosque. But have a care: not all in this city wish Him well.',
+      text: '(He glances about, then lowers his voice.) Siyyid ʿAlí-Muḥammad. A good man. He pays in full and never haggles. His house is in the quarter north of here, past the mosque. But have a care: not all in this city wish Him well.',
       choices: [
         { text: '"Who wishes Him ill?"', next: 'warn' },
         { text: '"Thank you. May God bless your trade."' },
@@ -48,7 +48,7 @@ export const merchantRumour: DialogueTree = {
     },
     warn: {
       speaker: 'A Cloth Merchant',
-      text: 'The mullá of the great mosque — that one. Speak with him if you must, but guard your tongue.',
+      text: 'The mullá of the great mosque, that one. Speak with him if you must, but guard your tongue.',
       choices: [
         { text: '"Understood. Peace be with you."' },
       ],
@@ -56,7 +56,7 @@ export const merchantRumour: DialogueTree = {
   },
 };
 
-/** Mullá at the mosque — gives the third rumour, hostile in tone. */
+/** Mullá at the mosque: gives the third rumour, hostile in tone. */
 export const mullaWarning: DialogueTree = {
   id: 'rumour-mulla',
   startId: 'g',
@@ -72,7 +72,7 @@ export const mullaWarning: DialogueTree = {
     rebuke: {
       speaker: 'A Stern Mullá',
       onEnter: { set: { rumourMulla: true } },
-      text: '(His face darkens.) That youth — a merchant turned mystic — has stirred the foolish with talk of hidden meanings. The ʿulamá will not suffer it long. If you are wise, you will return to Karbilá and forget His name.',
+      text: '(His face darkens.) That youth, a merchant turned mystic, has stirred the foolish with talk of hidden meanings. The ʿulamá will not suffer it long. If you are wise, you will return to Karbilá and forget His name.',
       choices: [
         { text: '"And what is His name?"', next: 'name' },
         { text: '"Thank you for the warning."' },
@@ -88,7 +88,7 @@ export const mullaWarning: DialogueTree = {
   },
 };
 
-/** A quiet neighbour in the Báb's lane — gives a fourth, gentler rumour. */
+/** A quiet neighbour in the Báb's lane: a fourth, gentler rumour. */
 export const neighbourQuiet: DialogueTree = {
   id: 'rumour-neighbour',
   startId: 'g',
@@ -96,7 +96,7 @@ export const neighbourQuiet: DialogueTree = {
     g: {
       speaker: 'A Quiet Neighbour',
       onEnter: { set: { rumourNeighbour: true } },
-      text: 'Salaam, friend. You are looking for the young Siyyid? He keeps a peaceful house here — His wife, Khadíjih-Bagum, is much loved on this lane. If He invites you within, count yourself fortunate.',
+      text: 'Salaam, friend. You are looking for the young Siyyid? He keeps a peaceful house here. His wife, Khadíjih-Bagum, is much loved on this lane. If He invites you within, count yourself fortunate.',
       choices: [
         { text: '"Is He often at home?"', next: 'home' },
         { text: '"Thank you. Peace be with you."' },
@@ -112,14 +112,14 @@ export const neighbourQuiet: DialogueTree = {
   },
 };
 
-/** Water-carrier near the fountain — gentle rumour from the working city. */
+/** Water-carrier near the fountain: gentle rumour from the working city. */
 export const waterCarrierRumour: DialogueTree = {
   id: 'rumour-water-carrier',
   startId: 'g',
   nodes: {
     g: {
       speaker: 'A Water-Carrier',
-      text: 'Careful, traveller — the stones are slick by the fountain. You look as though you have followed a question farther than your sandals wished to go.',
+      text: 'Careful, traveller, the stones are slick by the fountain. You look as though you have followed a question farther than your sandals wished to go.',
       choices: [
         { text: '"A question, yes. Have you heard of a young Siyyid in this city?"', next: 'heard' },
         { text: '"Only tell me where the quiet lanes begin."', next: 'directions' },
@@ -152,7 +152,7 @@ export const waterCarrierRumour: DialogueTree = {
   },
 };
 
-/** Gate guard — wary official rumour about late seekers. */
+/** Gate guard: wary official rumour about late seekers. */
 export const gateGuardRumour: DialogueTree = {
   id: 'rumour-gate-guard',
   startId: 'g',
@@ -192,7 +192,7 @@ export const gateGuardRumour: DialogueTree = {
   },
 };
 
-/** Bazaar calligrapher — a sympathetic rumour through manuscripts and letters. */
+/** Bazaar calligrapher: a sympathetic rumour through manuscripts and letters. */
 export const calligrapherRumour: DialogueTree = {
   id: 'rumour-calligrapher',
   startId: 'g',
@@ -208,7 +208,7 @@ export const calligrapherRumour: DialogueTree = {
     hand: {
       speaker: 'A Calligrapher',
       onEnter: { set: { sawCalligraphy: true } },
-      text: '(He uncovers a practice sheet, then quickly veils it.) I have seen lines from His pen. Swift as rain, balanced as architecture. Not ornament only — meaning seems to press through the ink.',
+      text: '(He uncovers a practice sheet, then quickly veils it.) I have seen lines from His pen. Swift as rain, balanced as architecture. Not ornament only. Meaning seems to press through the ink.',
       choices: [
         { text: '"You speak as a believer."', next: 'believer' },
         { text: '"Where may I find Him?"', next: 'where' },
@@ -239,7 +239,7 @@ export const calligrapherRumour: DialogueTree = {
   },
 };
 
-/** Orphan near the mosque — a mercy-focused rumour. */
+/** Orphan near the mosque: a mercy-focused rumour. */
 export const orphanRumour: DialogueTree = {
   id: 'rumour-orphan',
   startId: 'g',
@@ -256,7 +256,7 @@ export const orphanRumour: DialogueTree = {
     bread: {
       speaker: 'An Orphan by the Mosque',
       onEnter: { set: { orphanMercy: true } },
-      text: 'May God remember you. Another man remembered me yesterday — a young Siyyid in a green turban. He asked my name before He gave bread, as if names mattered to the hungry.',
+      text: 'May God remember you. Another man remembered me yesterday, a young Siyyid in a green turban. He asked my name before He gave bread, as if names mattered to the hungry.',
       choices: [
         { text: '"Did He say where He lived?"', next: 'lane' },
         { text: '(Let the child eat in peace.)' },
@@ -281,13 +281,13 @@ export const orphanRumour: DialogueTree = {
   },
 };
 
-/** Servant near the Báb's lane — threshold rumour and final invitation. */
+/** Mubárak, the household servant: threshold rumour and final invitation. */
 export const servantRumour: DialogueTree = {
   id: 'rumour-servant',
   startId: 'g',
   nodes: {
     g: {
-      speaker: 'A Household Servant',
+      speaker: 'Mubárak, the Household Servant',
       text: 'Peace, traveller. This lane is narrow, and sound carries. Whom do you seek at such an hour?',
       choices: [
         { text: '"The young Siyyid whose name is spoken in the bazaar."', next: 'expected' },
@@ -295,16 +295,16 @@ export const servantRumour: DialogueTree = {
       ],
     },
     expected: {
-      speaker: 'A Household Servant',
+      speaker: 'Mubárak, the Household Servant',
       onEnter: { set: { servantWelcomed: true } },
-      text: 'Then you have come near. The Master receives no idle curiosity, yet He has asked that the lamp be trimmed. Perhaps He knew a seeker would arrive tired.',
+      text: 'Then you have come near. The Master receives no idle curiosity, yet He has asked that the lamp be trimmed. He has a guest tonight, a learned man from Karbilá. Perhaps He knew another seeker would arrive tired.',
       choices: [
         { text: '"How could He know?"', next: 'known' },
         { text: '"I will approach with reverence."' },
       ],
     },
     lamp: {
-      speaker: 'A Household Servant',
+      speaker: 'Mubárak, the Household Servant',
       onEnter: { set: { servantWelcomed: true } },
       text: 'There is such a house. But courtesy is not its only light. If your heart is noisy, let the lane quiet it before you knock.',
       choices: [
@@ -313,7 +313,7 @@ export const servantRumour: DialogueTree = {
       ],
     },
     known: {
-      speaker: 'A Household Servant',
+      speaker: 'Mubárak, the Household Servant',
       text: 'Some hosts prepare for guests. Some guests discover they have been expected longer than they knew.',
       choices: [
         { text: '(Thank the servant and continue.)' },

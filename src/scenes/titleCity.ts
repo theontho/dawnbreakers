@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 
 export type TitleCity = {
-  graphics: Phaser.GameObjects.Graphics;
   setLight: (amount: number) => void;
 };
 
@@ -31,44 +30,64 @@ const dayPalette: ShirazCityPalette = {
   garden: 0x20351f,
 };
 
+/**
+ * The skyline is drawn once in its night palette and once in its day
+ * palette, each baked into a RenderTexture, and the day layer simply fades
+ * in over the night one. Re-tessellating the skyline Graphics every frame
+ * was the single largest cost of the title screen.
+ */
 export function addTitleCity(
   scene: Phaser.Scene,
   width: number,
   height: number,
   baseY: number,
 ): TitleCity {
-  const g = scene.add.graphics();
   const cityBase = Math.min(height - 40, baseY + height * 0.09);
-  let lastLightAmount = Number.NaN;
-  const setLight = (amount: number) => {
-    const lightAmount = Phaser.Math.Clamp(amount, 0, 1);
-
-    if (Math.abs(lightAmount - lastLightAmount) < 0.006) return;
-
-    lastLightAmount = lightAmount;
-    drawTitleCity(g, width, height, baseY, cityBase, mixPalette(nightPalette, dayPalette, lightAmount));
+  const top = Math.max(0, Math.floor(cityBase - 260));
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  const bake = (palette: ShirazCityPalette): Phaser.GameObjects.RenderTexture => {
+    drawTitleCity(g, width, height, baseY, cityBase, palette);
+    const rt = scene.add.renderTexture(0, top, Math.ceil(width), Math.ceil(height - top)).setOrigin(0);
+    rt.draw(g, 0, -top);
+    return rt;
   };
+  bake(nightPalette);
+  const day = bake(dayPalette);
+  g.destroy();
 
+  const setLight = (amount: number) => {
+    day.setAlpha(Phaser.Math.Clamp(amount, 0, 1));
+  };
   setLight(0);
 
-  return { graphics: g, setLight };
+  return { setLight };
 }
 
+const CLOUD_TEXTURE = 'title-cloud';
+const CLOUD_ORIGIN = { x: 96, y: 18 };
+
+/** A soft three-lobed cloud, drawn once and reused as an image. */
 export function addTitleCloud(
   scene: Phaser.Scene,
   x: number,
   y: number,
   scale: number,
   alpha: number,
-): Phaser.GameObjects.Graphics {
-  const g = scene.add.graphics();
-
-  g.fillStyle(0xf5cf9f, alpha);
-  g.fillEllipse(x - 48 * scale, y + 8 * scale, 90 * scale, 26 * scale);
-  g.fillEllipse(x, y, 126 * scale, 34 * scale);
-  g.fillEllipse(x + 58 * scale, y + 10 * scale, 84 * scale, 24 * scale);
-
-  return g;
+): Phaser.GameObjects.Image {
+  if (!scene.textures.exists(CLOUD_TEXTURE)) {
+    const g = scene.make.graphics({ x: 0, y: 0 }, false);
+    const { x: cx, y: cy } = CLOUD_ORIGIN;
+    g.fillStyle(0xf5cf9f, 1);
+    g.fillEllipse(cx - 48, cy + 8, 90, 26);
+    g.fillEllipse(cx, cy, 126, 34);
+    g.fillEllipse(cx + 58, cy + 10, 84, 24);
+    g.generateTexture(CLOUD_TEXTURE, 200, 44);
+    g.destroy();
+  }
+  return scene.add.image(x, y, CLOUD_TEXTURE)
+    .setOrigin(CLOUD_ORIGIN.x / 200, CLOUD_ORIGIN.y / 44)
+    .setScale(scale)
+    .setAlpha(alpha);
 }
 
 type ShirazCityPalette = {
@@ -423,30 +442,4 @@ function drawCrenellations(
   for (let merlonX = x; merlonX < x + width; merlonX += 18) {
     g.fillRect(merlonX, y, 10, 8);
   }
-}
-
-function mixPalette(from: ShirazCityPalette, to: ShirazCityPalette, amount: number): ShirazCityPalette {
-  return {
-    ground: mixColor(from.ground, to.ground, amount),
-    foreground: mixColor(from.foreground, to.foreground, amount),
-    foothills: mixColor(from.foothills, to.foothills, amount),
-    wall: mixColor(from.wall, to.wall, amount),
-    wallShadow: mixColor(from.wallShadow, to.wallShadow, amount),
-    buildings: from.buildings.map((color, index) => mixColor(color, to.buildings[index] ?? color, amount)),
-    roof: mixColor(from.roof, to.roof, amount),
-    dome: mixColor(from.dome, to.dome, amount),
-    highlight: mixColor(from.highlight, to.highlight, amount),
-    garden: mixColor(from.garden, to.garden, amount),
-  };
-}
-
-function mixColor(from: number, to: number, amount: number): number {
-  const fromRgb = Phaser.Display.Color.IntegerToRGB(from);
-  const toRgb = Phaser.Display.Color.IntegerToRGB(to);
-
-  return Phaser.Display.Color.GetColor(
-    Math.round(Phaser.Math.Linear(fromRgb.r, toRgb.r, amount)),
-    Math.round(Phaser.Math.Linear(fromRgb.g, toRgb.g, amount)),
-    Math.round(Phaser.Math.Linear(fromRgb.b, toRgb.b, amount)),
-  );
 }

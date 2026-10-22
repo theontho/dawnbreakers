@@ -137,7 +137,7 @@ const speakWithTemplates: Record<Locale, string> = {
   he: 'דבר עם {name}  [E]',
   zh: '与{name}交谈  [E]',
   ja: '{name}と話す  [E]',
-  ko: '{name}와 대화  [E]',
+  ko: '{name}에게 말 걸기  [E]',
 };
 
 export function applyLocaleDocument(): void {

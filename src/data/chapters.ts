@@ -1,4 +1,6 @@
 import type { FlagState } from '../dialogue/types';
+import { CHAPTER_STORIES } from './story';
+import type { ChapterStory } from './story/types';
 
 export type ChapterId =
   | 'shiraz'
@@ -17,12 +19,9 @@ export type ChapterId =
  * Centralised so chapter predicates and dialogue effects can't drift apart:
  * if you add a chapter, add its completion flag here, and the dialogue lint
  * script will check that some `effect.set` actually produces it.
- *
- * Chapter 1 is special: completion is signalled by an `ending` flag that
- * holds a string variant (which ending was reached), so it has no entry
- * here. See `chapterIsComplete` for its custom predicate.
  */
-export const CHAPTER_COMPLETION_FLAGS: Partial<Record<ChapterId, string>> = {
+export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
+  shiraz: 'shirazComplete',
   road: 'roadComplete',
   mecca: 'meccaComplete',
   'shiraz-return': 'houseArrestComplete',
@@ -35,9 +34,7 @@ export const CHAPTER_COMPLETION_FLAGS: Partial<Record<ChapterId, string>> = {
 };
 
 function chapterIsComplete(id: ChapterId, flags: FlagState): boolean {
-  if (id === 'shiraz') return flags.ending !== undefined;
-  const flag = CHAPTER_COMPLETION_FLAGS[id];
-  return flag !== undefined && !!flags[flag];
+  return !!flags[CHAPTER_COMPLETION_FLAGS[id]];
 }
 
 export interface Chapter {
@@ -52,6 +49,8 @@ export interface Chapter {
   startSpawnY?: number;
   /** All scene keys that belong to this chapter. */
   scenes: string[];
+  /** Objectives for the HUD tracker and journal entries for this chapter. */
+  story: ChapterStory;
   /** Returns true when the chapter is finished, based on flags. */
   isComplete: (flags: FlagState) => boolean;
 }
@@ -62,92 +61,102 @@ const SPECS: ChapterSpec[] = [
   {
     id: 'shiraz',
     number: 1,
+    story: CHAPTER_STORIES['shiraz'],
     title: 'The Cup of Recognition',
     subtitle: 'Shíráz, 22 May 1844',
-    description: 'A young seeker arrives in Shíráz, hears rumours of a Promised One, and finds himself at the threshold of a house at dusk.',
+    description: 'You arrive in Shíráz with Mullá Ḥusayn, hear what the city whispers of a young Siyyid, and keep vigil at a lamplit door through the night the new age begins.',
     startScene: 'City',
     scenes: ['City', 'HouseQuarter'],
   },
   {
     id: 'road',
     number: 2,
+    story: CHAPTER_STORIES['road'],
     title: 'The Letters Disperse',
-    subtitle: 'On the road from Shíráz',
-    description: 'The first to recognise Him are sent forth in eighteen directions. On a dusty road north, a fellow seeker greets you.',
+    subtitle: 'Beyond the Qur\'án Gate, summer 1844',
+    description: 'The Letters of the Living set out from Shíráz in every direction, bidden to proclaim that the Gate has opened without yet speaking His name. You see them off, and a stranger on the road asks you the one thing you may not say.',
     startScene: 'Road',
     scenes: ['Road'],
   },
   {
     id: 'mecca',
     number: 3,
+    story: CHAPTER_STORIES['mecca'],
     title: 'Pilgrimage to Mecca',
-    subtitle: 'The Kaʿba, 1844–1845',
-    description: 'A sea passage and a reverent proclamation before the Kaʿba carry the Cause beyond Shíráz.',
+    subtitle: 'The Kaʿba, 1844 to 1845',
+    description: 'A storm-tossed voyage from Búshihr with Quddús and Mubárak, a lamp that never goes out, and a proclamation by the door of the Kaʿba that almost no one hears.',
     startScene: 'Ch3Ship',
     scenes: ['Ch3Ship', 'Ch3Mecca'],
   },
   {
     id: 'shiraz-return',
     number: 4,
+    story: CHAPTER_STORIES['shiraz-return'],
     title: 'Return to Shíráz',
-    subtitle: 'Opposition gathers, 1845',
-    description: 'The city changes around the returning believers as officials, witnesses, and the mosque become stages of trial.',
+    subtitle: 'Shíráz, 1845 to 1846',
+    description: 'Quddús and Mullá Ṣádiq are paraded for sounding a new call, the Báb is summoned to the pulpit of the Vakíl Mosque, and a learned envoy of the Sháh comes to judge Him and is himself won.',
     startScene: 'Ch4ShirazReturn',
     scenes: ['Ch4ShirazReturn', 'Ch4VakilMosque'],
   },
   {
     id: 'isfahan',
     number: 5,
+    story: CHAPTER_STORIES['isfahan'],
     title: 'The Muʿtamid’s Sanctuary',
-    subtitle: 'Iṣfahán, 1846–1847',
-    description: 'Bridge, palace, and learned council frame the Báb’s stay under Manúchihr Khán’s protection.',
+    subtitle: 'Iṣfahán, 1846 to 1847',
+    description: 'Across the river, an Imám-Jumʿih pours water for his Guest, a hard old governor finds one thing worth doing, and the divines of Iṣfahán sign what they would not come to debate.',
     startScene: 'Ch5IsfahanBridge',
     scenes: ['Ch5IsfahanBridge', 'Ch5MutamidPalace'],
   },
   {
     id: 'mountain-prisons',
     number: 6,
+    story: CHAPTER_STORIES['mountain-prisons'],
     title: 'The Mountain Prisons',
     subtitle: 'Mákú and Chihríq, 1847–1848',
-    description: 'Cold fortresses, softened wardens, and hidden revelation mark the years of confinement.',
+    description: 'Snow on the ramparts of Mákú and Chihríq. A warden asks forgiveness, Mullá Ḥusayn arrives on foot from Mashhad, and in a prison without a lamp the Bayán is written down.',
     startScene: 'Ch6Maku',
     scenes: ['Ch6Maku', 'Ch6Chihriq'],
   },
   {
     id: 'badasht',
     number: 7,
+    story: CHAPTER_STORIES['badasht'],
     title: 'The Conference of Badasht',
-    subtitle: 'A new dispensation, 1848',
-    description: 'Three camps, a shocking proclamation, and Bahá’u’lláh’s reconciling presence reshape the community.',
-    startScene: 'Ch7BadashtCamp',
-    scenes: ['Ch7BadashtCamp'],
+    subtitle: 'Three gardens, summer 1848',
+    description: 'Eighty-one believers gather in three rented gardens. Each day brings a new name; one day brings a proclamation that breaks with the past, and Bahá’u’lláh draws the shaken friends back together.',
+    startScene: 'Ch7BadashtHamlet',
+    scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp'],
   },
   {
     id: 'tabarsi',
     number: 8,
+    story: CHAPTER_STORIES['tabarsi'],
     title: 'Fort Shaykh Ṭabarsí',
-    subtitle: 'Mazandaran, 1848–1849',
-    description: 'Forest road and shrine-fort tell a story of steadfastness through counsel, truce, and betrayal.',
+    subtitle: 'Mázindarán, 1848 to 1849',
+    description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
     startScene: 'Ch8ForestRoad',
     scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort'],
   },
   {
     id: 'tabriz',
     number: 9,
+    story: CHAPTER_STORIES['tabriz'],
     title: 'Tabríz',
-    subtitle: 'The barracks square, July 1850',
-    description: 'Sám Khán, the gathered witnesses, and a grave final testimony frame the martyrdom of the Báb.',
+    subtitle: 'The barrack square, 9 July 1850',
+    description: 'In the noon heat of Tabríz you hear the square, meet Anís and the Christian colonel Sám Khán, and keep watch from the rooftops on the day the Báb is martyred.',
     startScene: 'Ch9TabrizSquare',
     scenes: ['Ch9TabrizSquare', 'Ch9BarrackRoof'],
   },
   {
     id: 'siyah-chal',
     number: 10,
-    title: 'The Black Pit of Tihrán',
-    subtitle: 'Síyáh-Chál, 1852',
-    description: 'A descent into darkness becomes the hidden dawn of Bahá’u’lláh’s mission.',
+    story: CHAPTER_STORIES['siyah-chal'],
+    title: 'The Black Pit of Ṭihrán',
+    subtitle: 'Ṭihrán, August 1852 to January 1853',
+    description: 'Chained among the prisoners of the Síyáh-Chál, you keep a second vigil in the dark, where the hidden dawn of Bahá’u’lláh’s mission breaks unseen, and follow His exiles’ tracks west in the snow.',
     startScene: 'Ch10TehranStreet',
-    scenes: ['Ch10TehranStreet', 'Ch10SiyahChal'],
+    scenes: ['Ch10TehranStreet', 'Ch10SiyahChal', 'Ch10ExileRoad'],
   },
 ];
 

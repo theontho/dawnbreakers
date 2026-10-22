@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { chapters, type Chapter } from '../data/chapters';
-import { getFlags, resetFlags } from '../dialogue/flags';
+import { getFlags } from '../dialogue/flags';
+import { resetStory } from '../dialogue/progress';
 import { chapterLabel, localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 
@@ -46,7 +47,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     this.add.text(centerX, safe.y + 42, t('Chapters'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(54, size, 32), color: '#f3e2b5',
     }, 'center')).setOrigin(0.5);
-    this.add.text(centerX, safe.y + 88, t('Choose where to begin — your discovered rumours and outcomes carry forward.'), localizedStyle({
+    this.add.text(centerX, safe.y + 88, t('Choose where to begin. What you have learned and chosen carries forward.'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, size, 12), color: '#9c8458', fontStyle: 'italic',
       align: 'center',
       wordWrap: { width: safe.width },
@@ -153,7 +154,7 @@ export class ChapterSelectScene extends Phaser.Scene {
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(24, this.scale, 17), color: '#f3e2b5',
       wordWrap: { width: w - 48 },
     })).setOrigin(originX, 0));
-    list.add(this.add.text(textX, y + 60, `${t(chapter.subtitle)}  —  ${t(chapter.description)}`, localizedStyle({
+    list.add(this.add.text(textX, y + 60, `${t(chapter.subtitle)}  ·  ${t(chapter.description)}`, localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, this.scale), color: '#c9b07a',
       wordWrap: { width: w - (w < 620 ? 48 : 220) },
     })).setOrigin(originX, 0));
@@ -199,7 +200,7 @@ export class ChapterSelectScene extends Phaser.Scene {
   }
 
   private resetStory(): void {
-    resetFlags();
+    resetStory();
     if (this.returnToGameScene) this.scene.stop(this.returnToGameScene);
     this.scene.restart();
   }

@@ -10,7 +10,6 @@ export interface RevealTarget {
 export interface RevealMaskState {
   sprite: Phaser.GameObjects.Image;
   bounds: Phaser.Geom.Rectangle;
-  staticReveals: RevealTarget[];
   mask?: Phaser.Display.Masks.BitmapMask | Phaser.Display.Masks.GeometryMask;
   maskApplied?: boolean;
   textureKey?: string;
@@ -41,7 +40,6 @@ export function createSoftRevealMaskState(
   scene: Phaser.Scene,
   sprite: Phaser.GameObjects.Image,
   bounds: Phaser.Geom.Rectangle,
-  staticReveals: RevealTarget[],
   textureKey: string,
 ): RevealMaskState | undefined {
   const width = Math.max(1, Math.ceil(bounds.width));
@@ -72,19 +70,18 @@ export function createSoftRevealMaskState(
   const mask = maskObject.createBitmapMask();
   mask.invertAlpha = true;
 
-  return { sprite, bounds, staticReveals, textureKey, texture, context, maskObject, mask };
+  return { sprite, bounds, textureKey, texture, context, maskObject, mask };
 }
 
 export function createHardRevealMaskState(
   scene: Phaser.Scene,
   sprite: Phaser.GameObjects.Image,
   bounds: Phaser.Geom.Rectangle,
-  staticReveals: RevealTarget[],
 ): RevealMaskState {
   const maskShape = scene.add.graphics().setVisible(false);
   const mask = maskShape.createGeometryMask();
   mask.setInvertAlpha(true);
-  return { sprite, bounds, staticReveals, maskShape, mask };
+  return { sprite, bounds, maskShape, mask };
 }
 
 export function redrawRevealMaskState(state: RevealMaskState, reveals: RevealTarget[]): void {

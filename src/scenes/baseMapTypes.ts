@@ -36,6 +36,8 @@ export interface Decor {
   gridY: number;
   texture: string;
   blocks?: boolean;
+  /** When provided, the prop only stands on the map while this returns true. */
+  present?: (flags: ExitFlags) => boolean;
 }
 
 export interface Interactable {
@@ -47,6 +49,9 @@ export interface Interactable {
   sprite?: Phaser.GameObjects.Image;
 }
 
+/** Story flags, as read by exit and NPC conditions. */
+export type ExitFlags = Readonly<Record<string, boolean | number | string>>;
+
 export interface MapExit {
   fromX: number;
   fromY: number;
@@ -56,6 +61,10 @@ export interface MapExit {
   targetSpawnX: number;
   targetSpawnY: number;
   label: string;
+  /** When provided, the exit only opens while this returns true. */
+  requires?: (flags: ExitFlags) => boolean;
+  /** Shown instead of `label` while the exit is closed. */
+  lockedLabel?: string;
 }
 
 export interface SceneSpawnData {

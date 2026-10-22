@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { resetFlags } from '../dialogue/flags';
+import { loadTitleMusic, startTitleMusic } from './titleMusic';
+import { loadBookmark, resetStory } from '../dialogue/progress';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { logGameEvent } from '../logging/gameLogger';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
@@ -21,9 +22,9 @@ type SunriseBackground = {
   sunCenterY: number;
   sunRadius: number;
   horizonY: number;
-  stars: Phaser.GameObjects.Container;
+  stars: Phaser.GameObjects.Image;
   daySky: Phaser.GameObjects.Image;
-  dawnGlow: Phaser.GameObjects.Container;
+  dawnGlow: Phaser.GameObjects.Image;
   dayClouds: Phaser.GameObjects.Container;
   city: TitleCity;
   nightWash: Phaser.GameObjects.Rectangle;
@@ -34,24 +35,12 @@ const normalSunriseDurationMs = 210000;
 const acceleratedSunriseDurationMs = 10000;
 const fixedSunPeakingElapsedMs = 23675;
 const sunTargetYMultiplier = -1.45;
-const titleMusicKey = 'title-background-music';
-const titleMusicPath = 'dawnbreakers.mp3';
-const titleMusicConfig: Phaser.Types.Sound.SoundConfig = {
-  loop: true,
-  volume: 0.45,
-};
 
 export class TitleScene extends Phaser.Scene {
   private titleStartedAtMs = 0;
 
   constructor() {
     super('Title');
-  }
-
-  preload(): void {
-    if (!this.cache.audio.exists(titleMusicKey)) {
-      this.load.audio(titleMusicKey, titleMusicPath);
-    }
   }
 
   create(): void {
@@ -65,6 +54,7 @@ export class TitleScene extends Phaser.Scene {
     const narrow = isNarrowLayout(size);
 
     const sunrise = this.addDawnBackground(width, height);
+    const musicReady = loadTitleMusic(this);
 
     const titleLayer = this.add.container(0, 0);
 
@@ -85,7 +75,8 @@ export class TitleScene extends Phaser.Scene {
       wordWrap: { width: Math.min(safe.width, 720) },
     }, 'center')).setOrigin(0.5);
 
-    const startButton = this.add.text(centerX, safe.y + safe.height * 0.66, t('Start'), localizedStyle({
+    let bookmark = loadBookmark();
+    const startButton = this.add.text(centerX, safe.y + safe.height * 0.66, t(bookmark ? 'Continue' : 'Start'), localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: buttonFont(22, size),
       color: '#e8d9b0',
@@ -95,7 +86,13 @@ export class TitleScene extends Phaser.Scene {
       wordWrap: { width: safe.width },
     }, 'center')).setOrigin(0.5);
 
-    const start = () => this.scene.start('City');
+    const start = () => {
+      if (bookmark && this.scene.get(bookmark.scene)) {
+        this.scene.start(bookmark.scene, { spawnX: bookmark.x, spawnY: bookmark.y });
+      } else {
+        this.scene.start('City');
+      }
+    };
 
     const chapters = this.add.text(centerX, safe.y + safe.height * 0.74, t('Chapters ›'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
@@ -123,7 +120,11 @@ export class TitleScene extends Phaser.Scene {
     this.waitForTitleStart(size, () => {
       this.titleStartedAtMs = performance.now();
       logGameEvent('title start', { width, height });
-      this.startTitleMusic();
+      void musicReady.then(ready => {
+        if (!this.scene.isActive()) return;
+        // Without the recorded score, the synthesized ensemble plays instead.
+        startTitleMusic(this, ready);
+      });
 
       playTitleBookOpening(this, {
         width,
@@ -141,8 +142,10 @@ export class TitleScene extends Phaser.Scene {
           });
           activateTitleTextButton(this, editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
           activateTitleTextButton(this, reset, '#9c8458', '#f3d98a', () => {
-            resetFlags();
+            resetStory();
+            bookmark = undefined;
             reset.setText(t('Reset ✓'));
+            startButton.setText(t('Start'));
           });
         },
       });
@@ -216,11 +219,7 @@ export class TitleScene extends Phaser.Scene {
     const textureHeight = Math.ceil(height);
     const key = `title-${name}-sky-${textureWidth}x${textureHeight}`;
 
-    if (this.textures.exists(key)) {
-      this.textures.remove(key);
-    }
-
-    const texture = this.textures.createCanvas(key, textureWidth, textureHeight);
+    const texture = this.createSizedCanvas(key, textureWidth, textureHeight);
     if (!texture) {
       throw new Error(`Unable to create sky gradient texture: ${key}`);
     }
@@ -283,41 +282,32 @@ export class TitleScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupKeyboard);
   }
 
-  private startTitleMusic(): void {
-    if (!this.cache.audio.exists(titleMusicKey)) {
-      throw new Error(`Missing title music asset: ${titleMusicKey}`);
-    }
-
-    this.sound.pauseOnBlur = false;
-
-    let music = this.sound.get<Phaser.Sound.BaseSound>(titleMusicKey);
-    if (music) {
-      music.stop();
-    } else {
-      music = this.sound.add(titleMusicKey, titleMusicConfig);
-    }
-
-    music.play(titleMusicConfig);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => music.stop());
-  }
-
-  private addStars(width: number, height: number, horizonY: number): Phaser.GameObjects.Container {
-    const stars = this.add.container(0, 0);
+  /**
+   * The dawn star chart, painted once into a canvas texture. As 863
+   * individual Arc shapes it dominated the title screen's frame time.
+   */
+  private addStars(width: number, height: number, horizonY: number): Phaser.GameObjects.Image {
     const widescreenAspect = 16 / 9;
     const horizontalView = Phaser.Math.Clamp((width / height) / widescreenAspect, 0.45, 1);
     const viewLeft = 0.5 - horizontalView / 2;
     const viewRight = 0.5 + horizontalView / 2;
     const scale = Phaser.Math.Clamp(width / 1000, 0.75, 1.35);
+    const textureWidth = Math.ceil(width);
+    const textureHeight = Math.max(1, Math.ceil(horizonY));
+    const key = `title-stars-${textureWidth}x${textureHeight}`;
+    const texture = this.createSizedCanvas(key, textureWidth, textureHeight);
+    if (!texture) throw new Error(`Unable to create star chart texture: ${key}`);
 
+    const ctx = texture.context;
     for (const [x, y, radius, alpha] of SHIRAZ_EAST_STAR_CHART) {
       if (x < viewLeft || x > viewRight) continue;
-
-      const screenX = ((x - viewLeft) / horizontalView) * width;
-      const screenY = (y / 0.98) * horizonY;
-      stars.add(this.add.circle(screenX, screenY, radius * scale, 0xfff3c8, alpha));
+      ctx.fillStyle = `rgba(255, 243, 200, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(((x - viewLeft) / horizontalView) * width, (y / 0.98) * horizonY, radius * scale, 0, Math.PI * 2);
+      ctx.fill();
     }
-
-    return stars;
+    texture.refresh();
+    return this.add.image(0, 0, key).setOrigin(0);
   }
 
   private addSunrise(
@@ -452,17 +442,12 @@ export class TitleScene extends Phaser.Scene {
     sunrise.nightWash.setAlpha(daylight.nightWashAlpha);
   }
 
-  private addHorizonGlow(width: number, height: number, horizonY: number): Phaser.GameObjects.Container {
-    const glow = this.add.container(0, 0);
+  private addHorizonGlow(width: number, height: number, horizonY: number): Phaser.GameObjects.Image {
     const textureWidth = Math.ceil(width);
     const textureHeight = Math.ceil(height);
     const key = `title-horizon-light-${textureWidth}x${textureHeight}`;
 
-    if (this.textures.exists(key)) {
-      this.textures.remove(key);
-    }
-
-    const texture = this.textures.createCanvas(key, textureWidth, textureHeight);
+    const texture = this.createSizedCanvas(key, textureWidth, textureHeight);
     if (!texture) {
       throw new Error(`Unable to create horizon light texture: ${key}`);
     }
@@ -493,18 +478,30 @@ export class TitleScene extends Phaser.Scene {
     radialGlow.addColorStop(1, 'rgba(255, 167, 104, 0)');
     texture.context.fillStyle = radialGlow;
     texture.context.fillRect(0, 0, textureWidth, textureHeight);
+    const ctx = texture.context;
+    ctx.fillStyle = 'rgba(255, 188, 109, 0.16)';
+    ctx.beginPath();
+    ctx.ellipse(width / 2, horizonY + height * 0.04, width * 0.46, height * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(94, 49, 64, 0.24)';
+    ctx.beginPath();
+    ctx.ellipse(width / 2, horizonY + height * 0.12, width * 0.56, height * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
     texture.refresh();
 
-    const g = this.add.graphics();
+    return this.add.image(0, 0, key).setOrigin(0).setDisplaySize(width, height);
+  }
 
-    glow.add(this.add.image(0, 0, key).setOrigin(0).setDisplaySize(width, height));
-    g.fillStyle(0xffbc6d, 0.16);
-    g.fillEllipse(width / 2, horizonY + height * 0.04, width * 0.92, height * 0.16);
-    g.fillStyle(0x5e3140, 0.24);
-    g.fillEllipse(width / 2, horizonY + height * 0.12, width * 1.12, height * 0.12);
-    glow.add(g);
-
-    return glow;
+  /**
+   * Canvas textures here are sized to the screen, so each resize would leave
+   * the previous size behind. Replace any stale copy and free it on shutdown.
+   */
+  private createSizedCanvas(key: string, width: number, height: number): Phaser.Textures.CanvasTexture | null {
+    if (this.textures.exists(key)) this.textures.remove(key);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      if (this.textures.exists(key)) this.textures.remove(key);
+    });
+    return this.textures.createCanvas(key, width, height);
   }
 
   private colorToCss(color: number): string {

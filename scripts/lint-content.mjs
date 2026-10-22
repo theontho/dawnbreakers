@@ -5,9 +5,9 @@
  * Two checks:
  *   1. No em-dash character (U+2014) in user-facing strings. Per AGENTS.md
  *      the AI-slop em-dash is banned in game text writing.
- *   2. No central Bahá'í figure (Bahá'u'lláh, the Báb) as an interactable
- *      character. Story can speak of them, but they must not appear as
- *      NPCs the player can dialogue with.
+ *   2. No central Bahá'í figure (Bahá'u'lláh, the Báb) as a dialogue
+ *      speaker or a "Speak with ..." NPC. Story can speak of them, but they
+ *      must not appear as characters the player can talk to.
  *
  * Existing legacy violations are tracked in `scripts/lint-content-baseline.json`
  * (regenerate with `node scripts/lint-content.mjs --update-baseline`). New
@@ -36,10 +36,15 @@ const literalFields = new Set([
 
 const EM_DASH = '\u2014';
 const CENTRAL_FIGURE_PATTERNS = [
-  /\bBah[áa]'?u'?ll[áa]h\b/i,
+  /\bBah[áa]['’]?u['’]?ll[áa]h\b/i,
   /\bBaha'?u'?llah\b/i,
-  /^The\s+B[áa]b$/i,
-  /^B[áa]b$/i,
+  /(?<!\p{L})B[áa]b(?!\p{L})/iu,
+  /Siyyid\s+ʿ?Al[íi]-Mu[ḥh]ammad/i,
+  /Primal\s+Point/i,
+  /Young\s+Host/i,
+  /Blessed\s+Beauty/i,
+  /Ancient\s+Beauty/i,
+  /[ḤH]usayn-ʿ?Al[íi]/i,
 ];
 
 function walk(dir) {
@@ -141,10 +146,12 @@ for (const file of walk(srcDir)) {
     }
     for (const pattern of CENTRAL_FIGURE_PATTERNS) {
       if (pattern.test(value)) {
-        // Only flag when the string is a `speaker:` or NPC `id:` value, since
-        // narrative text is allowed to MENTION central figures.
+        // Only flag when the string names a speaker or an NPC's interaction
+        // prompt, since narrative text is allowed to MENTION central figures.
         const back = source.slice(Math.max(0, range.start - 80), range.start - 1);
-        if (/\bspeaker\s*[:=]\s*$/.test(back) || /\bid\s*[:=]\s*$/.test(back)) {
+        const isSpeaker = /\bspeaker\s*[:=]\s*$/.test(back);
+        const isNpcPrompt = /\bprompt\s*:\s*$/.test(back) && /^(Speak|Talk) with/i.test(value);
+        if (isSpeaker || isNpcPrompt) {
           issues.push({
             file: relative(root, file),
             line: lineFor(source, range.start),
@@ -155,21 +162,6 @@ for (const file of walk(srcDir)) {
         break;
       }
     }
-  }
-}
-
-// Also: any NpcAction with `kind: 'bab'` (or future `kind: 'bahaullah'`).
-const npcActionRe = /kind\s*:\s*['"](bab|bahaullah)['"]/g;
-for (const file of walk(srcDir)) {
-  const source = readFileSync(file, 'utf8');
-  let match;
-  while ((match = npcActionRe.exec(source))) {
-    issues.push({
-      file: relative(root, file),
-      line: lineFor(source, match.index),
-      kind: 'central-figure-npc-action',
-      snippet: match[0],
-    });
   }
 }
 

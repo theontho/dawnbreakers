@@ -10,6 +10,7 @@ import { ch5IsfahanBridgeMap } from './ch5IsfahanBridge';
 import { ch5MutamidPalaceMap } from './ch5MutamidPalace';
 import { ch6MakuMap } from './ch6Maku';
 import { ch6ChihriqMap } from './ch6Chihriq';
+import { ch7BadashtHamletMap } from './ch7BadashtHamlet';
 import { ch7BadashtCampMap } from './ch7BadashtCamp';
 import { ch8ForestRoadMap } from './ch8ForestRoad';
 import { ch8TabarsiFortMap } from './ch8TabarsiFort';
@@ -17,6 +18,7 @@ import { ch9TabrizSquareMap } from './ch9TabrizSquare';
 import { ch9BarrackRoofMap } from './ch9BarrackRoof';
 import { ch10TehranStreetMap } from './ch10TehranStreet';
 import { ch10SiyahChalMap } from './ch10SiyahChal';
+import { ch10ExileRoadMap } from './ch10ExileRoad';
 
 export type { MapDefinition } from './types';
 
@@ -37,6 +39,7 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch5MutamidPalaceMap,
   ch6MakuMap,
   ch6ChihriqMap,
+  ch7BadashtHamletMap,
   ch7BadashtCampMap,
   ch8ForestRoadMap,
   ch8TabarsiFortMap,
@@ -44,4 +47,5 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch9BarrackRoofMap,
   ch10TehranStreetMap,
   ch10SiyahChalMap,
+  ch10ExileRoadMap,
 ];

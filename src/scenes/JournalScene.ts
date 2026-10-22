@@ -1,47 +1,24 @@
 import Phaser from 'phaser';
+import { playSfx } from '../audio';
+import { chapterByScene, chapters, type Chapter } from '../data/chapters';
+import type { JournalEntry } from '../data/story/types';
 import { getFlags } from '../dialogue/flags';
-import { localizedStyle, rtl, t, textOriginX } from '../i18n';
+import type { FlagState } from '../dialogue/types';
+import { chapterLabel, localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { buttonFont, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
+import { currentObjectiveText } from './mapObjectiveHud';
 
-interface JournalEntry {
-  flag: string;
-  title: string;
-  body: string;
+function entryRevealed(entry: JournalEntry, flags: FlagState): boolean {
+  const value = flags[entry.flag];
+  if (entry.equals !== undefined) return value === entry.equals;
+  return value !== undefined && value !== false;
 }
 
-const ENTRIES: JournalEntry[] = [
-  {
-    flag: 'rumourTraveller',
-    title: 'A Traveller at the Gate',
-    body: 'A fellow seeker from Karbilá speaks of a young Siyyid of this city — modest, of the Prophet\'s line — who has returned from pilgrimage speaking with strange certainty.',
-  },
-  {
-    flag: 'rumourMerchant',
-    title: 'The Cloth Merchant\'s Hint',
-    body: 'A merchant in the bazaar names Him: Siyyid ʿAlí-Muḥammad. His house lies in the quarter north of the mosque. The merchant warns that not all in Shíráz wish Him well.',
-  },
-  {
-    flag: 'rumourMulla',
-    title: 'The Mullá\'s Warning',
-    body: 'The mullá of the great mosque speaks bitterly of the youth — a merchant turned mystic, stirring the foolish with hidden meanings. He counsels you to leave the city.',
-  },
-  {
-    flag: 'rumourNeighbour',
-    title: 'A Neighbour\'s Welcome',
-    body: 'A woman in the Báb\'s own lane speaks gently of Him and His wife Khadíjih-Bagum. "Some come, and never leave the same."',
-  },
-  {
-    flag: 'enteredHouse',
-    title: 'Across the Threshold',
-    body: 'You accepted the Young Host\'s invitation and crossed His threshold. He asked you the sign of the Promised One.',
-  },
-  {
-    flag: 'ending',
-    title: 'Outcome',
-    body: '',
-  },
-];
-
+/**
+ * The seeker's journal: every chapter's revealed entries, newest chapter
+ * first, with the current objective pinned at the top. Scrolls with the
+ * mouse wheel, drag, or arrow keys when it outgrows the panel.
+ */
 export class JournalScene extends Phaser.Scene {
   private fromKey = 'City';
 
@@ -54,6 +31,7 @@ export class JournalScene extends Phaser.Scene {
   }
 
   create(): void {
+    playSfx('journal');
     restartSceneOnResize(this, () => ({ from: this.fromKey }));
 
     const { width, height } = this.scale;
@@ -80,41 +58,124 @@ export class JournalScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => closeButton.setColor('#fff1c0'))
       .on('pointerout',  () => closeButton.setColor('#c9b07a'))
-      .on('pointerdown', close);
+      .on('pointerdown', close)
+      .setDepth(2);
     this.add.text(rtl ? panelX + 24 : panelX + panelW - 24, panelY + 64, t('J / Esc'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, size), color: '#9c8458',
     })).setOrigin(textOriginX(1), 0);
 
-    const flags = getFlags();
-    const known = ENTRIES.filter(e => flags[e.flag] !== undefined && flags[e.flag] !== false);
+    const viewTop = panelY + 90;
+    const viewBottom = panelY + panelH - 16;
+    const content = this.add.container(0, 0);
+    const contentHeight = this.layoutEntries(content, contentX, contentOrigin, viewTop, panelX, panelW, size);
 
-    let y = panelY + 72;
-    if (known.length === 0) {
-      this.add.text(contentX, y, t('You have learned nothing yet. Speak with the people of Shíráz.'), localizedStyle({
-        fontFamily: 'Georgia, serif', fontSize: responsiveFont(18, size, 13), color: '#c9b07a', fontStyle: 'italic',
-        wordWrap: { width: panelW - 48 },
-      })).setOrigin(contentOrigin, 0);
-    } else {
-      for (const e of known) {
-        this.add.text(contentX, y, rtl ? `${t(e.title)} •` : `• ${t(e.title)}`, localizedStyle({
-          fontFamily: 'Georgia, serif', fontSize: responsiveFont(20, size, 14), color: '#f3d98a',
-          wordWrap: { width: panelW - 48 },
-        })).setOrigin(contentOrigin, 0);
-        const body = e.flag === 'ending'
-          ? (flags.ending === 'firstLetter'
-              ? t('You bore witness, and became the first of the Letters of the Living.')
-              : t('You stepped back into the night, your decision deferred.'))
-          : e.body;
-        const bodyX = rtl ? panelX + panelW - 40 : panelX + 40;
-        const bodyText = this.add.text(bodyX, y + 28, t(body), localizedStyle({
-          fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, size, 12), color: '#e8d9b0',
-          wordWrap: { width: panelW - 80 }, lineSpacing: 3,
-        })).setOrigin(contentOrigin, 0);
-        y += 28 + bodyText.height + 18;
-      }
-    }
+    const maskShape = this.make.graphics({ x: 0, y: 0 }, false);
+    maskShape.fillStyle(0xffffff, 1);
+    maskShape.fillRect(panelX, viewTop, panelW, viewBottom - viewTop);
+    content.setMask(maskShape.createGeometryMask());
+    this.enableScrolling(content, Math.max(0, contentHeight - (viewBottom - viewTop)), panelX, viewTop, panelW, viewBottom - viewTop);
 
     this.input.keyboard?.once('keydown-J', close);
     this.input.keyboard?.once('keydown-ESC', close);
+  }
+
+  private layoutEntries(
+    content: Phaser.GameObjects.Container,
+    contentX: number,
+    contentOrigin: number,
+    top: number,
+    panelX: number,
+    panelW: number,
+    size: { width: number; height: number },
+  ): number {
+    const flags = getFlags();
+    const here = chapterByScene(this.fromKey);
+    let y = top;
+    const add = (text: Phaser.GameObjects.Text, gapAfter: number): void => {
+      content.add(text);
+      y += text.height + gapAfter;
+    };
+
+    const objective = currentObjectiveText(here, flags);
+    if (objective) {
+      add(this.add.text(contentX, y, rtl ? `${objective} ◆` : `◆ ${objective}`, localizedStyle({
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(17, size, 13), color: '#fff1c0', fontStyle: 'italic',
+        wordWrap: { width: panelW - 48 },
+      })).setOrigin(contentOrigin, 0), 18);
+    }
+
+    const ordered = here ? [here, ...chapters.filter(c => c !== here).reverse()] : [...chapters].reverse();
+    const sections = ordered
+      .map(chapter => ({ chapter, entries: chapter.story.journal.filter(e => entryRevealed(e, flags)) }))
+      .filter(section => section.entries.length > 0);
+
+    if (sections.length === 0) {
+      add(this.add.text(contentX, y, t('You have learned nothing yet. Speak with the people of Shíráz.'), localizedStyle({
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(18, size, 13), color: '#c9b07a', fontStyle: 'italic',
+        wordWrap: { width: panelW - 48 },
+      })).setOrigin(contentOrigin, 0), 0);
+      return y - top;
+    }
+
+    for (const { chapter, entries } of sections) {
+      add(this.sectionHeading(chapter, contentX, y, contentOrigin, panelW, size), 10);
+      for (const entry of entries) {
+        add(this.add.text(contentX, y, rtl ? `${t(entry.title)} •` : `• ${t(entry.title)}`, localizedStyle({
+          fontFamily: 'Georgia, serif', fontSize: responsiveFont(19, size, 14), color: '#f3d98a',
+          wordWrap: { width: panelW - 48 },
+        })).setOrigin(contentOrigin, 0), 6);
+        const bodyX = rtl ? panelX + panelW - 40 : panelX + 40;
+        add(this.add.text(bodyX, y, t(entry.body), localizedStyle({
+          fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, size, 12), color: '#e8d9b0',
+          wordWrap: { width: panelW - 80 }, lineSpacing: 3,
+        })).setOrigin(contentOrigin, 0), 16);
+      }
+      y += 8;
+    }
+    return y - top;
+  }
+
+  private sectionHeading(
+    chapter: Chapter,
+    x: number,
+    y: number,
+    origin: number,
+    panelW: number,
+    size: { width: number; height: number },
+  ): Phaser.GameObjects.Text {
+    return this.add.text(x, y, `${chapterLabel(chapter.number)} · ${t(chapter.title)}`, localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, size, 11), color: '#9c8458',
+      fontStyle: 'italic', wordWrap: { width: panelW - 48 },
+    })).setOrigin(origin, 0);
+  }
+
+  private enableScrolling(
+    content: Phaser.GameObjects.Container,
+    maxScroll: number,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ): void {
+    if (maxScroll <= 0) return;
+    let scroll = 0;
+    const scrollTo = (value: number): void => {
+      scroll = Phaser.Math.Clamp(value, 0, maxScroll);
+      content.y = -scroll;
+    };
+    this.input.on(Phaser.Input.Events.POINTER_WHEEL, (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
+      scrollTo(scroll + dy * 0.6);
+    });
+    const zone = this.add.zone(x, y, w, h).setOrigin(0).setInteractive();
+    let dragStart: { pointerY: number; scroll: number } | undefined;
+    zone.on('pointerdown', (p: Phaser.Input.Pointer) => { dragStart = { pointerY: p.y, scroll }; });
+    this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {
+      if (dragStart && p.isDown) scrollTo(dragStart.scroll - (p.y - dragStart.pointerY));
+    });
+    this.input.on(Phaser.Input.Events.POINTER_UP, () => { dragStart = undefined; });
+    this.input.keyboard?.on('keydown-DOWN', () => scrollTo(scroll + 60));
+    this.input.keyboard?.on('keydown-UP', () => scrollTo(scroll - 60));
+    this.add.text(x + w / 2, y + h + 2, '⌄', { fontFamily: 'Georgia, serif', fontSize: '18px', color: '#9c8458' })
+      .setOrigin(0.5, 1);
   }
 }

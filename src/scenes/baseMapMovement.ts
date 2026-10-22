@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { t } from '../i18n';
+import { getFlags } from '../dialogue/flags';
 import { TILE_H, type Interactable, type MapExit } from './baseMapTypes';
+import type { GridPoint as PathPoint } from './mapPathing';
 
 interface GridPoint {
   x: number;
@@ -22,6 +24,8 @@ interface MovementState {
     D: Phaser.Input.Keyboard.Key;
   };
   mobileMoveDirection?: MoveDirection;
+  /** Queued click-to-walk steps; consumed one per move, cleared by manual input. */
+  path: PathPoint[];
   playerGrid: GridPoint;
   player: Phaser.GameObjects.Image;
   blocked: boolean[][];
@@ -29,6 +33,10 @@ interface MovementState {
   inBounds: (x: number, y: number) => boolean;
   gridToScreen: (x: number, y: number) => { sx: number; sy: number };
   transitionTo: (exit: MapExit) => void;
+  /** Called as the player steps onto a cell (footsteps). */
+  onStep: (x: number, y: number) => void;
+  /** Called when the player walks into an exit the story has not opened yet. */
+  onLockedExit: () => void;
   updatePlayerRevealMasks: (force?: boolean) => void;
 }
 
@@ -69,6 +77,14 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
     dy = state.mobileMoveDirection.dy;
   }
 
+  if (dx !== 0 || dy !== 0) {
+    state.path.length = 0;
+  } else if (state.path.length > 0) {
+    const next = state.path.shift()!;
+    dx = Math.sign(next.x - state.playerGrid.x);
+    dy = Math.sign(next.y - state.playerGrid.y);
+  }
+
   if (dx === 0 && dy === 0) return state.moveCooldown;
 
   const nx = state.playerGrid.x + dx;
@@ -78,17 +94,25 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
     const exit = state.exits.find(e =>
       e.fromX === state.playerGrid.x && e.fromY === state.playerGrid.y &&
       e.dx === dx && e.dy === dy);
-    if (exit) {
+    if (exit && exitIsOpen(exit)) {
       state.transitionTo(exit);
       return 600;
+    }
+    if (exit) {
+      state.onLockedExit();
+      return 400;
     }
     return state.moveCooldown;
   }
 
-  if (state.blocked[ny]![nx]) return state.moveCooldown;
+  if (state.blocked[ny]![nx]) {
+    state.path.length = 0;
+    return state.moveCooldown;
+  }
 
   state.playerGrid.x = nx;
   state.playerGrid.y = ny;
+  state.onStep(nx, ny);
   const pos = state.gridToScreen(nx, ny);
   scene.tweens.add({
     targets: state.player,
@@ -130,9 +154,13 @@ export function updateInteractionPrompt(state: InteractionPromptState): void {
 
   const onExit = state.exits.find(e =>
     e.fromX === state.playerGrid.x && e.fromY === state.playerGrid.y);
-  const exitText = onExit ? t(onExit.label) : '';
+  const exitText = onExit ? t(exitIsOpen(onExit) ? onExit.label : onExit.lockedLabel ?? onExit.label) : '';
   setTextIfChanged(state.exitPromptText, exitText);
   setVisibleIfChanged(state.exitPromptText, Boolean(onExit));
+}
+
+export function exitIsOpen(exit: MapExit): boolean {
+  return !exit.requires || exit.requires(getFlags());
 }
 
 function setTextIfChanged(text: Phaser.GameObjects.Text, value: string): void {

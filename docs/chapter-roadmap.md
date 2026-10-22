@@ -2,6 +2,14 @@
 
 This plan is the implementation contract for a dialogue-first, 2.5D isometric web RPG based on Nabíl-i-Aʿẓam's *The Dawn-Breakers* (*Maṭáliʿu'l-Anwár*). The game remains non-combat: walking, exploration, conversations, journals, choices, flags, chapter transitions, and reflective historical set pieces.
 
+## Status (October 2026)
+
+All ten chapters are built out: 20 maps of roughly 20 to 32 cells a side with
+per-map ambience, several new people per chapter, objectives and journal
+entries for every chapter, and an epilogue map (`Ch10ExileRoad`). The
+per-chapter build goals below are kept as the original brief. For how to add
+or change content now, see `docs/content-guide.md`.
+
 ## Core structure
 
 - **Engine:** Phaser 3 + TypeScript + Vite.
@@ -40,7 +48,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Historical focus:** Shíráz, evening of 22 May 1844 into dawn of 23 May 1844. Mullá Ḥusayn searches for the Promised One and is received by the Báb.
 
-**Current status:** Implemented; needs fleshing out.
+**Current status:** Fleshed out (October 2026). The declaration is now told from the threshold: the player keeps vigil and hears Mullá Ḥusayn's testimony at dawn.
 
 **Scene keys:** `City`, `HouseQuarter`
 
@@ -90,7 +98,7 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 
 **Historical focus:** The spread of news after the declaration. The seeker leaves Shíráz; conviction must become movement.
 
-**Current status:** Stub implemented; needs fleshing out.
+**Current status:** Fleshed out (October 2026).
 
 **Scene key:** `Road`
 

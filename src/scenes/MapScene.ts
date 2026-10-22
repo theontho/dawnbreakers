@@ -1,7 +1,10 @@
 import Phaser from 'phaser';
-import { dialogues, babTreeFor } from '../data/dialogues';
-import { getFlags } from '../dialogue/flags';
-import type { DialogueTree } from '../dialogue/types';
+import { variantTexture } from '../assets/art';
+import { applyMapAudio, playFootstep, playSfx } from '../audio';
+import { chapterByScene, type Chapter } from '../data/chapters';
+import { dialogues } from '../data/dialogues';
+import { applyEffect, getFlags } from '../dialogue/flags';
+import { saveBookmark } from '../dialogue/progress';
 import { isNarrowLayout, responsiveMargin, restartSceneOnResize } from '../ui/responsive';
 import { gridToIsoScreen } from './isoGeometry';
 import {
@@ -14,66 +17,65 @@ import {
   type TileKind,
 } from './baseMapTypes';
 import { createBaseMapHud } from './baseMapHud';
-import { getBaseMapWorldBounds, renderBaseMapWorld, WORLD_BACKDROP_COLOR } from './baseMapWorld';
+import { getBaseMapWorldBounds, renderBaseMapWorld, renderExitGlows, WORLD_BACKDROP_COLOR, type RenderedWorld } from './baseMapWorld';
+import { handleBaseMapEnding, launchBaseMapDialogue, openBaseMapChapterEnd } from './baseMapFlow';
 import {
-  endingBannerText as getEndingBannerText,
-  handleBaseMapEnding,
-  launchBaseMapDialogue,
-  openBaseMapChapterEnd,
-  showBaseMapBanner,
-} from './baseMapFlow';
-import {
+  exitIsOpen,
   handleBaseMapMovement,
-  nearestInteractable as getNearestInteractable,
+  nearestInteractable,
   updateInteractionPrompt,
 } from './baseMapMovement';
 import {
   applyInteractableHighlightVisibility,
   createInteractableHighlightHandle,
-  destroyInteractableRevealMasks,
+  destroyPlayerRevealMasks,
   setupInteractableHighlights,
-  setupInteractableRevealMasks,
+  setupPlayerRevealMasks,
   updatePlayerRevealMasks,
   type InteractableHighlightHandle,
   type RevealMaskHandle,
 } from './baseMapInteractables';
-import {
-  blockFootprintInto,
-  emptyMap,
-  inBounds as inBoundsOf,
-  makeTileCanvas,
-} from './baseMapTileCanvas';
-import type { MapDefinition, NpcAction, NpcSpec, TileCanvas } from '../data/maps/types';
+import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
+import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
+import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
+import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
+import { findPath, screenToGrid, type GridPoint } from './mapPathing';
+import type { MapDefinition, NpcSpec } from '../data/maps/types';
+import type { FlagState } from '../dialogue/types';
+
+const UI_DEPTH = 10000;
 
 /**
  * Concrete walkable map scene driven by a `MapDefinition` (data). One Phaser
- * scene instance per chapter location. Handles iso rendering, grid movement,
- * NPC interaction, dialogue/journal/restart HUD, and edge-of-map exits.
+ * scene instance per chapter location. Handles iso rendering, grid and
+ * click-to-walk movement, NPC interaction, the HUD, and edge-of-map exits.
  *
  * To add a new map: add a `MapDefinition` under `src/data/maps/` and register
  * it in `src/data/maps/index.ts`. `main.ts` does the rest.
  */
 export class MapScene extends Phaser.Scene {
   private readonly definition: MapDefinition;
-  private readonly mapWidth: number;
-  private readonly mapHeight: number;
-  private readonly sceneTitle: string;
+  private readonly chapter: Chapter | undefined;
 
   private player!: Phaser.GameObjects.Image;
   private playerGrid = { x: 0, y: 0 };
   private map: TileKind[][] = [];
   private blocked: boolean[][] = [];
-  private interactables: Interactable[] = [];
+  private npcs!: MapNpcs;
   private buildings: Building[] = [];
   private decor: Decor[] = [];
   private exits: MapExit[] = [];
   private occludableSprites: Phaser.GameObjects.Image[] = [];
-  private revealMasks: RevealMaskHandle = { states: [] };
+  private conditionalDecor: RenderedWorld['conditionalDecor'] = [];
+  private ambience?: AmbienceHandle;
+  private restoreAudio: () => void = () => {};
+  private revealMasks: RevealMaskHandle = { states: [], candidates: [] };
   private highlights: InteractableHighlightHandle = createInteractableHighlightHandle();
+  private refreshExitGlows: () => void = () => {};
+  private objectiveHud?: ObjectiveHud;
 
   private promptText!: Phaser.GameObjects.Text;
   private exitPromptText!: Phaser.GameObjects.Text;
-  private banner!: Phaser.GameObjects.Text;
   private mobileControls?: Phaser.GameObjects.Container;
   private endingShown = false;
 
@@ -93,6 +95,9 @@ export class MapScene extends Phaser.Scene {
   private mobileMoveDirection?: { dx: number; dy: number };
   private mobileActionButton?: Phaser.GameObjects.Rectangle;
   private mobileActionLabel?: Phaser.GameObjects.Text;
+  private walkPath: GridPoint[] = [];
+  /** NPC the player clicked; interact once the walk ends beside it. */
+  private walkTarget?: Interactable;
 
   private originX = 0;
   private originY = 90;
@@ -100,9 +105,7 @@ export class MapScene extends Phaser.Scene {
   constructor(definition: MapDefinition) {
     super(definition.key);
     this.definition = definition;
-    this.mapWidth = definition.width;
-    this.mapHeight = definition.height;
-    this.sceneTitle = definition.title;
+    this.chapter = chapterByScene(definition.key);
   }
 
   init(data: SceneSpawnData): void {
@@ -110,14 +113,19 @@ export class MapScene extends Phaser.Scene {
     this.playerGrid = { x: data.spawnX ?? spawn.x, y: data.spawnY ?? spawn.y };
     this.map = [];
     this.blocked = [];
-    this.interactables = [];
     this.buildings = [];
     this.decor = [];
     this.exits = [];
     this.occludableSprites = [];
-    this.revealMasks = { states: [] };
+    this.conditionalDecor = [];
+    this.ambience = undefined;
+    this.revealMasks = { states: [], candidates: [] };
     this.highlights = createInteractableHighlightHandle();
+    this.objectiveHud = undefined;
     this.endingShown = false;
+    this.walkPath = [];
+    this.walkTarget = undefined;
+    this.moveCooldown = 0;
   }
 
   create(): void {
@@ -131,110 +139,96 @@ export class MapScene extends Phaser.Scene {
     this.originX = width / 2;
     this.originY = responsiveMargin(size) + (isNarrowLayout(size) ? 62 : 58);
 
-    this.initEmptyMap();
-    this.definition.build(this.tileCanvas());
+    this.buildWorldData();
     this.cameras.main.setBackgroundColor(WORLD_BACKDROP_COLOR);
-    this.placeBuildings();
-    this.placeDecor();
-    this.installExits();
-    this.drawWorld();
-    this.spawnNPCs();
+    const world = renderBaseMapWorld(this, this.worldState());
+    this.occludableSprites = world.occludableSprites;
+    this.conditionalDecor = world.conditionalDecor;
+    this.refreshDecor(getFlags());
+    this.refreshExitGlows = renderExitGlows(this, this.worldState());
+    this.npcs = placeMapNpcs(
+      this,
+      this.definition.npcs,
+      this.blocked,
+      (gx, gy) => this.gridToScreen(gx, gy),
+      spec => this.talkTo(spec),
+      getFlags(),
+      this.occludableSprites,
+    );
     this.spawnPlayer();
-    this.setupInteractableRevealMask();
-    this.setupInteractableHighlights();
+    this.applyAmbience(getFlags());
+    this.revealMasks = setupPlayerRevealMasks(this, this.occludableSprites, this.player, this.scene.key);
+    setupInteractableHighlights(
+      this, this.npcs.interactables, this.exits, (gx, gy) => this.gridToScreen(gx, gy), this.highlights,
+    );
     this.setupInput();
     this.setupHUD(width, height);
     this.setupCameraFollow(width, height);
     this.events.on(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
-      this.destroyInteractableRevealMasks();
+      destroyPlayerRevealMasks(this.revealMasks, this, this.occludableSprites);
     });
 
     this.cameras.main.fadeIn(300, 0, 0, 0);
+    this.bookmark();
   }
 
-  // ---------- map ----------
+  private bookmark(): void {
+    saveBookmark({ scene: this.scene.key, x: this.playerGrid.x, y: this.playerGrid.y });
+  }
 
-  private initEmptyMap(): void {
-    const grids = emptyMap(this.mapWidth, this.mapHeight);
+  // ---------- world ----------
+
+  private buildWorldData(): void {
+    const { width, height } = this.definition;
+    const grids = emptyMap(width, height);
     this.map = grids.map;
     this.blocked = grids.blocked;
-  }
+    this.definition.build(makeTileCanvas(width, height, this.map, this.blocked));
 
-  /** Adapter exposed to `MapDefinition.build` for tile painting. */
-  private tileCanvas(): TileCanvas {
-    return makeTileCanvas(this.mapWidth, this.mapHeight, this.map, this.blocked);
-  }
-
-  private blockFootprint(x: number, y: number, w: number, h: number): void {
-    blockFootprintInto(this.blocked, this.mapWidth, this.mapHeight, x, y, w, h);
-  }
-
-  private blockTile(x: number, y: number): void {
-    if (this.inBounds(x, y)) this.blocked[y]![x] = true;
-  }
-
-  private inBounds(x: number, y: number): boolean {
-    return inBoundsOf(this.mapWidth, this.mapHeight, x, y);
-  }
-
-  // ---------- placements from definition ----------
-
-  private placeBuildings(): void {
     for (const spec of this.definition.buildings) {
-      this.buildings.push({
-        gridX: spec.gridX,
-        gridY: spec.gridY,
-        w: spec.w,
-        h: spec.h,
-        texture: spec.texture,
-      });
-      if (spec.blocks !== false) {
-        this.blockFootprint(spec.gridX, spec.gridY, spec.w, spec.h);
+      this.buildings.push({ gridX: spec.gridX, gridY: spec.gridY, w: spec.w, h: spec.h, texture: variantTexture(spec.texture, spec.gridX, spec.gridY) });
+      if (spec.blocks !== false) blockFootprintInto(this.blocked, width, height, spec.gridX, spec.gridY, spec.w, spec.h);
+    }
+    for (const spec of this.definition.decor) {
+      this.decor.push({ ...spec, texture: variantTexture(spec.texture, spec.gridX, spec.gridY) });
+      if (spec.blocks && !spec.present && inBounds(width, height, spec.gridX, spec.gridY)) {
+        this.blocked[spec.gridY]![spec.gridX] = true;
       }
     }
+    this.exits = this.definition.exits.map(exit => ({ ...exit }));
   }
 
-  private placeDecor(): void {
-    for (const spec of this.definition.decor) {
-      this.decor.push({ ...spec });
-      if (spec.blocks) this.blockTile(spec.gridX, spec.gridY);
+  /** Show or hide flag-dependent props, keeping their cells' blocking in step. */
+  private refreshDecor(flags: FlagState): void {
+    for (const { item, sprite } of this.conditionalDecor) {
+      const here = item.present!(flags);
+      sprite.setVisible(here);
+      if (item.blocks) this.blocked[item.gridY]![item.gridX] = here;
     }
   }
 
-  private installExits(): void {
-    for (const exit of this.definition.exits) this.exits.push({ ...exit });
-  }
-
-  private spawnNPCs(): void {
-    for (const npc of this.definition.npcs) this.addNPC(npc);
-  }
-
-  // ---------- drawing ----------
-
-  private drawWorld(): void {
-    this.occludableSprites = renderBaseMapWorld(this, this.worldState());
+  private applyAmbience(flags: FlagState): void {
+    const { ambience } = this.definition;
+    if (this.ambience && typeof ambience !== 'function') return;
+    this.ambience?.destroy();
+    const resolved = typeof ambience === 'function' ? ambience(flags) : ambience;
+    const decor = this.decor.filter(item => !item.present || item.present(flags));
+    this.ambience = createMapAmbience(this, resolved, decor, this.definition, (gx, gy) => this.gridToScreen(gx, gy));
+    const fire = decor.some(item => emitsFire(item.texture));
+    this.restoreAudio = () => applyMapAudio(resolved, fire);
+    this.restoreAudio();
   }
 
   private gridToScreen(gx: number, gy: number): { sx: number; sy: number } {
     return gridToIsoScreen(this.originX, this.originY, gx, gy);
   }
 
-  private setupCameraFollow(width: number, height: number): void {
-    const bounds = getBaseMapWorldBounds(this, this.worldState(), this.player, this.interactables, width, height);
-    this.cameras.main
-      .setRoundPixels(true)
-      .setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
-
-    this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
-    this.cameras.main.centerOn(this.player.x, this.player.y);
-  }
-
   private worldState() {
     return {
-      mapWidth: this.mapWidth,
-      mapHeight: this.mapHeight,
+      mapWidth: this.definition.width,
+      mapHeight: this.definition.height,
       originX: this.originX,
       originY: this.originY,
       map: this.map,
@@ -245,67 +239,14 @@ export class MapScene extends Phaser.Scene {
     };
   }
 
-  // ---------- NPCs ----------
+  private setupCameraFollow(width: number, height: number): void {
+    const bounds = getBaseMapWorldBounds(this, this.worldState(), this.player, this.npcs.interactables, width, height);
+    this.cameras.main
+      .setRoundPixels(true)
+      .setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
 
-  private addNPC(spec: NpcSpec): void {
-    const pos = this.gridToScreen(spec.gridX, spec.gridY);
-    const sprite = this.add.image(pos.sx, pos.sy + TILE_H / 2, spec.texture)
-      .setOrigin(0.5, 1).setDepth(pos.sy + 1);
-    this.blocked[spec.gridY]![spec.gridX] = true;
-    const action = this.resolveNpcAction(spec.action);
-    this.interactables.push({
-      gridX: spec.gridX,
-      gridY: spec.gridY,
-      texture: spec.texture,
-      prompt: spec.prompt,
-      sprite,
-      action,
-    });
-  }
-
-  private resolveNpcAction(action: NpcAction): () => void {
-    switch (action.kind) {
-      case 'dialogue': return () => this.startSimpleDialogue(action.id);
-      case 'bab': return () => this.startBabDialogue();
-    }
-  }
-
-  private setupInteractableRevealMask(): void {
-    this.revealMasks = setupInteractableRevealMasks(
-      this,
-      this.occludableSprites,
-      this.interactables,
-      this.player,
-      this.scene.key,
-    );
-  }
-
-  private updatePlayerRevealMasks(force = false): void {
-    updatePlayerRevealMasks(this.revealMasks, this.player, force);
-  }
-
-  private destroyInteractableRevealMasks(): void {
-    destroyInteractableRevealMasks(this.revealMasks, this, this.occludableSprites);
-  }
-
-  private setupInteractableHighlights(): void {
-    setupInteractableHighlights(
-      this,
-      this.interactables,
-      this.exits,
-      (gx, gy) => this.gridToScreen(gx, gy),
-      this.highlights,
-    );
-  }
-
-  private toggleInteractableHighlights(): void {
-    this.highlights.toggled = !this.highlights.toggled;
-    applyInteractableHighlightVisibility(this.highlights);
-  }
-
-  private holdInteractableHighlights(held: boolean): void {
-    this.highlights.held = held;
-    applyInteractableHighlightVisibility(this.highlights);
+    this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
+    this.cameras.main.centerOn(this.player.x, this.player.y);
   }
 
   private spawnPlayer(): void {
@@ -316,78 +257,94 @@ export class MapScene extends Phaser.Scene {
 
   // ---------- dialogue ----------
 
-  private startSimpleDialogue(id: string): void {
+  private talkTo(spec: NpcSpec): void {
+    const id = resolveNpcDialogue(spec, getFlags());
     const tree = dialogues[id];
-    if (tree) this.startDialogueTree(tree);
-  }
-
-  private startBabDialogue(): void {
-    this.startDialogueTree(babTreeFor(getFlags()));
-  }
-
-  private startDialogueTree(tree: DialogueTree): void {
+    if (!tree) {
+      console.warn(`Unknown dialogue "${id}" on ${this.scene.key}`);
+      return;
+    }
+    applyEffect({ set: { [talkedFlag(id)]: true } });
+    this.walkPath.length = 0;
+    this.walkTarget = undefined;
     launchBaseMapDialogue(
       this,
       tree,
       visible => this.setMobileControlsVisible(visible),
-      () => this.handleEnding(),
+      () => this.afterDialogue(),
     );
   }
 
-  private handleEnding(): void {
-    this.endingShown = handleBaseMapEnding(
-      this,
-      this.endingShown,
-      (text, opts) => this.showBanner(text, opts),
-      chapterId => this.openChapterEnd(chapterId),
-    );
+  /** Flags may have changed: refresh everything that reads them. */
+  private afterDialogue(): void {
+    this.bookmark();
+    const flags = getFlags();
+    this.refreshDecor(flags);
+    this.npcs.refresh(flags);
+    this.applyAmbience(flags);
+    this.refreshExitGlows();
+    this.objectiveHud?.update(flags);
+    this.endingShown = handleBaseMapEnding(this, this.endingShown, chapterId => {
+      openBaseMapChapterEnd(this, chapterId, visible => this.setMobileControlsVisible(visible));
+    });
   }
 
-  private openChapterEnd(chapterId: string): void {
-    openBaseMapChapterEnd(this, chapterId, visible => this.setMobileControlsVisible(visible));
-  }
-
-  private showBanner(text: string, opts: { holdMs?: number; onComplete?: () => void } = {}): void {
-    showBaseMapBanner(this, this.banner, text, opts);
-  }
-
-  // unused locally but kept for parity with previous helper API
-  protected endingBannerText(ending: string): string {
-    return getEndingBannerText(ending);
-  }
-
-  // ---------- HUD ----------
+  // ---------- input & HUD ----------
 
   private setupInput(): void {
-    this.cursors = this.input.keyboard!.createCursorKeys();
-    this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-    this.journalKey  = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.J);
-    this.highlightKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-    this.tabHighlightKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.TAB, true);
-    this.settingsKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    const keyboard = this.input.keyboard!;
+    const { KeyCodes } = Phaser.Input.Keyboard;
+    this.cursors = keyboard.createCursorKeys();
+    this.interactKey = keyboard.addKey(KeyCodes.E);
+    this.journalKey = keyboard.addKey(KeyCodes.J);
+    this.highlightKey = keyboard.addKey(KeyCodes.H);
+    this.tabHighlightKey = keyboard.addKey(KeyCodes.TAB, true);
+    this.settingsKey = keyboard.addKey(KeyCodes.ESC);
     this.wasdKeys = {
-      W: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      A: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      S: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      D: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+      W: keyboard.addKey(KeyCodes.W),
+      A: keyboard.addKey(KeyCodes.A),
+      S: keyboard.addKey(KeyCodes.S),
+      D: keyboard.addKey(KeyCodes.D),
     };
+    this.input.on(Phaser.Input.Events.POINTER_DOWN, this.handleWorldPointer, this);
+  }
+
+  /** Click or tap on the ground: walk there, and talk if it was a person. */
+  private handleWorldPointer(pointer: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]): void {
+    if (over.length > 0) return; // a HUD button took it
+    const target = screenToGrid(this.originX, this.originY, pointer.worldX, pointer.worldY);
+    const npc = this.npcs.interactables.find(i => i.gridX === target.x && i.gridY === target.y);
+    const exit = this.exits.find(e => e.fromX + e.dx === target.x && e.fromY + e.dy === target.y && exitIsOpen(e));
+    const goal = exit ? { x: exit.fromX, y: exit.fromY } : target;
+    const path = findPath(this.blocked, this.playerGrid, goal);
+    if (!path) return;
+    if (exit) path.push(target);
+    this.walkPath = path;
+    this.walkTarget = npc;
+    if (npc && path.length === 0) this.triggerInteraction();
   }
 
   private setupHUD(width: number, height: number): void {
-    const hud = createBaseMapHud(this, width, height, this.sceneTitle, {
-      openSettings: () => this.openSettings(),
-      openJournal: () => this.openJournal(),
-      toggleInteractableHighlights: () => this.toggleInteractableHighlights(),
+    const hud = createBaseMapHud(this, width, height, this.definition.title, {
+      openSettings: () => this.openOverlay('Settings', { spawnX: this.playerGrid.x, spawnY: this.playerGrid.y }),
+      openJournal: () => this.openOverlay('Journal', {}),
+      toggleInteractableHighlights: () => this.toggleHighlights(),
       triggerInteraction: () => this.triggerInteraction(),
       setMobileMoveDirection: direction => { this.mobileMoveDirection = direction; },
       getMobileMoveDirection: () => this.mobileMoveDirection,
     });
     this.promptText = hud.promptText;
     this.exitPromptText = hud.exitPromptText;
-    this.banner = hud.banner;
     this.mobileControls = hud.mobileControls;
     this.mobileActionButton = hud.mobileActionButton;
     this.mobileActionLabel = hud.mobileActionLabel;
+    this.objectiveHud = createObjectiveHud(this, this.chapter, hud.titleText.getBounds().bottom, UI_DEPTH);
+    this.objectiveHud.update(getFlags());
+  }
+
+  private toggleHighlights(): void {
+    this.highlights.toggled = !this.highlights.toggled;
+    applyInteractableHighlightVisibility(this.highlights);
   }
 
   private setMobileControlsVisible(visible: boolean): void {
@@ -397,23 +354,15 @@ export class MapScene extends Phaser.Scene {
 
   private handleSceneResume(): void {
     this.setMobileControlsVisible(true);
+    // An overlay (the chapter-end card) may have changed the score.
+    this.restoreAudio();
   }
 
-  private openJournal(): void {
-    if (this.scene.isActive('Journal')) return;
+  private openOverlay(key: 'Journal' | 'Settings', data: object): void {
+    if (this.scene.isActive(key)) return;
     this.setMobileControlsVisible(false);
-    this.scene.launch('Journal', { from: this.scene.key });
-    this.scene.pause();
-  }
-
-  private openSettings(): void {
-    if (this.scene.isActive('Settings')) return;
-    this.setMobileControlsVisible(false);
-    this.scene.launch('Settings', {
-      from: this.scene.key,
-      spawnX: this.playerGrid.x,
-      spawnY: this.playerGrid.y,
-    });
+    this.walkPath.length = 0;
+    this.scene.launch(key, { from: this.scene.key, ...data });
     this.scene.pause();
   }
 
@@ -422,50 +371,9 @@ export class MapScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     this.moveCooldown -= delta;
     this.handleMovement();
-    this.updatePlayerRevealMasks();
-    this.handleInteractionPrompt();
-    if (Phaser.Input.Keyboard.JustDown(this.journalKey)) this.openJournal();
-    if (Phaser.Input.Keyboard.JustDown(this.highlightKey)) this.toggleInteractableHighlights();
-    if (Phaser.Input.Keyboard.JustDown(this.tabHighlightKey)) this.holdInteractableHighlights(true);
-    if (Phaser.Input.Keyboard.JustUp(this.tabHighlightKey)) this.holdInteractableHighlights(false);
-    if (Phaser.Input.Keyboard.JustDown(this.settingsKey)) this.openSettings();
-  }
-
-  private handleMovement(): void {
-    this.moveCooldown = handleBaseMapMovement(this, {
-      moveCooldown: this.moveCooldown,
-      cursors: this.cursors,
-      wasdKeys: this.wasdKeys,
-      mobileMoveDirection: this.mobileMoveDirection,
-      playerGrid: this.playerGrid,
-      player: this.player,
-      blocked: this.blocked,
-      exits: this.exits,
-      inBounds: (x, y) => this.inBounds(x, y),
-      gridToScreen: (x, y) => this.gridToScreen(x, y),
-      transitionTo: exit => this.transitionTo(exit),
-      updatePlayerRevealMasks: force => this.updatePlayerRevealMasks(force),
-    });
-  }
-
-  private transitionTo(exit: MapExit): void {
-    this.moveCooldown = 600;
-    this.cameras.main.fadeOut(280, 0, 0, 0);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.start(exit.targetScene, {
-        spawnX: exit.targetSpawnX,
-        spawnY: exit.targetSpawnY,
-      });
-    });
-  }
-
-  private nearestInteractable(): Interactable | undefined {
-    return getNearestInteractable(this.interactables, this.playerGrid);
-  }
-
-  private handleInteractionPrompt(): void {
+    updatePlayerRevealMasks(this.revealMasks, this.player);
     updateInteractionPrompt({
-      interactables: this.interactables,
+      interactables: this.npcs.interactables,
       playerGrid: this.playerGrid,
       exits: this.exits,
       promptText: this.promptText,
@@ -475,9 +383,66 @@ export class MapScene extends Phaser.Scene {
       interactKey: this.interactKey,
       triggerInteraction: () => this.triggerInteraction(),
     });
+    const { JustDown, JustUp } = Phaser.Input.Keyboard;
+    if (JustDown(this.journalKey)) this.openOverlay('Journal', {});
+    if (JustDown(this.highlightKey)) this.toggleHighlights();
+    if (JustDown(this.tabHighlightKey)) this.holdHighlights(true);
+    if (JustUp(this.tabHighlightKey)) this.holdHighlights(false);
+    if (JustDown(this.settingsKey)) this.openOverlay('Settings', { spawnX: this.playerGrid.x, spawnY: this.playerGrid.y });
+  }
+
+  private holdHighlights(held: boolean): void {
+    this.highlights.held = held;
+    applyInteractableHighlightVisibility(this.highlights);
+  }
+
+  private handleMovement(): void {
+    const wasWalking = this.walkPath.length > 0;
+    this.moveCooldown = handleBaseMapMovement(this, {
+      moveCooldown: this.moveCooldown,
+      cursors: this.cursors,
+      wasdKeys: this.wasdKeys,
+      mobileMoveDirection: this.mobileMoveDirection,
+      path: this.walkPath,
+      playerGrid: this.playerGrid,
+      player: this.player,
+      blocked: this.blocked,
+      exits: this.exits,
+      inBounds: (x, y) => inBounds(this.definition.width, this.definition.height, x, y),
+      gridToScreen: (x, y) => this.gridToScreen(x, y),
+      transitionTo: exit => this.transitionTo(exit),
+      onStep: (x, y) => playFootstep(this.map[y]![x]!),
+      onLockedExit: () => playSfx('locked'),
+      updatePlayerRevealMasks: force => updatePlayerRevealMasks(this.revealMasks, this.player, force),
+    });
+    if (wasWalking && this.walkPath.length === 0) {
+      const target = this.walkTarget;
+      this.walkTarget = undefined;
+      // Wait for the last step's tween to land before opening the dialogue.
+      if (target) {
+        this.time.delayedCall(Math.max(0, this.moveCooldown), () => {
+          const dx = Math.abs(target.gridX - this.playerGrid.x);
+          const dy = Math.abs(target.gridY - this.playerGrid.y);
+          if (dx + dy === 1) target.action();
+        });
+      }
+    }
+  }
+
+  private transitionTo(exit: MapExit): void {
+    this.moveCooldown = 600;
+    this.walkPath.length = 0;
+    playSfx('exit');
+    this.cameras.main.fadeOut(280, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.start(exit.targetScene, {
+        spawnX: exit.targetSpawnX,
+        spawnY: exit.targetSpawnY,
+      });
+    });
   }
 
   private triggerInteraction(): void {
-    this.nearestInteractable()?.action();
+    nearestInteractable(this.npcs.interactables, this.playerGrid)?.action();
   }
 }
