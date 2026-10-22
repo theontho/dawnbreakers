@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { CharacterTextureOptions } from '../scenes/characterTexture';
 import type { TileKind } from '../scenes/baseMapTypes';
 import { CHAPTER_OBJECTS } from './chapters';
+import { TOWN_OBJECTS } from './townObjects';
 import type { MapAssetCategory, MapAssetCategoryId, MapObjectDefinition, MapObjectId, MapTileDefinition } from './mapAssetTypes';
 
 export const TILE_OPTIONS: MapTileDefinition[] = [
@@ -50,7 +51,7 @@ const BASE_OBJECTS: MapObjectDefinition[] = [
 ];
 
 /** Every placeable object: shared base pieces first, then each chapter's own set. */
-export const MAP_OBJECTS: MapObjectDefinition[] = [...BASE_OBJECTS, ...CHAPTER_OBJECTS];
+export const MAP_OBJECTS: MapObjectDefinition[] = [...BASE_OBJECTS, ...TOWN_OBJECTS, ...CHAPTER_OBJECTS];
 
 export const MAP_OBJECT_BY_ID: ReadonlyMap<MapObjectId, MapObjectDefinition> =
   new Map(MAP_OBJECTS.map(def => [def.id, def]));

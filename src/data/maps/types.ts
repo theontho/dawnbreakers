@@ -42,6 +42,12 @@ export interface MapDefinition {
    * edge exit back outside.
    */
   interior?: boolean;
+  /**
+   * The scale pilot: people at full size (40 px, 1.75 m) among true-scale
+   * buildings (`src/assets/townObjects.ts`), with faster walking. Maps not
+   * yet rebuilt at true scale draw people smaller to fit their small houses.
+   */
+  trueScale?: boolean;
 }
 
 /**

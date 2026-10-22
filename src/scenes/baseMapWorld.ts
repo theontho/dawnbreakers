@@ -23,6 +23,7 @@ interface BaseMapWorldState {
   originY: number;
   map: TileKind[][];
   interior?: boolean;
+  trueScale?: boolean;
   blocked: boolean[][];
   buildings: Building[];
   decor: Decor[];
@@ -60,7 +61,7 @@ export function renderBaseMapWorld(
     const nudge = naturalOffset(item.texture, item.gridX, item.gridY);
     const sprite = scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture)
       .setOrigin(0.5, 1)
-      .setScale(figureScale(item.texture))
+      .setScale(figureScale(item.texture, !!state.trueScale))
       .setDepth(pos.sy + 1 + nudge.y);
     if (item.swing) swingFromTop(scene, sprite, item.swing);
     occludableSprites.push(sprite);

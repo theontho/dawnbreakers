@@ -38,7 +38,8 @@ import {
 import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
 import { connectWalls } from './mapWalls';
 import { placeMapDoors, type MapDoors } from './mapDoors';
-import { PERSON_SCALE } from './figureScale';
+import { setupMapCameras, type MapCameras } from './mapCamera';
+import { personScale } from './figureScale';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
@@ -72,6 +73,7 @@ export class MapScene extends Phaser.Scene {
   private conditionalDecor: RenderedWorld['conditionalDecor'] = [];
   private ambience?: AmbienceHandle;
   private doors!: MapDoors;
+  private mapCameras!: MapCameras;
   private restoreAudio: () => void = () => {};
   private revealMasks: RevealMaskHandle = { states: [], candidates: [] };
   private highlights: InteractableHighlightHandle = createInteractableHighlightHandle();
@@ -167,6 +169,7 @@ export class MapScene extends Phaser.Scene {
       getFlags(),
       this.occludableSprites,
       this.doors.interactables,
+      !!this.definition.trueScale,
     );
     this.spawnPlayer();
     this.applyAmbience(getFlags());
@@ -177,6 +180,7 @@ export class MapScene extends Phaser.Scene {
     this.setupInput();
     this.setupHUD(width, height);
     this.setupCameraFollow(width, height);
+    this.mapCameras = setupMapCameras(this, !!this.definition.trueScale);
     this.events.on(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
@@ -247,6 +251,7 @@ export class MapScene extends Phaser.Scene {
       originY: this.originY,
       map: this.map,
       interior: this.definition.interior,
+      trueScale: this.definition.trueScale,
       blocked: this.blocked,
       buildings: this.buildings,
       decor: this.decor,
@@ -267,7 +272,7 @@ export class MapScene extends Phaser.Scene {
   private spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
     this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, 'player')
-      .setOrigin(0.5, 1).setScale(PERSON_SCALE).setDepth(pos.sy + 2);
+      .setOrigin(0.5, 1).setScale(personScale(!!this.definition.trueScale)).setDepth(pos.sy + 2);
   }
 
   // ---------- dialogue ----------
@@ -328,7 +333,8 @@ export class MapScene extends Phaser.Scene {
   /** Click or tap on the ground: walk there, and talk if it was a person. */
   private handleWorldPointer(pointer: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]): void {
     if (over.length > 0) return; // a HUD button took it
-    const target = screenToGrid(this.originX, this.originY, pointer.worldX, pointer.worldY);
+    const at = this.mapCameras.worldPoint(pointer);
+    const target = screenToGrid(this.originX, this.originY, at.x, at.y);
     const npc = this.npcs.interactables.find(i => i.gridX === target.x && i.gridY === target.y);
     const exit = this.exits.find(e => e.fromX + e.dx === target.x && e.fromY + e.dy === target.y && exitIsOpen(e));
     const goal = exit ? { x: exit.fromX, y: exit.fromY } : target;
@@ -385,6 +391,7 @@ export class MapScene extends Phaser.Scene {
   // ---------- update / movement ----------
 
   update(_time: number, delta: number): void {
+    this.mapCameras.update();
     this.moveCooldown -= delta;
     this.handleMovement();
     updatePlayerRevealMasks(this.revealMasks, this.player);
@@ -428,6 +435,8 @@ export class MapScene extends Phaser.Scene {
       gridToScreen: (x, y) => this.gridToScreen(x, y),
       transitionTo: exit => this.transitionTo(exit),
       onStep: (x, y) => playFootstep(this.map[y]![x]!),
+      // True-scale cells are smaller relative to a stride, so steps come quicker.
+      stepMs: this.definition.trueScale ? 105 : 150,
       onLockedExit: () => playSfx('locked'),
       updatePlayerRevealMasks: force => updatePlayerRevealMasks(this.revealMasks, this.player, force),
     });

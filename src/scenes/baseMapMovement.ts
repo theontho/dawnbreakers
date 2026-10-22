@@ -33,6 +33,8 @@ interface MovementState {
   inBounds: (x: number, y: number) => boolean;
   gridToScreen: (x: number, y: number) => { sx: number; sy: number };
   transitionTo: (exit: MapExit) => void;
+  /** Time per step, in milliseconds. */
+  stepMs: number;
   /** Called as the player steps onto a cell (footsteps). */
   onStep: (x: number, y: number) => void;
   /** Called when the player walks into an exit the story has not opened yet. */
@@ -117,13 +119,13 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
   scene.tweens.add({
     targets: state.player,
     x: pos.sx, y: pos.sy + TILE_H / 2,
-    duration: 140, ease: 'Sine.easeInOut',
+    duration: state.stepMs - 10, ease: 'Sine.easeInOut',
     onUpdate: () => {
       state.player.setDepth(state.player.y + 2);
     },
     onComplete: () => state.updatePlayerRevealMasks(true),
   });
-  return 150;
+  return state.stepMs;
 }
 
 export function nearestInteractable(

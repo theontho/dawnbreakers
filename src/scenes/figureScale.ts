@@ -1,13 +1,16 @@
 import { MAP_OBJECTS } from '../assets/mapAssetLibrary';
 
 /**
- * People (and the animals and crowds painted at their size) are drawn at
- * this scale on the maps. A figure then stands about 30 px tall, which puts
- * a cell at roughly 1.9 m: a person fits a 33 px door and a 64 px wall reads
- * as a real storey. Textures are painted larger and scaled down, so they
- * stay crisp.
+ * People (and the animals and crowds painted at their size) are painted
+ * 40 px tall, a true 1.75 m on true-scale maps. Maps not yet rebuilt at true
+ * scale (`MapDefinition.trueScale`) have small houses, so there people are
+ * drawn at 0.75 to fit their doors. Textures stay crisp either way.
  */
-export const PERSON_SCALE = 0.75;
+const SMALL_WORLD_SCALE = 0.75;
+
+export function personScale(trueScale: boolean): number {
+  return trueScale ? 1 : SMALL_WORLD_SCALE;
+}
 
 const PEOPLE_SIZED = new Set(
   MAP_OBJECTS
@@ -16,6 +19,6 @@ const PEOPLE_SIZED = new Set(
 );
 
 /** Display scale for a map texture (variant suffixes ignored). */
-export function figureScale(texture: string): number {
-  return PEOPLE_SIZED.has(texture.split('~')[0]!) ? PERSON_SCALE : 1;
+export function figureScale(texture: string, trueScale: boolean): number {
+  return PEOPLE_SIZED.has(texture.split('~')[0]!) ? personScale(trueScale) : 1;
 }
