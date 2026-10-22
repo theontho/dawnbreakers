@@ -23,6 +23,7 @@
     "skyrewind:cpp:check": "npm run skyrewind:catalog && npm run skyrewind:cpp:build && native/skyrewind-cpp/build/skyrewind_cpp --check && native/skyrewind-cpp/build/skyrewind_cpp --shader-check",
     "skyrewind:cpp:run": "npm run skyrewind:catalog && npm run skyrewind:cpp:build && native/skyrewind-cpp/build/skyrewind_cpp",
     "smoke": "node scripts/smoke-scenes.mjs",
+    "reap": "node scripts/reap.mjs",
     "gallery": "node scripts/art-gallery.mjs",
     "render:music": "node scripts/render-music.mjs",
     "postinstall": "patch-package",

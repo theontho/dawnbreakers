@@ -22,7 +22,7 @@ const SOFTWARE_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']
  * @param {{ gpu?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
  */
 export async function openGame(options = {}) {
-  const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null } });
+  const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null, open: false } });
   await server.listen();
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',

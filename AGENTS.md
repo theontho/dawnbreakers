@@ -30,9 +30,12 @@ Do not perform actions that could cause irreversible data loss.
 
 ## Processes & Memory
 
-- Leave nothing running when you finish: stop any dev server, browser or watcher you started (do not detach them with `nohup` or `&` and walk away). Before reporting done, check with `ps` that no Vite server, Node script or headless Chromium of yours is still alive.
-- Use the shared harness (`scripts/lib/gameBrowser.mjs`, used by `npm run smoke`, `gallery`, `look`) for headless checks: it closes the browser and server even on errors.
-- Render headless browsers in software by default; use the real GPU (`--gpu`) only to measure frame rate. GPU-backed headless runs leave their textures in the graphics driver's page pool, which adds up to gigabytes over a day of testing.
+- Leave nothing running when you finish: stop any dev server, browser or watcher you started (do not detach them with `nohup` or `&` and walk away). Before reporting done, run `npm run reap` (it lists and stops our Vite servers, repo scripts, headless test browsers, and any desktop browser launched on a localhost URL), then confirm with `npm run reap -- --dry-run` that nothing is left. Spare a server the user asked to keep with `--keep-port <port>`.
+- Never open a desktop browser on the game. Vite's `open` is off in `vite.config.ts` and in the harness; keep it off, and do not pass `--open`, run `xdg-open`, or launch `chromium` yourself. Every such window is a full Chromium running the game on the GPU and outlives the server that opened it.
+- Use the shared harness (`scripts/lib/gameBrowser.mjs`, used by `npm run smoke`, `gallery`, `look`) for every browser check, including throwaway scripts in `out/`: it closes the browser and server even on errors, and the headless browser exits on its own if the script is killed.
+- Run one headless browser at a time; several agents each running smoke at once can exhaust memory.
+- Render headless browsers in software by default; use the real GPU (`--gpu`) only to measure frame rate. GPU-backed runs leave their textures in the graphics driver's page pool, which adds up to gigabytes over a day of testing and is only returned by the kernel (`sudo sh -c 'sync; echo 3 > /proc/sys/vm/drop_caches'`).
+- Never `pkill -f chromium` or similar: the pattern also matches your own shell and the user's browser. Use `npm run reap`, which only stops what it can attribute to our work.
 
 ## Best Practices
 

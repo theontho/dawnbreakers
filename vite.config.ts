@@ -23,7 +23,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  server: { port: 5173, open: true },
+  // Never open a browser: agents and scripts start servers constantly, and each
+  // auto-opened tab is a full desktop Chromium running the game on the GPU.
+  // Open http://localhost:5173 yourself, or run `npm run dev -- --open`.
+  server: { port: 5173, open: false },
+  preview: { open: false },
   optimizeDeps: {
     esbuildOptions: { banner: { js: `/* patches ${patchesHash()} */` } },
   },
