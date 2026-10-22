@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { BuildingFront } from './buildingFronts';
 import { css, footprintBox, groundShadow, onRoof, outlineBox, paintTexture, shade, type Ctx, type IsoBox } from './canvasKit';
 import { plaster, stone } from './materials';
 import { band, beamEnds, LIGHT, walls } from './ornaments';
@@ -37,6 +38,9 @@ const FRONT = 28;
 const PORCH = 108;
 const WING_W = 96;
 const COLUMNS = 6;
+
+/** The porch is open to the garden across its whole front, up the steps: no one door. */
+export const PALACE_PORTICO_FRONT: BuildingFront = { side: 's' };
 
 export function paintPalacePortico(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
   const top = TERRACE + COLUMN + ROOF;

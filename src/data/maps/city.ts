@@ -57,7 +57,8 @@ const buildings: BuildingSpec[] = [
   { gridX: 29, gridY: 0, w: 6, h: 5, texture: 'town-house' },
   { gridX: 45, gridY: 3, w: 8, h: 7, texture: 'town-house-large' },
   // Houses east of the bazaar, against the city wall
-  { gridX: 48, gridY: 25, w: 6, h: 5, texture: 'town-house' },
+  // The wind-catcher house (`variant: 1`): a yard wall runs close before it, so not the court-glimpse house, whose gateway is its own street front.
+  { gridX: 48, gridY: 25, w: 6, h: 5, texture: 'town-house', variant: 1 },
   { gridX: 49, gridY: 32, w: 5, h: 4, texture: 'town-house-small' },
   // Houses along the south wall
   { gridX: 1, gridY: 43, w: 8, h: 7, texture: 'town-house-large' },
@@ -91,8 +92,7 @@ function compoundWalls(): DecorSpec[] {
     ...wallRun(w, 21, 21, 35, 21, { gaps: [[27, 21], [28, 21], [29, 21]] }),
     // The walled garden in the north-east
     ...wallRun(w, 37, 21, 54, 21),
-    // Behind the bazaar and around the houses by the east wall
-    ...wallRun(w, 20, 38, 43, 38),
+    // Around the houses by the east wall; the bazaar's south row fronts the wall street itself
     ...wallRun(w, 47, 25, 47, 38),
     ...wallRun(w, 48, 38, 54, 38),
     ...wallRun(w, 48, 30, 54, 30),

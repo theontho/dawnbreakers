@@ -240,6 +240,35 @@ a block into a wall's gap, puts anything but the wall on a wall cell, or
 sets a door, gate or tower against a run's end without joining it, and its
 message says which fix applies.
 
+**Street fronts.** Some buildings are their own street wall: their art
+paints the way in on a face, a gateway, a portal or a row of shop bays. A
+courtyard house (`town-house-large`) is "a long plain wall and a gateway"
+from the lane; so are the court-glimpse town house (`town-house~2`,
+`zanjan-hujjat-house`), the mosques' portals, the bazaar row, the
+caravanserai, the palace portico and the residence and serai gates. The art
+declares that face next to itself (`front: { side, door }` on a house
+variant, a `*_FRONT` constant otherwise), gathered in
+`src/assets/art/buildingFronts.ts`. No wall may run along a declared front
+within two cells of it (except on the cut-away south and east edges): the
+gateway would stand right behind the wall, pasted onto it, with two doors
+where there should be one. Do not put a courtyard wall and a door piece in
+front of such a house; let its own gateway be the door, and run the garden
+walls back from its front corners (walls join town houses):
+
+```ts
+{ gridX: 12, gridY: 0, w: 8, h: 7, texture: 'town-house-large' },
+...wallRun('compound-wall', 9, 6, 11, 6),   // up to the house's west corner
+...wallRun('compound-wall', 20, 6, 23, 6),  // and from its east corner
+```
+
+A door interaction at the house's gateway is an NPC with no `texture` (or a
+`DoorSpec`) on the front's door cell, the footprint cell on that face under
+the door (for an 8 x 7 courtyard house at `(gx, gy)`, `(gx + 5, gy + 6)`);
+the seam check names that cell, the speech mark floats at door height on the
+face, and smoke measures it as a doorway on the building. If the story needs
+a yard wall in front, give the building two clear cells of yard or use a
+variant with no street front (`variant: 0` or `1` of `town-house`).
+
 Prefer existing objects (see `src/assets/mapAssetDefinitions.ts` and each
 `src/assets/chapters/chapterNN.ts`). New characters are cheap: add an entry
 to `CHNN_OBJECTS` with `kind: 'character'`, `category: 'characters'`, and a

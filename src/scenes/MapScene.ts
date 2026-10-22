@@ -47,6 +47,7 @@ import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './ma
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
 import { findPath, screenToGrid, type GridPoint } from './mapPathing';
 import { checkWallSeams } from './mapSeams';
+import { streetFronts } from './streetFronts';
 import type { DoorSpec, MapDefinition, NpcSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
 
@@ -165,6 +166,7 @@ export class MapScene extends Phaser.Scene {
       () => playSfx('locked'),
       getFlags(),
     );
+    const fronts = streetFronts(this.definition.buildings);
     this.npcs = placeMapNpcs(
       this,
       this.definition.npcs,
@@ -174,6 +176,7 @@ export class MapScene extends Phaser.Scene {
       getFlags(),
       this.occludableSprites,
       this.doors.interactables,
+      (gx, gy) => fronts.find(f => f.door?.x === gx && f.door.y === gy)?.door?.foot,
     );
     // Arrivals across a widened exit can land on a blocked cell: step aside.
     this.playerGrid = nearestFreeCell(this.blocked, this.playerGrid.x, this.playerGrid.y);

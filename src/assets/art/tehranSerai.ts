@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, paintTexture, rng, shade, type Ctx, type IsoBox } from './canvasKit';
+import type { BuildingFront } from './buildingFronts';
+import { CELL, css, footprintBox, paintTexture, rng, shade, type Ctx, type IsoBox } from './canvasKit';
 import { planks } from './materials';
 import { recess } from './massing';
 import { archPath, band, latticeWindow } from './ornaments';
@@ -130,6 +131,9 @@ function drawGate(ctx: Ctx, box: IsoBox): void {
   sakku(ctx, box, w - 38, w - 6, -2, 12, BENCH, 1518);
   steps(ctx, box, w / 2 - 32, w / 2 + 32, -6, 0, 1, 'q', 3);
 }
+
+/** The portal is the serai's front on the street, its gateway in the middle of the 5-cell face. */
+export const SERAI_GATE_FRONT: BuildingFront = { side: 's', door: (5 * CELL) / 2 };
 
 export function paintSeraiGate(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, PORTAL_H, 24);

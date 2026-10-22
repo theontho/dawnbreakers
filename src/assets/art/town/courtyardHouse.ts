@@ -1,3 +1,4 @@
+import type { BuildingFront } from '../buildingFronts';
 import { groundPoint, shade, type Ctx, type IsoBox } from '../canvasKit';
 import { wornPlaster } from '../facade';
 import { band, dome, type FacePainter } from '../ornaments';
@@ -23,6 +24,8 @@ const GATE_H = 116;
 /** The gateway's door along the street face, and how far the gateway stands proud of the range (q 12). */
 const GATE_P = 172;
 const GATE_Q = 6;
+/** The house is its own street wall: the gateway on its south face is the way in. */
+const STREET_FRONT: BuildingFront = { side: 's', door: GATE_P };
 
 /** The court in the middle of the house: brick paving, a pool and trees. Paint it after the back and left ranges. */
 function court(ctx: Ctx, box: IsoBox, s: TownHouseStyle, trees: 'orange' | 'cypress'): void {
@@ -170,6 +173,6 @@ const iwanHouse = (ctx: Ctx, box: IsoBox, s: TownHouseStyle): void => {
 };
 
 export const COURTYARD_HOUSES: readonly HouseVariant[] = [
-  { draw: talarHouse, top: 300, faces: { s: 12, e: 0 }, style: { wall: 0xd6cbb0, door: 0x5b3a20, frame: 0x8a6440, seed: 501, shutters: 0x3f6a6a, lit: true } },
-  { draw: iwanHouse, top: 290, faces: { s: 12, e: 0 }, style: { wall: 0xc8a06e, door: 0x2f5f6e, frame: 0x7a5a38, seed: 521, material: 'brick', lit: true } },
+  { draw: talarHouse, top: 300, faces: { s: 12, e: 0 }, front: STREET_FRONT, style: { wall: 0xd6cbb0, door: 0x5b3a20, frame: 0x8a6440, seed: 501, shutters: 0x3f6a6a, lit: true } },
+  { draw: iwanHouse, top: 290, faces: { s: 12, e: 0 }, front: STREET_FRONT, style: { wall: 0xc8a06e, door: 0x2f5f6e, frame: 0x7a5a38, seed: 521, material: 'brick', lit: true } },
 ];

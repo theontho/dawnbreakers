@@ -1,12 +1,13 @@
 import type { MapObjectId, TextureGenerator } from '../../mapAssetTypes';
 import { variantKey } from '../canvasKit';
+import type { BuildingFront } from '../buildingFronts';
 import type { BuildingFaces } from '../wallPainter';
-import { LARGE_STALLS, paintBazaarRow, paintLargeStall } from './bazaar';
+import { BAZAAR_ROW_FRONT, LARGE_STALLS, paintBazaarRow, paintLargeStall } from './bazaar';
 import { paintCityGateLarge } from './cityGate';
 import { COURTYARD_HOUSES } from './courtyardHouse';
 import { paintFountainPool } from './fountain';
-import { paintMosqueGreat } from './mosqueGreat';
-import { paintMosqueLocal } from './mosqueLocal';
+import { MOSQUE_GREAT_FRONT, paintMosqueGreat } from './mosqueGreat';
+import { MOSQUE_LOCAL_FRONT, paintMosqueLocal } from './mosqueLocal';
 import { paintHouseSet, SMALL_HOUSES, TOWN_HOUSES } from './townHouses';
 import {
   OLD_PLANE_VARIANTS, ORANGE_VARIANTS, paintOrangeTree, paintPlaneTree, paintTallCypress, PLANE_VARIANTS, TALL_CYPRESS_VARIANTS,
@@ -32,11 +33,20 @@ export const TOWN_TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   'orange-tree': ORANGE_VARIANTS.length,
 };
 
+const HOUSE_SETS = [['town-house-small', SMALL_HOUSES], ['town-house', TOWN_HOUSES], ['town-house-large', COURTYARD_HOUSES]] as const;
+
 /** Where each house variant's south and east walls stand within its footprint, keyed by texture variant (see BuildingFaces). */
 export const TOWN_BUILDING_FACES: Readonly<Record<string, BuildingFaces>> = Object.fromEntries(
-  ([['town-house-small', SMALL_HOUSES], ['town-house', TOWN_HOUSES], ['town-house-large', COURTYARD_HOUSES]] as const)
-    .flatMap(([key, variants]) => variants.flatMap((v, i) => (v.faces ? [[variantKey(key, i), v.faces] as const] : []))),
+  HOUSE_SETS.flatMap(([key, variants]) => variants.flatMap((v, i) => (v.faces ? [[variantKey(key, i), v.faces] as const] : []))),
 );
+
+/** The town buildings whose art makes a face their own street front, keyed by texture variant (see BuildingFront). */
+export const TOWN_BUILDING_FRONTS: Readonly<Record<string, BuildingFront>> = {
+  ...Object.fromEntries(HOUSE_SETS.flatMap(([key, variants]) => variants.flatMap((v, i) => (v.front ? [[variantKey(key, i), v.front] as const] : [])))),
+  'mosque-great': MOSQUE_GREAT_FRONT,
+  'mosque-local': MOSQUE_LOCAL_FRONT,
+  'bazaar-row': BAZAAR_ROW_FRONT,
+};
 
 export const TOWN_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   'town-house-small': (scene, def) => paintHouseSet(scene, def.texture, ...footprint(def), SMALL_HOUSES),

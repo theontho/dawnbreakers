@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, paintTexture, shade, type Ctx, type IsoBox } from './canvasKit';
+import type { BuildingFront } from './buildingFronts';
+import { CELL, css, footprintBox, paintTexture, shade, type Ctx, type IsoBox } from './canvasKit';
 import { recess } from './massing';
 import { archPath, band, latticeWindow } from './ornaments';
 import { sakku, steps } from './streetLife';
@@ -99,6 +100,9 @@ function drawGate(ctx: Ctx, box: IsoBox): void {
   // The threshold: a worn dressed-stone step before the arch.
   steps(ctx, box, w / 2 - 30, w / 2 + 30, -6, 0, 1, 'q', 3);
 }
+
+/** The portal is the residence's front on the street, its wicket door in the middle of the 5-cell face. */
+export const RESIDENCE_GATE_FRONT: BuildingFront = { side: 's', door: (5 * CELL) / 2 };
 
 export function paintResidenceGate(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, PORTAL_H, 24);

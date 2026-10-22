@@ -3,16 +3,17 @@ import { wallRun } from './wallRuns';
 
 /**
  * Tabríz, the evening of the examination, at true scale: the lane outside
- * the house of Mírzá ʿAlí-Aṣghar, the Shaykhu'l-Islám. His house stands
- * behind its courtyard wall on the north side, one carved door in the wall.
+ * the house of Mírzá ʿAlí-Aṣghar, the Shaykhu'l-Islám. His house fronts the
+ * lane on the north side, a long plain wall and one gateway with a carved door.
  * The governor's bodyguard waits in the lane, having refused to beat the
  * Prisoner; a water-boy sits by a house front down the lane. What happens
  * within is never shown: it is told by those who stood outside.
  *
  * Districts (x runs east, y runs south):
  * - The lane: y 10..12 from the west edge (exit at (0, 11)) east.
- * - The Shaykhu'l-Islám's house: walls x 9..23, y 0..8, the house at
- *   x 12..19, y 0..6, the door in the wall at (16, 8).
+ * - The Shaykhu'l-Islám's house: x 12..19, y 0..6, its own street front,
+ *   the gateway at (17, 6); garden walls run back from its corners at x 9
+ *   and x 23. A paved step before the gate, y 7..9.
  * - Neighbouring houses north (x 1..6, x 25..29) and south (y 15..19),
  *   a garden wall between them on y = 16.
  */
@@ -20,7 +21,8 @@ import { wallRun } from './wallRuns';
 const W = 32;
 const H = 22;
 const LANE = 11;
-const DOOR = { x: 16, y: 8 } as const;
+/** The gateway on the house's street front (town-house-large's front door cell). */
+const DOOR = { x: 17, y: 6 } as const;
 
 const buildings: BuildingSpec[] = [
   { gridX: 12, gridY: 0, w: 8, h: 7, texture: 'town-house-large' },
@@ -31,13 +33,15 @@ const buildings: BuildingSpec[] = [
   { gridX: 24, gridY: 15, w: 5, h: 4, texture: 'town-house-small' },
 ];
 
-/** The Shaykhu'l-Islám's courtyard wall, the walls between the houses, the map's edges. */
+/** The Shaykhu'l-Islám's garden walls, the walls between the houses, the map's edges. */
 function walls(): DecorSpec[] {
   const w = 'compound-wall';
   return [
-    ...wallRun(w, 9, 8, 23, 8, { doors: [[DOOR.x, DOOR.y]] }),
-    ...wallRun(w, 9, 0, 9, 7),
-    ...wallRun(w, 23, 0, 23, 7),
+    // The house is its own street wall: its garden walls turn back from its front corners.
+    ...wallRun(w, 9, 6, 11, 6),
+    ...wallRun(w, 9, 0, 9, 5),
+    ...wallRun(w, 20, 6, 23, 6),
+    ...wallRun(w, 23, 0, 23, 5),
     ...wallRun(w, 7, 16, 23, 16),
     ...wallRun(w, 29, 15, W - 1, 15),
     ...wallRun(w, W - 1, 9, W - 1, 13),
@@ -47,8 +51,8 @@ function walls(): DecorSpec[] {
 
 const props: DecorSpec[] = [
   // The bodyguard's men, muskets grounded, either side of the door
-  { gridX: 13, gridY: 9, texture: 'ch9-soldier', blocks: true },
-  { gridX: 21, gridY: 9, texture: 'ch9-soldier', blocks: true },
+  { gridX: 15, gridY: 7, texture: 'ch9-soldier', blocks: true },
+  { gridX: 19, gridY: 7, texture: 'ch9-soldier', blocks: true },
   // Lamps lit along the lane at dusk
   { gridX: 10, gridY: 9, texture: 'lamp', blocks: true },
   { gridX: 26, gridY: 9, texture: 'lamp', blocks: true },
@@ -69,7 +73,8 @@ export const trialLaneMap: MapDefinition = {
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');
     paintRect(0, LANE - 1, W, 3, 'path');
-    paintRect(14, 9, 5, 1, 'stone');
+    // The paved step before the gateway, out to the lane.
+    paintRect(16, 7, 3, 3, 'stone');
   },
   buildings,
   decor: [...walls(), ...props],

@@ -61,6 +61,8 @@ export function placeMapNpcs(
   occluders: readonly Phaser.GameObjects.Image[],
   /** Other interactables (doors) listed after the people. */
   extras: readonly Interactable[],
+  /** For a cell whose door is painted on a building's face, the door's foot from the cell's centre on screen. */
+  doorFoot: (gx: number, gy: number) => { dx: number; dy: number } | undefined,
 ): MapNpcs {
   ensureMarkerTexture(scene);
   const placed: PlacedNpc[] = specs.map(spec => {
@@ -69,8 +71,12 @@ export function placeMapNpcs(
     const sprite = spec.texture === undefined ? undefined : scene.add.image(pos.sx, footY, spec.texture)
       .setOrigin(0.5, 1)
       .setDepth(pos.sy + 1);
-    // The speech mark floats above scenery so a hidden speaker is still findable.
-    const marker = scene.add.image(pos.sx, footY - (sprite?.displayHeight ?? SCENERY_MARK_LIFT) - 8, MARKER_TEXTURE)
+    // The speech mark floats above scenery so a hidden speaker is still findable; over a door
+    // painted on a building's face, it floats at door height on that face.
+    const face = sprite ? undefined : doorFoot(spec.gridX, spec.gridY);
+    const markX = pos.sx + (face?.dx ?? 0);
+    const markFoot = face ? pos.sy + face.dy : footY;
+    const marker = scene.add.image(markX, markFoot - (sprite?.displayHeight ?? SCENERY_MARK_LIFT) - 8, MARKER_TEXTURE)
       .setOrigin(0.5, 1)
       .setDepth(GHOST_DEPTH + 1);
     scene.tweens.add({

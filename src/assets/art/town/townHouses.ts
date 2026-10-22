@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { BuildingFront } from '../buildingFronts';
 import type { BuildingFaces } from '../wallPainter';
 import { footprintBox, groundPoint, paintTexture, shade, type Ctx, type IsoBox } from '../canvasKit';
 import { wornPlaster } from '../facade';
@@ -31,6 +32,8 @@ export interface HouseVariant {
    * reach its face (see mapWalls). Flush with the footprint when omitted.
    */
   faces?: BuildingFaces;
+  /** The face the art makes its own street front (a gateway on the lane), when it has one. */
+  front?: BuildingFront;
 }
 
 // The small house (5 x 4): 160 x 128 px of ground --------------------------------
@@ -186,6 +189,9 @@ const windcatcherHouse: HouseDraw = (ctx, box, s) => {
   pottedPlant(ctx, pot.x, pot.y, 6, 0x4a7a40, s.seed + 7, 0xd84a4a);
 };
 
+/** Where the court-glimpse house's gateway door stands along its street face. */
+const GLIMPSE_GATE_P = 132;
+
 /** A street wall with its gateway, a little court, and the two-storey house beyond it. */
 const courtGlimpse: HouseDraw = (ctx, box, s) => {
   const W = box.w;
@@ -216,7 +222,7 @@ const courtGlimpse: HouseDraw = (ctx, box, s) => {
     },
   };
   // The gateway (sar-dar) stands a little proud and a little higher than the wall.
-  const doorP = 132;
+  const doorP = GLIMPSE_GATE_P;
   const gate: MassPart = {
     p0: doorP - 26, p1: doorP + 26, q0: 4, q1: 18, h: 110,
     spec: {
@@ -242,7 +248,7 @@ export const SMALL_HOUSES: readonly HouseVariant[] = [
 export const TOWN_HOUSES: readonly HouseVariant[] = [
   { draw: twoStorey, top: 250, faces: { s: 6, e: 6 }, style: { wall: 0xc8a47a, door: 0x6a3020, frame: 0x7a5a38, seed: 433, shutters: 0x5a3a24, lit: true } },
   { draw: windcatcherHouse, top: 205, faces: { s: 12, e: 6 }, style: { wall: 0xbf9a6a, door: 0x2f5f6e, frame: 0x8a6440, seed: 449, lit: true } },
-  { draw: courtGlimpse, top: 190, faces: { s: 8, e: 0 }, style: { wall: 0xd6c3a0, door: 0x5b3a20, frame: 0x8a6440, seed: 457, lit: true } },
+  { draw: courtGlimpse, top: 190, faces: { s: 8, e: 0 }, front: { side: 's', door: GLIMPSE_GATE_P }, style: { wall: 0xd6c3a0, door: 0x5b3a20, frame: 0x8a6440, seed: 457, lit: true } },
 ];
 
 /** Paints every variant of a house def: `key`, `key~1`, `key~2`... */

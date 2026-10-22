@@ -20,15 +20,19 @@ import { wallRun } from './wallRuns';
  * - Chancery court: x 2..14, y 8..19, the chancery house at x 3..8, y 3..7,
  *   its door into the reception room at (6, 7).
  * - Gathering terrace: x 30..41, y 10..19.
- * - Inner apartments: walls x 29..40, y 24..34, the carved door at (34, 34).
+ * - Inner apartments: the house at x 31..38, y 26..32, its own street front
+ *   with the carved door in its gateway at (36, 32); garden walls x 29..40,
+ *   y 24..32 run back from its front corners.
  * - Rose garden: x 2..15, y 25..37.
  */
 
 const W = 44;
 const H = 40;
 const TALAR = { gridX: 16, gridY: 2, w: 12, h: 8 };
-/** The carved door of the inner apartments, in the enclosure's south wall. */
-const CHAMBER_DOOR = { x: 34, y: 34 };
+/** The inner apartments: a courtyard house whose gateway is the one way in. */
+const APARTMENTS = { gridX: 31, gridY: 26, w: 8, h: 7 } as const;
+/** The carved door of the inner apartments, in the house's gateway (town-house-large's front door cell). */
+const CHAMBER_DOOR = { x: APARTMENTS.gridX + 5, y: APARTMENTS.gridY + APARTMENTS.h - 1 };
 /** The chancery house: the town house's two-storey variant (`variant: 0`), its door on the fourth cell of the front. */
 const CHANCERY = { gridX: 3, gridY: 3, w: 6, h: 5, variant: 0 } as const;
 export const RECEPTION_DOOR = { x: CHANCERY.gridX + 3, y: CHANCERY.gridY + CHANCERY.h - 1 } as const;
@@ -41,7 +45,7 @@ const buildings: BuildingSpec[] = [
   { ...TALAR, texture: 'ch5-palace-portico' },
   // The chancery, and the inner apartments within their walls
   { ...CHANCERY, texture: 'town-house' },
-  { gridX: 31, gridY: 26, w: 8, h: 7, texture: 'town-house-large' },
+  { ...APARTMENTS, texture: 'town-house-large' },
   // The pool before the gathering terrace
   { gridX: 38, gridY: 16, w: 3, h: 3, texture: 'fountain-pool' },
 ];
@@ -54,11 +58,12 @@ function walls(): DecorSpec[] {
     ...wallRun(w, 0, 1, 0, H - 1, { gaps: [[0, AXIS.y0], [0, AXIS.y0 + 1], [0, AXIS.y1]] }),
     ...wallRun(w, W - 1, 1, W - 1, H - 1),
     ...wallRun(w, 1, H - 1, W - 2, H - 1),
-    // The inner apartments: high walls, one carved door
+    // The inner apartments: the house is its own front, high garden walls turn back from its corners
     ...wallRun(w, 29, 24, 40, 24),
-    ...wallRun(w, 29, 25, 29, 34),
-    ...wallRun(w, 40, 25, 40, 34),
-    ...wallRun(w, 30, 34, 39, 34, { doors: [[CHAMBER_DOOR.x, CHAMBER_DOOR.y]] }),
+    ...wallRun(w, 29, 25, 29, 32),
+    ...wallRun(w, 30, 32, 30, 32),
+    ...wallRun(w, 40, 25, 40, 32),
+    ...wallRun(w, 39, 32, 39, 32),
   ];
 }
 
@@ -87,7 +92,7 @@ function lamps(): DecorSpec[] {
   const cells: Array<[number, number]> = [
     [16, 11], [27, 11], [3, 9], [13, 9],
     [30, 13], [40, 14], [19, 22], [24, 22],
-    [32, 35], [36, 35], [1, 20], [1, 24],
+    [34, 33], [38, 33], [1, 20], [1, 24],
   ];
   return cells.map(([gridX, gridY]) => ({ gridX, gridY, texture: 'lamp', blocks: true }));
 }
@@ -104,7 +109,7 @@ const props: DecorSpec[] = [
   { gridX: 36, gridY: 15, texture: 'rug' },
   { gridX: 39, gridY: 12, texture: 'ch1-planter', blocks: true },
   // The Muʿtamid's own men at the inner apartments
-  { gridX: 37, gridY: 36, texture: 'ch4-officer', blocks: true },
+  { gridX: 37, gridY: 34, texture: 'ch4-officer', blocks: true },
   // Rose beds
   { gridX: 5, gridY: 27, texture: 'ch7-rosebush', blocks: true },
   { gridX: 12, gridY: 27, texture: 'ch7-rosebush', blocks: true },
@@ -137,7 +142,7 @@ export const ch5MutamidPalaceMap: MapDefinition = {
     paintRect(2, 8, 13, 12, 'stone');
     paintRect(30, 10, 12, 10, 'stone');
     // Before the inner apartments, and the rose garden's paths
-    paintRect(29, 35, 12, 3, 'stone');
+    paintRect(29, 33, 12, 5, 'stone');
     paintRect(8, 24, 2, 14, 'path');
     paintRect(2, 30, 14, 2, 'path');
   },

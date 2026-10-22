@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { BuildingFront } from './buildingFronts';
 import { CELL, css, groundPoint, groundShadow, paintTexture, polygon, roofPoint, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
 import { glazedTiles, planks } from './materials';
 import { recess } from './massing';
@@ -42,6 +43,8 @@ const RING = 96;
 const GATE = { w: 46, h: 88 } as const;
 /** The portal spans p 288..384, centred on footprint cell x = 10. */
 const PORTAL = { p0: 288, p1: 384 } as const;
+/** The portal is the serai's front on the road: its gate is the way in. */
+export const CARAVANSERAI_FRONT: BuildingFront = { side: 's', door: (PORTAL.p0 + PORTAL.p1) / 2 };
 
 const TOP_PAD = 10;
 const W_PX = SERAI.w * CELL;

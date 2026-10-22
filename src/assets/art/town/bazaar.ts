@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { BuildingFront } from '../buildingFronts';
 import { css, footprintBox, groundPoint, paintTexture, polygon, rng, roofPoint, shade, type Ctx, type IsoBox } from '../canvasKit';
 import { litGradient } from '../fieldKit';
 import { planks } from '../materials';
@@ -216,6 +217,9 @@ function paintRow(ctx: Ctx, box: IsoBox, mask: number): void {
   SHOPS.forEach((shop, i) => shopAwning(ctx, box, i * BAY + 5, (i + 1) * BAY - 5, shop.cloth));
   streetGoods(ctx, box, 920);
 }
+
+/** The open shop bays face the lane on the south face: a street front with no one door. */
+export const BAZAAR_ROW_FRONT: BuildingFront = { side: 's' };
 
 export function paintBazaarRow(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, 150, 4);

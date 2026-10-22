@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { BuildingFront } from '../buildingFronts';
 import { footprintBox, groundPoint, paintTexture, roofPoint, type Ctx, type IsoBox } from '../canvasKit';
 import { cylinderBand, dome } from '../ornaments';
 import { subBox } from '../structureParts';
@@ -20,6 +21,10 @@ import type { FacePainter } from '../ornaments';
 const BRICK = 0xc8a26e;
 const RANGE_H = 120;
 const COURT_H = 140;
+/** The street portal: p 148..236 on the front range. */
+const PORTAL = { p0: 148, p1: 236 } as const;
+/** The portal is the mosque's front on the street. */
+export const MOSQUE_GREAT_FRONT: BuildingFront = { side: 's', door: (PORTAL.p0 + PORTAL.p1) / 2 };
 
 /** Two tiers of arches facing the court. */
 function courtArcade(c: Ctx, w: number, h: number, l: number, bay: number): void {
@@ -46,7 +51,7 @@ function paintGreatMosque(ctx: Ctx, box: IsoBox): void {
   // The street portal projects a little from the front range and rises a
   // storey over it, as a pīshṭāq does.
   const portal: MassPart = {
-    p0: 148, p1: 236, q0: -6, q1: 54, h: RANGE_H + 34,
+    p0: PORTAL.p0, p1: PORTAL.p1, q0: -6, q1: 54, h: RANGE_H + 34,
     spec: {
       ...brick(727),
       roof: 'flat',

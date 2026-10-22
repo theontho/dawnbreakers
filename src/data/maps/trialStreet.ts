@@ -31,9 +31,10 @@ const crowded = (f: FlagState) => !f.trialBastinado;
 
 const buildings: BuildingSpec[] = [
   { ...GATE, texture: 'trial-residence-gate' },
-  // The household behind the wall
-  { gridX: 3, gridY: 0, w: 8, h: 7, texture: 'town-house-large' },
-  { gridX: 30, gridY: 0, w: 8, h: 7, texture: 'town-house-large' },
+  // The household behind the wall: houses with no gateway of their own (a courtyard house is
+  // its own street front and would stand pasted onto the residence wall), a yard before each.
+  { gridX: 4, gridY: 1, w: 6, h: 5, texture: 'town-house', variant: 0 },
+  { gridX: 31, gridY: 1, w: 6, h: 5, texture: 'town-house', variant: 1 },
   // Shops and houses on the south side
   { gridX: 2, gridY: 27, w: 8, h: 3, texture: 'bazaar-row' },
   { gridX: 10, gridY: 27, w: 8, h: 3, texture: 'bazaar-row' },

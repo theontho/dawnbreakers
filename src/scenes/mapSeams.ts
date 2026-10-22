@@ -1,6 +1,7 @@
 import { wallFamily, WALL_STYLES } from '../assets/art/wallStyles';
 import type { MapDefinition } from '../data/maps/types';
 import { isPersonTexture } from './personTextures';
+import { streetFronts } from './streetFronts';
 
 /**
  * The seam check: a door or gate in a wall is a piece of that wall, never a
@@ -18,11 +19,17 @@ import { isPersonTexture } from './personTextures';
  *   something it joins.
  * - A door piece stands in a straight run, in from the cut-away south and
  *   east edges; a story object with no sprite stands on scenery that draws
- *   it (a door piece).
+ *   it (a door piece, or the door painted on a building's street front).
+ * - A building whose art makes a face its own street front (a gateway, a
+ *   portal, shopfronts: see BuildingFront) has no wall running along that
+ *   face within `YARD` cells of it, except on the cut-away edges: the front
+ *   would stand right behind the wall, pasted onto it, with two doors.
  */
 
 /** The widest gap checked: a lane mouth or a gateway. */
 const GAP_SPAN = 3;
+/** The least open ground between a building's street front and a wall running along it. */
+const YARD = 2;
 /** Textures that read as a door, a gate or a tower: set against a wall's end without joining it, they look stuck on. */
 const DOOR_LIKE = /(^|-)(door|doors|gate|gates|postern|portal|gatehouse|tower|bastion)(-|$)/;
 
@@ -159,11 +166,37 @@ export function checkWallSeams(def: MapDefinition): void {
     }
   }
 
+  // No wall stands in front of a building that is its own street front.
+  const fronts = streetFronts(def.buildings);
+  const cutEdge = (x: number, y: number) => y === def.height - 1 || x === def.width - 1;
+  for (const front of fronts) {
+    const out: Dir = front.side === 's' ? [0, 1] : [1, 0];
+    const along: Dir = [out[1], out[0]];
+    for (let k = 1; k <= YARD; k++) {
+      const hugging = front.cells.map(([x, y]) => [x + out[0] * k, y + out[1] * k] as const)
+        .filter(([x, y]) => familyAt(x, y) && !cutEdge(x, y) && runsAlong(x, y, along));
+      if (hugging.length < 2) continue;
+      const [hx, hy] = hugging[0]!;
+      const { building: b, texture } = front;
+      const door = front.door
+        ? `use the building's own door (stand its door interactions, NPCs with no texture or doors, on its door cell (${front.door.x},${front.door.y}))`
+        : 'let its front be the street wall';
+      problems.push(`${texture} at (${b.gridX},${b.gridY}) is its own street front on its ${front.side === 's' ? 'south' : 'east'} face, `
+        + `but a ${familyAt(hx, hy)} wall runs along it ${k === 1 ? 'right in front' : 'one cell out'} (from (${hx},${hy})): `
+        + `remove the wall in front and ${door}; or place the building so its front faces open ground `
+        + `(${YARD} or more cells of yard), or use a variant without a street front`);
+      break;
+    }
+  }
+
   // A story object with no sprite stands on scenery that draws it.
   for (const n of def.npcs) {
     if (n.texture !== undefined) continue;
-    const texture = def.decor.find(d => d.gridX === n.gridX && d.gridY === n.gridY && WALL_STYLES[d.texture]?.doorOf)?.texture;
-    if (!texture) problems.push(`"${n.prompt}" at (${n.gridX},${n.gridY}) has no texture but stands on no door piece to draw it`);
+    const doorPiece = def.decor.some(d => d.gridX === n.gridX && d.gridY === n.gridY && WALL_STYLES[d.texture]?.doorOf);
+    const frontDoor = fronts.some(f => f.door?.x === n.gridX && f.door.y === n.gridY);
+    if (!doorPiece && !frontDoor) {
+      problems.push(`"${n.prompt}" at (${n.gridX},${n.gridY}) has no texture but stands on no door piece or building front door to draw it`);
+    }
   }
 
   if (problems.length) throw new Error(`${def.key}: walls and doors do not meet:\n- ${problems.join('\n- ')}`);

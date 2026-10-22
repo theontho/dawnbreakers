@@ -4,8 +4,8 @@ import { wallRun } from './wallRuns';
 
 /**
  * Ṭihrán at dawn, summer 1844, at true scale: the lane before the house of
- * the family of the late Mírzá Buzurg of Núr, the Vazír. The house stands
- * behind its courtyard wall on the north side, one door in the wall; the
+ * the family of the late Mírzá Buzurg of Núr, the Vazír. The house fronts
+ * the lane on the north side, a long plain wall and one tiled gateway; the
  * player walks here with the tutor and the scroll, and does not go in. What
  * passes within is told by the tutor when he comes out. A baker lights his
  * oven across the lane; the poor wait by the door, as they do every day.
@@ -14,8 +14,9 @@ import { wallRun } from './wallRuns';
  * - The lane: y 10..12, from the west edge (exit at (0, 11), back to the
  *   madrasa) east to the corner where the road north out of the city turns
  *   up past the last house, x 30..31, to the north edge (exit at (30, 0)).
- * - The house: walls x 9..23, y 0..8, the house at x 12..19, y 0..6, the
- *   door in the wall at (16, 8).
+ * - The house: x 12..19, y 0..6, its own street front on the lane, the
+ *   gateway at (17, 6); garden walls run back from its corners at x 9 and
+ *   x 23. A paved step before the gate, y 7..9.
  * - The bakery south of the lane at x 4..9, y 14..17; houses either side.
  */
 
@@ -24,9 +25,10 @@ const H = 22;
 const LANE = 11;
 /** The road north out of the city, from the lane's east end to the north edge. */
 const ROAD_NORTH = { x: 30, w: 2 } as const;
-const NUR_HOUSE_DOOR = { x: 16, y: 8 } as const;
+/** The gateway of the house, on its street front (town-house-large's front door cell). */
+const NUR_HOUSE_DOOR = { x: 17, y: 6 } as const;
 
-/** The door is a piece of the courtyard wall; the interactions on it have no sprite of their own. */
+/** The house's art draws the door; the interactions on it have no sprite of their own. */
 const DOOR_CELL = { gridX: NUR_HOUSE_DOOR.x, gridY: NUR_HOUSE_DOOR.y } as const;
 
 const tutorAtDawn = both(has('nurScrollGiven'), not('nurTutorWentIn'));
@@ -42,13 +44,15 @@ const buildings: BuildingSpec[] = [
   { gridX: 22, gridY: 15, w: 6, h: 5, texture: 'ch10-street-house' },
 ];
 
-/** The courtyard wall of the house, the walls between the houses, the map's edges. */
+/** The garden walls either side of the house, the walls between the houses, the map's edges. */
 function walls(): DecorSpec[] {
   const w = 'compound-wall';
   return [
-    ...wallRun(w, 9, 8, 23, 8, { doors: [[NUR_HOUSE_DOOR.x, NUR_HOUSE_DOOR.y]] }),
-    ...wallRun(w, 9, 0, 9, 7),
-    ...wallRun(w, 23, 0, 23, 7),
+    // The house is its own street wall: its garden walls turn back from its front corners.
+    ...wallRun(w, 9, 6, 11, 6),
+    ...wallRun(w, 9, 0, 9, 5),
+    ...wallRun(w, 20, 6, 23, 6),
+    ...wallRun(w, 23, 0, 23, 5),
     ...wallRun(w, 9, 16, 12, 16),
     ...wallRun(w, 18, 16, 21, 16),
     ...wallRun(w, 28, 15, W - 2, 15),
@@ -84,7 +88,7 @@ const npcs: NpcSpec[] = [
   { ...DOOR_CELL, prompt: 'Look at the door of the house of Mírzá Buzurg  [E]',
     dialogue: 'nur-house-door-after',
     present: has('nurTutorCameOut') },
-  { gridX: 17, gridY: 9, texture: 'nur-musa',
+  { gridX: 16, gridY: 7, texture: 'nur-musa',
     prompt: 'Speak with the Man at the Door  [E]',
     dialogue: 'nur-musa',
     present: tutorAtDawn },
@@ -116,7 +120,8 @@ export const nurLaneMap: MapDefinition = {
     // The lane flares where it leaves westward, so its mouth shows north of the bakery's house.
     paintRect(0, LANE - 3, 2, 2, 'path');
     paintRect(ROAD_NORTH.x, 0, ROAD_NORTH.w, LANE - 1, 'path');
-    paintRect(14, 9, 5, 1, 'stone');
+    // The paved step before the gateway, out to the lane.
+    paintRect(16, 7, 3, 3, 'stone');
   },
   buildings,
   decor: [...walls(), ...props],

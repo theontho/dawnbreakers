@@ -20,6 +20,8 @@ import { wallRun } from './wallRuns';
  * - Lane to the city: x 16..18, y 22..33, with the neighbourhood well at y 28..30.
  * - Neighbours' houses and walled gardens fill the corners; the orchard in
  *   the south-east is kept low so the watchman on the cross-lane stays in view.
+ *   The two south houses west and east of the lane are their own street
+ *   fronts, their gateways on the back lane along the south edge.
  */
 
 const W = 36;
@@ -44,13 +46,12 @@ function walls(): DecorSpec[] {
     // The north-east garden, behind the watchman's beat
     ...wallRun(w, 25, 9, 25, 18),
     ...wallRun(w, 26, 18, 34, 18),
-    // Yards behind the south houses
+    // Between the south houses; the courtyard houses front the back lane along the south edge themselves
     ...wallRun(w, 13, 23, 13, 27),
-    ...wallRun(w, 0, 31, 12, 31),
-    ...wallRun(w, 20, 29, 34, 29),
     // A walled orchard behind the watchman's corner, low enough to see him over
     ...wallRun(w, 28, 23, 34, 23),
     ...wallRun(w, 28, 24, 28, 28),
+    ...wallRun(w, 28, 29, 34, 29),
     // The edges
     ...wallRun(w, 0, H - 1, 15, H - 1),
     ...wallRun(w, 19, H - 1, W - 1, H - 1),

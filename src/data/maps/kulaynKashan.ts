@@ -42,7 +42,8 @@ const buildings: BuildingSpec[] = [
   { gridX: 10, gridY: 3, w: 5, h: 4, texture: 'town-house-small' },
   { gridX: 25, gridY: 2, w: 6, h: 5, texture: 'town-house' },
   { gridX: 34, gridY: 3, w: 5, h: 4, texture: 'town-house-small' },
-  { gridX: 40, gridY: 2, w: 6, h: 5, texture: 'town-house' },
+  // Not the court-glimpse house: the town wall runs close before these, and its gateway is its own street front.
+  { gridX: 40, gridY: 2, w: 6, h: 5, texture: 'town-house', variant: 0 },
   // The caravanserai by the gate.
   { gridX: 27, gridY: 17, w: 12, h: 16, texture: 'ch2-caravanserai' },
   { gridX: 39, gridY: 17, w: 8, h: 16, texture: 'ch2-caravanserai-east' },

@@ -18,15 +18,15 @@ import { wallRun } from './wallRuns';
  *   (22, 12), opening on his court (`QazvinHouse`).
  * - The lane: y 13..16, the whole width.
  * - South of the lane: the bakers' row x 8..15, y 18..20; the mosque
- *   x 24..31, y 18..24.
- * - The town wall on y = 26, its postern at (7, 26).
- * - The orchards outside the walls: y 27..33.
+ *   x 24..31, y 18..24, its portal on the walk inside the town wall.
+ * - The town wall on y = 27, its postern at (7, 27).
+ * - The orchards outside the walls: y 28..33.
  */
 
 const W = 40;
 const H = 34;
 export const SALIH_GATE = { x: 22, y: 12 } as const;
-const WALL_Y = 26;
+const WALL_Y = 27;
 const POSTERN_X = 7;
 
 const ready = (f: FlagState) => !!f.qzHadiReady;
@@ -40,6 +40,7 @@ const buildings: BuildingSpec[] = [
   { gridX: 33, gridY: 8, w: 5, h: 4, texture: 'town-house-small' },
   // South of the lane: the bakers' row, and Mullá Taqí's mosque.
   { gridX: 8, gridY: 18, w: 8, h: 3, texture: 'bazaar-row' },
+  // Its portal is its own street front: two cells of walk between it and the town wall.
   { gridX: 24, gridY: 18, w: 8, h: 7, texture: 'mosque-local' },
   { gridX: 34, gridY: 19, w: 5, h: 4, texture: 'town-house-small' },
 ];
@@ -95,7 +96,7 @@ export const qazvinLaneMap: MapDefinition = {
     paintRect(0, 13, W, 4, 'stone');
     paintRect(SALIH_GATE.x - 1, 12, 3, 1, 'stone');
     paintRect(16, 17, 6, 3, 'path');
-    paintRect(POSTERN_X - 1, 17, 3, 9, 'path');
+    paintRect(POSTERN_X - 1, 17, 3, WALL_Y - 17, 'path');
     paintRect(0, WALL_Y + 1, W, H - WALL_Y - 1, 'grass');
     paintRect(POSTERN_X - 1, WALL_Y + 1, 4, 5, 'path');
   },

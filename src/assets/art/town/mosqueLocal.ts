@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { BuildingFront } from '../buildingFronts';
 import { footprintBox, groundPoint, paintTexture, type Ctx, type IsoBox } from '../canvasKit';
 import { cylinderBand, dome } from '../ornaments';
 import { steps } from '../streetLife';
@@ -21,6 +22,8 @@ import { CREAM, LAPIS, roofFloor, spout, townWindow, TURQUOISE } from './townKit
 const BRICK = 0xbf9466;
 /** Where the door stands along the front-left face (the centre of cell 4). */
 export const MOSQUE_LOCAL_DOOR_P = 144;
+/** The portal is the mosque's front on the street. */
+export const MOSQUE_LOCAL_FRONT: BuildingFront = { side: 's', door: MOSQUE_LOCAL_DOOR_P };
 
 function paintLocalMosque(ctx: Ctx, box: IsoBox): void {
   // The custodian's rooms down the left and the yard wall behind run into
