@@ -7,18 +7,24 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 The original ten chapters are built out: 20 maps of roughly 20 to 32 cells a
 side with per-map ambience, several new people per chapter, objectives and
 journal entries for every chapter, and an epilogue map (`Ch10ExileRoad`).
-Two chapters were added after the plan, so there are now twelve:
+Seven chapters were added after the plan, so there are now seventeen, in
+story order:
 
-- **The Trial at Tabríz** (`tabriz-trial`, summer 1848), between Badasht and
-  Ṭabarsí: `TrialStreet`, `TrialCourt`, `TrialLane`.
-- **Zanján** (`zanjan`, 1850 to 1851), between the martyrdom at Tabríz and the
-  Black Pit: `ZanjanQuarter`, `ZanjanFort`, `ZanjanHouse`.
+| # | Chapter (`id`) | Maps |
+|---|---|---|
+| 3 | Ṭihrán and Núr (`tehran-nur`), 1844 | `NurMadrasa`, `NurLane`, `NurTakur` |
+| 7 | Káshán and Kulayn (`kashan-kulayn`), spring 1847 | `KulaynKashan`, `KulaynHouse`, `KulaynCamp` |
+| 9 | The Solace of the Eyes (`tahirih`), 1845 to 1848 | `QazvinKarbila`, `QazvinLane`, `QazvinHouse` |
+| 11 | The Trial at Tabríz (`tabriz-trial`), summer 1848 | `TrialStreet`, `TrialCourt`, `TrialLane` |
+| 13 | The Seven Martyrs of Ṭihrán (`seven-martyrs`), February 1850 | `MartyrsCity`, `MartyrsHouse`, `MartyrsSerai` |
+| 14 | Nayríz (`nayriz`), May and June 1850 | `NayrizQuarter`, `NayrizMosque`, `NayrizFort` |
+| 16 | Zanján (`zanjan`), 1850 to 1851 | `ZanjanQuarter`, `ZanjanFort`, `ZanjanHouse` |
 
 Chapter numbers come from the order of `SPECS` in `src/data/chapters.ts`, so
-the "Chapter N" headings below are the original plan's numbering. Episodes of
-the book not yet covered: Mullá Ḥusayn's mission to Ṭihrán and Núr, Káshán
-and Kulayn, Ṭáhirih's road from Karbilá to Qazvín, the Seven Martyrs of
-Ṭihrán, and Nayríz.
+the "Chapter N" headings below are the original plan's numbering. The book's
+main episodes are now all covered; smaller ones not yet given a chapter
+include Bahá'u'lláh's journey to Karbilá in 1851 and Mullá ʿAlí-i-Basṭámí's
+trial in Baghdád (both currently only mentioned).
 
 The per-chapter build goals below are kept as the original brief. For how to
 add or change content now, see `docs/content-guide.md`.
