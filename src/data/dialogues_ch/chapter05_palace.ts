@@ -276,7 +276,7 @@ export const chamberDialogue: DialogueTree = {
     end: {
       speaker: 'Narrator',
       onEnter: { set: { isfahanComplete: true } },
-      text: 'At dawn the river is grey and the plane trees are bare. In the garden an old man\'s seat is empty, and so is a young man\'s room. The road runs north toward the capital, but orders change on the road. Beyond Ṭihrán lie the mountains of Ádharbáyján, and their fortresses are already cold.',
+      text: 'At dawn the river is grey and the plane trees are bare. In the garden an old man\'s seat is empty, and so is a young man\'s room. The road runs north toward the capital, but orders change on the road. Beyond Ṭihrán lie the mountains of Ádhirbáyján, and their fortresses are already cold.',
     },
   },
 };

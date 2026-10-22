@@ -150,7 +150,7 @@ export const ch6CourierBadasht: DialogueTree = {
     news: {
       speaker: 'A Mountain Courier',
       onEnter: { set: { ch6CourierBadasht: true } },
-      text: 'Strange news. The friends are to gather this summer at a hamlet called Badasht, between Mázindarán and Khurásán. Qurratu\'l-ʿAyn is coming from Qazvín, Quddús from Mashhad, and Bahá\'u\'lláh of Núr has rented gardens there for them all.',
+      text: 'Strange news. The friends are to gather this summer at a hamlet called Badasht, between Mázindarán and Khurásán. Qurratu\'l-ʿAyn is coming from Ṭihrán, Quddús from Mashhad, and Mírzá Ḥusayn-ʿAlí of Núr has rented gardens there for them all.',
       choices: [{ text: '"What is the gathering for?"', next: 'why' }],
     },
     why: {

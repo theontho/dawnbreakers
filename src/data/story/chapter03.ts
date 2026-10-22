@@ -122,7 +122,7 @@ export const chapter03Story: ChapterStory = {
     {
       flag: 'ch3HeardProclamation',
       title: 'By the Door of the House',
-      body: 'Near the Kaʿba, the One you followed declared Himself the Qá\'im whose advent all were awaiting. The river of pilgrims flowed on; almost none of them heard.',
+      body: 'Near the Kaʿba, the One you followed declared Himself the Qáʾim whose advent all were awaiting. The river of pilgrims flowed on; almost none of them heard.',
     },
     {
       flag: 'ch3MuhitChallenge',

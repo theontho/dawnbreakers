@@ -126,7 +126,7 @@ export const pilgrimQuestion: DialogueTree = {
     after: {
       speaker: 'Pilgrim',
       onEnter: { set: { ch3AskedPilgrim: true } },
-      text: 'A young man spoke of the Qá\'im, I think. There are always men saying things in Mecca. I was praying for my daughter, who is ill. (He pauses.) Should I have listened?',
+      text: 'A young man spoke of the Qáʾim, I think. There are always men saying things in Mecca. I was praying for my daughter, who is ill. (He pauses.) Should I have listened?',
       choices: [
         { text: '"There is still time to listen."' },
         { text: '"Pray for your daughter. God hears both."' },
@@ -159,7 +159,7 @@ export const proclamation: DialogueTree = {
     },
     voice: {
       speaker: 'Narrator',
-      text: 'Then He speaks, not loudly, yet every word carries. He declares that He is the One whose advent they have been awaiting, the Qá\'im promised to the House of Muḥammad, and that any who seek the truth of it may come and ask.',
+      text: 'Then He speaks, not loudly, yet every word carries. He declares that He is the One whose advent they have been awaiting, the Qáʾim promised to the House of Muḥammad, and that any who seek the truth of it may come and ask.',
       choices: [
         { text: '(Listen in awe.)', next: 'awe', effect: { set: { ch3ProclaimAwe: true } } },
         { text: '(Listen with cautious attention.)', next: 'caution', effect: { set: { ch3ProclaimCaution: true } } },

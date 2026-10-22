@@ -61,7 +61,7 @@ export const trialAzim: DialogueTree = {
       text: '(A tall mullá stands apart from the crowd, hands folded, with the look of a man who has not slept.) You have the face of one who has climbed to Chihríq. I am Mullá Shaykh ʿAlí, of Khurásán. He calls me ʿAẓím.',
       choices: [
         { text: '"I climbed it in the snow, and stood below His window."', next: 'window',
-          requires: f => f.recognised === true },
+          requires: f => !!f.bayanComplete },
         { text: '"You look as if you have not slept."', next: 'night' },
       ],
     },

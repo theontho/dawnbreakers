@@ -99,7 +99,7 @@ export const chapter04Story: ChapterStory = {
     {
       flag: 'sternMullaSpoke',
       title: 'The Stern Mullá Again',
-      body: 'The mullá who once told you to forget His name is no happier in 1845. "This is not finished," he says.',
+      body: 'The stern mullá of the great mosque, who told the seekers from Karbilá to forget His name, is no happier in 1845. "This is not finished," he says.',
     },
     {
       flag: 'waterBoyMet',

@@ -224,7 +224,7 @@ export const nightWatchman: DialogueTree = {
     },
     unusual: {
       speaker: 'A Night Watchman',
-      text: 'In this lane, yes. The young merchant keeps early hours and pays his debts. No drinking, no quarrels. If every house were like His, I would sleep through my watch.',
+      text: 'In this lane, yes. The young merchant keeps early hours and pays His debts. No drinking, no quarrels. If every house were like His, I would sleep through my watch.',
       choices: [{ text: '"Then I will not trouble your sleep."' }],
     },
     household: {

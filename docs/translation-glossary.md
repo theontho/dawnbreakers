@@ -745,6 +745,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | The Pulpit of the Vakíl | منبر وکیل | 瓦基勒清真寺的讲坛 |
 | The Road from Iṣṭahbánát | راه اصطهبانات | 伊斯塔赫巴纳特之路 |
 | The Road from Shimírán | راه شمیران | 来自希米兰的路 |
+| The Road North | راه شمال | 北去之路 |
 | The road north can wait until dawn | راه شمال تا سپیده‌دم می‌تواند بماند | 北去的路可以等到黎明 |
 | The road north, out of the city | راه شمال، بیرون از شهر | 出城往北的路 |
 | The road toward Ṭihrán, spring 1847 | راه تهران، بهار ۱۸۴۷ | 通往德黑兰的路，1847年春 |
@@ -807,7 +808,6 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Tomb | آرامگاه | 陵墓 |
 | Toward Home | به سوی خانه | 归途 |
 | Toward the Mountains | به سوی کوهستان | 向着群山 |
-| Toward the Sea | به سوی دریا | 向着大海 |
 | Tower | برج | 塔楼 |
 | Town House | خانه شهری | 城中宅 |
 | Town Wall | باروی شهر | 城墙 |

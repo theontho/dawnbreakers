@@ -101,7 +101,7 @@ export const chapter05Story: ChapterStory = {
     {
       flag: 'isfahanComplete',
       title: 'Out by the Back Gate',
-      body: 'The escort rode out of the Palace of the Sun without torches. The road ran north toward the capital, and beyond it to the cold fortresses of Ádharbáyján.',
+      body: 'The escort rode out of the Palace of the Sun without torches. The road ran north toward the capital, and beyond it to the cold fortresses of Ádhirbáyján.',
     },
   ],
 };

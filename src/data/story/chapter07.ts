@@ -134,7 +134,7 @@ export const chapter07Story: ChapterStory = {
     {
       flag: 'badashtComplete',
       title: 'One Purpose',
-      body: 'In the lamplit tent Bahá\'u\'lláh received the friends one by one and drew them back to one purpose. The old dispensation was left behind. Now the friends ride for Mázindarán, and Mullá Ḥusayn has raised a black standard in Khurásán.',
+      body: 'In the lamplit tent Bahá\'u\'lláh received the friends one by one and drew them back to one purpose. The old dispensation was left behind. Now most of the friends ride for Mázindarán, and Mullá Ḥusayn has raised a black standard in Khurásán. You turned west, toward Tabríz.',
     },
   ],
 };

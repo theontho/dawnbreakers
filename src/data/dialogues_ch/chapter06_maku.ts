@@ -316,7 +316,7 @@ export const ch6CourierTransfer: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Mountain Courier',
-      text: 'Ah, it is you. I have news from Ṭihrán, and I wish I did not. The Grand Vizier has heard that the Khán has gone soft, that pilgrims come and go as they please. He has ordered the Prisoner moved.',
+      text: 'I have news from Ṭihrán, and I wish I did not. The Grand Vizier has heard that the Khán has gone soft, that pilgrims come and go as they please. He has ordered the Prisoner moved.',
       choices: [{ text: '"Moved where?"', next: 'where' }],
     },
     where: {

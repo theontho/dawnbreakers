@@ -232,7 +232,7 @@ export const ch10Guard: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Guard',
-      text: 'You again. This stair goes down three flights to the Síyáh-Chál. It was a cistern for the public bath once. Now it holds a hundred and fifty men and no air.',
+      text: 'This stair goes down three flights to the Síyáh-Chál. It was a cistern for the public bath once. Now it holds a hundred and fifty men and no air.',
       choices: [
         { text: '"What crime has been proved against them?"', next: 'proved' },
         { text: '"I want to go down to them."', next: 'down' },

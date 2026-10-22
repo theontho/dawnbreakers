@@ -144,7 +144,7 @@ export const ch10Final: DialogueTree = {
     },
     kept: {
       speaker: 'Narrator',
-      text: 'That dawn you told Mullá Ḥusayn your heart turned toward the light. Since then you have watched the lamps go out one by one: Mullá Ḥusayn and Quddús at Ṭabarsí, the Báb Himself at Tabríz, Ṭáhirih in a garden at night. You had begun to fear the dawn was over.',
+      text: 'That dawn you told Mullá Ḥusayn your heart turned toward the light. Since then you have watched the lamps go out one by one: Mullá Ḥusayn at Ṭabarsí and Quddús at Bárfurúsh, Vaḥíd at Nayríz and Ḥujjat at Zanján, the Báb Himself at Tabríz, Ṭáhirih in a garden at night. You had begun to fear the dawn was over.',
       choices: [{ text: '(Look down at the tracks.)', next: 'hidden' }],
     },
     asked: {

@@ -161,7 +161,7 @@ export const ch4SternMulla: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Stern Mullá',
-      text: 'You again, with the dust of Karbilá still on you? I told you once to go home and forget His name. It seems the whole city has failed to take my advice.',
+      text: 'Another stranger come to stare at the pulpit? Last year I told every seeker from Karbilá to go home and forget His name. It seems the whole city has failed to take my advice.',
       choices: [
         { text: '"You came to hear Him recant."', next: 'recant', requires: f => !f.vakilAddressHeard },
         { text: '"Was it the recantation you hoped for?"', next: 'after', requires: f => !!f.vakilAddressHeard },

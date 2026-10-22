@@ -37,7 +37,7 @@ export const mullaHusaynForest: DialogueTree = {
       text: 'From Mashhad we raised the Black Standard, as He bade me. He sent me His own green turban to wear, and a new name, Siyyid ʿAlí. Two hundred of us left Khurásán. More joined at every village.',
       choices: [
         { text: '"Why a black standard?"', next: 'why' },
-        { text: '"And what news from Tihrán?"', next: 'shah' },
+        { text: '"And what news from Ṭihrán?"', next: 'shah' },
       ],
     },
     why: {
@@ -196,7 +196,7 @@ export const woodcutterSiege: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Woodcutter',
-      text: 'You again, and thinner. The soldiers took my ironwood for their towers and paid me in promises. Now there are cannon in the forest, and I cannot hear my daughter sing over them.',
+      text: 'You are from the fort. I can tell by how thin you are. The soldiers took my ironwood for their towers and paid me in promises. Now there are cannon in the forest, and I cannot hear my daughter sing over them.',
       choices: [{ text: '"Do you hear anything from the fort?"', next: 'hear' }],
     },
     hear: {

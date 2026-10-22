@@ -170,7 +170,7 @@ export const kulaynKandi: DialogueTree = {
     },
     letter: {
       speaker: 'Mullá Mihdíy-i-Kandí',
-      text: 'From Ṭihrán, from Bahá\'u\'lláh. (He touches the breast of his coat, where something flat is buttoned in.) A sealed letter, and some gifts. I have carried them as if they were live coals. I am not to open it and I am not to lose it, and I have not slept well for three nights.',
+      text: 'From Ṭihrán, from Mírzá Ḥusayn-ʿAlí of Núr. (He touches the breast of his coat, where something flat is buttoned in.) A sealed letter, and some gifts. I have carried them as if they were live coals. I am not to open it and I am not to lose it, and I have not slept well for three nights.',
       choices: [{ text: '"The tent is there, on the slope."', next: 'go' }],
     },
     go: {

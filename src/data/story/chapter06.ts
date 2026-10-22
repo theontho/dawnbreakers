@@ -123,7 +123,7 @@ export const chapter06Story: ChapterStory = {
     {
       flag: 'ch6CourierBadasht',
       title: 'Word of Badasht',
-      body: 'The courier carries news east: this summer the friends will gather in gardens at Badasht, where Ṭáhirih, Quddús, and Bahá\'u\'lláh are expected.',
+      body: 'The courier carries news east: this summer the friends will gather in gardens at Badasht, where Qurratu\'l-ʿAyn, Quddús, and Bahá\'u\'lláh are expected.',
     },
     {
       flag: 'bayanComplete',
