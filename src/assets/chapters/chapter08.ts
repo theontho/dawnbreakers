@@ -1,8 +1,6 @@
-import { css, footprintBox, groundShadow, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
-import { plaster, stone } from '../art/materials';
-import { archPath, band, dome, doorway, parapetRoof, walls } from '../art/ornaments';
+import { footprintBox, paintTexture } from '../art/canvasKit';
 import { standard } from '../art/banners';
-import { moss } from '../art/woodland';
+import { drawShrine } from '../art/shrine';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH08_FOREST_TEXTURE_GENERATORS } from './chapter08Forest';
 import { CH08_FORT_TEXTURE_GENERATORS } from './chapter08Fort';
@@ -13,62 +11,18 @@ import { CH08_FORT_TEXTURE_GENERATORS } from './chapter08Fort';
  * their own modules.
  */
 
-interface ShrinePalette {
-  wall: number;
-  plinth: number;
-  dome: number;
-  seed: number;
-  /** Damp and moss of a building half lost in the woods. */
-  overgrown?: boolean;
-}
-
-/** The tomb of Shaykh Ṭabarsí: a limewashed cube on a stone plinth under a low dome. */
-function drawShrine(ctx: Ctx, box: IsoBox, pal: ShrinePalette): void {
-  groundShadow(ctx, box, 8);
-  walls(ctx, box, (c, w, h, light) => plaster(c, w, h, { base: pal.wall, light, seed: pal.seed + (light === 1 ? 0 : 7) }), {
-    left: (c, w, h, l) => {
-      band(c, w, 5, 3, shade(pal.plinth, 0.95), l);
-      const doorW = Math.min(18, w * 0.26);
-      doorway(c, w / 2 - doorW / 2, h, doorW, h * 0.58, { frame: pal.plinth, door: 0x4a3018, light: l, seed: pal.seed });
-      for (const u of [w * 0.18, w * 0.82]) {
-        archPath(c, u - 5, h * 0.72, 10, h * 0.38);
-        c.fillStyle = css(shade(pal.wall, l * 0.62));
-        c.fill();
-      }
-    },
-    right: (c, w, h, l) => {
-      band(c, w, 5, 3, shade(pal.plinth, 0.95), l);
-      for (let i = 1; i <= 2; i++) {
-        archPath(c, (w / 3) * i - 5, h * 0.72, 10, h * 0.38);
-        c.fillStyle = css(shade(pal.wall, l * 0.6));
-        c.fill();
-      }
-    },
-  });
-  const plinth: IsoBox = { ...box, h: 7 };
-  walls(ctx, plinth, (c, w, h, light) => stone(c, w, h, { base: pal.plinth, light, seed: pal.seed + 3 }, 3.5));
-  if (pal.overgrown) {
-    moss(ctx, box.x - box.w * 0.6, box.y - box.w * 0.3 - 4, 14, 4, pal.seed);
-    moss(ctx, box.x + box.d * 0.5, box.y - box.d * 0.25 - 4, 12, 4, pal.seed + 1, 0x3f6a32);
-  }
-  parapetRoof(ctx, box, shade(pal.wall, 0.95), { base: shade(pal.wall, 0.75), light: 1, seed: pal.seed + 5 }, 4, 4);
-  outlineBox(ctx, box);
-  const centre = roofPoint(box, box.w / 2, box.d / 2);
-  dome(ctx, centre.x, centre.y + 4, Math.min(box.w, box.d) * 0.3, { color: pal.dome, drum: 7, drumColor: pal.wall, bulb: 1.05, ribs: true, finial: true });
-}
-
 export const CH08_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH08_FOREST_TEXTURE_GENERATORS,
   ...CH08_FORT_TEXTURE_GENERATORS,
   // The shrine seen from the forest road, greened by the damp.
   'ch8-shrine-glimpse': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 44, 44);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, { wall: 0xa49a7a, plinth: 0x7a7468, dome: 0x9a9a82, seed: 61, overgrown: true }));
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 64, 30);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, 58, { wall: 0xa49a7a, plinth: 0x7a7468, dome: 0x9a9a82, seed: 61, overgrown: true }));
   },
 
   'ch8-shrine': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, 56, 56);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, { wall: 0xcdbf98, plinth: 0x8a8578, dome: 0xb8b090, seed: 67 }));
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, 78, 30);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawShrine(ctx, box, 72, { wall: 0xcdbf98, plinth: 0x8a8578, dome: 0xb8b090, seed: 67, veranda: true }));
   },
 
 

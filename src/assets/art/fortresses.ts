@@ -1,62 +1,17 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundPoint, groundShadow, onLeftWall, onRightWall, onRoof, outlineBox, paintTexture, rng, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import { css, footprintBox, groundPoint, groundShadow, onLeftWall, onRightWall, onRoof, outlineBox, paintTexture, polygon, rng, shade, type Ctx, type IsoBox } from './canvasKit';
 import { planks, stone } from './materials';
-import { cylinder, doorway, LIGHT, merlons, parapetRoof, walls } from './ornaments';
-import { post, snowEdge, subBox } from './structureParts';
+import { archPath, cylinder, doorway, LIGHT, merlons, walls } from './ornaments';
+import { liftedPoint, post, snowEdge, subBox, type Pt } from './structureParts';
 
 /**
- * The mountain prisons of Ādharbāyjān. Mākū squats under its overhanging
- * crag behind round bastions; Chihrīq, "the Grievous Mountain", is a
- * darker keep of square towers. Both are rubble stone under snow.
+ * Parts for the mountain prisons of Ādharbāyjān: rubble stone, battered
+ * footings, round bastions and square towers, the inner keep, the gatehouse
+ * with its small iron-bound door, and the barred windows set high in the
+ * walls. `mountainFortress.ts` assembles them into Mākū and Chihrīq.
  */
 
-export interface FortressStyle {
-  wall: number;
-  wallH: number;
-  seed: number;
-  /** Mākū's great overhanging rock behind the walls. */
-  crag?: boolean;
-  /** Round bastions (Mākū) or square towers (Chihrīq) at the visible corners. */
-  towers: 'round' | 'square';
-  keepH: number;
-}
-
-export const MAKU_FORTRESS: FortressStyle = { wall: 0x7a7670, wallH: 78, seed: 101, crag: true, towers: 'round', keepH: 22 };
-export const CHIHRIQ_FORTRESS: FortressStyle = { wall: 0x5c5f66, wallH: 84, seed: 131, towers: 'square', keepH: 40 };
-
-export function paintFortress(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, style: FortressStyle): void {
-  const { box, texW, texH } = footprintBox(cellsW, cellsD, style.wallH, style.crag ? 60 : 50);
-  paintTexture(scene, key, texW + 24, texH, ctx => {
-    ctx.translate(12, 0);
-    const s = style.seed;
-    if (style.crag) crag(ctx, box, s);
-    groundShadow(ctx, box, 10, 0.35);
-    walls(ctx, box, (c, w, h, light) => fortressStone(c, w, h, style.wall, light, s), {
-      left: (c, w, h, l) => {
-        doorway(c, w / 2 - 9, h, 18, 30, { frame: shade(style.wall, 1.2), door: 0x3a2a1c, light: l, seed: s });
-        // Iron bands across the gate.
-        c.fillStyle = css(0x1a1a1e, 0.8);
-        for (const v of [h - 9, h - 20]) c.fillRect(w / 2 - 8, v, 16, 1.2);
-        for (const u of [w * 0.2, w * 0.8]) slit(c, u, h * 0.3, l);
-        snowEdge(c, w, 3, s + 1, l);
-      },
-      right: (c, w, h, l) => {
-        for (const u of [w * 0.3, w * 0.55, w * 0.8]) barredWindow(c, u - 4, h * 0.26, 8, 9, l, false);
-        snowEdge(c, w, 3, s + 2, l);
-      },
-    });
-    parapetRoof(ctx, box, shade(style.wall, 1.05), { base: 0xd8e2e8, light: 1, seed: s + 3 }, 6, 6);
-    outlineBox(ctx, box, 0x14181c);
-    keep(ctx, box, style);
-    snowyMerlons(ctx, box, shade(style.wall, 1.05), 5, 4);
-    const corners: Array<[number, number]> = [[0, 0], [box.w, box.d], [box.w, 0]];
-    for (const [p, q] of corners) {
-      if (style.towers === 'round') roundTower(ctx, groundPoint(box, p, q), 11, style.wallH + 12, style.wall, s + p + q);
-      else squareTower(ctx, box, p, q, style, s + p + q);
-    }
-    snowBank(ctx, box, s + 7);
-  });
-}
+const EDGE = 0x14181c;
 
 export function fortressStone(ctx: Ctx, w: number, h: number, color: number, light: number, seed: number): void {
   stone(ctx, w, h, { base: color, light, seed }, 8);
@@ -67,10 +22,11 @@ export function fortressStone(ctx: Ctx, w: number, h: number, color: number, lig
   ctx.fillRect(0, h - 12, w, 1);
 }
 
-function slit(ctx: Ctx, u: number, v: number, light: number): void {
+/** An arrow slit: a narrow vertical gap with a short cross for a crossbow's sweep. */
+export function slit(ctx: Ctx, u: number, v: number, light: number, len = 8): void {
   ctx.fillStyle = css(shade(0x0e1014, light + 0.2));
-  ctx.fillRect(u - 1, v, 2, 8);
-  ctx.fillRect(u - 2.5, v + 3, 5, 1.5);
+  ctx.fillRect(u - 0.9, v, 1.8, len);
+  ctx.fillRect(u - 2.2, v + len * 0.4, 4.4, 1.3);
 }
 
 /** A small deep-set window crossed with iron bars, dark or lamp-lit within. */
@@ -91,8 +47,8 @@ export function barredWindow(ctx: Ctx, x: number, y: number, w: number, h: numbe
   ctx.fillRect(x, y, 1.5, h);
   ctx.fillRect(x, y, w, 1.2);
   ctx.strokeStyle = css(shade(0x9aa4ac, light));
-  ctx.lineWidth = 1;
-  for (let u = x + 2; u < x + w - 0.5; u += 2.5) {
+  ctx.lineWidth = 0.9;
+  for (let u = x + 2; u < x + w - 0.5; u += 2.2) {
     ctx.beginPath();
     ctx.moveTo(u, y);
     ctx.lineTo(u, y + h);
@@ -106,114 +62,8 @@ export function barredWindow(ctx: Ctx, x: number, y: number, w: number, h: numbe
   ctx.fillRect(x - 1.5, y + h + 0.5, w + 3, 1.5);
 }
 
-/** Mākū's overhanging rock: a faceted grey cliff rising behind the fortress. */
-function crag(ctx: Ctx, box: IsoBox, seed: number): void {
-  const rand = rng(seed);
-  const left = roofPoint(box, 0, 0);
-  const back = roofPoint(box, 0, box.d);
-  const right = roofPoint(box, box.w, box.d);
-  const foot = left.y + 12;
-  // A jagged ridge of alternate peaks and saddles, highest near the back corner.
-  const ridge: Array<{ x: number; y: number }> = [];
-  const steps = 12;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const envelope = 0.3 + 0.7 * Math.pow(Math.sin(Math.min(1, t * 1.2) * Math.PI), 0.7);
-    const zig = i % 2 ? 0.62 : 1;
-    const x = left.x + 4 + (right.x - left.x - 8) * t + (rand() - 0.5) * 4;
-    const y = back.y - 6 - envelope * zig * 54 - rand() * 6 + (i === 0 || i === steps ? 18 : 0);
-    ridge.push({ x, y });
-  }
-  for (let i = 0; i < steps; i++) {
-    const a = ridge[i]!;
-    const b = ridge[i + 1]!;
-    // Slopes rising to the right face the sun; falling ones are in shadow.
-    // Fall lines splay outward so the facets read as buttresses, not stripes.
-    const lit = b.y < a.y;
-    const footA = a.x + (i % 2 ? 6 : -6);
-    const footB = b.x + ((i + 1) % 2 ? 6 : -6);
-    const g = ctx.createLinearGradient(0, Math.min(a.y, b.y), 0, foot);
-    g.addColorStop(0, css(shade(lit ? 0x9a968e : 0x5e5b58, 0.9 + rand() * 0.2)));
-    g.addColorStop(1, css(shade(lit ? 0x6a6660 : 0x3a3836, 1)));
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.lineTo(footB, foot);
-    ctx.lineTo(footA, foot);
-    ctx.closePath();
-    ctx.fill();
-  }
-  const outline = (): void => {
-    ctx.beginPath();
-    ctx.moveTo(ridge[0]!.x, foot);
-    for (const p of ridge) ctx.lineTo(p.x, p.y);
-    ctx.lineTo(ridge[steps]!.x, foot);
-  };
-  ctx.save();
-  outline();
-  ctx.clip();
-  // Strata running across the face, and a dark undercut beneath the overhang.
-  ctx.lineWidth = 0.8;
-  for (let i = 0; i < 22; i++) {
-    const x = left.x + rand() * (right.x - left.x);
-    const y = back.y - 46 + rand() * 50;
-    ctx.strokeStyle = rand() < 0.6 ? 'rgba(30,28,28,0.4)' : 'rgba(220,215,205,0.25)';
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + 8 + rand() * 10, y + 2 + rand() * 3);
-    ctx.stroke();
-  }
-  const under = ctx.createLinearGradient(0, back.y - 24, 0, back.y + 6);
-  under.addColorStop(0, 'rgba(20,20,24,0)');
-  under.addColorStop(1, 'rgba(20,20,24,0.55)');
-  ctx.fillStyle = under;
-  ctx.fillRect(left.x, back.y - 24, right.x - left.x, foot - back.y + 24);
-  // Snow caught on the peaks, thinning down the gullies.
-  ctx.fillStyle = 'rgba(238,243,247,0.95)';
-  for (let i = 0; i <= steps; i += 2) {
-    const p = ridge[i]!;
-    const len = 6 + rand() * 8;
-    ctx.beginPath();
-    ctx.moveTo(p.x - 6, p.y + len * 0.7);
-    ctx.lineTo(p.x, p.y - 0.5);
-    ctx.lineTo(p.x + 7, p.y + len * 0.5);
-    ctx.lineTo(p.x + 2, p.y + len * 0.35);
-    ctx.lineTo(p.x - 1, p.y + len);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.restore();
-  ctx.strokeStyle = 'rgba(20,20,24,0.75)';
-  ctx.lineWidth = 1;
-  outline();
-  ctx.stroke();
-}
-
-/** The inner keep standing in the courtyard near the back corner. */
-function keep(ctx: Ctx, box: IsoBox, style: FortressStyle): void {
-  const size = Math.min(box.w, box.d) * 0.36;
-  const k = subBox(box, 10, 10 + size, box.d - 10 - size, box.d - 10, style.keepH + 6, style.wallH - 6);
-  walls(ctx, k, (c, w, h, light) => stone(c, w, h, { base: shade(style.wall, 0.95), light, seed: style.seed + 9 }, 7), {
-    left: (c, w, _h, l) => {
-      barredWindow(c, w / 2 - 3, 8, 6, 8, l, true);
-      snowEdge(c, w, 3, style.seed + 10, l);
-    },
-    right: (c, w, _h, l) => {
-      slit(c, w / 2, 8, l);
-      snowEdge(c, w, 3, style.seed + 11, l);
-    },
-  });
-  onRoof(ctx, k, (w, d) => {
-    ctx.fillStyle = css(0xe8eef2);
-    ctx.fillRect(0, 0, w, d);
-  });
-  snowyMerlons(ctx, k, shade(style.wall, 1.05), 4, 3);
-  outlineBox(ctx, k, 0x14181c);
-}
-
 /** Crenellations with a cap of snow on every merlon. */
-function snowyMerlons(ctx: Ctx, box: IsoBox, color: number, size: number, gap: number): void {
+export function snowyMerlons(ctx: Ctx, box: IsoBox, color: number, size: number, gap: number): void {
   merlons(ctx, box, color, size, gap);
   const caps = (w: number) => {
     ctx.fillStyle = css(0xf0f4f7, 0.95);
@@ -227,43 +77,94 @@ function snowyMerlons(ctx: Ctx, box: IsoBox, color: number, size: number, gap: n
   onRightWall(ctx, box, caps);
 }
 
-function roundTower(ctx: Ctx, foot: { x: number; y: number }, r: number, h: number, color: number, seed: number): void {
+function snowRoof(ctx: Ctx, box: IsoBox): void {
+  onRoof(ctx, box, (w, d) => {
+    ctx.fillStyle = css(0xe8eef2);
+    ctx.fillRect(0, 0, w, d);
+  });
+}
+
+/**
+ * A sloped stone footing that steps out from the wall above it: `outer`
+ * pixels in from the footprint edge at the ground, `inner` at its crest.
+ * Only the two faces toward the viewer are drawn.
+ */
+export function batteredFooting(ctx: Ctx, box: IsoBox, outer: number, inner: number, h: number, color: number, seed: number): void {
+  const { w, d } = box;
+  const at = (p: number, q: number, z: number) => liftedPoint(box, p, q, z);
+  const base = subBox(box, outer, w - outer, outer, d - outer, h);
+  const faces: Array<[Pt[], 'left' | 'right']> = [
+    [[at(outer, outer, 0), at(w - outer, outer, 0), at(w - inner, inner, h), at(inner, inner, h)], 'left'],
+    [[at(w - outer, outer, 0), at(w - outer, d - outer, 0), at(w - inner, d - inner, h), at(w - inner, inner, h)], 'right'],
+  ];
+  for (const [pts, side] of faces) {
+    ctx.save();
+    polygon(ctx, pts);
+    ctx.clip();
+    // The slope catches more sky than the upright wall above it.
+    const light = (side === 'left' ? LIGHT.left : LIGHT.right) * 1.08;
+    (side === 'left' ? onLeftWall : onRightWall)(ctx, base, (fw, fh) => stone(ctx, fw, fh, { base: shade(color, 0.92), light, seed }, 6));
+    ctx.restore();
+    ctx.strokeStyle = css(EDGE, 0.7);
+    ctx.lineWidth = 1;
+    polygon(ctx, pts);
+    ctx.stroke();
+  }
+  // Snow lodged on the crest of the slope.
+  ctx.strokeStyle = 'rgba(236,241,245,0.9)';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  const crest = [at(inner, inner, h), at(w - inner, inner, h), at(w - inner, d - inner, h)];
+  crest.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y + 0.5) : ctx.moveTo(p.x, p.y + 0.5)));
+  ctx.stroke();
+}
+
+/** A round bastion standing on a flared footing, crowned with snowy merlons. */
+export function roundTower(ctx: Ctx, foot: Pt, r: number, h: number, color: number, seed: number): void {
   const rand = rng(seed);
-  cylinder(ctx, foot.x, foot.y, r, h, color, false);
+  cylinder(ctx, foot.x, foot.y + 1, r + 3, 14, shade(color, 0.9), false);
+  ctx.fillStyle = 'rgba(236,241,245,0.8)';
+  ctx.beginPath();
+  ctx.ellipse(foot.x, foot.y - 13, r + 2, (r + 2) * 0.42, 0, 0.1, Math.PI - 0.1);
+  ctx.fill();
+  cylinder(ctx, foot.x, foot.y - 12, r, h - 12, color, false);
   ctx.save();
   ctx.beginPath();
-  ctx.rect(foot.x - r, foot.y - h, r * 2, h + r);
+  ctx.rect(foot.x - r, foot.y - h, r * 2, h - 12 + r * 0.45);
   ctx.clip();
   // Coursed stone: curved joints following the drum.
-  ctx.strokeStyle = 'rgba(20,22,26,0.35)';
+  ctx.strokeStyle = 'rgba(20,22,26,0.32)';
   ctx.lineWidth = 0.7;
-  for (let k = 6; k < h; k += 6) {
+  for (let k = 18; k < h; k += 6) {
     ctx.beginPath();
     ctx.ellipse(foot.x, foot.y - k, r, r * 0.45, 0, 0, Math.PI);
     ctx.stroke();
   }
   for (let i = 0; i < h / 3; i++) {
     const a = rand() * Math.PI;
-    const y = foot.y - rand() * h;
+    const y = foot.y - 12 - rand() * (h - 12);
     ctx.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)';
     ctx.fillRect(foot.x - Math.cos(a) * r * 0.9, y, 3, 1.5);
   }
   ctx.restore();
-  ctx.fillStyle = 'rgba(14,16,20,0.9)';
-  ctx.fillRect(foot.x - 3, foot.y - h * 0.62, 1.6, 7);
-  // Crenellated crown with snow on each merlon.
+  // Two slits staggered up the drum, both well above head height.
+  slit(ctx, foot.x - r * 0.35, foot.y - h * 0.55, 1);
+  slit(ctx, foot.x + r * 0.3, foot.y - h * 0.8, 0.7, 6);
   const crownY = foot.y - h;
+  // A corbelled ring under the crown.
+  ctx.fillStyle = css(shade(color, 0.6));
+  for (let a = 0.1; a < Math.PI; a += 0.32) ctx.fillRect(foot.x + Math.cos(a) * (r + 0.5) - 1, crownY + Math.sin(a) * r * 0.45 + 2, 2, 3);
   ctx.fillStyle = css(shade(color, 1.18));
   ctx.beginPath();
-  ctx.ellipse(foot.x, crownY, r, r * 0.45, 0, 0, Math.PI * 2);
+  ctx.ellipse(foot.x, crownY, r + 1.5, (r + 1.5) * 0.45, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = css(0xe8eef2);
   ctx.beginPath();
-  ctx.ellipse(foot.x, crownY, r - 1.5, r * 0.45 - 1, 0, 0, Math.PI * 2);
+  ctx.ellipse(foot.x, crownY, r - 1, r * 0.45 - 0.8, 0, 0, Math.PI * 2);
   ctx.fill();
   for (let a = -1.25; a <= 1.25; a += 0.42) {
-    const mx = foot.x + Math.sin(a) * r * 0.92;
-    const my = crownY + Math.cos(a) * r * 0.4;
+    const mx = foot.x + Math.sin(a) * r * 0.95;
+    const my = crownY + Math.cos(a) * r * 0.42;
     ctx.fillStyle = css(shade(color, 1.15 - a * 0.28));
     ctx.fillRect(mx - 1.8, my - 5, 3.6, 5);
     ctx.fillStyle = css(0xf0f4f7);
@@ -273,65 +174,119 @@ function roundTower(ctx: Ctx, foot: { x: number; y: number }, r: number, h: numb
   }
 }
 
-function squareTower(ctx: Ctx, box: IsoBox, p: number, q: number, style: FortressStyle, seed: number): void {
-  const size = 18;
-  const p0 = Math.min(Math.max(p - size / 2, -4), box.w - size + 4);
-  const q0 = Math.min(Math.max(q - size / 2, -4), box.d - size + 4);
-  const t = subBox(box, p0, p0 + size, q0, q0 + size, style.wallH + 14);
-  walls(ctx, t, (c, w, h, light) => fortressStone(c, w, h, shade(style.wall, 0.95), light, seed), {
-    left: (c, w, _h, l) => {
-      slit(c, w / 2, 14, l);
+/** A square tower astride a corner of `box`, `size` pixels a side. */
+export function squareTower(ctx: Ctx, box: IsoBox, p: number, q: number, size: number, h: number, color: number, seed: number): void {
+  const t = subBox(box, p - size / 2, p + size / 2, q - size / 2, q + size / 2, h);
+  const footing = subBox(box, p - size / 2 - 2, p + size / 2 + 2, q - size / 2 - 2, q + size / 2 + 2, 12);
+  walls(ctx, footing, (c, w, fh, light) => stone(c, w, fh, { base: shade(color, 0.85), light, seed: seed + 5 }, 6));
+  outlineBox(ctx, footing, EDGE);
+  walls(ctx, t, (c, w, th, light) => fortressStone(c, w, th, shade(color, 0.95), light, seed), {
+    left: (c, w, th, l) => {
+      slit(c, w / 2, th * 0.35, l);
+      barredWindow(c, w / 2 - 3, 12, 6, 7, l, false);
       snowEdge(c, w, 3, seed + 1, l);
     },
-    right: (c, w, _h, l) => {
-      slit(c, w / 2, 22, l);
+    right: (c, w, th, l) => {
+      slit(c, w / 2, th * 0.5, l);
+      slit(c, w / 2, 14, l, 6);
       snowEdge(c, w, 3, seed + 2, l);
     },
   });
-  onRoof(ctx, t, (w, d) => {
-    ctx.fillStyle = css(0xe8eef2);
-    ctx.fillRect(0, 0, w, d);
-  });
-  snowyMerlons(ctx, t, shade(style.wall, 1.05), 4, 3);
-  outlineBox(ctx, t, 0x14181c);
+  snowRoof(ctx, t);
+  snowyMerlons(ctx, t, shade(color, 1.05), 4, 3);
+  outlineBox(ctx, t, EDGE);
 }
 
-/** Snow banked against the foot of both front walls. */
-function snowBank(ctx: Ctx, box: IsoBox, seed: number): void {
-  const rand = rng(seed);
-  ctx.fillStyle = 'rgba(232,238,243,0.9)';
-  for (const [axis, len] of [['p', box.w], ['q', box.d]] as const) {
-    for (let t = 6; t < len - 6; t += 9 + rand() * 6) {
-      const at = axis === 'p' ? groundPoint(box, t, 0) : groundPoint(box, box.w, t);
-      ctx.beginPath();
-      ctx.ellipse(at.x, at.y - 1, 6 + rand() * 5, 2 + rand(), axis === 'p' ? 0.45 : -0.45, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
+/** The inner keep, its foot hidden in the courtyard, rising above the curtain wall. */
+export function keep(ctx: Ctx, k: IsoBox, color: number, seed: number): void {
+  walls(ctx, k, (c, w, h, light) => stone(c, w, h, { base: shade(color, 0.95), light, seed }, 7), {
+    left: (c, w, _h, l) => {
+      barredWindow(c, w * 0.35 - 3, 10, 6, 8, l, true);
+      slit(c, w * 0.72, 12, l);
+      snowEdge(c, w, 3, seed + 1, l);
+    },
+    right: (c, w, _h, l) => {
+      slit(c, w / 2, 10, l);
+      snowEdge(c, w, 3, seed + 2, l);
+    },
+  });
+  snowRoof(ctx, k);
+  snowyMerlons(ctx, k, shade(color, 1.05), 4, 3);
+  outlineBox(ctx, k, EDGE);
+}
+
+/**
+ * The gatehouse: a tower block pushed forward from the left curtain wall.
+ * The portal is a tall pointed recess; the door inside it is only big
+ * enough for one person at a time.
+ */
+export function gatehouse(ctx: Ctx, g: IsoBox, color: number, seed: number): void {
+  walls(ctx, g, (c, w, h, light) => fortressStone(c, w, h, shade(color, 1.02), light, seed), {
+    left: (c, w, h, l) => {
+      const mid = w / 2;
+      const recessW = 22;
+      const recessH = 52;
+      archPath(c, mid - recessW / 2 - 2, h, recessW + 4, recessH + 3);
+      c.fillStyle = css(shade(color, l * 1.2));
+      c.fill();
+      archPath(c, mid - recessW / 2, h, recessW, recessH);
+      const deep = c.createLinearGradient(mid - recessW / 2, 0, mid + recessW / 2, 0);
+      deep.addColorStop(0, css(shade(color, l * 0.32)));
+      deep.addColorStop(1, css(shade(color, l * 0.55)));
+      c.fillStyle = deep;
+      c.fill();
+      doorway(c, mid - 7, h, 14, 35, { frame: shade(color, 0.8), door: 0x3a2a1c, light: l * 0.85, seed });
+      c.fillStyle = css(0x1a1a1e, 0.85);
+      for (const v of [h - 8, h - 18, h - 28]) c.fillRect(mid - 6, v, 12, 1.1);
+      // A grille in the tympanum and a hood of corbels for dropping stones.
+      barredWindow(c, mid - 3, h - 47, 6, 6, l * 0.8, false);
+      c.fillStyle = css(shade(color, l * 0.55));
+      c.fillRect(mid - 12, 12, 24, 5);
+      c.fillStyle = css(shade(color, l * 1.1));
+      c.fillRect(mid - 13, 10, 26, 2.5);
+      for (let u = mid - 11; u < mid + 11; u += 4.5) {
+        c.fillStyle = css(shade(color, l * 0.8));
+        c.fillRect(u, 17, 2.4, 3);
+      }
+      slit(c, mid, 24, l, 7);
+      snowEdge(c, w, 3, seed + 1, l);
+      c.fillStyle = 'rgba(236,241,245,0.9)';
+      c.fillRect(mid - 13, 9, 26, 1.6);
+    },
+    right: (c, w, h, l) => {
+      slit(c, w / 2, h * 0.4, l);
+      snowEdge(c, w, 3, seed + 2, l);
+    },
+  });
+  snowRoof(ctx, g);
+  snowyMerlons(ctx, g, shade(color, 1.05), 4, 3);
+  outlineBox(ctx, g, EDGE);
 }
 
 /** A stone pier pierced by a barred window, a lamp still burning within. */
 export function paintBarredMarker(scene: Phaser.Scene, key: string): void {
-  const { box, texW, texH } = footprintBox(1, 1, 36, 10);
+  const { box, texW, texH } = footprintBox(1, 1, 52, 10);
   paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, box, 4, 0.3);
-    walls(ctx, box, (c, w, h, light) => fortressStone(c, w, h, 0x4e555e, light, 151), {
+    const pier = subBox(box, 4, box.w - 4, 4, box.d - 4, 52);
+    batteredFooting(ctx, box, 1, 4, 8, 0x4e555e, 150);
+    groundShadow(ctx, pier, 4, 0.3);
+    walls(ctx, pier, (c, w, h, light) => fortressStone(c, w, h, 0x4e555e, light, 151), {
       left: (c, w, h, l) => {
-        barredWindow(c, w / 2 - 6, h * 0.28, 12, 13, l, true);
+        barredWindow(c, w / 2 - 4, h * 0.3, 8, 11, l, true);
         snowEdge(c, w, 3, 152, l);
       },
       right: (c, w, h, l) => {
-        barredWindow(c, w / 2 - 5, h * 0.3, 10, 12, l, false);
+        barredWindow(c, w / 2 - 3.5, h * 0.32, 7, 10, l, false);
         snowEdge(c, w, 3, 153, l);
       },
     });
-    onRoof(ctx, box, (w, d) => {
+    onRoof(ctx, pier, (w, d) => {
       ctx.fillStyle = css(shade(0xe2e9ee, LIGHT.roof));
       ctx.fillRect(0, 0, w, d);
     });
-    outlineBox(ctx, box, 0x101418);
+    outlineBox(ctx, pier, 0x101418);
     // Lamplight spilling onto the snow below the window.
-    const sill = groundPoint(box, box.w / 2, 0);
+    const sill = groundPoint(pier, pier.w / 2, -2);
     const g = ctx.createRadialGradient(sill.x, sill.y + 2, 0, sill.x, sill.y + 2, 12);
     g.addColorStop(0, 'rgba(255,200,120,0.3)');
     g.addColorStop(1, 'rgba(255,200,120,0)');
@@ -354,9 +309,9 @@ export function paintFootbridge(scene: Phaser.Scene, key: string): void {
     onRoof(ctx, box, (w, d) => planks(ctx, w, d, { base: 0x8a6a44, light: LIGHT.roof, seed: 161 }, true, 5));
     outlineBox(ctx, box, 0x24180e);
     // Posts on the four corners and rope rails along the two banks' edges.
-    const at = (p: number, q: number) => roofPoint(box, p, q);
+    const at = (p: number, q: number) => liftedPoint(box, p, q, box.h);
     const corners = [at(0, 0), at(0, box.d), at(box.w, 0), at(box.w, box.d)];
-    const railH = 10;
+    const railH = 14;
     ctx.strokeStyle = css(0xc9b088, 0.95);
     ctx.lineWidth = 1;
     for (const [a, b] of [[corners[1]!, corners[3]!], [corners[0]!, corners[2]!]] as const) {

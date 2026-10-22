@@ -1,4 +1,5 @@
-import { CHIHRIQ_FORTRESS, MAKU_FORTRESS, paintBarredMarker, paintFootbridge, paintFortress } from '../art/fortresses';
+import { paintBarredMarker, paintFootbridge } from '../art/fortresses';
+import { CHIHRIQ_FORTRESS, MAKU_FORTRESS, paintFortress } from '../art/mountainFortress';
 import { paintBrazier, paintPine, paintRock, paintSnowDrift, paintSnowShrub } from '../art/mountain';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
