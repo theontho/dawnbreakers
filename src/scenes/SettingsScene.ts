@@ -11,14 +11,12 @@ interface SettingsLaunch {
   from?: string;
   spawnX?: number;
   spawnY?: number;
-  localeChanged?: boolean;
 }
 
 export class SettingsScene extends Phaser.Scene {
   private fromKey = 'City';
   private spawnX?: number;
   private spawnY?: number;
-  private localeChanged = false;
 
   constructor() {
     super('Settings');
@@ -28,7 +26,6 @@ export class SettingsScene extends Phaser.Scene {
     this.fromKey = data.from ?? 'City';
     this.spawnX = data.spawnX;
     this.spawnY = data.spawnY;
-    this.localeChanged = data.localeChanged ?? false;
   }
 
   create(): void {
@@ -72,10 +69,7 @@ export class SettingsScene extends Phaser.Scene {
       menuWidth: dropdownW,
       size,
       depth: 30000,
-      onChange: () => {
-        this.localeChanged = true;
-        this.scene.restart(this.launchData());
-      },
+      onChange: () => this.applyLanguage(),
     });
 
     const helpBoxX = panelX + 28;
@@ -158,23 +152,26 @@ export class SettingsScene extends Phaser.Scene {
       from: this.fromKey,
       spawnX: this.spawnX,
       spawnY: this.spawnY,
-      localeChanged: this.localeChanged,
     };
   }
 
-  private close(): void {
-    if (!this.localeChanged) {
-      this.scene.stop();
-      this.scene.resume(this.fromKey);
-      return;
-    }
-
-    this.scene.stop();
-    this.scene.stop(this.fromKey);
-    this.scene.start(this.fromKey, {
-      spawnX: this.spawnX,
-      spawnY: this.spawnY,
+  /**
+   * Rebuilds the paused map underneath in the new language straight away
+   * (keeping it paused behind this panel), then this panel itself.
+   */
+  private applyLanguage(): void {
+    const map = this.scene.get(this.fromKey);
+    map.events.once(Phaser.Scenes.Events.CREATE, () => {
+      map.scene.pause();
+      this.scene.bringToTop();
     });
+    map.scene.restart({ spawnX: this.spawnX, spawnY: this.spawnY });
+    this.scene.restart(this.launchData());
+  }
+
+  private close(): void {
+    this.scene.stop();
+    this.scene.resume(this.fromKey);
   }
 
   private openChapterSelect(): void {
@@ -182,7 +179,6 @@ export class SettingsScene extends Phaser.Scene {
       returnToGameScene: this.fromKey,
       returnSpawnX: this.spawnX,
       returnSpawnY: this.spawnY,
-      restartReturnScene: this.localeChanged,
     });
     this.scene.bringToTop('ChapterSelect');
     this.scene.stop();

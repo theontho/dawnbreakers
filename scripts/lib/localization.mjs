@@ -227,6 +227,15 @@ function collectFromTranslationCalls(source, file, translationRequired, namesReq
     const target = match[1] === 'tName' ? namesRequired : translationRequired;
     addRequired(target, key, file, lineFor(source, match.index), `${match[1]}()`);
   }
+
+  // Both branches of `t(cond ? 'a' : 'b')`.
+  const ternaryRe = /\b(t|tName)\(\s*[^'"`()?]+\?\s*(["'])((?:\\.|(?!\2).)*?)\2\s*:\s*(["'])((?:\\.|(?!\4).)*?)\4\s*\)/g;
+  while ((match = ternaryRe.exec(source))) {
+    const target = match[1] === 'tName' ? namesRequired : translationRequired;
+    for (const [quote, body] of [[match[2], match[3]], [match[4], match[5]]]) {
+      addRequired(target, parseStringLiteral(`${quote}${body}${quote}`), file, lineFor(source, match.index), `${match[1]}()`);
+    }
+  }
 }
 
 function collectFromLiteralFields(source, file, translationRequired, namesRequired) {

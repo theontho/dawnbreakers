@@ -2230,6 +2230,7 @@ export const text: TranslationCatalog = {
   "ʿAlí Khán, who once kept Him from a lamp, asked His forgiveness and now opens the gate to pilgrims. He would not say what he saw by the river.": "علی‌خان که روزی حتی چراغی را از آن حضرت دریغ می‌داشت، از ایشان طلب بخشش کرد و اکنون دروازه را بر زائران می‌گشاید. نمی‌خواست بگوید کنار رود چه دیده است.",
   "Music": "موسیقی",
   "Sound effects": "جلوه‌های صوتی",
+  "Continue": "ادامه",
 };
 
 export const names: TranslationCatalog = {

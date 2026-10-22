@@ -2227,6 +2227,7 @@ export const text: TranslationCatalog = {
   "ʿAlí Khán, who once kept Him from a lamp, asked His forgiveness and now opens the gate to pilgrims. He would not say what he saw by the river.": "かつてあの方にランプさえ与えなかったアリー・ハーンは、あの方の赦しを請い、今では巡礼者のために門を開けている。川のほとりで何を見たのか、彼は語ろうとしなかった。",
   "Music": "音楽",
   "Sound effects": "効果音",
+  "Continue": "続きから",
 };
 
 // Chapter metadata translations.

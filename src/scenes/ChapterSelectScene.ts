@@ -10,7 +10,6 @@ interface ChapterSelectLaunch {
   returnToGameScene?: string;
   returnSpawnX?: number;
   returnSpawnY?: number;
-  restartReturnScene?: boolean;
 }
 
 /**
@@ -21,7 +20,6 @@ export class ChapterSelectScene extends Phaser.Scene {
   private returnToGameScene?: string;
   private returnSpawnX?: number;
   private returnSpawnY?: number;
-  private restartReturnScene = false;
 
   constructor() { super('ChapterSelect'); }
 
@@ -29,7 +27,6 @@ export class ChapterSelectScene extends Phaser.Scene {
     this.returnToGameScene = data.returnToGameScene;
     this.returnSpawnX = data.returnSpawnX;
     this.returnSpawnY = data.returnSpawnY;
-    this.restartReturnScene = data.restartReturnScene ?? false;
   }
 
   create(): void {
@@ -128,7 +125,6 @@ export class ChapterSelectScene extends Phaser.Scene {
       returnToGameScene: this.returnToGameScene,
       returnSpawnX: this.returnSpawnX,
       returnSpawnY: this.returnSpawnY,
-      restartReturnScene: this.restartReturnScene,
     };
   }
 
@@ -182,16 +178,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     if (!returnScene) return;
 
     this.scene.stop();
-    if (!this.restartReturnScene) {
-      this.scene.resume(returnScene);
-      return;
-    }
-
-    this.scene.stop(returnScene);
-    this.scene.start(returnScene, {
-      spawnX: this.returnSpawnX,
-      spawnY: this.returnSpawnY,
-    });
+    this.scene.resume(returnScene);
   }
 
   private goToTitle(): void {

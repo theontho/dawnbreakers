@@ -54,7 +54,12 @@ const isRtlLocale = (locale: Locale) => LOCALE_CONFIGS[locale].direction === 'rt
 export let activeLocale: Locale = readInitialLocale();
 export let rtl = isRtlLocale(activeLocale);
 
-export function setLocale(locale: Locale): Locale {
+/**
+ * Switches language once its catalog has loaded, so nothing repaints in the
+ * English fallback while the catalog is still on its way.
+ */
+export async function setLocale(locale: Locale): Promise<Locale> {
+  await loadLocale(locale);
   activeLocale = locale;
   rtl = isRtlLocale(locale);
 
@@ -66,16 +71,8 @@ export function setLocale(locale: Locale): Locale {
     }
   }
 
-  // Fire-and-forget: catalog will be available on subsequent renders.
-  // Callers that need to await the catalog should call `loadLocale` directly.
-  void loadLocale(locale);
   applyLocaleDocument();
   return activeLocale;
-}
-
-export function toggleLocale(): Locale {
-  const index = SUPPORTED_LOCALES.indexOf(activeLocale);
-  return setLocale(SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length]!);
 }
 
 export function languageButtonLabel(): string {

@@ -140,8 +140,9 @@ export function addLanguageDropdown(
         ev.stopPropagation();
         closeMenu();
         if (locale === activeLocale) return;
-        setLocale(locale);
-        onChange();
+        void setLocale(locale).then(() => {
+          if (scene.scene.isActive()) onChange();
+        });
       });
 
     return [bg, label];

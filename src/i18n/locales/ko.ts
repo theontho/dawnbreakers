@@ -2226,6 +2226,7 @@ export const text: TranslationCatalog = {
   "ʿAlí Khán, who once kept Him from a lamp, asked His forgiveness and now opens the gate to pilgrims. He would not say what he saw by the river.": "한때 그분께 등불조차 허락하지 않았던 알리 칸은 그분께 용서를 구했고, 이제 순례자들에게 성문을 엽니다. 그는 강가에서 무엇을 보았는지 말하지 않으려 했습니다.",
   "Music": "음악",
   "Sound effects": "효과음",
+  "Continue": "이어하기",
 };
 
 // Chapter metadata translations.
