@@ -80,7 +80,9 @@ export const trialAzim: DialogueTree = {
       text: 'I have followed Him for years. I believed Him the Gate, and gladly. But the Qáʾim Himself? All night it turned in me like a millstone. I could not pray. I could not lie still.',
       choices: [
         { text: '"I know that stone. I have carried one since Shíráz."', next: 'stone',
-          requires: f => f.recognised !== true },
+          requires: f => f.recognised === false },
+        { text: '"I know that stone. I have carried one myself."', next: 'stone',
+          requires: f => f.recognised === undefined },
         { text: '"What changed?"', next: 'dawn' },
       ],
     },

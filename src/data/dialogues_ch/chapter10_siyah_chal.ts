@@ -75,6 +75,8 @@ export const ch10Prisoner: DialogueTree = {
           requires: f => f.recognised === true },
         { text: '"I kept vigil at a door in Shíráz once, and asked for time."', next: 'asked',
           requires: f => f.recognised === false },
+        { text: '"How does a man bear the hours down here?"', next: 'hours',
+          requires: f => f.recognised !== false },
         { text: '(Sit beside him without speaking.)', next: 'beside' },
       ],
     },
@@ -102,6 +104,11 @@ export const ch10Prisoner: DialogueTree = {
       speaker: 'Fellow Prisoner',
       text: 'Asked for time! Well, you have plenty of it now. There is nothing in this pit but time. Do you still need it?',
       choices: [{ text: '"Less than I did. I am not sure yet how much less."', next: 'same' }],
+    },
+    hours: {
+      speaker: 'Fellow Prisoner',
+      text: 'Hours! There is nothing in this pit but hours. A man finds out down here what he believes, because there is nothing left to take his mind off it. Have you found out yet?',
+      choices: [{ text: '"I am finding out."', next: 'same' }],
     },
     same: {
       speaker: 'Fellow Prisoner',

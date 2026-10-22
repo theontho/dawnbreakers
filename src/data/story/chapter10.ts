@@ -142,6 +142,12 @@ export const chapter10Story: ChapterStory = {
     },
     {
       flag: 'ch10Final',
+      equals: 'ready',
+      title: 'Ready to Say',
+      body: 'Eight years after the lamplit door in Shíráz, and a winter in the dark, you were ready at the western gate to say what you saw. You followed the tracks west.',
+    },
+    {
+      flag: 'ch10Final',
       equals: 'following',
       title: 'Which Way the Tracks Go',
       body: 'You did not yet have words for what you saw in the dark. You knew which way the tracks went, and you followed them west.',

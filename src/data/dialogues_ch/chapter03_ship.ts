@@ -38,7 +38,9 @@ export const quddusShip: DialogueTree = {
         { text: '"I believed Mullá Ḥusayn\'s witness at dawn. What does that belief ask of me?"', next: 'asks',
           requires: f => f.recognised === true },
         { text: '"I asked for the verses before I would believe. Are these they?"', next: 'verses',
-          requires: f => f.recognised !== true },
+          requires: f => f.recognised === false },
+        { text: '"Mullá Ḥusayn said the verses came from Him unbidden. Are these they?"', next: 'verses',
+          requires: f => f.recognised === undefined },
       ],
     },
     asks: {

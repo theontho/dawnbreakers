@@ -17,14 +17,21 @@ export const mullaHusaynForest: DialogueTree = {
       text: 'Peace be upon you, friend. The road from Khurásán is long, and this forest makes every man a stranger. Come closer. Let me see your face.',
       choices: [
         { text: '"It is the one who sat outside the door in Shíráz."', next: 'shirazYes',
-          requires: f => f.recognised === true },
+          requires: f => f.recognised !== false && !f.ch6MetMullaHusayn },
+        { text: '"It is the one who sat outside the door in Shíráz, and walked with you at Mákú."', next: 'makuYes',
+          requires: f => f.recognised !== false && !!f.ch6MetMullaHusayn },
         { text: '"You told me once to search. I have been searching."', next: 'shirazNo',
-          requires: f => f.recognised !== true },
+          requires: f => f.recognised === false },
       ],
     },
     shirazYes: {
       speaker: 'Mullá Ḥusayn',
       text: 'The first who heard me at dawn! Four years, and you find us again in the rain of Mázindarán. God keeps a long memory for those who wait at doors.',
+      choices: [{ text: '"Where does this road lead you?"', next: 'standard' }],
+    },
+    makuYes: {
+      speaker: 'Mullá Ḥusayn',
+      text: 'The first who heard me at dawn! At Mákú there was snow on my boots; now there is the mud of Mázindarán. Half a year, and you find us again. God keeps a long memory for those who wait at doors.',
       choices: [{ text: '"Where does this road lead you?"', next: 'standard' }],
     },
     shirazNo: {

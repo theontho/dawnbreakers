@@ -49,9 +49,9 @@ export const ch7QuddusGarden: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Quddús',
-      text: 'Peace be with you. A guest from the mountains, they tell me. Sit, please. Tell me: how is He, at Chihríq?',
+      text: 'Peace be with you. Sit, please. Every traveller who comes into these gardens carries some word of Chihríq. What have you heard of Him there?',
       choices: [
-        { text: '"Steadfast. Writing, day and night."', next: 'news' },
+        { text: '"That He is steadfast, and writes day and night."', next: 'news' },
         { text: '"I kept watch beneath His window. The lamp still burns."', next: 'watch',
           requires: f => !!f.bayanComplete },
       ],

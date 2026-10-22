@@ -101,6 +101,7 @@ export const imamJumihIsfahan: DialogueTree = {
       choices: [
         { text: '"How has the city taken it?"', next: 'city' },
         { text: '"I am still searching. What did you find?"', next: 'search', requires: f => f.recognised === false },
+        { text: '"And you, who watched Him write: what did you find?"', next: 'search', requires: f => f.recognised !== false },
       ],
     },
     search: {
