@@ -189,16 +189,19 @@ function foam(ctx: Ctx, run: readonly number[]): void {
   polyline(ctx, wavy(-D - 10, 2.4).map(p => ({ x: p.x - 6, y: p.y + 4 })), 'rgba(210,225,235,0.16)', 1.2);
 }
 
-/** White water piling under the forefoot and peeling away down both sides. */
+/**
+ * White water piling under the forefoot and peeling away down the near side.
+ * The far side's wave is hidden by the hull: streaks drawn there would only
+ * show as pale sticks rising from behind the bow, like a loose rope's end.
+ */
 function bowWave(ctx: Ctx): void {
   const fore = toScreen(SHIP.stemWater, SHIP.axis, -D);
   const rand = rng(77);
-  for (let k = 0; k < 9; k++) {
-    const side = k % 2 ? -1 : 1;
+  for (let k = 0; k < 6; k++) {
     const back = 2.5 + rand() * 3.5;
     const out = 1.4 + rand() * 2.2;
-    const end = toScreen(SHIP.stemWater - back, SHIP.axis + side * (out + 1.6), -D);
-    const mid = toScreen(SHIP.stemWater - back * 0.4, SHIP.axis + side * 1.4, -D);
+    const end = toScreen(SHIP.stemWater - back, SHIP.axis + out + 1.6, -D);
+    const mid = toScreen(SHIP.stemWater - back * 0.4, SHIP.axis + 1.4, -D);
     ctx.strokeStyle = `rgba(225,235,240,${0.18 + rand() * 0.25})`;
     ctx.lineWidth = 1 + rand() * 2;
     ctx.beginPath();

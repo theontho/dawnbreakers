@@ -33,8 +33,12 @@ function line(ctx: Ctx, a: Pt, b: Pt, width = 0.8, color = LINE): void {
   ctx.stroke();
 }
 
-/** Texture size for the mast: the yard reaches 8 cells aft, the forestay 13.5 forward to the stem head. */
-export const MAST_TEXTURE = { w: 900, h: 590 } as const;
+/**
+ * Texture size for the mast: the yard reaches 8 cells aft, the forestay 13.5
+ * forward to the stem head. The stem head lies well in front of the mast's
+ * cell, so `foot` leaves room below the anchor for the forestay to reach it.
+ */
+export const MAST_TEXTURE = { w: 900, h: 590, foot: 128 } as const;
 
 /**
  * The mainmast, raked forward, about 15 m above the deck. Its long lateen

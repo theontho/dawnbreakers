@@ -81,7 +81,7 @@ export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
   },
 
   'ch3-mast': (scene, def) => paintTexture(scene, def.texture, MAST_TEXTURE.w, MAST_TEXTURE.h,
-    ctx => drawLateenMast(ctx, MAST_TEXTURE.w / 2, MAST_TEXTURE.h - 16)),
+    ctx => drawLateenMast(ctx, MAST_TEXTURE.w / 2, MAST_TEXTURE.h - 16), MAST_TEXTURE.foot),
 
   /** The main hatch (2 x 2): a raised coaming, a grating over the dark hold, half battened under tarred canvas. */
   'ch3-hatch': (scene, def) => {
