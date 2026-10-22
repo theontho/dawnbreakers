@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { MAP_OBJECTS } from '../assets/mapAssetLibrary';
+import { sliceBuilding } from './buildingSlices';
 import { gridToIsoScreen } from './isoGeometry';
 import { renderMapGround } from './mapGround';
 import { exitIsOpen } from './baseMapMovement';
@@ -48,9 +49,8 @@ export function renderBaseMapWorld(
     const frontX = building.gridX + building.w - 1;
     const frontY = building.gridY + building.h - 1;
     const front = gridToIsoScreen(state.originX, state.originY, frontX, frontY);
-    const sprite = anchorAtFoot(scene.add.image(front.sx, front.sy + TILE_H / 2, building.texture))
-      .setDepth(front.sy + 1);
-    occludableSprites.push(sprite);
+    const whole = anchorAtFoot(scene.add.image(front.sx, front.sy + TILE_H / 2, building.texture, '__BASE'));
+    occludableSprites.push(...sliceBuilding(scene, whole, building, { x: state.originX, y: state.originY }));
   }
 
   for (const item of state.decor) {
