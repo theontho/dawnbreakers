@@ -13,6 +13,7 @@ export type ChapterId =
   | 'tabriz-trial'
   | 'tabarsi'
   | 'tabriz'
+  | 'zanjan'
   | 'siyah-chal';
 
 /**
@@ -32,6 +33,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   'tabriz-trial': 'trialComplete',
   tabarsi: 'tabarsiComplete',
   tabriz: 'martyrdomComplete',
+  zanjan: 'zanjanComplete',
   'siyah-chal': 'dawnComplete',
 };
 
@@ -159,6 +161,16 @@ const SPECS: ChapterSpec[] = [
     description: 'In the noon heat of Tabríz you hear the square, meet Anís and the Christian colonel Sám Khán, and keep watch from the rooftops on the day the Báb is martyred.',
     startScene: 'Ch9TabrizSquare',
     scenes: ['Ch9TabrizSquare', 'Ch9BarrackRoof'],
+  },
+  {
+    id: 'zanjan',
+    number: 0, // renumbered by the manager
+    story: CHAPTER_STORIES['zanjan'],
+    title: 'Zanján',
+    subtitle: 'The fort of ʿAlí-Mardán Khán, 1850 to 1851',
+    description: 'You carry the news of Tabríz by night into the barricaded quarter of Ḥujjat, where some three thousand believers have held out since the spring. You bake with the women, keep watch with a girl in a man\'s coat, see children sent out with a sealed Qur\'án, and stay through the winter to the end.',
+    startScene: 'ZanjanQuarter',
+    scenes: ['ZanjanQuarter', 'ZanjanFort', 'ZanjanHouse'],
   },
   {
     id: 'siyah-chal',

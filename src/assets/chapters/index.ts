@@ -9,6 +9,7 @@ import { CH07_OBJECTS, CH07_TEXTURE_GENERATORS } from './chapter07';
 import { TRIAL_OBJECTS, TRIAL_TEXTURE_GENERATORS } from './trial';
 import { CH08_OBJECTS, CH08_TEXTURE_GENERATORS } from './chapter08';
 import { CH09_OBJECTS, CH09_TEXTURE_GENERATORS } from './chapter09';
+import { ZANJAN_OBJECTS, ZANJAN_TEXTURE_GENERATORS } from './zanjan';
 import { CH10_OBJECTS, CH10_TEXTURE_GENERATORS } from './chapter10';
 import { SHARED_TEXTURE_GENERATORS } from './shared';
 import { BASE_ART_GENERATORS } from '../art';
@@ -35,6 +36,7 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
   ...TRIAL_TEXTURE_GENERATORS,
   ...CH08_TEXTURE_GENERATORS,
   ...CH09_TEXTURE_GENERATORS,
+  ...ZANJAN_TEXTURE_GENERATORS,
   ...CH10_TEXTURE_GENERATORS,
 };
 
@@ -50,5 +52,6 @@ export const CHAPTER_OBJECTS: MapObjectDefinition[] = [
   ...TRIAL_OBJECTS,
   ...CH08_OBJECTS,
   ...CH09_OBJECTS,
+  ...ZANJAN_OBJECTS,
   ...CH10_OBJECTS,
 ];

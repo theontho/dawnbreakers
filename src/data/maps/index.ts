@@ -26,6 +26,9 @@ import { ch8TabarsiFortMap } from './ch8TabarsiFort';
 import { ch8TabarsiShrineMap } from './ch8TabarsiShrine';
 import { ch9TabrizSquareMap } from './ch9TabrizSquare';
 import { ch9BarrackRoofMap } from './ch9BarrackRoof';
+import { zanjanQuarterMap } from './zanjanQuarter';
+import { zanjanFortMap } from './zanjanFort';
+import { zanjanHouseMap } from './zanjanHouse';
 import { ch10TehranStreetMap } from './ch10TehranStreet';
 import { ch10SiyahChalMap } from './ch10SiyahChal';
 import { ch10ExileRoadMap } from './ch10ExileRoad';
@@ -65,6 +68,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch8TabarsiShrineMap,
   ch9TabrizSquareMap,
   ch9BarrackRoofMap,
+  zanjanQuarterMap,
+  zanjanFortMap,
+  zanjanHouseMap,
   ch10TehranStreetMap,
   ch10SiyahChalMap,
   ch10ExileRoadMap,
