@@ -6,7 +6,7 @@
  * translated through the catalogs like any other text.
  *
  * Places carry a position (longitude, latitude) for the map; provinces name
- * an outline in `geography.ts`.
+ * an outline in `mapData.ts`.
  */
 
 export type GlossaryKind = 'term' | 'place' | 'region';
@@ -20,7 +20,7 @@ export interface GlossaryEntry {
   match: readonly string[];
   /** Longitude and latitude, for places. */
   at?: readonly [number, number];
-  /** Province outline id in `geography.ts`, for regions. */
+  /** Province outline id in `mapData.ts`, for regions. */
   region?: string;
 }
 

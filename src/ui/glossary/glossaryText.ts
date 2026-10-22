@@ -48,8 +48,9 @@ export function attachGlossary(
       // A right-to-left line runs from its right edge.
       const x = left + (rtlText ? start + lineWidth - before - width : start + before);
       const baseline = y + metrics.ascent + 3;
-      underline.lineStyle(1, 0xe0c27a, 0.55);
-      for (let u = 0; u < width; u += 4) underline.lineBetween(x + u, baseline, x + Math.min(u + 2, width), baseline);
+      // A dotted underline: round dots, clearly visible but quieter than the text.
+      underline.fillStyle(0xe8c878, 0.9);
+      for (let u = 1; u < width; u += 3.5) underline.fillCircle(x + u, baseline, 0.85);
       const zone = scene.add.zone(x, y, width, metrics.fontSize + 4).setOrigin(0)
         .setScrollFactor(text.scrollFactorX, text.scrollFactorY)
         .setInteractive({ cursor: 'help' });
@@ -59,9 +60,11 @@ export function attachGlossary(
         showGlossaryTip(hit.entry, anchor(), false);
       });
       zone.on('pointerout', () => scheduleHide());
-      zone.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+      // Touch has no hover, so a tap pins the card until the next tap; with a
+      // mouse the card simply follows the pointer.
+      zone.on('pointerdown', (pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
         event.stopPropagation();
-        showGlossaryTip(hit.entry, anchor(), true);
+        showGlossaryTip(hit.entry, anchor(), pointer.wasTouch);
       });
       objects.push(zone);
     }
