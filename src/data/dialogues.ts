@@ -10,6 +10,7 @@ import { chapter06Dialogues } from './dialogues_ch/chapter06_mountain_prisons';
 import { chapter07Dialogues } from './dialogues_ch/chapter07_badasht';
 import { trialDialogues } from './dialogues_ch/trial_tabriz';
 import { chapter08Dialogues } from './dialogues_ch/chapter08_tabarsi';
+import { nayrizDialogues } from './dialogues_ch/nayriz';
 import { chapter09Dialogues } from './dialogues_ch/chapter09_tabriz';
 import { zanjanDialogues } from './dialogues_ch/zanjan';
 import { chapter10Dialogues } from './dialogues_ch/chapter10_siyah_chal';
@@ -37,6 +38,7 @@ export const dialogues: Record<string, DialogueTree> = {
   ...chapter07Dialogues,
   ...trialDialogues,
   ...chapter08Dialogues,
+  ...nayrizDialogues,
   ...chapter09Dialogues,
   ...zanjanDialogues,
   ...chapter10Dialogues,

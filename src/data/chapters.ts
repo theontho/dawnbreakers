@@ -14,6 +14,7 @@ export type ChapterId =
   | 'badasht'
   | 'tabriz-trial'
   | 'tabarsi'
+  | 'nayriz'
   | 'tabriz'
   | 'zanjan'
   | 'siyah-chal';
@@ -36,6 +37,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   badasht: 'badashtComplete',
   'tabriz-trial': 'trialComplete',
   tabarsi: 'tabarsiComplete',
+  nayriz: 'nayrizComplete',
   tabriz: 'martyrdomComplete',
   zanjan: 'zanjanComplete',
   'siyah-chal': 'dawnComplete',
@@ -165,6 +167,15 @@ const SPECS: ChapterSpec[] = [
     description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
     startScene: 'Ch8ForestRoad',
     scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort', 'Ch8TabarsiShrine'],
+  },
+  {
+    id: 'nayriz',
+    story: CHAPTER_STORIES['nayriz'],
+    title: 'Nayríz',
+    subtitle: 'Fárs, May and June 1850',
+    description: 'In the quarter of the burnt plane tree, Vaḥíd comes in from the road and goes straight to the masjid. You carry his letter to a wounded old man, follow him up to the fort of Khájih, dig a cistern when the water is cut, and carry a sealed Qur\'án across the court to him.',
+    startScene: 'NayrizQuarter',
+    scenes: ['NayrizQuarter', 'NayrizMosque', 'NayrizFort'],
   },
   {
     id: 'tabriz',

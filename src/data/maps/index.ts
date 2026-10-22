@@ -30,6 +30,9 @@ import { trialLaneMap } from './trialLane';
 import { ch8ForestRoadMap } from './ch8ForestRoad';
 import { ch8TabarsiFortMap } from './ch8TabarsiFort';
 import { ch8TabarsiShrineMap } from './ch8TabarsiShrine';
+import { nayrizQuarterMap } from './nayrizQuarter';
+import { nayrizMosqueMap } from './nayrizMosque';
+import { nayrizFortMap } from './nayrizFort';
 import { ch9TabrizSquareMap } from './ch9TabrizSquare';
 import { ch9BarrackRoofMap } from './ch9BarrackRoof';
 import { zanjanQuarterMap } from './zanjanQuarter';
@@ -78,6 +81,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch8ForestRoadMap,
   ch8TabarsiFortMap,
   ch8TabarsiShrineMap,
+  nayrizQuarterMap,
+  nayrizMosqueMap,
+  nayrizFortMap,
   ch9TabrizSquareMap,
   ch9BarrackRoofMap,
   zanjanQuarterMap,

@@ -21,7 +21,7 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('bastami', 'Mullá ʿAlíy-i-Basṭámí', ['Mullá ʿAlíy-i-Basṭámí'],
     'The second Letter of the Living, the first sent out to teach. He was tried in Baghdád in 1845 and died a prisoner of the Ottomans.'),
   person('vahid', 'Vaḥíd', ['Vaḥíd', 'Siyyid Yaḥyá'],
-    'Siyyid Yaḥyá of Dáráb, one of the most learned men in Persia, sent by Muḥammad Sháh to examine the Báb\'s claim. He became a believer, and was slain at Nayríz in 1850.'),
+    'Siyyid Yaḥyá of Dáráb, one of the most learned men in Persia, sent by Muḥammad Sháh to examine the Báb\'s claim. He became a believer, and was named Vaḥíd, "the Peerless". In 1850 he took refuge with some seventy-two companions in the fort of Khájih above Nayríz; lured out by an oath sworn on the Qur\'án, he was slain on 29 June 1850, ten days before the Báb.'),
   person('anis', 'Anís', ['Anís'],
     'Mírzá Muḥammad-ʿAlí of Zunúz, a young disciple who asked to share the Báb\'s fate, and was executed with Him in Tabríz on 9 July 1850.'),
   person('azim', 'ʿAẓím', ['ʿAẓím'],
@@ -52,6 +52,10 @@ export const PEOPLE: readonly GlossaryEntry[] = [
     'A son-in-law and disciple of the late mujtahid of Núr, sent with Mírzá Abu\'l-Qásim in 1844 to examine Bahá\'u\'lláh. He forgot his questions, stood by the door, and never went back to his teacher.'),
   person('abul-qasim', 'Mírzá Abu\'l-Qásim', ['Mírzá Abu\'l-Qásim'],
     'A son-in-law and disciple of the late mujtahid of Núr, Mullá ʿAbbás\'s companion on the errand of 1844, who vowed the rest of his life to the service of the One he had been sent to examine.'),
+
+  // Nayríz, 1850.
+  person('zaynul-abidin-khan', 'Zaynu\'l-ʿÁbidín Khán', ['Zaynu\'l-ʿÁbidín Khán'],
+    'The governor of Nayríz in 1850, who threatened death to any who welcomed Vaḥíd, besieged him in the fort of Khájih with the help of regiments from Shíráz, and broke the oath sworn on the Qur\'án that drew him out.'),
 
   // Zanján, 1850 to 1851.
   person('hujjat', 'Ḥujjat', ['Ḥujjat'],
