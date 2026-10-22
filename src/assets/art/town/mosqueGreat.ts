@@ -5,7 +5,9 @@ import { subBox } from '../structureParts';
 import { hawz } from './fountain';
 import { courtFloor, cypressAt } from './houseKit';
 import { arcade, blindArches, inscriptionBand, minaret, tilePanel, townIwan } from './monumentKit';
-import { CREAM, LAPIS, roofFloor, townBlock, TURQUOISE } from './townKit';
+import { joinedMass, type MassPart } from './joinedMass';
+import { CREAM, LAPIS, roofFloor, townBlock, TURQUOISE, type BlockSpec } from './townKit';
+import type { FacePainter } from '../ornaments';
 
 /**
  * The congregational mosque (12 x 10: 384 x 320 px of ground, about 17 by
@@ -18,10 +20,6 @@ import { CREAM, LAPIS, roofFloor, townBlock, TURQUOISE } from './townKit';
 const BRICK = 0xc8a26e;
 const RANGE_H = 120;
 const COURT_H = 140;
-
-function brickBlock(ctx: Ctx, b: IsoBox, seed: number, left?: (c: Ctx, w: number, h: number, l: number) => void, right?: (c: Ctx, w: number, h: number, l: number) => void): void {
-  townBlock(ctx, b, { wall: BRICK, seed, material: 'brick', coping: CREAM, left, right });
-}
 
 /** Two tiers of arches facing the court. */
 function courtArcade(c: Ctx, w: number, h: number, l: number, bay: number): void {
@@ -38,18 +36,42 @@ function streetFace(c: Ctx, w: number, h: number, l: number): void {
 }
 
 function paintGreatMosque(ctx: Ctx, box: IsoBox): void {
-  // The left range, its arcade facing across the court.
-  brickBlock(ctx, subBox(box, 0, 64, 48, 320, COURT_H), 711, undefined, (c, w, h, l) => courtArcade(c, w, h, l, 37.3));
+  const brick = (seed: number, left?: FacePainter, right?: FacePainter): BlockSpec =>
+    ({ wall: BRICK, seed, material: 'brick', coping: CREAM, left, right });
+  // The precinct: one range of equal height round three sides of the court,
+  // and the front range with its portal, so every corner is built through.
+  const leftRange: MassPart = { p0: 0, p1: 64, q0: 48, q1: 320, h: RANGE_H, spec: brick(711, undefined, (c, w, h, l) => courtArcade(c, w, h, l, 37.3)) };
+  const rightRange: MassPart = { p0: 320, p1: 384, q0: 48, q1: 320, h: RANGE_H, spec: brick(723, undefined, streetFace) };
+  const frontRange: MassPart = { p0: 0, p1: 384, q0: 0, q1: 48, h: RANGE_H, spec: brick(725, streetFace, streetFace) };
+  // The street portal projects a little from the front range and rises a
+  // storey over it, as a pīshṭāq does.
+  const portal: MassPart = {
+    p0: 148, p1: 236, q0: -6, q1: 54, h: RANGE_H + 34,
+    spec: {
+      ...brick(727),
+      roof: 'flat',
+      left: (c, w, h, l) => {
+        tilePanel(c, 5, 5, w - 10, h - 5, TURQUOISE, l, 728, 7);
+        inscriptionBand(c, w, 12, 11, l);
+        townIwan(c, w / 2, h, 52, 96, { wall: BRICK, frame: TURQUOISE, door: 0x4a2a14, light: l, seed: 729, tile: LAPIS, lantern: true });
+      },
+      right: (c, w, h, l) => blindArches(c, w, h - 12, 29, 64, BRICK, l),
+    },
+  };
   // The prayer hall at the back, between two arcaded wings.
-  brickBlock(ctx, subBox(box, 64, 112, 160, 320, COURT_H), 713, (c, w, h, l) => courtArcade(c, w, h, l, 48));
+  const wings: MassPart[] = [
+    { p0: 64, p1: 112, q0: 160, q1: 320, h: COURT_H, spec: brick(713, (c, w, h, l) => courtArcade(c, w, h, l, 48)) },
+    { p0: 272, p1: 320, q0: 160, q1: 320, h: COURT_H, spec: brick(717, (c, w, h, l) => courtArcade(c, w, h, l, 48)) },
+  ];
+  const hallPart: MassPart = { p0: 112, p1: 272, q0: 160, q1: 320, h: 150, spec: brick(715, undefined, (c, w, _h, l) => inscriptionBand(c, w, 10, 10, l)) };
+  const front = [rightRange, frontRange, portal];
+  joinedMass(ctx, box, [leftRange, ...wings, hallPart], front);
   const hall = subBox(box, 112, 272, 160, 320, 150);
-  brickBlock(ctx, hall, 715, undefined, (c, w, _h, l) => inscriptionBand(c, w, 10, 10, l));
   const centre = roofFloor(hall, hall.w / 2, hall.d / 2);
   dome(ctx, centre.x, centre.y, 104, {
     color: TURQUOISE, drum: 38, drumColor: BRICK, bulb: 1.12, pattern: CREAM, ribs: true, finial: true,
   });
   cylinderBand(ctx, centre.x, centre.y - 38, 104, 6, LAPIS);
-  brickBlock(ctx, subBox(box, 272, 320, 160, 320, COURT_H), 717, (c, w, h, l) => courtArcade(c, w, h, l, 48));
   // The qibla iwan, its portal standing over the court, a minaret on each shoulder.
   const iwan = subBox(box, 136, 248, 148, 176, 196);
   townBlock(ctx, iwan, {
@@ -72,19 +94,8 @@ function paintGreatMosque(ctx: Ctx, box: IsoBox): void {
     cypressAt(ctx, at.x, at.y, 170, 30, 0x24553a, 700 + p);
   }
   hawz(ctx, box, 150, 234, 72, 120, 10, 7, 709, 3);
-  // The street ranges: the right one, then the front with its portal.
-  brickBlock(ctx, subBox(box, 320, 384, 48, 320, RANGE_H), 723, undefined, streetFace);
-  brickBlock(ctx, subBox(box, 0, 384, 0, 48, RANGE_H), 725, streetFace, streetFace);
-  const portal = subBox(box, 148, 236, 0, 58, RANGE_H + 14);
-  townBlock(ctx, portal, {
-    wall: BRICK, seed: 727, material: 'brick', coping: CREAM, roof: 'flat',
-    left: (c, w, h, l) => {
-      tilePanel(c, 5, 5, w - 10, h - 5, TURQUOISE, l, 728, 7);
-      inscriptionBand(c, w, 12, 11, l);
-      townIwan(c, w / 2, h, 52, 88, { wall: BRICK, frame: TURQUOISE, door: 0x4a2a14, light: l, seed: 729, tile: LAPIS, lantern: true });
-    },
-    right: (c, w, h, l) => blindArches(c, w, h - 12, 29, 64, BRICK, l),
-  });
+  // The street ranges and the portal, in front of the court.
+  joinedMass(ctx, box, front, [leftRange, ...wings, hallPart]);
 }
 
 export function paintMosqueGreat(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {

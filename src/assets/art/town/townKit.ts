@@ -57,6 +57,8 @@ export interface BlockSpec {
   shadow?: boolean;
   /** A coping band of paler plaster or brick along the top of both faces. */
   coping?: number;
+  /** Outline the box (off when `joinedMass` outlines the whole building instead). */
+  outline?: boolean;
 }
 
 /** A block of a town building: plastered, mud or brick walls under a parapet roof. */
@@ -80,7 +82,7 @@ export function townBlock(ctx: Ctx, b: IsoBox, spec: BlockSpec): void {
     flatTop(ctx, b, shade(spec.wall, 0.95));
   }
   if (spec.merlons) townMerlons(ctx, b, spec.wall);
-  outlineBox(ctx, b);
+  if (spec.outline !== false) outlineBox(ctx, b);
 }
 
 /** A paler band along the top of a face: the parapet's coping. */
