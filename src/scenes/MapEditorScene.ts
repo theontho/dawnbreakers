@@ -117,7 +117,9 @@ export class MapEditorScene extends Phaser.Scene {
     const narrow = isNarrowLayout({ width, height });
 
     if (resetOrigin) this.resetMapOrigin();
-    this.children.removeAll(true);
+    // DisplayList.removeAll only detaches (its flag skips callbacks); destroy
+    // instead, or old objects and their input zones live on unseen.
+    for (const child of this.children.getAll()) child.destroy();
     this.world = undefined;
     this.assetPreviewContainer = undefined;
 

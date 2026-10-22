@@ -68,7 +68,8 @@ export class JournalScene extends Phaser.Scene {
     const viewTop = panelY + 90;
     const viewBottom = panelY + panelH - 16;
     const content = this.add.container(0, 0);
-    const contentHeight = this.layoutEntries(content, contentX, contentOrigin, viewTop, panelX, panelW, size);
+    const view = new Phaser.Geom.Rectangle(panelX, viewTop, panelW, viewBottom - viewTop);
+    const contentHeight = this.layoutEntries(content, contentX, contentOrigin, view, panelX, panelW, size);
 
     const maskShape = this.make.graphics({ x: 0, y: 0 }, false);
     maskShape.fillStyle(0xffffff, 1);
@@ -84,13 +85,14 @@ export class JournalScene extends Phaser.Scene {
     content: Phaser.GameObjects.Container,
     contentX: number,
     contentOrigin: number,
-    top: number,
+    view: Phaser.Geom.Rectangle,
     panelX: number,
     panelW: number,
     size: { width: number; height: number },
   ): number {
     const flags = getFlags();
     const here = chapterByScene(this.fromKey);
+    const top = view.y;
     let y = top;
     const add = (text: Phaser.GameObjects.Text, gapAfter: number): void => {
       content.add(text);
@@ -131,7 +133,7 @@ export class JournalScene extends Phaser.Scene {
           wordWrap: { width: panelW - 80 }, lineSpacing: 3,
         })).setOrigin(contentOrigin, 0);
         add(body, 16);
-        attachGlossary(this, body, content);
+        attachGlossary(this, body, content, view);
       }
       y += 8;
     }
@@ -169,7 +171,8 @@ export class JournalScene extends Phaser.Scene {
     this.input.on(Phaser.Input.Events.POINTER_WHEEL, (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       scrollTo(scroll + dy * 0.6);
     });
-    const zone = this.add.zone(x, y, w, h).setOrigin(0).setInteractive();
+    // Beneath the content, so glossary words inside it still take the pointer.
+    const zone = this.add.zone(x, y, w, h).setOrigin(0).setDepth(-1).setInteractive();
     let dragStart: { pointerY: number; scroll: number } | undefined;
     zone.on('pointerdown', (p: Phaser.Input.Pointer) => { dragStart = { pointerY: p.y, scroll }; });
     this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {

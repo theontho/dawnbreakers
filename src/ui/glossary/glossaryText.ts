@@ -11,12 +11,16 @@ import { hideGlossaryTip, scheduleHide, showGlossaryTip } from './glossaryToolti
  *
  * Zones and underlines are added beside the text (to `container` when the
  * text lives in one, so they scroll with it) and are destroyed with it.
+ * Phaser input ignores masks, so a scrolled text passes the visible `clip`
+ * rectangle and its words answer only inside it.
  */
 export function attachGlossary(
   scene: Phaser.Scene,
   text: Phaser.GameObjects.Text,
   container?: Phaser.GameObjects.Container,
+  clip?: Phaser.Geom.Rectangle,
 ): void {
+  const visible = (pointer: Phaser.Input.Pointer) => !clip || clip.contains(pointer.x, pointer.y);
   const lines = text.getWrappedText();
   const ctx = text.context;
   const style = text.style;
@@ -56,13 +60,14 @@ export function attachGlossary(
         .setInteractive({ cursor: 'help' });
       const anchor = () => pageRect(scene, zone);
       zone.on('pointerover', (pointer: Phaser.Input.Pointer) => {
-        if (pointer.wasTouch) return;
+        if (pointer.wasTouch || !visible(pointer)) return;
         showGlossaryTip(hit.entry, anchor(), false);
       });
       zone.on('pointerout', () => scheduleHide());
       // Touch has no hover, so a tap pins the card until the next tap; with a
       // mouse the card simply follows the pointer.
       zone.on('pointerdown', (pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+        if (!visible(pointer)) return;
         event.stopPropagation();
         showGlossaryTip(hit.entry, anchor(), pointer.wasTouch);
       });

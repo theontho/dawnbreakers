@@ -57,7 +57,9 @@ export class DialogueScene extends Phaser.Scene {
     }
     if (applyOnEnter && node.onEnter) applyEffect(node.onEnter);
 
-    this.children.removeAll(true);
+    // DisplayList.removeAll only detaches (its flag skips callbacks); destroy
+    // instead, or old objects and their input zones live on unseen.
+    for (const child of this.children.getAll()) child.destroy();
     this.choiceObjects = [];
 
     this.add.rectangle(0, 0, width, height, 0x000000, 0.35).setOrigin(0);
