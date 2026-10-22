@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { attachGlossary } from '../ui/glossary/glossaryText';
 import { playSfx } from '../audio';
 import { chapterByScene, chapters, type Chapter } from '../data/chapters';
 import type { JournalEntry } from '../data/story/types';
@@ -125,10 +126,12 @@ export class JournalScene extends Phaser.Scene {
           wordWrap: { width: panelW - 48 },
         })).setOrigin(contentOrigin, 0), 6);
         const bodyX = rtl ? panelX + panelW - 40 : panelX + 40;
-        add(this.add.text(bodyX, y, t(entry.body), localizedStyle({
+        const body = this.add.text(bodyX, y, t(entry.body), localizedStyle({
           fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, size, 12), color: '#e8d9b0',
           wordWrap: { width: panelW - 80 }, lineSpacing: 3,
-        })).setOrigin(contentOrigin, 0), 16);
+        })).setOrigin(contentOrigin, 0);
+        add(body, 16);
+        attachGlossary(this, body, content);
       }
       y += 8;
     }

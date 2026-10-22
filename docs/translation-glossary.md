@@ -155,7 +155,6 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | → East along the river to the Palace of the Sun | → به سوی شرق، در کنار رود تا کاخ خورشید | → 沿河向东前往太阳宫 |
 | → East to the Vakíl Mosque | → به سوی شرق، تا مسجد وکیل | → 向东前往瓦基勒清真寺 |
 | → On to the shrine of Shaykh Ṭabarsí | → پیش به سوی بقعهٔ شیخ طبرسی | → 前往谢赫·塔巴尔西圣祠 |
-| → Out through the gate to the yard | → بیرون رفتن از دروازه به حیاط | → 从大门出去，回到院子 |
 | → Take the road north | → راه شمال را در پیش گیر | → 踏上北去的路 |
 | → The road to Chihríq | → راه چهریق | → 前往奇赫里格之路 |
 | ↑ Climb the stair into the light | ↑ بالا رفتن از پلکان به سوی روشنایی | ↑ 登上楼梯，走进光中 |
@@ -165,6 +164,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | ↓ Back to the hamlet and the camp | ↓ بازگشت به دهکده و اردوگاه | ↓ 返回村落与营地 |
 | ↓ Down the stair into the Síyáh-Chál | ↓ پایین رفتن از پلکان به سیاه‌چال | ↓ 走下楼梯，进入黑坑 |
 | ↓ Go ashore at Jidda and on to Mecca | ↓ پیاده شدن در جده و رفتن به مکه | ↓ 在吉达上岸，前往麦加 |
+| ↓ Out through the gate to the yard | ↓ بیرون رفتن از دروازه به حیاط | ↓ 穿过大门，走向院子 |
 | ↓ Out to Quddús's garden | ↓ بیرون، به باغ قدّوس | ↓ 出去，到古杜斯的园子 |
 | ↓ Out to the mosque court | ↓ بیرون رفتن به صحن مسجد | ↓ 出去到清真寺院子 |
 | ↓ Out to the shrine court | ↓ بیرون، به صحن بقعه | ↓ 出去，到圣祠庭院 |

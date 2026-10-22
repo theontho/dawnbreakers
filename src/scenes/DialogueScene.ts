@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { DialogueTree, DialogueChoice } from '../dialogue/types';
 import { applyEffect, getFlags } from '../dialogue/flags';
 import { playSfx } from '../audio';
+import { attachGlossary } from '../ui/glossary/glossaryText';
 import { formatNumber, localizedStyle, rtl, t, tName } from '../i18n';
 import { buttonFont, clamp, MIN_TOUCH_TARGET, responsiveFont, safeLayout } from '../ui/responsive';
 
@@ -118,6 +119,7 @@ export class DialogueScene extends Phaser.Scene {
 
     this.bodyText = this.add.text(textX, this.speakerText.y + speakerH + speakerBodyGap, bodyValue, bodyStyle)
       .setOrigin(textOrigin, 0);
+    attachGlossary(this, this.bodyText);
 
     let rowY = this.bodyText.y + bodyH + bodyChoicesGap;
     const rowX = safe.x + padX;

@@ -328,6 +328,37 @@ function collectUnwrappedText(source, file, errors) {
   }
 }
 
+/**
+ * The glossary cards: `term(id, title, match, body)`, `place(id, title, at, body)`
+ * and `region(id, title, body)` in the glossary data, and the kind labels the
+ * tooltip prints. They reach `t()` through fields, not literals.
+ */
+function collectFromGlossary(source, file, translationRequired) {
+  const literal = /^(['"`])((?:\\.|(?!\1)[\s\S])*?)\1$/;
+  const add = (arg, index, kind) => {
+    const m = arg?.match(literal);
+    if (!m) return;
+    addRequired(translationRequired, parseStringLiteral(`${m[1]}${m[2]}${m[1]}`), file, lineFor(source, index), kind);
+  };
+  const bodyAt = { term: 3, place: 3, region: 2 };
+  const callRe = /^[ \t]*(term|place|region)\(/gm;
+  let match;
+  while ((match = callRe.exec(source))) {
+    const args = extractCallArguments(source, match.index);
+    if (!args) continue;
+    add(args[1], match.index, 'glossary title');
+    add(args[bodyAt[match[1]]], match.index, 'glossary body');
+  }
+}
+
+function collectKindLabels(source, file, translationRequired) {
+  const decl = source.match(/const KIND_LABEL = \{([^}]*)\}/);
+  if (!decl) return;
+  for (const m of decl[1].matchAll(/:\s*(['"])((?:\\.|(?!\1).)*)\1/g)) {
+    addRequired(translationRequired, m[2], file, lineFor(source, decl.index), 'glossary kind label');
+  }
+}
+
 function sortedMissing(required, available) {
   return [...required.entries()]
     .filter(([key]) => !available.has(key))
@@ -413,6 +444,8 @@ export function analyzeLocalization() {
     collectFromLiteralFields(source, file, translationRequired, namesRequired);
     collectFromNpcPrompts(source, file, translationRequired);
     collectUnwrappedText(source, file, unwrappedTextErrors);
+    if (file.endsWith(join('data', 'glossary', 'entries.ts'))) collectFromGlossary(source, file, translationRequired);
+    collectKindLabels(source, file, translationRequired);
   }
 
   const hasLocaleCoverage = (locale, key) => {
