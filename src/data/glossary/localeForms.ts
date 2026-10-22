@@ -182,3 +182,23 @@ export const LOCALE_FORMS: Readonly<Record<string, { fa: readonly string[]; zh: 
   zaynab: { fa: ['زینب', 'رستم‌علی'], zh: ['宰娜卜', '鲁斯塔姆-阿里'] },
   'zaynul-abidin-khan': { fa: ['زین‌العابدین‌خان', 'زین‌العابدین خان'], zh: ['宰努勒-阿比丁汗'] },
 };
+
+/**
+ * Nouns that مبارک ("blessed") follows as an adjective or honorific: a
+ * blessed dwelling, His blessed hand, a blessed feast. After one of these it
+ * is the word, not Mubárak's name.
+ */
+const BLESSED_THINGS = [
+  'منزل', 'منزلی', 'عید', 'روز', 'شب', 'ماه', 'رمضان', 'سال', 'سفر', 'قدم', 'دست', 'نام', 'اسم', 'وجود',
+  'حضور', 'محضر', 'ساحت', 'آستان', 'جمال', 'لوح', 'خط', 'قلم', 'آثار', 'بیت', 'خانه', 'مقام',
+];
+
+/**
+ * Phrases that contain a glossary spelling without being that term. They are
+ * claimed before any glossary word is looked for, so no tooltip lands inside
+ * them.
+ */
+export const LOCALE_NOT_TERMS: Readonly<Record<'fa' | 'zh', readonly string[]>> = {
+  fa: [...BLESSED_THINGS.map(noun => `${noun} مبارک`), 'مبارک باد', 'مبارکباد'],
+  zh: [],
+};

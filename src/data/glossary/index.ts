@@ -1,6 +1,6 @@
 import { activeLocale } from '../../i18n';
 import { GLOSSARY, type GlossaryEntry } from './entries';
-import { LOCALE_FORMS } from './localeForms';
+import { LOCALE_FORMS, LOCALE_NOT_TERMS } from './localeForms';
 
 export { GLOSSARY, type GlossaryEntry, type GlossaryKind } from './entries';
 
@@ -34,8 +34,8 @@ const LETTER = /[\p{L}\p{M}]/u;
 export function findGlossaryTerms(line: string): GlossaryHit[] {
   const wholeWords = activeLocale !== 'zh';
   const taken: boolean[] = [];
-  const hits: GlossaryHit[] = [];
-  for (const { form, entry } of forms()) {
+  /** Claims each free whole-word occurrence of `form`, calling `found` with its span. */
+  const claim = (form: string, found: (start: number, end: number) => void): void => {
     let from = 0;
     for (;;) {
       const start = line.indexOf(form, from);
@@ -47,8 +47,11 @@ export function findGlossaryTerms(line: string): GlossaryHit[] {
       for (let i = start; i < end; i++) if (taken[i]) free = false;
       if (!free) continue;
       for (let i = start; i < end; i++) taken[i] = true;
-      hits.push({ start, end, entry });
+      found(start, end);
     }
-  }
+  };
+  if (activeLocale !== 'en') for (const phrase of LOCALE_NOT_TERMS[activeLocale as 'fa' | 'zh'] ?? []) claim(phrase, () => {});
+  const hits: GlossaryHit[] = [];
+  for (const { form, entry } of forms()) claim(form, (start, end) => hits.push({ start, end, entry }));
   return hits.sort((a, b) => a.start - b.start);
 }
