@@ -2,8 +2,8 @@ import { css, shade, type Ctx } from './canvasKit';
 import { planks } from './materials';
 
 /**
- * Wall faces for the cabin of the pilgrim ship and the bulwarks of its deck
- * (see `WALL_STYLES` in `walls.ts`), at true scale: a person is 40 px. Each
+ * Wall faces for the cabin of the pilgrim ship (see `WALL_STYLES` in
+ * `walls.ts`), at true scale: a person is 40 px. Each
  * face is painted in cell-aligned pattern space (0..32 across one cell), so
  * a feature centred on u = 16 sits in the middle of its cell and plain runs
  * join seamlessly.
@@ -11,8 +11,6 @@ import { planks } from './materials';
 
 /** Cabin bulkheads, deck to deck beams: about 3.1 m, room for a 50 px doorway. */
 export const SHIP_CABIN_WALL_H = 72;
-/** The bulwark round the deck: about a metre, a man's hip. */
-export const SHIP_BULWARK_H = 24;
 
 const TEAK = 0x7a4f2c;
 const DARK_TEAK = 0x4a2e18;
@@ -154,28 +152,4 @@ export function shipCurtainFace(ctx: Ctx, w: number, h: number, l: number): void
   ctx.fillRect(x, top + hang + 1, dw, 2);
   ctx.fillStyle = css(shade(DARK_TEAK, l * 0.8));
   ctx.fillRect(x - 3, h - 2.5, dw + 6, 2.5);
-}
-
-/**
- * The bulwark round the deck: the topsides carried up past the deck in
- * teak planking on stanchions, a dark rubbing strake, and a painted band
- * under the capping rail.
- */
-export function shipBulwarkFace(ctx: Ctx, w: number, h: number, l: number): void {
-  planks(ctx, w, h, { base: 0x6b4a2c, light: l, seed: 5 }, false, 4);
-  for (let u = 0; u < w + 16; u += 16) {
-    ctx.fillStyle = css(shade(DARK_TEAK, l));
-    ctx.fillRect(u - 1.5, 3, 3, h - 3);
-  }
-  ctx.fillStyle = css(shade(0xe8dcc0, l));
-  ctx.fillRect(0, 2, w, 2.5);
-  ctx.fillStyle = css(shade(0xa83a2a, l));
-  for (let u = 2; u < w; u += 8) ctx.fillRect(u, 2.4, 4, 1.7);
-  ctx.fillStyle = css(shade(DARK_TEAK, l * 0.9));
-  ctx.fillRect(0, h - 5, w, 3);
-  // Scuppers that let the sea run off the deck, and the salt they leave.
-  ctx.fillStyle = 'rgba(10,6,3,0.75)';
-  ctx.fillRect(14, h - 2.5, 4, 2.5);
-  ctx.fillStyle = 'rgba(235,235,225,0.35)';
-  ctx.fillRect(13, h - 0.6, 6, 0.6);
 }

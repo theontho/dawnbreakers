@@ -4,7 +4,7 @@ import { drawKaaba, drawMaqam } from '../art/mecca';
 import { paintArcadeBay, paintMinaret } from '../art/meccaArcade';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH03_CABIN_OBJECTS, CH03_CABIN_TEXTURE_GENERATORS } from './chapter03Cabin';
-import { CH03_SHIP_TEXTURE_GENERATORS } from './chapter03Ship';
+import { CH03_SHIP_OBJECTS, CH03_SHIP_TEXTURE_GENERATORS } from './chapter03Ship';
 
 /**
  * Chapter 3, at true scale: the pilgrim ship (see `chapter03Ship.ts`) and
@@ -92,6 +92,7 @@ export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 /** Placeable map objects owned by chapter 3. */
 export const CH03_OBJECTS: MapObjectDefinition[] = [
   ...CH03_CABIN_OBJECTS,
+  ...CH03_SHIP_OBJECTS,
   { id: 'ch3-kaaba', label: 'Kaaba', texture: 'ch3-kaaba', kind: 'structure', category: 'shrines', color: 0x181512, blocks: true, footprint: { w: 8, h: 9 }, isometric: true },
   { id: 'ch3-arcade', label: 'Colonnade', texture: 'ch3-arcade', kind: 'structure', category: 'shrines', color: 0xc8b48a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
   { id: 'ch3-minaret', label: 'Minaret', texture: 'ch3-minaret', kind: 'structure', category: 'shrines', color: 0xd8c7a0, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
@@ -101,7 +102,6 @@ export const CH03_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch3-cabin', label: 'Ship Cabin', texture: 'ch3-cabin', kind: 'structure', category: 'furnishings', color: 0x6a4325, blocks: true, footprint: { w: 6, h: 4 }, isometric: true },
   { id: 'ch3-cabin-threshold', label: 'House Threshold', texture: 'ch3-cabin-threshold', kind: 'prop', category: 'furnishings', color: 0x2f5a3a, blocks: false },
   { id: 'ch3-mast', label: 'Ship Mast', texture: 'ch3-mast', kind: 'prop', category: 'furnishings', color: 0x8a5a2a, blocks: true },
-  { id: 'ch3-ship-rail', label: 'Ship Rail', texture: 'ch3-ship-rail', kind: 'prop', category: 'furnishings', color: 0x6b5136, blocks: false },
   { id: 'ch3-hatch', label: 'Hold Hatch', texture: 'ch3-hatch', kind: 'structure', category: 'furnishings', color: 0x5a3a1f, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch3-water-cask', label: 'Water Cask', texture: 'ch3-water-cask', kind: 'prop', category: 'market-supplies', color: 0x7a5030, blocks: true },
   { id: 'ch3-brazier', label: 'Brazier', texture: 'ch3-brazier', kind: 'prop', category: 'lighting-effects', color: 0xe06a2a, blocks: true },

@@ -6,7 +6,7 @@ import { brick, glazedTiles, plaster, stone, type Surface } from './materials';
 import { archPath, clipped, LIGHT } from './ornaments';
 import { SERAI_BAY_H, seraiBayFace, seraiWindowFace } from './seraiWalls';
 import {
-  SHIP_BULWARK_H, SHIP_CABIN_WALL_H, shipBulwarkFace, shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace,
+  SHIP_CABIN_WALL_H, shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace,
 } from './shipCabinWalls';
 import { SHRINE_WALL_H, shrineNicheFace, shrineWallFace } from './shrineInterior';
 import { ARCH_WALL_H, lowArchFace } from './siyahChal';
@@ -32,10 +32,10 @@ export const WALL_E = 2;
 export const WALL_S = 4;
 export const WALL_W = 8;
 
-type Cap = 'merlons' | 'snowMerlons' | 'stakes' | 'coping' | 'rail' | 'flat' | 'battlements' | 'mudCoping';
+type Cap = 'merlons' | 'snowMerlons' | 'stakes' | 'coping' | 'flat' | 'battlements' | 'mudCoping';
 
 /** Headroom each cap needs above the wall. */
-const CAP_PAD: Record<Cap, number> = { merlons: 8, snowMerlons: 22, stakes: 10, coping: 3, rail: 3, flat: 3, battlements: 18, mudCoping: 6 };
+const CAP_PAD: Record<Cap, number> = { merlons: 8, snowMerlons: 22, stakes: 10, coping: 3, flat: 3, battlements: 18, mudCoping: 6 };
 
 export interface WallStyle {
   height: number;
@@ -156,11 +156,6 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   'ch2-serai-window': {
     height: SERAI_BAY_H, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-bay-lit'],
     face: seraiWindowFace,
-  },
-  // The pilgrim ship's bulwarks round the deck; see shipCabinWalls.ts.
-  'ch3-ship-rail': {
-    height: SHIP_BULWARK_H, thickness: 0.18, top: 0x8a6440, cap: 'rail',
-    face: shipBulwarkFace,
   },
   // The shrine of Shaykh Ṭabarsí: limewash, damp and lamp smoke; see shrineInterior.
   'ch8-shrine-wall': {
@@ -359,10 +354,6 @@ function capFaces(ctx: Ctx, style: WallStyle, box: IsoBox, p: Part, left: boolea
         ctx.fillRect(0, -1, w, 3);
         ctx.fillStyle = 'rgba(0,0,0,0.18)';
         ctx.fillRect(0, 2, w, 1);
-        break;
-      case 'rail':
-        ctx.fillStyle = css(shade(style.top, light));
-        ctx.fillRect(0, -1.5, w, 3);
         break;
       case 'battlements':
         // Rounded merlons a man's height, two to a cell, each with a loophole.

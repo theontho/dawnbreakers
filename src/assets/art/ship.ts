@@ -33,8 +33,8 @@ function line(ctx: Ctx, a: Pt, b: Pt, width = 0.8, color = LINE): void {
   ctx.stroke();
 }
 
-/** Texture size for the mast: the yard reaches 8 cells aft and 7 forward. */
-export const MAST_TEXTURE = { w: 540, h: 590 } as const;
+/** Texture size for the mast: the yard reaches 8 cells aft, the forestay 13.5 forward to the stem head. */
+export const MAST_TEXTURE = { w: 900, h: 590 } as const;
 
 /**
  * The mainmast, raked forward, about 15 m above the deck. Its long lateen
@@ -48,9 +48,9 @@ export function drawLateenMast(ctx: Ctx, cx: number, deck: number): void {
   const head = at(rake, 0, MAST_H);
   ellipseShadow(ctx, cx + 4, deck, 16, 6);
   // Shrouds from the masthead down to the chain plates on both rails.
-  for (const [c, s] of [[-1.2, -3], [0.4, -3], [-2.6, 3], [-1.6, 3]] as const) line(ctx, head, at(c, s, 22), 0.9);
-  // The forestay to the stem.
-  line(ctx, head, at(7.6, 0, 60), 0.9);
+  for (const [c, s] of [[-1.2, -3.8], [0.4, -3.8], [-2.6, 3.8], [-1.6, 3.8]] as const) line(ctx, head, at(c, s, 20), 0.9);
+  // The forestay to the stem head.
+  line(ctx, head, at(13.4, 0, 78), 0.9);
 
   // The mast: a tapering pole of teak bound with rope wooldings.
   const foot = at(0, 0, 0);

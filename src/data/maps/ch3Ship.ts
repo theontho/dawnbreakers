@@ -1,91 +1,65 @@
+import { isDeckCell, LADDER_X, SHIP_SPRITES } from '../../assets/art/shipHullPlan';
 import type { DecorSpec, MapDefinition } from './types';
 
 /**
  * Chapter 3, autumn 1844: the pilgrim ship from Búshihr to Jidda, under a
- * bruised sky with weather coming, at true scale. A Gulf baghla some 33 m
- * from her square carved stern (west) to the long stem (east) and 10 m in
- * the beam. The stern deckhouse, with its lamplit door facing the waist, is
+ * bruised sky with weather coming, at true scale. A Gulf baghla some 36 m
+ * from her square carved stern (west) to the long raked stem (east) and 11 m
+ * in the beam. The stern deckhouse, with its lamplit door facing the waist, is
  * where the Báb keeps prayer and reveals verses through every storm; He is
  * never on deck. Midships: the main hatch, the galley brazier, the mainmast
  * under its reefed lateen sail. At the bow, pilgrims huddle out of the spray.
- * A gap in the near rail leads down to the ship's boat for Jidda once the
- * storm is weathered.
+ * A gangway in the near rail leads down a rope ladder to the ship's boat for
+ * Jidda once the storm is weathered.
+ *
+ * The hull is curved, not built from grid cells: its lines are in
+ * `shipHullPlan.ts`, which says which cells are deck, and it is painted as a
+ * few large sprites (the hull and deck, then slices of the near bulwark that
+ * people on deck pass behind).
  *
  * Layout (x runs to the bow, y across the deck toward the camera):
- * - Deck: rows y 5..11 from the stern at x 4 to x 22, tapering to the stem at x 27.
+ * - Deck: rows y 6..10 from x 4 to the stem at x 28; rows 5 and 11 from x 5 to x 22.
  * - Deckhouse: x 5..10, y 6..9; its plank door on (9, 9), its lamplit door facing (11, 8).
  * - Waist: hatch x 14..15, y 7..8; galley at (13, 10); mainmast at (17, 8).
  * - Bow: pilgrims round x 21..24.
- * - The ladder: the rail gap at (15, 11), down to the boat at (15, 14).
+ * - The ladder: the gangway at (15, 11), down to the boat at (15, 14).
  */
 
 const WIDTH = 32;
-const HEIGHT = 15;
-
-/** Deck rows per column: the hull is full to x 22, then fines away to the stem. */
-function deckSpan(x: number): readonly [number, number] | null {
-  if (x >= 4 && x <= 22) return [5, 11];
-  if (x === 23 || x === 24) return [6, 10];
-  if (x === 25 || x === 26) return [7, 9];
-  if (x === 27) return [8, 8];
-  return null;
-}
-
-function isDeck(x: number, y: number): boolean {
-  const span = deckSpan(x);
-  return !!span && y >= span[0] && y <= span[1];
-}
-
-/** The gap in the near rail where the ladder goes down to the boat. */
-const LADDER_X = 15;
+const HEIGHT = 18;
 const LADDER_TOP_Y = 11;
+/** The ship's boat rides at the foot of the ladder. */
+const BOAT_Y = 14;
 const CABIN = { gridX: 5, gridY: 6, w: 6, h: 4 };
 /** The deck cell before the lamplit door, and the plank door on the deckhouse's side. */
 const THRESHOLD = { x: CABIN.gridX + CABIN.w, y: 8 };
 const PORT_DOOR = { x: 9, y: CABIN.gridY + CABIN.h - 1 };
 
-/** Bulwarks on every deck cell along the hull's edge; they join into one run. */
-function hullRails(): DecorSpec[] {
-  const rails: DecorSpec[] = [];
-  for (let x = 0; x < WIDTH; x++) {
-    for (let y = 0; y < HEIGHT; y++) {
-      if (!isDeck(x, y) || (x === LADDER_X && y === LADDER_TOP_Y)) continue;
-      const openNS = !isDeck(x, y - 1) || !isDeck(x, y + 1);
-      const openEW = !isDeck(x - 1, y) || !isDeck(x + 1, y);
-      if (!openNS && !openEW) continue;
-      rails.push({ gridX: x, gridY: y, texture: 'ch3-ship-rail', blocks: true });
-    }
-  }
-  return rails;
-}
+/** The hull and the slices of its near bulwark, each sorting where it stands. */
+const hull: DecorSpec[] = SHIP_SPRITES.map(s => ({ gridX: s.gridX, gridY: s.gridY, texture: s.texture, sortAt: s.sortAt }));
 
 export const ch3ShipMap: MapDefinition = {
   key: 'Ch3Ship',
   title: 'Pilgrimage: Aboard Ship',
   width: WIDTH,
   height: HEIGHT,
-  trueScale: true,
   spawn: { x: 13, y: 8 },
-  build: ({ width, height, paintRect, setTile, block, unblock }) => {
+  build: ({ width, height, paintRect, block, unblock }) => {
     paintRect(0, 0, width, height, 'water');
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        if (isDeck(x, y)) setTile(x, y, 'wood');
-        else block(x, y);
+        if (!isDeckCell(x, y)) block(x, y);
       }
     }
-    // The ladder and the boat's thwarts below the rail gap.
-    for (let y = LADDER_TOP_Y + 1; y < height; y++) {
-      setTile(LADDER_X, y, 'wood');
-      unblock(LADDER_X, y);
-    }
+    // The rope ladder and the boat's thwarts below the gangway.
+    for (let y = LADDER_TOP_Y + 1; y <= BOAT_Y; y++) unblock(LADDER_X, y);
   },
   buildings: [
     { ...CABIN, texture: 'ch3-cabin' },
     { gridX: 14, gridY: 7, w: 2, h: 2, texture: 'ch3-hatch' },
   ],
   decor: [
-    ...hullRails(),
+    ...hull,
     // The mainmast, its yard reaching aft over the deckhouse.
     { gridX: 17, gridY: 8, texture: 'ch3-mast', blocks: true },
     // Rope flaked down by the hatch and at the foot of the mast.
@@ -108,7 +82,7 @@ export const ch3ShipMap: MapDefinition = {
     { gridX: 21, gridY: 9, texture: 'rug' },
     { gridX: 7, gridY: 10, texture: 'rug' },
     // The ship's boat at the foot of the ladder.
-    { gridX: LADDER_X, gridY: HEIGHT - 1, texture: 'ch3-skiff' },
+    { gridX: LADDER_X, gridY: BOAT_Y, texture: 'ch3-skiff' },
   ],
   npcs: [
     // The lamplit cabin door: a threshold, never a character.
@@ -146,7 +120,7 @@ export const ch3ShipMap: MapDefinition = {
       targetScene: 'Ch3ShipCabin', targetSpawnX: 4, targetSpawnY: 5 },
   ],
   exits: [
-    { fromX: LADDER_X, fromY: HEIGHT - 1, dx: 0, dy: 1,
+    { fromX: LADDER_X, fromY: BOAT_Y, dx: 0, dy: 1,
       targetScene: 'Ch3Mecca', targetSpawnX: 1, targetSpawnY: 18,
       label: '↓ Go ashore at Jidda and on to Mecca',
       requires: f => !!f.ch3StormWeathered,

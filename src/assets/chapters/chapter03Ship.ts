@@ -3,21 +3,32 @@ import { ellipseShadow, litGradient, rope, sideGradient } from '../art/fieldKit'
 import { planks } from '../art/materials';
 import { flatTop, walls } from '../art/ornaments';
 import { drawLateenMast, drawSkiff, MAST_TEXTURE, SKIFF_TEXTURE } from '../art/ship';
+import { paintShipSprite } from '../art/shipBulwark';
+import { SHIP_SPRITES } from '../art/shipHullPlan';
 import { subBox } from '../art/structureParts';
 import { drawCabin } from '../art/shipCabin';
-import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
+import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
  * Chapter 3 ship pieces at true scale: the pilgrim vessel out of Búshihr.
  * Stern deckhouse with a lamplit door, the threshold mat before it, the main
  * hatch, water cask, galley brazier, rope coil, mainmast, and the ship's
- * boat. The bulwarks are a connected wall style (see walls.ts).
+ * boat. The hull, deck and curved bulwarks are a handful of large sprites
+ * cut from one painting (see shipHullPlan.ts).
  */
 
 const TEAK = 0x7a4f2c;
 const IRON = 0x2e2a26;
 
+/** The hull and the slices of its near bulwark, placed by the deck map. */
+export const CH03_SHIP_OBJECTS: MapObjectDefinition[] = SHIP_SPRITES.map(sprite => ({
+  id: sprite.texture, label: 'Ship\'s Hull', texture: sprite.texture, kind: 'structure', category: 'bridges-water',
+  color: TEAK, blocks: false,
+}));
+
 export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
+  ...Object.fromEntries(SHIP_SPRITES.map((sprite): [string, TextureGenerator] => [sprite.texture,
+    scene => paintTexture(scene, sprite.texture, sprite.width, sprite.height, ctx => paintShipSprite(ctx, sprite))])),
   /** Stern deckhouse (6 x 4). The plank door is on deck cell x 9, the lamplit door faces cell y 8. */
   'ch3-cabin': (scene, def) => {
     const { box, texW, texH } = footprintBox(def.footprint?.w ?? 6, def.footprint?.h ?? 4, 112, 52);
