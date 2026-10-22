@@ -131,7 +131,13 @@ export interface BuildingSpec extends Building {
 }
 
 /** Decor: cosmetic prop on a single cell, optionally blocking. */
-export type DecorSpec = Decor;
+export interface DecorSpec extends Decor {
+  /**
+   * Which painted variant (`texture~N`) to use, as for buildings: set it
+   * when the map depends on a particular one, such as a tree of a given age.
+   */
+  variant?: number;
+}
 
 /** Gate on a dialogue: until `when(flags)` holds, `lockedDialogue` plays instead. */
 export interface DialogueGate {

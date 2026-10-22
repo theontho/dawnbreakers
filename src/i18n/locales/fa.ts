@@ -2878,6 +2878,7 @@ export const text: TranslationCatalog = {
   "Great Mosque": "مسجد جامع",
   "Orange Tree": "درخت نارنج",
   "Plane Tree": "درخت چنار",
+  "Old Plane Tree": "چنار کهن",
   "Pool": "حوض",
   "Small House": "خانه کوچک",
   "Tall Cypress": "سرو بلند",

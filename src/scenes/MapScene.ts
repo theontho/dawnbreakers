@@ -219,7 +219,8 @@ export class MapScene extends Phaser.Scene {
       if (spec.blocks !== false) blockFootprintInto(this.blocked, width, height, spec.gridX, spec.gridY, spec.w, spec.h);
     }
     for (const spec of this.definition.decor) {
-      this.decor.push({ ...spec, texture: variantTexture(spec.texture, spec.gridX, spec.gridY) });
+      const { variant, ...decor } = spec;
+      this.decor.push({ ...decor, texture: variantTexture(spec.texture, spec.gridX, spec.gridY, variant) });
       if (spec.blocks && !spec.present && inBounds(width, height, spec.gridX, spec.gridY)) {
         this.blocked[spec.gridY]![spec.gridX] = true;
       }

@@ -30,7 +30,8 @@ export function crown(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, 
   const clumps = Array.from({ length: n }, () => {
     const a = rand() * Math.PI * 2;
     const d = Math.sqrt(rand()) * 0.78;
-    return { x: cx + Math.cos(a) * rx * d, y: cy + Math.sin(a) * ry * d, r: Math.min(rx, ry) * (0.26 + rand() * 0.16) };
+    // Clumps stop growing on a great crown, so its leaf stays as fine as a small one's.
+    return { x: cx + Math.cos(a) * rx * d, y: cy + Math.sin(a) * ry * d, r: Math.min(rx, ry, 85) * (0.26 + rand() * 0.16) };
   }).sort((a, b) => a.y - b.y);
   // A dark mass first, so the gaps between clumps read as depth, not holes.
   ctx.fillStyle = css(shade(style.leaf, 0.5));
@@ -91,6 +92,8 @@ export interface PlaneStyle {
   /** Total height of the tree in px. */
   height: number;
   spread: number;
+  /** Trunk width at the foot. */
+  trunk: number;
   leaf: number;
   seed: number;
 }
@@ -108,15 +111,15 @@ export function paintPlaneTree(scene: Phaser.Scene, key: string, s: PlaneStyle):
     const fork = ground - s.height * 0.3;
     ctx.fillStyle = css(shade(bark, 0.8));
     ctx.beginPath();
-    ctx.ellipse(cx, ground, 18, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, ground, s.trunk * 0.6, s.trunk * 0.2, 0, 0, Math.PI * 2);
     ctx.fill();
-    limb(ctx, cx, ground + 2, cx + 2, fork, 30, 20, bark, -2);
-    planeBark(ctx, cx + 1, fork, 22, ground, s.seed);
+    limb(ctx, cx, ground + 2, cx + 2, fork, s.trunk, s.trunk * 0.67, bark, -2);
+    planeBark(ctx, cx + 1, fork, s.trunk * 0.73, ground, s.seed);
     const crownY = ground - s.height * 0.64;
     const rand = rng(s.seed + 3);
     const limbs = [-0.75, -0.3, 0.2, 0.7].map(t => ({ t, lift: 0.75 + rand() * 0.25 }));
     for (const { t, lift } of limbs) {
-      limb(ctx, cx + t * 6, fork + 4, cx + t * s.spread * 0.62, crownY + s.height * 0.08 * (1 - lift), 13, 5, bark, t * 10);
+      limb(ctx, cx + t * s.trunk * 0.2, fork + 4, cx + t * s.spread * 0.62, crownY + s.height * 0.08 * (1 - lift), s.trunk * 0.43, s.trunk * 0.17, bark, t * 10);
     }
     crown(ctx, cx, crownY, s.spread, s.height * 0.36, { leaf: s.leaf, seed: s.seed });
   });
@@ -176,16 +179,27 @@ export function paintOrangeTree(scene: Phaser.Scene, key: string, s: OrangeStyle
   });
 }
 
+/** Street and garden planes from a young tree of 9 m to one of 16 m in its prime. */
 export const PLANE_VARIANTS: readonly PlaneStyle[] = [
-  { height: 225, spread: 96, leaf: 0x4f7a3a, seed: 101 },
-  { height: 196, spread: 84, leaf: 0x5a7f3c, seed: 117 },
-  { height: 238, spread: 104, leaf: 0x46703a, seed: 131 },
+  { height: 255, spread: 108, trunk: 30, leaf: 0x4f7a3a, seed: 101 },
+  { height: 205, spread: 86, trunk: 22, leaf: 0x5a7f3c, seed: 117 },
+  { height: 310, spread: 130, trunk: 38, leaf: 0x46703a, seed: 131 },
+  { height: 360, spread: 150, trunk: 44, leaf: 0x4a743a, seed: 139 },
 ];
 
+/** The old chenar of a village spring or a town square, 24 to 25 m, its trunk 3 m through. */
+export const OLD_PLANE_VARIANTS: readonly PlaneStyle[] = [
+  { height: 560, spread: 230, trunk: 66, leaf: 0x46703a, seed: 151 },
+  { height: 575, spread: 245, trunk: 72, leaf: 0x4f7a3a, seed: 163 },
+];
+
+/** Garden cypresses from a young one of 6.5 m to an old one of 16.5 m. */
 export const TALL_CYPRESS_VARIANTS: readonly CypressStyle[] = [
   { height: 205, width: 34, leaf: 0x24553a, seed: 204 },
-  { height: 184, width: 30, leaf: 0x2a5e3c, seed: 208, lean: 3 },
-  { height: 226, width: 36, leaf: 0x1f4c33, seed: 215, lean: -3 },
+  { height: 150, width: 26, leaf: 0x2a5e3c, seed: 208, lean: 3 },
+  { height: 260, width: 40, leaf: 0x1f4c33, seed: 215, lean: -3 },
+  { height: 320, width: 46, leaf: 0x24553a, seed: 221, lean: 2 },
+  { height: 380, width: 52, leaf: 0x1f4c33, seed: 229 },
 ];
 
 export const ORANGE_VARIANTS: readonly OrangeStyle[] = [

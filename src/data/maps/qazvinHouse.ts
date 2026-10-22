@@ -47,12 +47,16 @@ const buildings: BuildingSpec[] = [
 const block = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture, blocks: true }));
 
+/** Qazvín's winters are too hard for the orange: its courts grow the pomegranate (variant 2 of `fruit-tree`). */
+const pomegranates = (cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
+  cells.map(([gridX, gridY]) => ({ gridX, gridY, texture: 'fruit-tree', variant: 2, blocks: true }));
+
 const props: DecorSpec[] = [
-  // Over the inner wall: a cypress and an orange tree in her court.
+  // Over the inner wall: a cypress and a pomegranate in her court.
+  ...pomegranates([[10, 6]]),
   ...block('cypress', [[13, 4]]),
-  ...block('orange-tree', [[10, 6]]),
-  // The outer court: orange trees round the pool, a plane in the corner.
-  ...block('orange-tree', [[9, 12], [16, 13], [9, 17], [16, 17]]),
+  // The outer court: pomegranates round the pool, a plane in the corner.
+  ...pomegranates([[9, 12], [16, 13], [9, 17], [16, 17]]),
   ...block('plane-tree', [[3, 19]]),
   ...block('lamp', [[15, 10], [18, 10], [GATE_X - 1, H - 2], [GATE_X + 2, H - 2]]),
   ...block('ch1-planter', [[8, 10], [23, 10]]),

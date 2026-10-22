@@ -9,7 +9,7 @@ import { paintMosqueGreat } from './mosqueGreat';
 import { paintMosqueLocal } from './mosqueLocal';
 import { paintHouseSet, SMALL_HOUSES, TOWN_HOUSES } from './townHouses';
 import {
-  ORANGE_VARIANTS, paintOrangeTree, paintPlaneTree, paintTallCypress, PLANE_VARIANTS, TALL_CYPRESS_VARIANTS,
+  OLD_PLANE_VARIANTS, ORANGE_VARIANTS, paintOrangeTree, paintPlaneTree, paintTallCypress, PLANE_VARIANTS, TALL_CYPRESS_VARIANTS,
 } from './trees';
 
 /**
@@ -27,6 +27,7 @@ export const TOWN_TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   'town-house-large': COURTYARD_HOUSES.length,
   'market-stall': LARGE_STALLS.length,
   'plane-tree': PLANE_VARIANTS.length,
+  'plane-tree-old': OLD_PLANE_VARIANTS.length,
   'cypress': TALL_CYPRESS_VARIANTS.length,
   'orange-tree': ORANGE_VARIANTS.length,
 };
@@ -48,6 +49,7 @@ export const TOWN_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>>
   'city-gate': (scene, def) => paintCityGateLarge(scene, def.texture, ...footprint(def)),
   'fountain-pool': (scene, def) => paintFountainPool(scene, def.texture, ...footprint(def)),
   'plane-tree': (scene, def) => PLANE_VARIANTS.forEach((s, i) => paintPlaneTree(scene, variantKey(def.texture, i), s)),
+  'plane-tree-old': (scene, def) => OLD_PLANE_VARIANTS.forEach((s, i) => paintPlaneTree(scene, variantKey(def.texture, i), s)),
   'cypress': (scene, def) => TALL_CYPRESS_VARIANTS.forEach((s, i) => paintTallCypress(scene, variantKey(def.texture, i), s)),
   'orange-tree': (scene, def) => ORANGE_VARIANTS.forEach((s, i) => paintOrangeTree(scene, variantKey(def.texture, i), s)),
 };

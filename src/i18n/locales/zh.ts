@@ -2876,6 +2876,7 @@ export const text: TranslationCatalog = {
   "Great Mosque": "大清真寺",
   "Orange Tree": "橙树",
   "Plane Tree": "悬铃木",
+  "Old Plane Tree": "古悬铃木",
   "Pool": "水池",
   "Small House": "小屋",
   "Tall Cypress": "高柏树",

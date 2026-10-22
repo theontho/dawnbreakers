@@ -61,6 +61,10 @@ const blocking = (texture: string, cells: ReadonlyArray<readonly [number, number
 const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture }));
 
+/** Pomegranates in flower, the walled gardens' fruit trees (variant 2 of `fruit-tree`). */
+const pomegranates = (cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
+  cells.map(([gridX, gridY]) => ({ gridX, gridY, texture: 'fruit-tree', variant: 2, blocks: true }));
+
 /** The Host's garden: cypress along the water, lamps, the assembly's carpets, roses. */
 const HOST_GARDEN: DecorSpec[] = [
   ...blocking('cypress', [[20, 3], [23, 3], [20, 11], [23, 11], [7, 2], [35, 2]]),
@@ -74,7 +78,7 @@ const HOST_GARDEN: DecorSpec[] = [
 /** Quddús's garden: his pavilion, the old pool, roses and cypress. */
 const QUDDUS_GARDEN: DecorSpec[] = [
   ...blocking('cypress', [[2, 18], [13, 18], [2, 30]]),
-  ...blocking('orange-tree', [[10, 19], [11, 28]]),
+  ...pomegranates([[10, 19], [11, 28]]),
   ...blocking('ch7-rosebush', [[3, 23], [12, 22], [9, 29], [3, 26], [8, 22], [13, 30]]),
   ...blocking('lamp', [[3, 22], [9, 23]]),
   ...loose('rug', [[8, 25], [8, 26], [10, 26]]),
@@ -82,8 +86,10 @@ const QUDDUS_GARDEN: DecorSpec[] = [
 
 /** Ṭáhirih's garden: the canopy where she teaches, the best roses, a pool. */
 const TAHIRIH_GARDEN: DecorSpec[] = [
-  ...blocking('cypress', [[28, 18], [39, 18], [28, 30], [39, 24]]),
-  ...blocking('orange-tree', [[30, 20], [31, 29]]),
+  ...blocking('cypress', [[28, 18], [28, 30], [39, 24]]),
+  // A younger cypress in the north-east corner, so the Host's tent shows over the wall behind it.
+  { gridX: 39, gridY: 18, texture: 'cypress', variant: 2, blocks: true },
+  ...pomegranates([[30, 20], [31, 29]]),
   ...blocking('ch7-rosebush', [[29, 22], [32, 23], [37, 23], [38, 21], [29, 27], [34, 29], [38, 27], [31, 26], [39, 30]]),
   ...blocking('lamp', [[38, 25]]),
   ...loose('rug', [[33, 25], [35, 25]]),
@@ -91,8 +97,9 @@ const TAHIRIH_GARDEN: DecorSpec[] = [
 
 /** The meadow: orchard trees, reeds by the water, the names-keeper's desk, saddle bundles. */
 const MEADOW: DecorSpec[] = [
-  ...blocking('plane-tree', [[2, 0], [39, 0], [3, 35]]),
-  ...blocking('orange-tree', [[1, 14], [11, 15], [16, 15], [25, 15], [30, 15], [40, 14], [7, 34], [11, 36], [29, 35], [34, 36], [38, 34]]),
+  ...blocking('plane-tree-old', [[2, 0], [39, 0]]),
+  ...blocking('plane-tree', [[3, 35]]),
+  ...blocking('apricot-tree', [[1, 14], [11, 15], [16, 15], [25, 15], [30, 15], [40, 14], [7, 34], [11, 36], [29, 35], [34, 36], [38, 34]]),
   ...blocking('cypress', [[16, 21], [16, 28], [24, 21], [24, 28]]),
   ...blocking('ch5-river-reeds', [[23, 17], [20, 30], [23, 34], [20, 19]]),
   ...blocking('writing-desk', [[15, 33]]),

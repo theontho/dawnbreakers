@@ -14,8 +14,38 @@ structure follows.
 - Real footprints: a small house 5x4 cells, a town house 6x5, a courtyard
   house 8x7, a neighbourhood mosque 8x7, a congregational mosque 12x10 or
   more, a caravanserai about 20x16, a tent 3x3 to 5x4. Trees at their
-  heights: plane tree 180 to 240 px, cypress 180 to 230 px, orange tree 90 px.
+  heights, by age (see "Trees" below).
 - Keep any single texture under about 600 px tall and 1024 px wide.
+
+## Trees
+
+Trees come in ages as well as species, so a stand mixes saplings, trees
+in their prime and a few old giants. Each texture has several variants.
+
+| Tree | Texture | Height | px |
+| --- | --- | --- | --- |
+| Oak (chestnut-leaved) | `oak-young` / `oak-mature` / `oak-old` | 8 to 12 / 15 to 19 / 21 to 25 m | 190 to 270 / 350 to 430 / 490 to 575 |
+| Oriental beech | `beech-young` / `-mature` / `-old` | 9 to 12 / 16 to 19 / 22 to 25 m | 200 to 275 / 360 to 435 / 500 to 580 |
+| Persian ironwood | `ironwood-young` / `-mature` / `-old` | 5 to 7 / 8 to 10 / 11 to 13 m | 120 to 160 / 190 to 230 / 255 to 300 |
+| Caucasian alder | `alder-young` / `-mature` / `-old` | 6 to 9 / 11 to 14 / 16 to 20 m | 140 to 205 / 255 to 320 / 370 to 455 |
+| Walnut | `walnut` | 10 to 18 m, broad | 230 to 410 |
+| Mulberry | `mulberry` | 5 to 8 m | 120 to 180 |
+| Apple, quince, pomegranate (variant 2) | `fruit-tree` | 3.5 to 5.5 m | 84 to 128 |
+| Apricot (summer, in fruit) | `apricot-tree` | 4 to 5.5 m | 95 to 130 |
+| Pollard (cut for fodder) | `pollard` | 3.3 to 5 m | 76 to 115 |
+| Plane (chinár) | `plane-tree` | 9 to 16 m | 205 to 360 |
+| Old plane | `plane-tree-old` | 24 to 25 m | 560 to 575 |
+| Cypress | `cypress` | 6.5 to 16.5 m | 150 to 380 |
+| Bitter orange (Shíráz, Iṣfahán) | `orange-tree` | 3.5 to 4 m | 82 to 90 |
+
+Young trees are slight, the crown narrow and low; old ones stand on a tall
+clean bole under a broad crown. Woods scattered with `scatterWoodland`
+(`src/data/maps/woodland.ts`) are graded by depth from paths, clearings and
+fields: young at the edges, older further in, giants in the depths with a
+few near the open as landmarks; cells near the `village` cells it is given
+grow orchard, mulberry, walnut and pollards instead. The bitter orange
+belongs to the warm south and the Caspian shore; in the cold towns of the
+north a court grows pomegranates (`fruit-tree`, variant 2).
 
 ## Building a map
 

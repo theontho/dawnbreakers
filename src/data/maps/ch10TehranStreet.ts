@@ -100,9 +100,9 @@ const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>)
 const props: DecorSpec[] = [
   // Before the plundered house's open door: the leaf torn off its pivot, the split bar.
   ...loose('ch10-door-wreckage', [[BROKEN_DOOR.x - 1, BROKEN_DOOR.y + 1]]),
-  // The garden: cypress and orange, roses and a planter gone to seed, a rug.
+  // The garden: cypress and fruit trees, roses and a planter gone to seed, a rug.
   ...block('cypress', [[2, 8], [2, 11], [10, 3]]),
-  ...block('orange-tree', [[5, 9], [10, 11]]),
+  ...block('fruit-tree', [[5, 9], [10, 11]]),
   ...block('ch7-rosebush', [[7, 7]]),
   ...block('ch1-planter', [[10, 7]]),
   ...loose('rug', [[4, 7]]),

@@ -25,6 +25,7 @@ export const TOWN_OBJECTS: MapObjectDefinition[] = [
   // Water and trees at their real heights.
   { id: 'fountain-pool', label: 'Pool', texture: 'fountain-pool', kind: 'structure', category: 'bridges-water', color: 0x2c4a6b, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
   { id: 'plane-tree', label: 'Plane Tree', texture: 'plane-tree', kind: 'prop', category: 'plants', color: 0x46743f, blocks: true },
+  { id: 'plane-tree-old', label: 'Old Plane Tree', texture: 'plane-tree-old', kind: 'prop', category: 'plants', color: 0x46703a, blocks: true },
   { id: 'cypress', label: 'Tall Cypress', texture: 'cypress', kind: 'prop', category: 'plants', color: 0x24553a, blocks: true },
   { id: 'orange-tree', label: 'Orange Tree', texture: 'orange-tree', kind: 'prop', category: 'plants', color: 0x3f7a3a, blocks: true },
 ];

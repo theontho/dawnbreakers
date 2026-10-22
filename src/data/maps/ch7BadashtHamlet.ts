@@ -9,7 +9,7 @@ import type { DecorSpec, MapDefinition } from './types';
  * who receives each guest stands where the lane turns north to the three
  * rented gardens (`Ch7BadashtCamp`). South of the village are the threshing
  * floor and the orchard, where the gardener minds his melons under the
- * apricot trees.
+ * apricot and mulberry trees. An old plane shades the village's top corner.
  *
  * Districts (x runs east, y runs south):
  * - The road: rows 17..18 from the west edge (0, 18) to the lane, bridged
@@ -42,8 +42,9 @@ const VILLAGE: DecorSpec[] = [
   ...blocking('crates', [[16, 4], [7, 12]]),
   ...blocking('ch9-cloth-bundle', [[10, 8], [1, 6]]),
   ...loose('rug', [[11, 7], [4, 7], [12, 15]]),
-  ...blocking('plane-tree', [[0, 0], [16, 1], [0, 15]]),
-  ...blocking('orange-tree', [[1, 8], [17, 14]]),
+  ...blocking('plane-tree-old', [[0, 0]]),
+  ...blocking('plane-tree', [[16, 1], [0, 15]]),
+  ...blocking('mulberry', [[1, 8], [17, 14]]),
 ];
 
 /** The threshing floor and the orchard south of the road. */
@@ -51,10 +52,11 @@ const FIELDS: DecorSpec[] = [
   ...blocking('ch9-rope-coils', [[3, 22]]),
   ...blocking('ch9-cloth-bundle', [[6, 24]]),
   ...loose('rug', [[5, 23], [6, 23]]),
-  ...blocking('orange-tree', [
+  ...blocking('apricot-tree', [
     [2, 28], [5, 28], [11, 28], [14, 28], [3, 31], [6, 31], [12, 31], [15, 31],
-    [2, 34], [5, 34], [11, 34], [14, 34], [17, 33],
+    [2, 34], [5, 34], [11, 34], [14, 34],
   ]),
+  ...blocking('mulberry', [[17, 33]]),
   ...blocking('ch7-rosebush', [[17, 27], [17, 30], [10, 26]]),
   ...blocking('plane-tree', [[0, 20], [1, 26]]),
 ];
@@ -75,7 +77,8 @@ const CAMP: DecorSpec[] = [
   ...blocking('ch7-rosebush', [[33, 3], [28, 7], [34, 14]]),
   ...blocking('plane-tree', [[26, 2], [37, 3], [24, 30]]),
   ...blocking('cypress', [[29, 1], [34, 1]]),
-  ...blocking('orange-tree', [[38, 16], [38, 30], [36, 33], [27, 33], [23, 1]]),
+  ...blocking('apricot-tree', [[38, 16], [38, 30], [36, 33], [27, 33]]),
+  ...blocking('mulberry', [[23, 1]]),
 ];
 
 export const ch7BadashtHamletMap: MapDefinition = {

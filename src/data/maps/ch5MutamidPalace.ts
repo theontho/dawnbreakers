@@ -64,7 +64,8 @@ function walls(): DecorSpec[] {
 
 /** Cypress avenues down the pool, plane trees over the courts, orange trees in the beds. */
 function trees(): DecorSpec[] {
-  const avenue = [14, 16, 18, 26, 28, 30, 32, 34].flatMap(y => [tree(17, y, 'cypress'), tree(26, y, 'cypress')]);
+  // An avenue is planted at one time, so its cypresses are one age: young ones (6.5 m), low enough to see the tālār's steps past.
+  const avenue = [14, 16, 18, 26, 28, 30, 32, 34].flatMap(y => [17, 26].map(x => ({ ...tree(x, y, 'cypress'), variant: 1 })));
   return [
     ...avenue,
     // Either side of the tālār

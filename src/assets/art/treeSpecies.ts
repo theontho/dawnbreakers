@@ -100,9 +100,10 @@ export const forestTreeId = (species: ForestSpecies, age: TreeAge): string => `$
  * The village trees. Walnuts of 10 to 18 m spread broad over the lanes on
  * smooth grey bark; mulberries of 5 to 8 m, stout and round, kept for the
  * silkworms and the fruit; and the orchard of apple, quince and
- * pomegranate, 3 to 6 m, in fruit.
+ * pomegranate, 3 to 6 m, in fruit; and the apricot of the summer orchards
+ * of Khurásán, ripe in June.
  */
-export const VILLAGE_BROADLEAVES: Record<'walnut' | 'mulberry' | 'fruit-tree', readonly BroadleafStyle[]> = {
+export const VILLAGE_BROADLEAVES: Record<'walnut' | 'mulberry' | 'fruit-tree' | 'apricot-tree', readonly BroadleafStyle[]> = {
   walnut: [230, 300, 360, 410].map((height, i) => ({
     height, spread: Math.round(height * [0.42, 0.4, 0.44, 0.41][i]!), crownBase: Math.round(height * 0.26),
     bole: Math.round(height * 0.05), bark: 0x8c867a, pale: true, seed: 901 + i * 7,
@@ -124,4 +125,9 @@ export const VILLAGE_BROADLEAVES: Record<'walnut' | 'mulberry' | 'fruit-tree', r
     { height: 90, spread: 34, crownBase: 30, bole: 6, bark: 0x5e4a36, seed: 969, fruit: 0xa8402a,
       leaves: [0x46702e, 0x547e36, 0x648a3a] },
   ],
+  'apricot-tree': [130, 110, 95].map((height, i) => ({
+    height, spread: Math.round(height * [0.42, 0.45, 0.4][i]!), crownBase: Math.round(height * 0.3),
+    bole: Math.round(height * 0.07), bark: 0x5a3e2c, seed: 981 + i * 7, fruit: 0xe8902a,
+    leaves: [0x3f6e2e, 0x4c7c34, 0x5a8a3a, 0x356228],
+  })),
 };

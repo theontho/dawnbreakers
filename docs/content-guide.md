@@ -80,10 +80,10 @@ Flags carried forward:
   buildings, and notes anything more than 35% covered. Things lower on the
   screen (higher `x + y`) draw in front, so a tall tree or building south
   or east of a person, in the same screen column (similar `x - y`), hides
-  them: a house a few cells away, a forest oak (500 px) up to about 30.
-  Woodland scattered with `scatterWoodland` keeps trees off `sightlines`
-  from the people it is given; give it a reach that covers its tallest
-  trees. Stand people on the camera side of tall things, in
+  them: a house a few cells away, an old oak (575 px) up to about 36.
+  Woodland scattered with `scatterWoodland` keeps each tree off the
+  `watched` cells it is given by that tree's own height and crown, growing
+  a younger tree where an old one would cover someone. Stand people on the camera side of tall things, in
   clearings and on open ground, and keep their cell and a door's approach
   cell clear of trees in front. A partly covered thing is fine (a wide
   road half under a wall, a person whose feet are behind a crate); an exit

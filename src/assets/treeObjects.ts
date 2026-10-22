@@ -4,7 +4,7 @@ import type { MapObjectDefinition } from './mapAssetTypes';
 /**
  * Trees at their real heights, by species and age: the Hyrcanian forest
  * (oak, beech, ironwood, alder; each young, mature and old) and the trees
- * of the villages (walnut, mulberry, orchard fruit, pollards). The town's
+ * of the villages (walnut, mulberry, orchard fruit, apricot, pollards). The town's
  * plane trees and cypresses are in `townObjects.ts`. Art in
  * `art/treeSpecies.ts`, `art/pollard.ts`; see docs/true-scale.md.
  */
@@ -22,5 +22,6 @@ export const TREE_OBJECTS: MapObjectDefinition[] = [
   tree('walnut', 'Walnut', 0x6a7a2e),
   tree('mulberry', 'Mulberry', 0x5f8a34),
   tree('fruit-tree', 'Fruit Tree', 0x4c7a34),
+  tree('apricot-tree', 'Apricot Tree', 0x4c7c34),
   tree('pollard', 'Pollard', 0x7a8a3a),
 ];
