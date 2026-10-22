@@ -11,9 +11,15 @@
  *   "open the browser" starts one, and each such window runs the game on the
  *   GPU until closed.
  *
- *   npm run reap              # stop them
- *   npm run reap -- --dry-run # only list them
- *   npm run reap -- --keep-port 4173   # spare a server on that port
+ * By default only orphans are stopped: processes whose shell, agent or
+ * terminal has gone, so they now hang off the system (pid 1 or the user's
+ * systemd). Anything still attached to a live session, such as another
+ * agent's smoke run or a server someone is keeping up, is left alone.
+ *
+ *   npm run reap                       # stop orphans
+ *   npm run reap -- --dry-run          # only list them
+ *   npm run reap -- --all              # also stop attached ones (yours to stop)
+ *   npm run reap -- --keep-port 4173   # spare a server on that port even with --all
  *
  * Linux only (reads /proc). Never touches a browser you opened yourself on
  * an ordinary page.
@@ -25,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
+const everything = args.includes('--all');
 const keepPorts = args.flatMap((a, i) => (a === '--keep-port' ? [args[i + 1]] : []));
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoName = basename(root);
@@ -81,7 +88,25 @@ function why(p) {
   return undefined;
 }
 
-const targets = all.map(p => ({ p, reason: why(p) })).filter(t => t.reason);
+const byPid = new Map(all.map(p => [p.pid, p]));
+const isSystem = (p) => !p || p.pid === 1 || /(^|\/)systemd$/.test(p.argv[0]) || p.argv[0] === 'systemd';
+
+/**
+ * Whether the process's owner is gone: climbing through its parents, only our
+ * kind of process (npm, node, vite, the browser) stands between it and the
+ * system. A shell, an agent or a terminal on the way means someone is still
+ * running it.
+ */
+function orphaned(p) {
+  for (let up = byPid.get(p.ppid); ; up = byPid.get(up.ppid)) {
+    if (isSystem(up)) return true;
+    const exe = basename(up.argv[0].split(' ')[0]);
+    if (!/^(node|npm|npx|vite|chromium|chrome)$/.test(exe)) return false;
+  }
+}
+
+const targets = all.map(p => ({ p, reason: why(p) }))
+  .filter(t => t.reason && (everything || orphaned(t.p)));
 const pids = new Set(targets.map(t => t.p.pid));
 if (targets.length === 0) {
   console.log('Nothing to reap.');
