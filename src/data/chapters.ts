@@ -9,6 +9,7 @@ export type ChapterId =
   | 'mecca'
   | 'shiraz-return'
   | 'isfahan'
+  | 'kashan-kulayn'
   | 'mountain-prisons'
   | 'badasht'
   | 'tabriz-trial'
@@ -30,6 +31,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   mecca: 'meccaComplete',
   'shiraz-return': 'houseArrestComplete',
   isfahan: 'isfahanComplete',
+  'kashan-kulayn': 'kulaynComplete',
   'mountain-prisons': 'bayanComplete',
   badasht: 'badashtComplete',
   'tabriz-trial': 'trialComplete',
@@ -118,6 +120,15 @@ const SPECS: ChapterSpec[] = [
     description: 'Across the river, an Imám-Jumʿih pours water for his Guest, a hard old governor finds one thing worth doing, and the divines of Iṣfahán sign what they would not come to debate.',
     startScene: 'Ch5IsfahanBridge',
     scenes: ['Ch5IsfahanBridge', 'Ch5MutamidPalace', 'Ch5ReceptionRoom'],
+  },
+  {
+    id: 'kashan-kulayn',
+    story: CHAPTER_STORIES['kashan-kulayn'],
+    title: 'Káshán and Kulayn',
+    subtitle: 'The road toward Ṭihrán, spring 1847',
+    description: 'On the eve of Naw-Rúz a silk merchant waits at the gate of Káshán for the Guest he saw in a dream. Three nights in his house, then a red tent among almond orchards half a day from the capital, a sealed letter from Bahá’u’lláh, and an order that turns the road toward the mountains.',
+    startScene: 'KulaynKashan',
+    scenes: ['KulaynKashan', 'KulaynHouse', 'KulaynCamp'],
   },
   {
     id: 'mountain-prisons',

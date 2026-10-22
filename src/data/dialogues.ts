@@ -5,6 +5,7 @@ import { nurDialogues } from './dialogues_ch/nur';
 import { chapter03Dialogues } from './dialogues_ch/chapter03_mecca';
 import { chapter04Dialogues } from './dialogues_ch/chapter04_shiraz_return';
 import { chapter05Dialogues } from './dialogues_ch/chapter05_isfahan';
+import { kulaynDialogues } from './dialogues_ch/kulayn_dialogues';
 import { chapter06Dialogues } from './dialogues_ch/chapter06_mountain_prisons';
 import { chapter07Dialogues } from './dialogues_ch/chapter07_badasht';
 import { trialDialogues } from './dialogues_ch/trial_tabriz';
@@ -31,6 +32,7 @@ export const dialogues: Record<string, DialogueTree> = {
   ...chapter03Dialogues,
   ...chapter04Dialogues,
   ...chapter05Dialogues,
+  ...kulaynDialogues,
   ...chapter06Dialogues,
   ...chapter07Dialogues,
   ...trialDialogues,

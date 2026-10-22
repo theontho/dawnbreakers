@@ -23,6 +23,7 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('jidda', 'Jidda', [39.19, 21.49], 'The Red Sea port where pilgrims landed for Mecca.'),
   place('qazvin', 'Qazvín', [50.0, 36.27], 'A city west of Ṭihrán, home of Ṭáhirih.'),
   place('kashan', 'Káshán', [51.43, 33.98], 'A city on the edge of the central desert, known for its silk and carpets.'),
+  place('kulayn', 'Kulayn', [51.30, 35.34], 'A village half a day\'s ride south of Ṭihrán, the birthplace and resting-place of Shaykh Muḥammad-ibn-i-Yaʿqúb-i-Kulayní, who gathered the traditions of the Imáms. It belonged to Ḥájí Mírzá Áqásí, whose own tent was pitched there for the Báb in the spring of 1847.'),
   place('yazd', 'Yazd', [54.37, 31.9], 'A desert city of wind-catchers in central Persia.'),
   place('kazirun', 'Kázirún', [51.65, 29.62], 'A town on the road from Búshihr up into the mountains to Shíráz.'),
   place('shahrud', 'Sháhrúd', [54.98, 36.42], 'A town on the road east to Khurásán, near Badasht.'),

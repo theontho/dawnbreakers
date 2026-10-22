@@ -76,6 +76,8 @@ export const WORDS: readonly GlossaryEntry[] = [
     'The man who gives the call to prayer from the mosque, five times a day.'),
   term('naw-ruz', 'Naw-Rúz', ['Naw-Rúz'],
     'The Persian New Year, kept at the spring equinox: "the new day".'),
+  term('kulah', 'Kuláh', ['kuláh'],
+    'A tall brimless hat of black lambskin or felt, worn in Persia by merchants and officials. The Báb came to Káshán in 1847 wearing a merchant\'s kuláh in place of His turban.'),
   term('fal', 'Fál', ['fál', 'Fál'],
     'Divination by opening a book at random, most often the Díván of Ḥáfiẓ, whose verse is read as an answer to an unspoken question.'),
   term('divan', 'Díván', ['Díván'],
