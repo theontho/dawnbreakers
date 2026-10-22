@@ -75,6 +75,20 @@ Flags carried forward:
     the player has learned enough).
   - `present: f => ...` makes someone arrive or leave as flags change. It is
     re-evaluated after every dialogue.
+- **Placing people and story objects.** Interaction points must be
+  visible: smoke fails anything more than 60% hidden behind trees, walls or
+  buildings, and notes anything more than 35% covered. Things lower on the
+  screen (higher `x + y`) draw in front, so a tall tree or building south
+  or east of a person, in the same screen column (similar `x - y`), hides
+  them: a house a few cells away, a forest oak (500 px) up to about 30.
+  Woodland scattered with `scatterWoodland` keeps trees off `sightlines`
+  from the people it is given; give it a reach that covers its tallest
+  trees. Stand people on the camera side of tall things, in
+  clearings and on open ground, and keep their cell and a door's approach
+  cell clear of trees in front. A partly covered thing is fine (a wide
+  road half under a wall, a person whose feet are behind a crate); an exit
+  fails only when fewer than half of its cells can be seen. Doors painted
+  on a building's face are measured as a doorway on that face.
 - `exits`: stepping off the map edge from `fromX/fromY` in direction
   `dx/dy`. Optional `requires: f => ...` and `lockedLabel` keep an exit shut
   until the story allows. Pair every exit with a matching return exit on the
@@ -145,7 +159,8 @@ Flags carried forward:
   node where every choice can be hidden.
 - People hidden behind tall scenery are drawn as a faint golden silhouette
   above it, and their speech mark always floats on top, so they stay
-  findable. Still, prefer placing people where they can be seen.
+  findable. That is a fallback, not a placement: see "Placing people and
+  story objects" under Maps.
 - Keep lines short enough to read comfortably: one to three sentences per
   node, rarely more than 60 words.
 - Every NPC conversation should leave the player with something: a fact, a

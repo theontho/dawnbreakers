@@ -40,7 +40,9 @@ structure follows.
    inside those edges still hide what is behind them, so keep people and
    doors at least a few cells in from those edges.
 7. People must be reachable, door approach cells walkable, exits reachable.
-   Prefer placing people on the camera side of tall buildings.
+   Interaction points must be visible: smoke fails anything more than 60%
+   hidden behind trees, walls or buildings. Place people on the camera side
+   of tall buildings and trees.
 
 ## Checks
 

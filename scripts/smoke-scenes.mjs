@@ -2,8 +2,10 @@
 /**
  * Headless smoke test: boots the game in Chromium, starts every map scene,
  * opens every NPC's dialogue and clicks through its first choice, and fails
- * on any page error or on anyone the player cannot walk up to. Also reports
- * frame rate per scene, and anyone who can be reached from one side only.
+ * on any page error, on anyone the player cannot walk up to, and on any
+ * interaction point more than 60% hidden behind scenery drawn in front of it
+ * (`lib/occlusion.mjs`). Also reports frame rate per scene, anyone who can be
+ * reached from one side only, and anything more than 35% covered.
  *
  *   npm run smoke                       # all scenes
  *   npm run smoke -- --scenes City,Road # a subset
@@ -16,6 +18,7 @@
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { openGame, root, waitForBoot } from './lib/gameBrowser.mjs';
+import { measureOcclusion, occlusionReport } from './lib/occlusion.mjs';
 
 const args = process.argv.slice(2);
 const argValue = (name) => {
@@ -171,6 +174,10 @@ try {
     for (const r of reach.filter((r) => r.sides === 0)) errors.push(`unreachable: ${r.name} at ${r.at}`);
     const tight = reach.filter((r) => r.sides === 1 && !r.doorway);
 
+    // Occlusion, in every distinct set of who is present, before dialogues move the flags.
+    const occlusion = occlusionReport(await page.evaluate(measureOcclusion, key));
+    errors.push(...occlusion.errors);
+
     // Open each NPC's dialogue and walk the first choice path to its end.
     const { talked, unfinished } = await page.evaluate(walkDialogues, key);
 
@@ -180,6 +187,7 @@ try {
     console.log(`${status.padEnd(4)} ${key.padEnd(20)} ${String(fps).padStart(4)} fps  ${talked} npc dialogues`);
     for (const e of sceneErrors) console.log(`       ${e}`);
     for (const r of tight) console.log(`       tight: ${r.name} at ${r.at} is reachable from one side only`);
+    for (const n of occlusion.notes) console.log(`       ${n}`);
     // A dialogue whose first choices loop is closed by hand; that is only a note, page errors still fail.
     for (const u of unfinished) console.log(`       note: ${u}`);
   }
