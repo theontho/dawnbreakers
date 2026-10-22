@@ -43,7 +43,7 @@ try {
       game.scene.getScenes(true).forEach((s) => s.scene.stop());
       game.scene.start(key, { spawnX: Number(x), spawnY: Number(y) });
     }, { key, x, y });
-    await page.waitForFunction((k) => window.__game.scene.isActive(k), key, { timeout: 10000 });
+    await page.waitForFunction((k) => window.__game.scene.isActive(k), key, { timeout: 60000 });
     await page.waitForTimeout(900);
     const file = `${prefix}-${key}-${x}-${y}.png`;
     await page.screenshot({ path: file });
