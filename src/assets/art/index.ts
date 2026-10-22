@@ -3,7 +3,7 @@ import { variantKey } from './canvasKit';
 import { paintLamp, paintWell } from './civic';
 import { paintCrates, paintRug } from './props';
 import { PINE_VARIANTS, ROCK_VARIANTS } from './mountain';
-import { ALDER_VARIANTS, IRONWOOD_VARIANTS, OAK_VARIANTS } from './hyrcanianWoods';
+import { TREE_TEXTURE_VARIANTS } from './treeArt';
 import { MOUNTAIN_HOUSES } from './mountainHouse';
 import { TEHRAN_HOUSES } from './tehran';
 import { TOWN_TEXTURE_VARIANTS } from './town';
@@ -23,9 +23,7 @@ export const TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   'ch6-rock': ROCK_VARIANTS.length,
   'ch6-mountain-house': MOUNTAIN_HOUSES.length,
   'ch10-street-house': TEHRAN_HOUSES.length,
-  'ch8-oak': OAK_VARIANTS.length,
-  'ch8-ironwood': IRONWOOD_VARIANTS.length,
-  'ch8-alder': ALDER_VARIANTS.length,
+  ...TREE_TEXTURE_VARIANTS,
 };
 
 export const BASE_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {

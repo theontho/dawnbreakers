@@ -42,9 +42,6 @@ export const CH08_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch8-truce-flag', label: 'Truce Flag', texture: 'ch8-truce-flag', kind: 'prop', category: 'barriers-prison', color: 0xf2ead6, blocks: true },
   // Forest
   { id: 'ch8-woodcutter-house', label: 'Small House', texture: 'ch8-woodcutter-house', kind: 'structure', category: 'buildings', color: 0xb89a72, blocks: true, footprint: { w: 5, h: 4 }, isometric: true },
-  { id: 'ch8-oak', label: 'Oak', texture: 'ch8-oak', kind: 'prop', category: 'plants', color: 0x274322, blocks: true },
-  { id: 'ch8-ironwood', label: 'Ironwood', texture: 'ch8-ironwood', kind: 'prop', category: 'plants', color: 0x9a4a24, blocks: true },
-  { id: 'ch8-alder', label: 'Alder', texture: 'ch8-alder', kind: 'prop', category: 'plants', color: 0x6f8a3c, blocks: true },
   { id: 'ch8-fern', label: 'Fern', texture: 'ch8-fern', kind: 'prop', category: 'plants', color: 0x557f3c, blocks: false },
   { id: 'ch8-undergrowth', label: 'Undergrowth', texture: 'ch8-undergrowth', kind: 'prop', category: 'plants', color: 0x2c4a2a, blocks: true },
   { id: 'ch8-log', label: 'Fallen Log', texture: 'ch8-log', kind: 'prop', category: 'plants', color: 0x5a3c22, blocks: true },

@@ -1,5 +1,6 @@
 import type { DecorSpec, MapDefinition } from './types';
-import { CellSet, MAZINDARAN_WOODS, scatterWoodland, sightlines, traceRoute, widen, type Cell } from './ch8MapTools';
+import { CellSet, traceRoute, widen, type Cell } from './ch8MapTools';
+import { MAZINDARAN_WOODS, scatterWoodland } from './woodland';
 import { wallRun } from './wallRuns';
 
 /**
@@ -121,7 +122,7 @@ function woods(): DecorSpec[] {
   verge.addWithNeighbours(APPROACH);
   // Trees in front of the fort would hide it: keep the woods behind it and to the sides.
   const watched: Cell[] = [...OUTSIDE_PEOPLE, [21, 19], [WALL.x1, WALL.y1], [WALL.x0, WALL.y1], [WALL.x1, WALL.y0], [42, 20], [3, 22]];
-  const open = sightlines(watched, 26, 6, W, H);
+  const open = new CellSet();
   open.addRect(0, MOAT.y1 - 2, W, H); // south of the fort and the camp only thickets: crowns there would bury them
   return scatterWoodland({
     width: W,
@@ -130,9 +131,9 @@ function woods(): DecorSpec[] {
     palette: MAZINDARAN_WOODS,
     clear,
     verge,
+    watched,
     open,
     treeDensity: 0.3,
-    spacing: 3,
     density: 0.18,
     coverDensity: 0.18,
   });

@@ -1,5 +1,6 @@
 import type { DecorSpec, MapDefinition, NpcSpec } from './types';
-import { CellSet, MAZINDARAN_WOODS, scatterWoodland, sightlines, traceRoute, widen, type Cell } from './ch8MapTools';
+import { CellSet, traceRoute, widen, type Cell } from './ch8MapTools';
+import { MAZINDARAN_WOODS, scatterWoodland } from './woodland';
 import { has, not, villageRounds } from './nurPhases';
 
 /**
@@ -20,7 +21,9 @@ import { has, not, villageRounds } from './nurPhases';
  * - Village houses west (x 3..7, y 10..13 and y 19..22) and east of the road
  *   (x 24..28, y 18..21), a track over the stream to the east.
  * - The valley floor x 2..30, y 13..31: meadow, two fields (x 3..10 and
- *   x 23..29, y 26..31), a few old trees.
+ *   x 23..29, y 26..31) banked with pollards, a walnut between them,
+ *   mulberry and fruit trees by the houses. The woods on the slopes grow
+ *   young at the village's edge and old only further up.
  * - The stream x 32..35, a log bridge at y 25.
  */
 
@@ -29,6 +32,7 @@ const H = 34;
 const MANSION = { gridX: 15, gridY: 3, w: 9, h: 6 } as const;
 const HOUSE_STEP = { x: 18, y: 9 } as const;
 const BRIDGE = { x: 32, y: 25 } as const;
+const COTTAGES = [[3, 10], [4, 19], [24, 18]].map(([gridX, gridY]) => ({ gridX: gridX!, gridY: gridY!, w: 5, h: 4 }));
 
 const ROAD = widen(traceRoute([[19, 33], [19, 11]]));
 const TRACKS: Cell[] = [
@@ -54,9 +58,13 @@ const HAND_DECOR: DecorSpec[] = [
   ...blocking('crates', [[25, 13]]),
   { gridX: 13, gridY: 10, texture: 'rug' },
   { gridX: 26, gridY: 11, texture: 'ch8-stump', blocks: true },
-  // A few old trees left standing on the valley floor.
-  ...blocking('ch8-alder', [[14, 19], [28, 15]]),
-  ...blocking('ch8-oak', [[13, 29], [16, 28]]),
+  // The trees people keep: a walnut between the fields, pollards on their
+  // banks, a mulberry and fruit trees by the doors, an alder by the water.
+  ...blocking('walnut', [[13, 29], [12, 8]]),
+  ...blocking('pollard', [[4, 25], [7, 25], [30, 27], [30, 29], [11, 27]]),
+  ...blocking('mulberry', [[9, 23], [2, 18]]),
+  ...blocking('fruit-tree', [[9, 9], [23, 17], [30, 18]]),
+  ...blocking('alder-mature', [[31, 28]]),
   ...blocking('ch8-mossy-rock', [[16, 23], [24, 30]]),
 ];
 
@@ -81,11 +89,15 @@ function woods(): DecorSpec[] {
   clear.addWithNeighbours(PEOPLE);
   const verge = new CellSet();
   verge.addWithNeighbours(PATHS);
+  // The houses, the Vazír's and the fields: their edges grow orchard, mulberry and pollard.
+  const village = new CellSet();
+  for (const b of [MANSION, ...COTTAGES]) village.addRect(b.gridX, b.gridY, b.w, b.h);
+  village.addRect(3, 26, 8, 5);
+  village.addRect(23, 27, 7, 4);
   return scatterWoodland({
     width: W, height: H, seed: 1260, palette: MAZINDARAN_WOODS,
-    // The tallest oaks stand 34 rows high on the screen: none of them in front of anyone.
-    clear, verge, open: sightlines([...PEOPLE, [19, 6]], 34, 5, W, H),
-    treeDensity: 0.32, spacing: 3, density: 0.12, coverDensity: 0.25,
+    clear, verge, watched: [...PEOPLE, [19, 6]], village: { near: village, within: 4 },
+    treeDensity: 0.32, density: 0.12, coverDensity: 0.25,
   });
 }
 
@@ -136,9 +148,7 @@ export const nurTakurMap: MapDefinition = {
   },
   buildings: [
     { ...MANSION, texture: 'nur-takur-mansion' },
-    { gridX: 3, gridY: 10, w: 5, h: 4, texture: 'ch8-woodcutter-house' },
-    { gridX: 4, gridY: 19, w: 5, h: 4, texture: 'ch8-woodcutter-house' },
-    { gridX: 24, gridY: 18, w: 5, h: 4, texture: 'ch8-woodcutter-house' },
+    ...COTTAGES.map(c => ({ ...c, texture: 'ch8-woodcutter-house' })),
     { gridX: BRIDGE.x, gridY: BRIDGE.y, w: 4, h: 2, texture: 'ch8-log-bridge', blocks: false },
   ],
   decor: [...woods(), ...HAND_DECOR, ...FLOCKING],

@@ -1,5 +1,6 @@
 import type { DecorSpec, MapDefinition } from './types';
-import { CellSet, MAZINDARAN_WOODS, scatterWoodland, sightlines, traceRoute, widen, type Cell } from './ch8MapTools';
+import { CellSet, sightlines, traceRoute, widen, type Cell } from './ch8MapTools';
+import { MAZINDARAN_WOODS, scatterWoodland } from './woodland';
 
 /**
  * The Mázindarán forest road, autumn 1848, at true scale. The road comes in
@@ -69,13 +70,8 @@ const HAND_DECOR: DecorSpec[] = [
 
 const PEOPLE: Cell[] = [[34, 21], [37, 21], [32, 25], [12, 9], [18, 30], [43, 15]];
 
-/** Where no tall tree may stand: in front of the people and places, and in front of the road itself. */
-function roadView(watched: readonly Cell[]): CellSet {
-  const open = sightlines(watched, 24, 5, W, H);
-  const along = sightlines(ROAD.filter((_, i) => i % 6 === 0), 20, 2, W, H);
-  for (let y = 0; y < H; y += 1) for (let x = 0; x < W; x += 1) if (along.has(x, y)) open.add(x, y);
-  return open;
-}
+/** Where no tall tree may stand: in front of the road itself. */
+const roadView = (): CellSet => sightlines(ROAD.filter((_, i) => i % 6 === 0), 20, 2, W, H);
 
 function forestDecor(): DecorSpec[] {
   const clear = new CellSet(PATHS);
@@ -91,7 +87,11 @@ function forestDecor(): DecorSpec[] {
   const verge = new CellSet();
   verge.addWithNeighbours(ROAD);
   // Keep the crowns off the people, the bridge, the camp and the shrine's dome.
-  const watched: Cell[] = [...PEOPLE, [22, 19], [36, 24], [8, 6], [43, 4], [46, 12]];
+  const watched: Cell[] = [...PEOPLE, [22, 19], [36, 24], [40, 26], [8, 6], [43, 4], [46, 12]];
+  // Orchard and pollards at the edges of the woodcutter's clearing and along the paddies.
+  const village = new CellSet();
+  village.addRect(6, 4, 5, 4);
+  village.addRect(1, 26, 15, 13);
   return scatterWoodland({
     width: W,
     height: H,
@@ -99,9 +99,10 @@ function forestDecor(): DecorSpec[] {
     palette: MAZINDARAN_WOODS,
     clear,
     verge,
-    open: roadView(watched),
+    watched,
+    open: roadView(),
+    village: { near: village, within: 3 },
     treeDensity: 0.3,
-    spacing: 3,
     density: 0.16,
     coverDensity: 0.2,
   });

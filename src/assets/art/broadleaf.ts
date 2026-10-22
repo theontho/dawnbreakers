@@ -3,18 +3,18 @@ import { css, paintTexture, rng, shade, type Ctx } from './canvasKit';
 import { contactShadow, crown, moss } from './woodland';
 
 /**
- * The Hyrcanian forest of Mázindarán at its real height (chapter 8). The
- * chestnut-leaved oaks stand 20 m and more on tall clean boles, so under
- * them the forest is open and dim; the Persian ironwood spreads lower on
- * several grey stems and burns red and gold in autumn; the alders by the
- * water are pale and narrow. Each is a one-cell prop whose trunk stands on
- * the cell centre (16 px above the texture's foot); the crowns spread far
- * past the cell, as real ones do.
+ * The broadleaf tree painter, shared by the Hyrcanian forest of Mázindarán
+ * and the village trees about its houses (species and ages in
+ * `treeSpecies.ts`). One painter serves a sapling and a 25 m oak alike:
+ * the style sets the height, the crown's spread and where it begins, the
+ * bole, and the bark. Each is a one-cell prop whose trunk stands on the
+ * cell centre (16 px above the texture's foot); the crowns spread far past
+ * the cell, as real ones do.
  */
 
 const FOOT = 16;
 
-export interface ForestTreeStyle {
+export interface BroadleafStyle {
   /** Total height in px (23 px to the metre). */
   height: number;
   /** Half the crown's width. */
@@ -30,33 +30,11 @@ export interface ForestTreeStyle {
   stems?: number;
   /** Pale lenticels and lichen on a smooth bark. */
   pale?: boolean;
+  /** Fruit hanging in the crown (orchard trees). */
+  fruit?: number;
 }
 
-const OAK_LEAVES = [0x2f5a2a, 0x3b6331, 0x274322, 0x4a6a2c, 0x5f7a32, 0x8a7a34];
-const BEECH_LEAVES = [0x8a6a24, 0xb08a34, 0x6a7a2c, 0xc49a3a, 0x4a6a2c];
-const IRONWOOD_LEAVES = [0x9a3a1c, 0xb35a26, 0xc4762e, 0xd9a441, 0x7f3a1c, 0x6a5a2a];
-const ALDER_LEAVES = [0x3f5e2a, 0x4c6a2e, 0x5c7c36, 0x6f8a3c, 0x87a04a];
-
-/** Chestnut-leaved oaks of 21 to 24 m, one of them turning; a beech gone copper among them. */
-export const OAK_VARIANTS: readonly ForestTreeStyle[] = [
-  { height: 520, spread: 128, crownBase: 210, bole: 26, bark: 0x4a3a2a, leaves: OAK_LEAVES, seed: 811 },
-  { height: 480, spread: 118, crownBase: 190, bole: 24, bark: 0x51402c, leaves: OAK_LEAVES, seed: 823 },
-  { height: 550, spread: 136, crownBase: 230, bole: 28, bark: 0x6a665c, leaves: BEECH_LEAVES, seed: 829, pale: true },
-];
-
-/** Persian ironwood of 16 to 18 m: low, wide, on several stems. */
-export const IRONWOOD_VARIANTS: readonly ForestTreeStyle[] = [
-  { height: 400, spread: 120, crownBase: 120, bole: 12, bark: 0x7a6e60, leaves: IRONWOOD_LEAVES, seed: 841, stems: 3 },
-  { height: 370, spread: 108, crownBase: 104, bole: 11, bark: 0x857868, leaves: IRONWOOD_LEAVES, seed: 853, stems: 4 },
-];
-
-/** Caucasian alders of 15 to 17 m along the streams: a tall narrow crown on a pale bole. */
-export const ALDER_VARIANTS: readonly ForestTreeStyle[] = [
-  { height: 390, spread: 62, crownBase: 150, bole: 14, bark: 0x9a958a, leaves: ALDER_LEAVES, seed: 861, pale: true },
-  { height: 350, spread: 56, crownBase: 130, bole: 13, bark: 0x928d82, leaves: ALDER_LEAVES, seed: 877, pale: true },
-];
-
-export function paintForestTree(scene: Phaser.Scene, key: string, s: ForestTreeStyle): void {
+export function paintBroadleaf(scene: Phaser.Scene, key: string, s: BroadleafStyle): void {
   const w = Math.ceil(s.spread * 2 + 28);
   const h = s.height + FOOT + 6;
   paintTexture(scene, key, w, h, ctx => {
@@ -76,20 +54,44 @@ export function paintForestTree(scene: Phaser.Scene, key: string, s: ForestTreeS
     } else {
       rootFlare(ctx, cx, ground, s.bole, s.bark);
       stem(ctx, cx, ground, cx + (rand() - 0.5) * 6, cy, s.bole, s.bole * 0.45, s.bark, s.seed);
-      // Great limbs climbing into the crown.
-      for (const t of [-0.6, -0.2, 0.25, 0.65]) {
-        const from = crownBottom + 10 + rand() * 20;
+      // Great limbs climbing into the crown; a sapling has only a few slight ones.
+      const limbs = s.bole < 12 ? [-0.5, 0.45] : [-0.6, -0.2, 0.25, 0.65];
+      for (const t of limbs) {
+        const from = crownBottom + Math.min(10 + rand() * 20, s.crownBase * 0.4);
         stem(ctx, cx + t * 4, from, cx + t * s.spread * 0.75, cy - ry * (0.1 + rand() * 0.3), s.bole * 0.38, s.bole * 0.14, s.bark, s.seed + Math.round(t * 10));
       }
     }
     if (s.pale) lenticels(ctx, cx, ground, crownBottom, s.bole, s.seed);
-    else moss(ctx, cx - s.bole * 0.2, ground - 18, s.bole * 0.3, 14, s.seed, 0x4a6d32);
+    else moss(ctx, cx - s.bole * 0.2, ground - Math.min(18, s.bole), s.bole * 0.3, Math.min(14, s.bole * 0.6), s.seed, 0x4a6d32);
     canopy(ctx, cx, cy, s.spread, ry, s);
+    if (s.fruit !== undefined) fruit(ctx, cx, cy, s.spread, ry, s.fruit, s.seed);
   });
 }
 
+/** Fruit at the crown's edge, catching the light. */
+function fruit(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, color: number, seed: number): void {
+  const rand = rng(seed + 31);
+  const r = Math.max(1.4, Math.min(2.2, rx * 0.045));
+  for (let i = 0; i < Math.round(rx * 0.45); i++) {
+    const a = rand() * Math.PI * 2;
+    const d = 0.25 + rand() * 0.45;
+    const x = cx + Math.cos(a) * rx * d;
+    const y = cy + Math.sin(a) * ry * d;
+    ctx.fillStyle = css(shade(color, 0.65));
+    ctx.beginPath();
+    ctx.arc(x + 0.6, y + 0.6, r + 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = css(color);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,200,0.75)';
+    ctx.fillRect(x - r * 0.5, y - r * 0.5, 0.9, 0.9);
+  }
+}
+
 /** A crown built from many small crowns, so leaf texture stays fine on a tree 20 m high. */
-function canopy(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, s: ForestTreeStyle): void {
+function canopy(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, s: BroadleafStyle): void {
   const rand = rng(s.seed + 5);
   const unit = Math.min(22, rx * 0.34);
   const count = Math.round((rx * ry) / (unit * unit) * 1.6);
@@ -120,11 +122,12 @@ function canopy(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, s: For
 }
 
 function rootFlare(ctx: Ctx, x: number, ground: number, w: number, bark: number): void {
+  const rise = Math.min(18, w * 0.9);
   ctx.fillStyle = css(shade(bark, 0.75));
   ctx.beginPath();
   ctx.moveTo(x - w * 1.1, ground + 2);
-  ctx.quadraticCurveTo(x - w * 0.5, ground - 4, x - w * 0.45, ground - 18);
-  ctx.lineTo(x + w * 0.45, ground - 18);
+  ctx.quadraticCurveTo(x - w * 0.5, ground - 4, x - w * 0.45, ground - rise);
+  ctx.lineTo(x + w * 0.45, ground - rise);
   ctx.quadraticCurveTo(x + w * 0.5, ground - 4, x + w * 1.15, ground + 2);
   ctx.closePath();
   ctx.fill();

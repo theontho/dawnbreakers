@@ -1,9 +1,7 @@
-import type { DecorSpec } from './types';
-
 /**
  * Small layout helpers for the chapter 8 maps: a seeded RNG so scattered
  * forest is identical on every load, a route tracer for winding paths, and
- * a woodland scatter that leaves paths, clearings, and people untouched.
+ * cell sets for the clearings the woodland scatter (`woodland.ts`) leaves.
  */
 
 export type Cell = readonly [number, number];
@@ -89,74 +87,4 @@ export function sightlines(watched: Iterable<Cell>, reach: number, width: number
     }
   }
   return out;
-}
-
-export interface WoodlandPalette {
-  /** Tall trees, weighted: spaced apart, never on sightlines. */
-  trees: ReadonlyArray<readonly [string, number]>;
-  /** Low blocking cover (thickets, logs, rocks), weighted. */
-  solid: ReadonlyArray<readonly [string, number]>;
-  /** Non-blocking ground cover, weighted. */
-  cover: ReadonlyArray<readonly [string, number]>;
-}
-
-export const MAZINDARAN_WOODS: WoodlandPalette = {
-  trees: [['ch8-oak', 5], ['ch8-ironwood', 3], ['ch8-alder', 2]],
-  solid: [['ch8-undergrowth', 6], ['ch8-log', 2], ['ch8-mossy-rock', 2]],
-  cover: [['ch8-fern', 1]],
-};
-
-function pick(rand: () => number, table: ReadonlyArray<readonly [string, number]>): string {
-  const total = table.reduce((sum, [, w]) => sum + w, 0);
-  let r = rand() * total;
-  for (const [texture, weight] of table) {
-    r -= weight;
-    if (r <= 0) return texture;
-  }
-  return table[table.length - 1]![0];
-}
-
-export interface WoodlandOptions {
-  width: number;
-  height: number;
-  seed: number;
-  palette: WoodlandPalette;
-  /** Cells that must stay empty (paths, clearings, people, exits). */
-  clear: CellSet;
-  /** Cells kept free of trees and thickets but allowed ferns (path verges). */
-  verge: CellSet;
-  /** Cells where no tall tree may stand (see `sightlines`). */
-  open: CellSet;
-  /** Chance a free cell gets a tall tree, if none stands within `spacing`. */
-  treeDensity: number;
-  /** Minimum steps between tall trees. */
-  spacing: number;
-  /** Chance a free cell gets low blocking cover. */
-  density: number;
-  /** Chance a verge or leftover cell gets ground cover. */
-  coverDensity: number;
-}
-
-/** Scatter woodland across the free cells of a map: spaced tall trees, thickets, ferns. */
-export function scatterWoodland(opts: WoodlandOptions): DecorSpec[] {
-  const rand = seededRandom(opts.seed);
-  const decor: DecorSpec[] = [];
-  const trunks: Cell[] = [];
-  const crowded = (x: number, y: number) =>
-    trunks.some(([tx, ty]) => Math.max(Math.abs(tx - x), Math.abs(ty - y)) < opts.spacing);
-  for (let y = 0; y < opts.height; y += 1) {
-    for (let x = 0; x < opts.width; x += 1) {
-      if (opts.clear.has(x, y)) continue;
-      const free = !opts.verge.has(x, y);
-      if (free && !opts.open.has(x, y) && rand() < opts.treeDensity && !crowded(x, y)) {
-        trunks.push([x, y]);
-        decor.push({ gridX: x, gridY: y, texture: pick(rand, opts.palette.trees), blocks: true });
-      } else if (free && rand() < opts.density) {
-        decor.push({ gridX: x, gridY: y, texture: pick(rand, opts.palette.solid), blocks: true });
-      } else if (rand() < opts.coverDensity) {
-        decor.push({ gridX: x, gridY: y, texture: pick(rand, opts.palette.cover) });
-      }
-    }
-  }
-  return decor;
 }

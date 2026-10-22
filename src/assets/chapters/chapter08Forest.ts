@@ -1,23 +1,17 @@
-import { css, paintTexture, rng, shade, variantKey, type Ctx } from '../art/canvasKit';
+import { css, paintTexture, rng, shade, type Ctx } from '../art/canvasKit';
 import { paintMazandaranCottage } from '../art/mazandaranCottage';
-import { ALDER_VARIANTS, IRONWOOD_VARIANTS, OAK_VARIANTS, paintForestTree } from '../art/hyrcanianWoods';
 import { endGrain, roundLog, SAWN } from '../art/timber';
 import { boulder, contactShadow, crown, frond, moss } from '../art/woodland';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
- * Chapter 8 forest props: the Hyrcanian woods of Mázindarán in autumn.
- * Broad oaks, rust-gold ironwood, pale alders, ferns, box thickets, fallen
+ * Chapter 8 forest props: the floor of the Hyrcanian woods in autumn (the
+ * trees themselves are shared, in `treeObjects.ts`): ferns, box thickets, fallen
  * logs, mossy stones, and the woodcutter's clearing. Every texture is drawn
  * with its foot near the bottom centre so it sits on its cell.
  */
 
 export const CH08_FOREST_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  // The forest at its real height: oaks, ironwood and alders of 15 to 24 m; see hyrcanianWoods.
-  'ch8-oak': (scene, def) => OAK_VARIANTS.forEach((s, i) => paintForestTree(scene, variantKey(def.texture, i), s)),
-  'ch8-ironwood': (scene, def) => IRONWOOD_VARIANTS.forEach((s, i) => paintForestTree(scene, variantKey(def.texture, i), s)),
-  'ch8-alder': (scene, def) => ALDER_VARIANTS.forEach((s, i) => paintForestTree(scene, variantKey(def.texture, i), s)),
-
   'ch8-woodcutter-house': (scene, def) => paintMazandaranCottage(scene, def.texture, def.footprint?.w ?? 5, def.footprint?.h ?? 4),
 
   'ch8-fern': (scene, def) => paintTexture(scene, def.texture, 48, 34, ctx => {
