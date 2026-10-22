@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { MAP_OBJECTS } from '../assets/mapAssetLibrary';
 import { gridToIsoScreen } from './isoGeometry';
 import { renderMapGround } from './mapGround';
 import { exitIsOpen } from './baseMapMovement';
@@ -54,14 +55,31 @@ export function renderBaseMapWorld(
 
   for (const item of state.decor) {
     const pos = gridToIsoScreen(state.originX, state.originY, item.gridX, item.gridY);
-    const sprite = scene.add.image(pos.sx, pos.sy + TILE_H / 2, item.texture)
+    const nudge = naturalOffset(item.texture, item.gridX, item.gridY);
+    const sprite = scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture)
       .setOrigin(0.5, 1)
-      .setDepth(pos.sy + 1);
+      .setDepth(pos.sy + 1 + nudge.y);
     occludableSprites.push(sprite);
     if (item.present) conditionalDecor.push({ item, sprite });
   }
 
   return { occludableSprites, conditionalDecor };
+}
+
+const NATURAL = new Set(
+  MAP_OBJECTS.filter(def => def.category === 'plants' || /rock|stump|boulder|fern|reeds|shrub|tamarisk/.test(def.id))
+    .map(def => def.texture),
+);
+
+/**
+ * Trees, shrubs and rocks stand a little off their cell's centre (fixed per
+ * cell), so plantings read as grown rather than laid out on a grid. The
+ * cell, and so walking and depth order, is unchanged.
+ */
+function naturalOffset(texture: string, gx: number, gy: number): { x: number; y: number } {
+  if (!NATURAL.has(texture.split('~')[0]!)) return { x: 0, y: 0 };
+  const h = Math.imul(gx * 73856093 ^ gy * 19349663, 0x9e3779b1) >>> 0;
+  return { x: ((h & 0xff) / 255 - 0.5) * 18, y: (((h >>> 8) & 0xff) / 255 - 0.5) * 8 };
 }
 
 /** Pulsing ground glow on each exit tile; dimmed and still while the exit is closed. */
