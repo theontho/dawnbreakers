@@ -92,20 +92,20 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
   const nx = state.playerGrid.x + dx;
   const ny = state.playerGrid.y + dy;
 
-  if (!state.inBounds(nx, ny)) {
-    const exit = state.exits.find(e =>
-      e.fromX === state.playerGrid.x && e.fromY === state.playerGrid.y &&
-      e.dx === dx && e.dy === dy);
-    if (exit && exitIsOpen(exit)) {
-      state.transitionTo(exit);
-      return 600;
-    }
-    if (exit) {
-      state.onLockedExit();
-      return 400;
-    }
-    return state.moveCooldown;
+  // An exit fires on its step whether that leaves the map at its edge or
+  // goes somewhere the map cannot follow (down a ladder into a boat).
+  const exit = state.exits.find(e =>
+    e.fromX === state.playerGrid.x && e.fromY === state.playerGrid.y &&
+    e.dx === dx && e.dy === dy);
+  if (exit && exitIsOpen(exit)) {
+    state.transitionTo(exit);
+    return 600;
   }
+  if (exit) {
+    state.onLockedExit();
+    return 400;
+  }
+  if (!state.inBounds(nx, ny)) return state.moveCooldown;
 
   if (state.blocked[ny]![nx]) {
     state.path.length = 0;

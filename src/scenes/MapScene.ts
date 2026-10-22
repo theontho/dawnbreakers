@@ -338,11 +338,13 @@ export class MapScene extends Phaser.Scene {
     const at = this.mapCameras.worldPoint(pointer);
     const target = screenToGrid(this.originX, this.originY, at.x, at.y);
     const npc = this.npcs.interactables.find(i => i.gridX === target.x && i.gridY === target.y);
-    const exit = this.exits.find(e => e.fromX + e.dx === target.x && e.fromY + e.dy === target.y && exitIsOpen(e));
+    // Clicking an open exit's glowing cell, or just beyond it, goes through.
+    const exit = this.exits.find(e => exitIsOpen(e) &&
+      ((e.fromX === target.x && e.fromY === target.y) || (e.fromX + e.dx === target.x && e.fromY + e.dy === target.y)));
     const goal = exit ? { x: exit.fromX, y: exit.fromY } : target;
     const path = findPath(this.blocked, this.playerGrid, goal);
     if (!path) return;
-    if (exit) path.push(target);
+    if (exit) path.push({ x: exit.fromX + exit.dx, y: exit.fromY + exit.dy });
     this.walkPath = path;
     this.walkTarget = npc;
     if (npc && path.length === 0) this.triggerInteraction();
