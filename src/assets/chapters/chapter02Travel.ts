@@ -9,10 +9,18 @@ import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
  */
 
 const CAMEL = 0xb08850;
+const CAMEL_SCALE = 1.3;
 
 export const CH02_TRAVEL_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  /** A dromedary couched on folded legs, a kilim saddle cloth over the hump. */
-  'ch2-camel': (scene, def) => paintTexture(scene, def.texture, 64, 52, ctx => drawCamel(ctx)),
+  /**
+   * A dromedary couched on folded legs, a kilim saddle cloth over the hump.
+   * Drawn at 1.3x its sketch so that, beside a 40 px person, it is a camel's
+   * true size: about 1.4 m at the hump and 2.6 m long.
+   */
+  'ch2-camel': (scene, def) => paintTexture(scene, def.texture, 64 * CAMEL_SCALE, 52 * CAMEL_SCALE, ctx => {
+    ctx.scale(CAMEL_SCALE, CAMEL_SCALE);
+    drawCamel(ctx);
+  }),
 
   /** Ring of stones, crossed sticks, and a low flame under a blackened kettle. */
   'ch2-campfire': (scene, def) => {

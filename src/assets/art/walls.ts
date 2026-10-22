@@ -2,15 +2,18 @@ import type Phaser from 'phaser';
 import { straw } from './badashtProps';
 import { css, onLeftWall, onRightWall, onRoof, paintTexture, polygon, shade, type Ctx, type IsoBox } from './canvasKit';
 import { fortressStone } from './fortresses';
-import { brick, glazedTiles, planks, plaster, stone, type Surface } from './materials';
+import { brick, glazedTiles, plaster, stone, type Surface } from './materials';
 import { archPath, clipped, LIGHT } from './ornaments';
-import { seraiBayFace, seraiWindowFace } from './seraiWalls';
-import { shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace } from './shipCabinWalls';
+import { SERAI_BAY_H, seraiBayFace, seraiWindowFace } from './seraiWalls';
+import {
+  SHIP_BULWARK_H, SHIP_CABIN_WALL_H, shipBulwarkFace, shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace,
+} from './shipCabinWalls';
 import { shrineNicheFace, shrineWallFace } from './shrineInterior';
 import { snowEdge } from './structureParts';
 import { TENT_CLOTH, tentLiningFace } from './tentInterior';
 import { lashing, stakeRow } from './timber';
 import { COMPOUND_WALL, compoundWallFace, TOWN_WALL, townWallFace } from './town/townWalls';
+import { vakilWallFace } from './vakilHall';
 
 /**
  * Connected walls. A wall is placed one cell at a time, but each cell's
@@ -51,20 +54,6 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     face: (ctx, w, h, l) => {
       fortressStone(ctx, w, h, 0x6a737a, l, 141);
       snowEdge(ctx, w, 2.5, 142, l);
-    },
-  },
-  'ch2-city-wall': {
-    height: 54, thickness: 0.5, top: 0xb89466, cap: 'merlons', joins: ['ch2-quran-gate'],
-    face: (ctx, w, h, l) => {
-      rammedEarth(ctx, w, h, 0xb08a5a, l, 23);
-      // Rain has cut shallow gullies down from the merlons.
-      for (let u = 4; u < w; u += 8) {
-        const g = ctx.createLinearGradient(0, 0, 0, 14);
-        g.addColorStop(0, css(shade(0xb08a5a, l * 0.72), 0.5));
-        g.addColorStop(1, css(shade(0xb08a5a, l * 0.72), 0));
-        ctx.fillStyle = g;
-        ctx.fillRect(u - 1, 0, 2, 14);
-      }
     },
   },
   'ch10-city-wall': {
@@ -135,45 +124,39 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // The pilgrim ship's cabin, below the quarterdeck; see shipCabinWalls.ts.
   'ch3-cabin-wall': {
-    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-port', 'ch3-cabin-pegs', 'ch3-cabin-curtain'],
+    height: SHIP_CABIN_WALL_H, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-port', 'ch3-cabin-pegs', 'ch3-cabin-curtain'],
     face: shipTimberFace,
   },
   'ch3-cabin-port': {
-    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-pegs', 'ch3-cabin-curtain'],
+    height: SHIP_CABIN_WALL_H, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-pegs', 'ch3-cabin-curtain'],
     face: shipPortFace,
   },
   'ch3-cabin-pegs': {
-    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-port', 'ch3-cabin-curtain'],
+    height: SHIP_CABIN_WALL_H, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-port', 'ch3-cabin-curtain'],
     face: shipPegsFace,
   },
   // The partition into the inner room, hung with a curtain that is never drawn aside.
   'ch3-cabin-curtain': {
-    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-port', 'ch3-cabin-pegs'],
+    height: SHIP_CABIN_WALL_H, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-port', 'ch3-cabin-pegs'],
     face: shipCurtainFace,
   },
   // The arcade of lodging rooms round a caravanserai court; see seraiWalls.ts.
   'ch2-serai-bay': {
-    height: 72, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay-lit', 'ch2-serai-window'],
+    height: SERAI_BAY_H, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay-lit', 'ch2-serai-window'],
     face: (ctx, w, h, l) => seraiBayFace(ctx, w, h, l, false),
   },
   'ch2-serai-bay-lit': {
-    height: 72, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-window'],
+    height: SERAI_BAY_H, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-window'],
     face: (ctx, w, h, l) => seraiBayFace(ctx, w, h, l, true),
   },
   'ch2-serai-window': {
-    height: 72, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-bay-lit'],
+    height: SERAI_BAY_H, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-bay-lit'],
     face: seraiWindowFace,
   },
+  // The pilgrim ship's bulwarks round the deck; see shipCabinWalls.ts.
   'ch3-ship-rail': {
-    height: 16, thickness: 0.14, top: 0x8a6440, cap: 'rail',
-    face: (ctx, w, h, l) => {
-      ctx.fillStyle = css(shade(0x5a3a1f, l));
-      for (let u = 2; u < w; u += 8) ctx.fillRect(u, 2, 2.4, h - 2);
-      clipped(ctx, w, h, () => {
-        ctx.translate(0, h - 6);
-        planks(ctx, w, 6, surf(0x6b4a2c, l, 5), false, 3);
-      });
-    },
+    height: SHIP_BULWARK_H, thickness: 0.18, top: 0x8a6440, cap: 'rail',
+    face: shipBulwarkFace,
   },
   // The shrine of Shaykh Ṭabarsí: limewash, damp and lamp smoke; see shrineInterior.
   'ch8-shrine-wall': {
@@ -191,7 +174,7 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // True scale (the Shíráz pilot): the city wall, rammed earth under big merlons; see town/townWalls.
   'town-wall': {
-    height: TOWN_WALL.height, thickness: 0.8, top: 0xb89670, cap: 'battlements', joins: ['city-gate-large'],
+    height: TOWN_WALL.height, thickness: 0.8, top: 0xb89670, cap: 'battlements', joins: ['city-gate-large', 'ch2-quran-gate'],
     face: townWallFace,
   },
   // A courtyard or garden wall at true scale, joining the town houses it closes.
@@ -199,6 +182,11 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     height: COMPOUND_WALL.height, thickness: 0.3, top: 0xc49a68, cap: 'mudCoping',
     joins: ['town-house-small', 'town-house', 'town-house-large'],
     face: compoundWallFace,
+  },
+  // The Vakíl Mosque's hall walls (chapter 4): yellow brick, haft-rang band, marble dado; see vakilHall.ts.
+  'ch4-vakil-wall': {
+    height: 150, thickness: 0.4, top: 0xc8a070, cap: 'coping', joins: ['ch4-qibla-iwan', 'ch4-prayer-arch', 'ch4-vakil-portal'],
+    face: vakilWallFace,
   },
 };
 

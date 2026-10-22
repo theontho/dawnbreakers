@@ -1,11 +1,10 @@
-import { css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
-import { drawCaravanserai } from '../art/caravanserai';
+import { css, outlineBox, paintTexture, roofPoint, shade } from '../art/canvasKit';
+import { paintCaravanseraiEast, paintCaravanseraiWest, SERAI } from '../art/caravanserai';
 import { cellCentredBox, ellipseShadow, pebble } from '../art/fieldKit';
-import { brick, glazedTiles, plaster, stone } from '../art/materials';
-import { highWindow, plinth, recessedDoor } from '../art/facade';
-import { archPath, band, clipped, dome, flatTop, latticeWindow, merlons, parapetRoof, walls } from '../art/ornaments';
-import { laneDust, waterJar } from '../art/streetLife';
-import { subBox } from '../art/structureParts';
+import { stone } from '../art/materials';
+import { flatTop, walls } from '../art/ornaments';
+import { paintQuranGate } from '../art/quranGate';
+import { paintRoadShrine } from '../art/roadShrine';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH02_SERAI_OBJECTS, CH02_SERAI_TEXTURE_GENERATORS } from './chapter02Serai';
 import { CH02_TRAVEL_TEXTURE_GENERATORS } from './chapter02Travel';
@@ -17,71 +16,14 @@ import { CH02_TRAVEL_TEXTURE_GENERATORS } from './chapter02Travel';
  * `chapter02Travel.ts`.
  */
 
-const TURQUOISE = 0x2e8c96;
-const LAPIS = 0x24477a;
-const CREAM = 0xe8d9a8;
-const GATE_BRICK = 0xc8a070;
-
 export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH02_TRAVEL_TEXTURE_GENERATORS,
   ...CH02_SERAI_TEXTURE_GENERATORS,
 
-  'ch2-caravanserai': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 2, 64, 40);
-    // Widened on both sides so the corner towers fit; the anchor stays centred.
-    paintTexture(scene, def.texture, texW + 20, texH, ctx => {
-      ctx.translate(10, 0);
-      drawCaravanserai(ctx, box);
-    });
-  },
-
-  /**
-   * The Darvázih-i-Qur'án: a gate on the Iṣfahán road whose upper chamber
-   * holds a Qur'án, so that every traveller leaving Shíráz passes beneath
-   * the Book. Footprint 1x3; the road runs through the middle cell, so the
-   * arch is cut into the x-facing (right) wall.
-   */
-  'ch2-quran-gate': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 3, 84, 44);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawQuranGate(ctx, box));
-  },
-
-
-  /**
-   * A roadside imámzádih: a whitewashed cube under a turquoise dome, rags
-   * tied to its window grille by travellers who stopped to pray.
-   */
-  'ch2-shrine': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 54, 40);
-    paintTexture(scene, def.texture, texW, texH, ctx => {
-      const wall = 0xe0d6bc;
-      const cube = subBox(box, 2, box.w - 3, 0, box.d - 2, 54);
-      groundShadow(ctx, cube, 5);
-      walls(ctx, cube, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 41 : 42 }), {
-        left: (c, w, h, l) => {
-          band(c, w, 4, 2.5, TURQUOISE, l);
-          plinth(c, w, h, 4, 0x9a8a70, l, 44);
-          highWindow(c, w / 2 - 4, h, 24, { frame: 0x6a5a48, light: l, arched: true }, 8, 12);
-          // Votive rags knotted to the grille.
-          for (const [dx, color] of [[-2.5, 0x2f7a3a], [0.5, 0xb83a2a], [3.5, 0xf2ead6]] as const) {
-            c.fillStyle = css(shade(color, l));
-            c.fillRect(w / 2 + dx, h - 24, 1.4, 5);
-          }
-        },
-        right: (c, w, h, l) => {
-          band(c, w, 4, 2.5, TURQUOISE, l);
-          plinth(c, w, h, 4, 0x9a8a70, l, 45);
-          recessedDoor(c, w / 2, h, { frame: 0x8a6440, door: 0x2f5f4a, light: l, seed: 43, surround: shade(wall, 1.04), w: 12, h: 34 });
-        },
-      });
-      flatTop(ctx, cube, shade(wall, 0.95));
-      outlineBox(ctx, cube);
-      const centre = roofPoint(cube, cube.w / 2, cube.d / 2);
-      dome(ctx, centre.x, centre.y + 2, 10, { color: TURQUOISE, drum: 6, drumColor: wall, bulb: 1.15, ribs: true, finial: true });
-      const lamp = groundPoint(box, 3, 3);
-      waterJar(ctx, lamp.x, lamp.y, 3.5, 0x9a6a4a);
-    });
-  },
+  'ch2-caravanserai': (scene, def) => paintCaravanseraiWest(scene, def.texture),
+  'ch2-caravanserai-east': (scene, def) => paintCaravanseraiEast(scene, def.texture),
+  'ch2-quran-gate': (scene, def) => paintQuranGate(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 7),
+  'ch2-shrine': (scene, def) => paintRoadShrine(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 3),
 
   /** A carved stone milestone with a worn inscription, a little cairn at its foot. */
   'ch2-milestone': (scene, def) => {
@@ -118,100 +60,15 @@ export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   },
 };
 
-/** The Qur'án Gate: brick, a tall tile-framed arch, blind niches, and the chamber of the Book above. */
-function drawQuranGate(ctx: Ctx, box: IsoBox): void {
-  groundShadow(ctx, box, 8);
-  laneDust(ctx, box, box.w - 2, box.w + 8, box.d / 2 - 14, box.d / 2 + 14, 17);
-  const niches = (c: Ctx, from: number, to: number, h: number, l: number) => {
-    for (let u = from; u + 7 <= to; u += 11) {
-      for (const [base, ht] of [[h - 10, 18], [h - 42, 15]] as const) {
-        archPath(c, u, base, 7, ht);
-        c.fillStyle = css(shade(0x6a4a2c, l), 0.8);
-        c.fill();
-      }
-    }
-  };
-  walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: GATE_BRICK, light, seed: light === 1 ? 11 : 12 }), {
-    left: (c, w, h, l) => {
-      plinth(c, w, h, 6, 0x9a8a70, l, 16);
-      band(c, w, 6, 4, TURQUOISE, l);
-      niches(c, 6, w - 4, h, l);
-    },
-    right: (c, w, h, l) => {
-      plinth(c, w, h, 6, 0x9a8a70, l, 17);
-      band(c, w, 6, 4, TURQUOISE, l);
-      const aw = 22;
-      const ah = 50;
-      const ax = w / 2 - aw / 2;
-      // The pīshṭāq frame: lapis tiles bordered in cream, nearly twice as tall as it is wide.
-      c.save();
-      c.beginPath();
-      c.rect(ax - 8, 12, aw + 16, h - 12);
-      c.clip();
-      glazedTiles(c, w, h, { base: LAPIS, light: l, seed: 13 }, 5);
-      c.restore();
-      c.strokeStyle = css(shade(CREAM, l), 0.9);
-      c.lineWidth = 1;
-      c.strokeRect(ax - 7, 13, aw + 14, h - 13);
-      // An inscription band across the head of the frame.
-      c.fillStyle = css(shade(CREAM, l), 0.85);
-      c.fillRect(ax - 5, 16, aw + 10, 5);
-      c.fillStyle = css(shade(LAPIS, l * 0.8));
-      for (let u = ax - 3; u < ax + aw + 4; u += 3) c.fillRect(u, 17 + ((u * 7) % 3), 1.6, 2);
-      archPath(c, ax - 2, h, aw + 4, ah + 2);
-      c.fillStyle = css(shade(CREAM, l));
-      c.fill();
-      archPath(c, ax, h, aw, ah);
-      c.fillStyle = css(0x1c120a);
-      c.fill();
-      // The road beyond, lit, framed by the far mouth of the passage.
-      archPath(c, ax + 4, h - 2, aw - 8, ah - 12);
-      const far = c.createLinearGradient(0, h - ah, 0, h);
-      far.addColorStop(0, '#e8c890');
-      far.addColorStop(1, '#b8945c');
-      c.fillStyle = far;
-      c.fill();
-      c.fillStyle = css(0x9a8a70);
-      c.fillRect(ax - 3, h - 2, aw + 6, 2);
-      niches(c, 6, ax - 12, h, l);
-      niches(c, ax + aw + 12, w - 4, h, l);
-    },
-  });
-  parapetRoof(ctx, box, GATE_BRICK, { base: 0xa88560, light: 1, seed: 14 }, 3, 3);
-  merlons(ctx, box, GATE_BRICK, 4, 4);
-  outlineBox(ctx, box);
-
-  // The chamber of the Book: a small domed room over the arch, lamplit.
-  const cw = 22;
-  const cd = 36;
-  const foot = roofPoint(box, box.w / 2 + cw / 2, box.d / 2 - cd / 2);
-  const chamber: IsoBox = { x: foot.x, y: foot.y + 3, w: cw, d: cd, h: 22 };
-  walls(ctx, chamber, (c, w, h, light) => plaster(c, w, h, { base: 0xd8c6a0, light, seed: 15 }), {
-    left: (c, w, h, l) => latticeWindow(c, w / 2 - 3, h * 0.3, 6, 8, { frame: 0x6a4a2c, light: l, arched: true }),
-    right: (c, w, h, l) => {
-      band(c, w, 2, 2, TURQUOISE, l);
-      latticeWindow(c, w / 2 - 5, h * 0.3, 10, 10, { frame: 0x6a4a2c, light: l, arched: true, lit: true });
-      clipped(c, w, h, () => {
-        c.fillStyle = 'rgba(255,214,140,0.18)';
-        c.beginPath();
-        c.ellipse(w / 2, h * 0.5, 10, 8, 0, 0, Math.PI * 2);
-        c.fill();
-      });
-    },
-  });
-  flatTop(ctx, chamber, 0xd8c6a0);
-  outlineBox(ctx, chamber);
-  const top = roofPoint(chamber, cw / 2, cd / 2);
-  dome(ctx, top.x, top.y + 2, 10, { color: TURQUOISE, drum: 3, drumColor: 0xd8c6a0, bulb: 1.2, ribs: true, pattern: CREAM, finial: true });
-}
-
 /** Placeable map objects owned by chapter 2. */
 export const CH02_OBJECTS: MapObjectDefinition[] = [
   ...CH02_SERAI_OBJECTS,
-  { id: 'ch2-caravanserai', label: 'Caravanserai', texture: 'ch2-caravanserai', kind: 'structure', category: 'buildings', color: 0xa87846, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
-  { id: 'ch2-quran-gate', label: 'Gate', texture: 'ch2-quran-gate', kind: 'structure', category: 'buildings', color: 0xc9a26a, blocks: true, footprint: { w: 1, h: 3 }, isometric: true },
-  { id: 'ch2-city-wall', label: 'City Wall', texture: 'ch2-city-wall', kind: 'structure', category: 'barriers-prison', color: 0xb08a5a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch2-shrine', label: 'Road Shrine', texture: 'ch2-shrine', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  // The caravanserai is 20 x 16 and painted in two parts (see art/caravanserai.ts): place the east part
+  // at gridX + 12, same gridY.
+  { id: 'ch2-caravanserai', label: 'Caravanserai', texture: 'ch2-caravanserai', kind: 'structure', category: 'buildings', color: 0xa87846, blocks: true, footprint: { w: SERAI.westW, h: SERAI.d }, isometric: true },
+  { id: 'ch2-caravanserai-east', label: 'Caravanserai', texture: 'ch2-caravanserai-east', kind: 'structure', category: 'buildings', color: 0xa87846, blocks: true, footprint: { w: SERAI.w - SERAI.westW, h: SERAI.d }, isometric: true },
+  { id: 'ch2-quran-gate', label: 'Gate', texture: 'ch2-quran-gate', kind: 'structure', category: 'buildings', color: 0xc9a26a, blocks: true, footprint: { w: 3, h: 7 }, isometric: true },
+  { id: 'ch2-shrine', label: 'Road Shrine', texture: 'ch2-shrine', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
   { id: 'ch2-milestone', label: 'Milestone', texture: 'ch2-milestone', kind: 'prop', category: 'furnishings', color: 0xb8aa82, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch2-dry-stream', label: 'Dry Stream', texture: 'ch2-dry-stream', kind: 'prop', category: 'bridges-water', color: 0x5d6f7a, blocks: false },
   { id: 'ch2-tamarisk', label: 'Tamarisk', texture: 'ch2-tamarisk', kind: 'prop', category: 'plants', color: 0x6f8a45, blocks: true },

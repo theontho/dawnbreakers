@@ -1,10 +1,11 @@
 import { css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, polygon, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
 import { foliageClump } from '../art/fieldKit';
-import { brick, plaster } from '../art/materials';
-import { DOOR, highWindow, plinth, recessedDoor } from '../art/facade';
-import { archPath, band, flatTop, merlons, walls } from '../art/ornaments';
-import { sakku, steps } from '../art/streetLife';
-import { subBox } from '../art/structureParts';
+import { brick } from '../art/materials';
+import { recessedDoor, wornPlaster } from '../art/facade';
+import { archPath, band, walls } from '../art/ornaments';
+import { steps } from '../art/streetLife';
+import { tilePanel } from '../art/town/monumentKit';
+import { spout, TOWN_DOOR, townBlock, townWindow } from '../art/town/townKit';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
 /**
@@ -26,8 +27,12 @@ export const CH01_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   },
 
   'ch1-house-threshold': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 66, 12);
-    paintTexture(scene, def.texture, texW, texH, ctx => paintThreshold(ctx, box));
+    const { box, texW, texH } = footprintBox(1, 1, THRESHOLD.h, 16);
+    // Widened on both sides so the bay's reach to the west fits; the anchor stays centred.
+    paintTexture(scene, def.texture, texW + THRESHOLD.reach * 2, texH, ctx => {
+      ctx.translate(THRESHOLD.reach, 0);
+      paintThreshold(ctx, box);
+    });
   },
 
   /** A raised brick garden bed with a tiled rim, planted with jasmine and Damask roses. */
@@ -76,53 +81,60 @@ function bird(ctx: Ctx, x: number, y: number, span: number, tilt: number): void 
 }
 
 /**
- * The Báb's house in the Quiet Quarter: a tall plastered entrance front
- * with stone benches either side, a tile panel over the recessed door, and
- * lamplight spilling from the door left ajar onto a worn step.
+ * The street entrance of the Báb's house in the Quiet Quarter, at true scale:
+ * a plastered entrance bay a little taller than the court walls either side
+ * of it, the room over the entrance lit, a tile panel over the recessed
+ * door, and the door itself (23 x 48 px) standing ajar on a lamplit step.
+ * The bay is one cell deep and reaches 8 px into the cell to its west, so
+ * the wall running in from that side tucks in behind it; the door faces
+ * south, onto the lane.
  */
-function paintThreshold(ctx: Ctx, box: IsoBox): void {
+const THRESHOLD = { w: 40, d: 32, h: 112, reach: 8 } as const;
+
+function paintThreshold(ctx: Ctx, cell: IsoBox): void {
   const wall = 0xcdb894;
-  const front = subBox(box, 0, box.w - 6, 0, box.d, 66);
-  groundShadow(ctx, front, 5);
-  walls(ctx, front, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 31 : 32 }), {
+  const box: IsoBox = { ...cell, w: THRESHOLD.w, d: THRESHOLD.d, h: THRESHOLD.h };
+  const doorU = 21;
+  townBlock(ctx, box, {
+    wall, seed: 31, material: 'plaster', beams: 12, coping: shade(wall, 1.08),
     left: (c, w, h, l) => {
-      band(c, w, 6, 2, shade(wall, 0.84), l);
-      plinth(c, w, h, 6, 0x9a8a70, l, 34);
-      highWindow(c, w / 2 - 3.5, h, 42, { frame: 0x8a6440, light: l, arched: true, lit: true });
+      // The room over the entrance, where the guest was received: its window lit.
+      townWindow(c, doorU, h, 74, { frame: 0x8a6440, light: l, arched: true, lit: true }, 12, 16);
+      tilePanel(c, doorU - 15, h - TOWN_DOOR.h - 30, 30, 11, 0x24477a, l, 33, 4);
+      recessedDoor(c, doorU, h, { frame: 0x8a6440, light: l, open: true, surround: shade(wall, 1.1), w: TOWN_DOOR.w, h: TOWN_DOOR.h });
+      doorAjar(c, doorU - TOWN_DOOR.w / 2, h, l);
+      spout(c, w - 6, 10, l);
     },
     right: (c, w, h, l) => {
-      band(c, w, 6, 2, shade(wall, 0.84), l);
-      plinth(c, w, h, 6, 0x9a8a70, l, 35);
-      recessedDoor(c, w / 2, h, { frame: 0x8a6440, light: l, open: true, surround: shade(wall, 1.08), panel: 0x24477a, seed: 35 });
-      // The door ajar: lamplight within, one leaf swung inward.
-      const dx = w / 2 - DOOR.w / 2;
-      archPath(c, dx, h, DOOR.w, DOOR.h);
-      const glow = c.createLinearGradient(dx, 0, dx + DOOR.w, 0);
-      glow.addColorStop(0, '#ffe2a0');
-      glow.addColorStop(1, '#c47a2c');
-      c.fillStyle = glow;
-      c.fill();
-      c.fillStyle = css(shade(0x4a2c18, l));
-      c.fillRect(dx + DOOR.w * 0.6, h - DOOR.h * 0.8, DOOR.w * 0.4, DOOR.h * 0.8 - 1.5);
-      c.fillStyle = css(0x2a1a0c, 0.6);
-      c.fillRect(dx + DOOR.w * 0.6, h - DOOR.h * 0.8, 0.8, DOOR.h * 0.8 - 1.5);
+      wornPlaster(c, w * 0.3, h * 0.55, 12, 10, wall, l, 34);
+      townWindow(c, w / 2, h, 64, { frame: 0x8a6440, light: l, arched: true });
     },
   });
-  flatTop(ctx, front, shade(wall, 0.95));
-  merlons(ctx, front, wall, 3, 3);
-  outlineBox(ctx, front);
-  // Lamplight pooling on the ground before the door, then the benches either side.
-  const pool = groundPoint(box, box.w - 1, box.d / 2);
-  const g = ctx.createRadialGradient(pool.x, pool.y, 1, pool.x, pool.y, 12);
-  g.addColorStop(0, 'rgba(255,214,140,0.55)');
+  // Lamplight pooling on the step and the lane before the door.
+  steps(ctx, box, doorU - 16, doorU + 16, -7, 0, 1, 'q', 3);
+  const pool = groundPoint(box, doorU, -5);
+  const g = ctx.createRadialGradient(pool.x, pool.y, 1, pool.x, pool.y, 18);
+  g.addColorStop(0, 'rgba(255,214,140,0.6)');
   g.addColorStop(1, 'rgba(255,214,140,0)');
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(pool.x, pool.y, 12, 6, 0, 0, Math.PI * 2);
+  ctx.ellipse(pool.x, pool.y, 18, 8, 0, 0, Math.PI * 2);
   ctx.fill();
-  sakku(ctx, box, box.w - 6, box.w - 1, box.d - 8, box.d - 1, 0xa89878, 36, 7);
-  steps(ctx, box, box.w - 6, box.w - 1, box.d / 2 - 9, box.d / 2 + 9, 1, 'p');
-  sakku(ctx, box, box.w - 6, box.w - 1, 1, 8, 0xa89878, 37, 7);
+}
+
+/** Lamplight inside the open door, one leaf swung inward. */
+function doorAjar(c: Ctx, x: number, base: number, l: number): void {
+  const { w, h } = TOWN_DOOR;
+  archPath(c, x, base, w, h);
+  const glow = c.createLinearGradient(x, 0, x + w, 0);
+  glow.addColorStop(0, '#ffe2a0');
+  glow.addColorStop(1, '#c47a2c');
+  c.fillStyle = glow;
+  c.fill();
+  c.fillStyle = css(shade(0x4a2c18, l));
+  c.fillRect(x + w * 0.62, base - h * 0.8, w * 0.38, h * 0.8 - 1.5);
+  c.fillStyle = css(0x2a1a0c, 0.6);
+  c.fillRect(x + w * 0.62, base - h * 0.8, 0.8, h * 0.8 - 1.5);
 }
 
 /** Placeable map objects owned by chapter 1. */

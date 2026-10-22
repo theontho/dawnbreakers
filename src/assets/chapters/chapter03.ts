@@ -1,45 +1,60 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
 import { figure, type FigureStyle } from '../art/crowds';
-import { drawArcadeBay, drawKaaba, drawMaqam, drawMinaret } from '../art/mecca';
+import { drawKaaba, drawMaqam } from '../art/mecca';
+import { ARCADE_H, drawArcadeBay, drawMinaret } from '../art/meccaArcade';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH03_CABIN_OBJECTS, CH03_CABIN_TEXTURE_GENERATORS } from './chapter03Cabin';
 import { CH03_SHIP_TEXTURE_GENERATORS } from './chapter03Ship';
 
 /**
- * Chapter 3: the pilgrim ship (see `chapter03Ship.ts`) and the Sacred
- * Mosque at Mecca: the Kaʿba, domed colonnades, minarets, the Station of
- * Abraham, and the "courtyard hush" floor marker where the proclamation is
- * heard. The Báb is never drawn; His presence is told through narration.
+ * Chapter 3, at true scale: the pilgrim ship (see `chapter03Ship.ts`) and
+ * the Sacred Mosque at Mecca: the Kaʿba, domed colonnade bays, minarets, the
+ * Station of Abraham, and the "courtyard hush" floor marker where the
+ * proclamation is heard. The Báb is never drawn; His presence is told
+ * through narration.
  */
 
-/** Pilgrims in plain travelling white: two standing, one bareheaded in iḥrám, one seated. */
+/**
+ * Pilgrims at true scale (40 px, 1.75 m): two in travelling robes, one
+ * bareheaded in the white iḥrám, one seated on his heels.
+ */
 const PILGRIMS: ReadonlyArray<{ dx: number; dy: number; style: FigureStyle }> = [
-  { dx: 13, dy: 42, style: { robe: 0xd8d0bd, trim: 0x9c8458, head: 'turban', headColor: 0xf7f0dc, skin: 0xd8bd8a, beard: 0x3a2a1c } },
-  { dx: 29, dy: 40, style: { robe: 0xb8aa8d, head: 'scarf', headColor: 0xe8e0c8, skin: 0xb8916d, beard: 0x1f1610 } },
-  { dx: 45, dy: 43, style: { robe: 0xf2ead6, head: 'bare', skin: 0xc49a6c, beard: 0x2a1c12 } },
-  { dx: 18, dy: 52, style: { robe: 0xa89878, trim: 0xe4dccb, head: 'turban', headColor: 0xd8c7a0, skin: 0xd1b37c, beard: 0xd8d2c4, seated: true } },
+  { dx: 18, dy: 52, style: { height: 40, robe: 0xd8d0bd, trim: 0x9c8458, head: 'turban', headColor: 0xf7f0dc, skin: 0xd8bd8a, beard: 0x3a2a1c } },
+  { dx: 38, dy: 49, style: { height: 39, robe: 0xb8aa8d, head: 'scarf', headColor: 0xe8e0c8, skin: 0xb8916d, beard: 0x1f1610 } },
+  { dx: 58, dy: 53, style: { height: 40, robe: 0xf2ead6, head: 'bare', skin: 0xc49a6c, beard: 0x2a1c12 } },
+  { dx: 26, dy: 64, style: { height: 40, robe: 0xa89878, trim: 0xe4dccb, head: 'turban', headColor: 0xd8c7a0, skin: 0xd1b37c, beard: 0xd8d2c4, seated: true } },
 ];
 
 export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH03_SHIP_TEXTURE_GENERATORS,
   ...CH03_CABIN_TEXTURE_GENERATORS,
 
+  /** The Kaʿba at true scale: about 11 x 13 m and 13 m high (300 px). */
   'ch3-kaaba': (scene, def) => {
-    const { box, texW, texH } = footprintBox(2, 2, 88, 8);
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 8, def.footprint?.h ?? 9, 300, 8);
     paintTexture(scene, def.texture, texW, texH, ctx => drawKaaba(ctx, box));
   },
 
+  /** One domed bay of the colonnade (3 x 3). */
   'ch3-arcade': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 60, 28);
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, ARCADE_H, 66);
     paintTexture(scene, def.texture, texW, texH, ctx => drawArcadeBay(ctx, box));
   },
 
-  'ch3-minaret': (scene, def) => paintTexture(scene, def.texture, 48, 160, ctx => drawMinaret(ctx, 24, 158)),
+  /** A minaret at a corner of the colonnade (3 x 3), about 20 m to the crescent. */
+  'ch3-minaret': (scene, def) => {
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, 150, 272);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawMinaret(ctx, box));
+  },
 
-  'ch3-maqam': (scene, def) => paintTexture(scene, def.texture, 40, 68, ctx => drawMaqam(ctx, 20, 66)),
+  /** The Station of Abraham (2 x 2). */
+  'ch3-maqam': (scene, def) => {
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 91, 50);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawMaqam(ctx, box));
+  },
 
   'ch3-pilgrim-cluster': (scene, def) => {
-    paintTexture(scene, def.texture, 58, 56, ctx => {
+    paintTexture(scene, def.texture, 76, 72, ctx => {
       for (const { dx, dy, style } of PILGRIMS) figure(ctx, dx, dy, style);
     });
   },
@@ -83,17 +98,17 @@ export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 /** Placeable map objects owned by chapter 3. */
 export const CH03_OBJECTS: MapObjectDefinition[] = [
   ...CH03_CABIN_OBJECTS,
-  { id: 'ch3-kaaba', label: 'Kaaba', texture: 'ch3-kaaba', kind: 'structure', category: 'shrines', color: 0x181512, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
-  { id: 'ch3-arcade', label: 'Colonnade', texture: 'ch3-arcade', kind: 'structure', category: 'shrines', color: 0xc8b48a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
-  { id: 'ch3-minaret', label: 'Minaret', texture: 'ch3-minaret', kind: 'prop', category: 'shrines', color: 0xd8c7a0, blocks: true },
-  { id: 'ch3-maqam', label: 'Station of Abraham', texture: 'ch3-maqam', kind: 'prop', category: 'shrines', color: 0xc9a55c, blocks: true },
+  { id: 'ch3-kaaba', label: 'Kaaba', texture: 'ch3-kaaba', kind: 'structure', category: 'shrines', color: 0x181512, blocks: true, footprint: { w: 8, h: 9 }, isometric: true },
+  { id: 'ch3-arcade', label: 'Colonnade', texture: 'ch3-arcade', kind: 'structure', category: 'shrines', color: 0xc8b48a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch3-minaret', label: 'Minaret', texture: 'ch3-minaret', kind: 'structure', category: 'shrines', color: 0xd8c7a0, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch3-maqam', label: 'Station of Abraham', texture: 'ch3-maqam', kind: 'structure', category: 'shrines', color: 0xc9a55c, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch3-pilgrim-cluster', label: 'Pilgrim Cluster', texture: 'ch3-pilgrim-cluster', kind: 'prop', category: 'people-crowds', color: 0x6b5a44, blocks: true },
   { id: 'ch3-courtyard-hush', label: 'Courtyard Hush', texture: 'ch3-courtyard-hush', kind: 'prop', category: 'shrines', color: 0xd8c07a, blocks: false },
-  { id: 'ch3-cabin', label: 'Ship Cabin', texture: 'ch3-cabin', kind: 'structure', category: 'furnishings', color: 0x6a4325, blocks: true, footprint: { w: 3, h: 4 }, isometric: true },
+  { id: 'ch3-cabin', label: 'Ship Cabin', texture: 'ch3-cabin', kind: 'structure', category: 'furnishings', color: 0x6a4325, blocks: true, footprint: { w: 6, h: 4 }, isometric: true },
   { id: 'ch3-cabin-threshold', label: 'House Threshold', texture: 'ch3-cabin-threshold', kind: 'prop', category: 'furnishings', color: 0x2f5a3a, blocks: false },
   { id: 'ch3-mast', label: 'Ship Mast', texture: 'ch3-mast', kind: 'prop', category: 'furnishings', color: 0x8a5a2a, blocks: true },
   { id: 'ch3-ship-rail', label: 'Ship Rail', texture: 'ch3-ship-rail', kind: 'prop', category: 'furnishings', color: 0x6b5136, blocks: false },
-  { id: 'ch3-hatch', label: 'Hold Hatch', texture: 'ch3-hatch', kind: 'prop', category: 'furnishings', color: 0x5a3a1f, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch3-hatch', label: 'Hold Hatch', texture: 'ch3-hatch', kind: 'structure', category: 'furnishings', color: 0x5a3a1f, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch3-water-cask', label: 'Water Cask', texture: 'ch3-water-cask', kind: 'prop', category: 'market-supplies', color: 0x7a5030, blocks: true },
   { id: 'ch3-brazier', label: 'Brazier', texture: 'ch3-brazier', kind: 'prop', category: 'lighting-effects', color: 0xe06a2a, blocks: true },
   { id: 'ch3-rope-coil', label: 'Rope Coils', texture: 'ch3-rope-coil', kind: 'prop', category: 'market-supplies', color: 0xb89a68, blocks: false },

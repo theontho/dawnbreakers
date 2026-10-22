@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../dialogue/types';
 import type { NpcSpec } from '../data/maps/types';
-import { figureScale } from './figureScale';
+import { figureScale, isPersonTexture } from './figureScale';
 import { makeTextureGraphics } from './graphicsFactory';
 import { TILE_H, type Interactable } from './baseMapTypes';
 
 /**
  * NPC and story-object placement for a map. Each spec becomes an
- * `Interactable` with a sprite, a gentle idle sway, and a small speech mark
+ * `Interactable` with a sprite (people sway gently as they breathe) and a small speech mark
  * floating overhead until the player has heard what it has to say.
  *
  * Presence (`NpcSpec.present`) is re-evaluated after every dialogue, so
@@ -32,7 +32,7 @@ interface PlacedNpc {
   interactable: Interactable;
   sprite: Phaser.GameObjects.Image;
   marker: Phaser.GameObjects.Image;
-  sway: Phaser.Tweens.Tween;
+  sway: Phaser.Tweens.Tween | undefined;
   /** Faint copy drawn above scenery when the NPC stands behind it. */
   ghost?: Phaser.GameObjects.Image;
 }
@@ -79,7 +79,8 @@ export function placeMapNpcs(
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
-    const sway = scene.tweens.add({
+    // People breathe; story objects (a pulpit, a posted decree, a shut door) stand still.
+    const sway = !isPersonTexture(spec.texture) ? undefined : scene.tweens.add({
       targets: sprite,
       scaleY: sprite.scaleY * 1.025,
       duration: Phaser.Math.Between(1500, 2100),
@@ -93,7 +94,8 @@ export function placeMapNpcs(
       sprite,
       marker,
       sway,
-      ghost: isOccluded(sprite, occluders) ? addGhost(scene, sprite) : undefined,
+      // Only people get the x-ray silhouette; an object's speech mark is enough to find it.
+      ghost: isPersonTexture(spec.texture) && isOccluded(sprite, occluders) ? addGhost(scene, sprite) : undefined,
       interactable: {
         gridX: spec.gridX,
         gridY: spec.gridY,
@@ -119,9 +121,9 @@ export function placeMapNpcs(
         if (here) {
           blocked[npc.spec.gridY]![npc.spec.gridX] = true;
           handle.interactables.push(npc.interactable);
-          npc.sway.resume();
+          npc.sway?.resume();
         } else {
-          npc.sway.pause();
+          npc.sway?.pause();
         }
         const unheard = !latest[talkedFlag(resolveNpcDialogue(npc.spec, latest))];
         npc.marker.setVisible(here && unheard);

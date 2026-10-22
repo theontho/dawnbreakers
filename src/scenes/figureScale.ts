@@ -18,7 +18,12 @@ const PEOPLE_SIZED = new Set(
     .map(def => def.texture),
 );
 
+/** Whether a texture is a person (or a crowd or animal painted at their size). */
+export function isPersonTexture(texture: string): boolean {
+  return PEOPLE_SIZED.has(texture.split('~')[0]!);
+}
+
 /** Display scale for a map texture (variant suffixes ignored). */
 export function figureScale(texture: string, trueScale: boolean): number {
-  return PEOPLE_SIZED.has(texture.split('~')[0]!) ? personScale(trueScale) : 1;
+  return isPersonTexture(texture) ? personScale(trueScale) : 1;
 }

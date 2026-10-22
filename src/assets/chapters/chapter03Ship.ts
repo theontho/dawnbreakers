@@ -1,25 +1,27 @@
-import { css, footprintBox, onRoof, outlineBox, paintTexture, shade, type Ctx } from '../art/canvasKit';
-import { cellCentredBox, ellipseShadow, litGradient, rope, sideGradient } from '../art/fieldKit';
+import { css, footprintBox, groundShadow, onRoof, outlineBox, paintTexture, shade, type Ctx } from '../art/canvasKit';
+import { ellipseShadow, litGradient, rope, sideGradient } from '../art/fieldKit';
 import { planks } from '../art/materials';
 import { flatTop, walls } from '../art/ornaments';
-import { drawLateenMast, drawSkiff } from '../art/ship';
+import { drawLateenMast, drawSkiff, MAST_TEXTURE, SKIFF_TEXTURE } from '../art/ship';
+import { subBox } from '../art/structureParts';
 import { drawCabin } from '../art/shipCabin';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
- * Chapter 3 ship pieces: the pilgrim vessel out of Búshihr. Stern cabin with
- * a lamplit door, the threshold mat before it, rails along both axes, hold
- * hatch, water cask, galley brazier, rope coil, mast, and the ship's boat.
+ * Chapter 3 ship pieces at true scale: the pilgrim vessel out of Búshihr.
+ * Stern deckhouse with a lamplit door, the threshold mat before it, the main
+ * hatch, water cask, galley brazier, rope coil, mainmast, and the ship's
+ * boat. The bulwarks are a connected wall style (see walls.ts).
  */
 
 const TEAK = 0x7a4f2c;
 const IRON = 0x2e2a26;
 
 export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  /** Stern deckhouse. The door is on the x-facing wall, facing the threshold mat. */
+  /** Stern deckhouse (6 x 4). The plank door is on deck cell x 9, the lamplit door faces cell y 8. */
   'ch3-cabin': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 4, 76, 24);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawCabin(ctx, box));
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 6, def.footprint?.h ?? 4, 112, 52);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawCabin(ctx, box, { portP: 144, cabinQ: 48 }));
   },
 
   /** A green prayer mat laid before the cabin door, a hooded lantern on a peg. */
@@ -57,27 +59,34 @@ export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     });
   },
 
+  'ch3-mast': (scene, def) => paintTexture(scene, def.texture, MAST_TEXTURE.w, MAST_TEXTURE.h,
+    ctx => drawLateenMast(ctx, MAST_TEXTURE.w / 2, MAST_TEXTURE.h - 16)),
 
-
-  'ch3-mast': (scene, def) => paintTexture(scene, def.texture, 64, 122, ctx => drawLateenMast(ctx, 30, 118)),
-
-  /** Hold hatch: a raised coaming with a wooden grating over the dark hold. */
+  /** The main hatch (2 x 2): a raised coaming, a grating over the dark hold, half battened under tarred canvas. */
   'ch3-hatch': (scene, def) => {
-    const texH = 44;
-    paintTexture(scene, def.texture, 64, texH, ctx => {
-      const box = cellCentredBox(texH, 28, 7);
-      walls(ctx, box, (c, w, h, light) => planks(c, w, h, { base: 0x5a3a1f, light, seed: 21 }, false, 3.5));
-      flatTop(ctx, box, 0x6a4525);
-      onRoof(ctx, box, (w, d) => {
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 14, 8);
+    paintTexture(scene, def.texture, texW, texH, ctx => {
+      const coaming = subBox(box, 6, box.w - 6, 6, box.d - 6, 12);
+      groundShadow(ctx, coaming, 5, 0.25);
+      walls(ctx, coaming, (c, w, h, light) => planks(c, w, h, { base: 0x5a3a1f, light, seed: 21 }, false, 4));
+      flatTop(ctx, coaming, 0x6a4525);
+      onRoof(ctx, coaming, (w, d) => {
         ctx.fillStyle = css(0x120a05);
-        ctx.fillRect(3, 3, w - 6, d - 6);
-        for (let k = 5; k < w - 3; k += 4) {
+        ctx.fillRect(4, 4, w - 8, d - 8);
+        for (let k = 7; k < w - 4; k += 6) {
           ctx.fillStyle = css(shade(0x7a5530, 1.1));
-          ctx.fillRect(k, 3, 1.6, d - 6);
-          ctx.fillRect(3, k, w - 6, 1.6);
+          ctx.fillRect(k, 4, 2.2, d - 8);
+          ctx.fillRect(4, k, w - 8, 2.2);
         }
+        // Tarred canvas over the after half, lashed down with battens against the seas.
+        ctx.fillStyle = css(0x2e2a24);
+        ctx.fillRect(2, d * 0.45, w - 4, d * 0.55 - 2);
+        ctx.fillStyle = 'rgba(200,190,170,0.18)';
+        ctx.fillRect(2, d * 0.45, w - 4, 1.5);
+        ctx.fillStyle = css(0x6a4525);
+        for (const t of [0.6, 0.85]) ctx.fillRect(1, d * t, w - 2, 2.5);
       });
-      outlineBox(ctx, box);
+      outlineBox(ctx, coaming);
     });
   },
 
@@ -228,8 +237,9 @@ export const CH03_SHIP_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     });
   },
 
-  /** The ship's boat, bobbing at the foot of the ladder. */
-  'ch3-skiff': (scene, def) => paintTexture(scene, def.texture, 68, 40, ctx => drawSkiff(ctx)),
+  /** The ship's boat, riding at the foot of the ladder. */
+  'ch3-skiff': (scene, def) => paintTexture(scene, def.texture, SKIFF_TEXTURE.w, SKIFF_TEXTURE.h,
+    ctx => drawSkiff(ctx, SKIFF_TEXTURE.w / 2, SKIFF_TEXTURE.h - 16)),
 };
 
 

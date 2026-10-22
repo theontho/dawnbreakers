@@ -233,7 +233,7 @@ export const cityMap: MapDefinition = {
   ],
   exits: [
     { fromX: 18, fromY: 0, dx: 0, dy: -1,
-      targetScene: 'HouseQuarter', targetSpawnX: 9, targetSpawnY: 16,
+      targetScene: 'HouseQuarter', targetSpawnX: 17, targetSpawnY: 32,
       label: '↑ Walk to the Quiet Quarter' },
   ],
   ambience: {

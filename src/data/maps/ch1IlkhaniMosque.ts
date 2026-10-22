@@ -24,7 +24,7 @@ function hallWalls(): DecorSpec[] {
 /** Rows of prayer carpets facing the qibla. */
 function prayerRows(): DecorSpec[] {
   const out: DecorSpec[] = [];
-  for (const y of [3, 5, 7]) {
+  for (const y of [5, 7, 9]) {
     for (let x = 3; x <= 11; x += 2) out.push({ gridX: x, gridY: y, texture: 'rug', blocks: false });
   }
   return out;
@@ -38,15 +38,18 @@ export const ch1IlkhaniMosqueMap: MapDefinition = {
   spawn: { x: 7, y: 10 },
   interior: true,
   trueScale: true,
-  build: ({ paintRect }) => {
+  build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'floor');
+    // The minbar's stair climbs back from (9, 3) to the qibla wall.
+    block(9, 1);
+    block(9, 2);
   },
   buildings: [],
   decor: [
     ...hallWalls(),
     ...prayerRows(),
     // The minbar beside the mihrab, lamps along the walls.
-    { gridX: 9, gridY: 1, texture: 'ch4-pulpit', blocks: true },
+    { gridX: 9, gridY: 3, texture: 'ch4-pulpit', blocks: true },
     { gridX: 2, gridY: 1, texture: 'lamp', blocks: true },
     { gridX: 12, gridY: 1, texture: 'lamp', blocks: true },
     { gridX: 1, gridY: 6, texture: 'lamp', blocks: true },

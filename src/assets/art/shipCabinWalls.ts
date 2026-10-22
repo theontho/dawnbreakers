@@ -2,11 +2,17 @@ import { css, shade, type Ctx } from './canvasKit';
 import { planks } from './materials';
 
 /**
- * Wall faces for the cabin of the pilgrim ship (see `WALL_STYLES` in
- * `walls.ts`). Each face is painted in cell-aligned pattern space (0..32
- * across one cell), so a feature centred on u = 16 sits in the middle of its
- * cell and plain runs join seamlessly.
+ * Wall faces for the cabin of the pilgrim ship and the bulwarks of its deck
+ * (see `WALL_STYLES` in `walls.ts`), at true scale: a person is 40 px. Each
+ * face is painted in cell-aligned pattern space (0..32 across one cell), so
+ * a feature centred on u = 16 sits in the middle of its cell and plain runs
+ * join seamlessly.
  */
+
+/** Cabin bulkheads, deck to deck beams: about 3.1 m, room for a 50 px doorway. */
+export const SHIP_CABIN_WALL_H = 72;
+/** The bulwark round the deck: about a metre, a man's hip. */
+export const SHIP_BULWARK_H = 24;
 
 const TEAK = 0x7a4f2c;
 const DARK_TEAK = 0x4a2e18;
@@ -39,7 +45,7 @@ export function shipTimberFace(ctx: Ctx, w: number, h: number, l: number): void 
 export function shipPortFace(ctx: Ctx, w: number, h: number, l: number): void {
   shipTimberFace(ctx, w, h, l);
   const x = 10;
-  const y = 18;
+  const y = h - 50;
   ctx.fillStyle = css(shade(BRASS, l * 0.9));
   ctx.fillRect(x - 2, y - 2, 16, 16);
   const sea = ctx.createLinearGradient(0, y, 0, y + 12);
@@ -66,6 +72,14 @@ export function shipPortFace(ctx: Ctx, w: number, h: number, l: number): void {
 /** Pegs along the bulkhead hung with a cloak, a water skin and a pierced tin lantern, unlit. */
 export function shipPegsFace(ctx: Ctx, w: number, h: number, l: number): void {
   shipTimberFace(ctx, w, h, l);
+  // The peg rail hangs at a man's reach, about 1.9 m up.
+  ctx.save();
+  ctx.translate(0, h - 60);
+  pegRail(ctx, l);
+  ctx.restore();
+}
+
+function pegRail(ctx: Ctx, l: number): void {
   ctx.fillStyle = css(shade(DARK_TEAK, l * 0.8));
   ctx.fillRect(2, 16, 28, 2.5);
   for (const u of [6, 16, 26]) {
@@ -108,34 +122,60 @@ export function shipPegsFace(ctx: Ctx, w: number, h: number, l: number): void {
  */
 export function shipCurtainFace(ctx: Ctx, w: number, h: number, l: number): void {
   shipTimberFace(ctx, w, h, l);
-  const x = 8;
-  const dw = 16;
-  const top = h - 40;
+  const x = 4;
+  const dw = 24;
+  const dh = 52;
+  const top = h - dh;
   // The door frame and a raised coaming.
   ctx.fillStyle = css(shade(DARK_TEAK, l * 0.9));
-  ctx.fillRect(x - 2.5, top - 3, dw + 5, 43);
+  ctx.fillRect(x - 2.5, top - 3, dw + 5, dh + 3);
   // Lamplight behind the cloth.
   const glow = ctx.createLinearGradient(0, top, 0, h);
   glow.addColorStop(0, '#ffd890');
   glow.addColorStop(1, '#c47a2c');
   ctx.fillStyle = glow;
-  ctx.fillRect(x, top, dw, 40);
+  ctx.fillRect(x, top, dw, dh);
   // The curtain, hanging in folds from a rod, a hand's breadth short of the sill.
-  for (let k = 0; k < 4; k++) {
-    const fx = x + 0.6 + k * 3.8;
+  const hang = dh - 5;
+  for (let k = 0; k < 6; k++) {
+    const fx = x + 0.4 + k * 3.9;
     ctx.fillStyle = css(shade(k % 2 === 0 ? 0x2c3a6a : 0x22305a, l));
-    ctx.fillRect(fx, top + 1, 3.8, 35.5);
+    ctx.fillRect(fx, top + 1, 3.9, hang);
   }
   ctx.fillStyle = css(shade(BRASS, l), 0.8);
-  for (let u = x + 1.5; u < x + dw - 1; u += 3) ctx.fillRect(u, top + 33, 1.6, 1.6);
+  for (let u = x + 1.5; u < x + dw - 1; u += 3) ctx.fillRect(u, top + hang - 3, 1.6, 1.6);
   ctx.fillStyle = css(shade(BRASS, l));
-  ctx.fillRect(x - 3, top - 1, dw + 6, 1.6);
+  ctx.fillRect(x - 3, top - 1, dw + 6, 1.8);
   // Light along the edges and under the hem.
   ctx.fillStyle = 'rgba(255,214,140,0.65)';
-  ctx.fillRect(x, top + 2, 0.8, 35);
-  ctx.fillRect(x + dw - 0.8, top + 2, 0.8, 35);
+  ctx.fillRect(x, top + 2, 0.8, hang);
+  ctx.fillRect(x + dw - 0.8, top + 2, 0.8, hang);
   ctx.fillStyle = 'rgba(255,214,140,0.85)';
-  ctx.fillRect(x, top + 36.5, dw, 1.5);
+  ctx.fillRect(x, top + hang + 1, dw, 2);
   ctx.fillStyle = css(shade(DARK_TEAK, l * 0.8));
   ctx.fillRect(x - 3, h - 2.5, dw + 6, 2.5);
+}
+
+/**
+ * The bulwark round the deck: the topsides carried up past the deck in
+ * teak planking on stanchions, a dark rubbing strake, and a painted band
+ * under the capping rail.
+ */
+export function shipBulwarkFace(ctx: Ctx, w: number, h: number, l: number): void {
+  planks(ctx, w, h, { base: 0x6b4a2c, light: l, seed: 5 }, false, 4);
+  for (let u = 0; u < w + 16; u += 16) {
+    ctx.fillStyle = css(shade(DARK_TEAK, l));
+    ctx.fillRect(u - 1.5, 3, 3, h - 3);
+  }
+  ctx.fillStyle = css(shade(0xe8dcc0, l));
+  ctx.fillRect(0, 2, w, 2.5);
+  ctx.fillStyle = css(shade(0xa83a2a, l));
+  for (let u = 2; u < w; u += 8) ctx.fillRect(u, 2.4, 4, 1.7);
+  ctx.fillStyle = css(shade(DARK_TEAK, l * 0.9));
+  ctx.fillRect(0, h - 5, w, 3);
+  // Scuppers that let the sea run off the deck, and the salt they leave.
+  ctx.fillStyle = 'rgba(10,6,3,0.75)';
+  ctx.fillRect(14, h - 2.5, 4, 2.5);
+  ctx.fillStyle = 'rgba(235,235,225,0.35)';
+  ctx.fillRect(13, h - 0.6, 6, 0.6);
 }

@@ -1,44 +1,17 @@
-import { css, onRoof, outlineBox, paintTexture, shade, type Ctx } from '../art/canvasKit';
+import { css, paintTexture, type Ctx } from '../art/canvasKit';
 import { figure } from '../art/crowds';
-import { cellCentredBox, ellipseShadow } from '../art/fieldKit';
-import { stone } from '../art/materials';
-import { walls } from '../art/ornaments';
+import { ellipseShadow } from '../art/fieldKit';
 import { waterJar } from '../art/streetLife';
 import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
  * Chapter 2: inside the caravanserai beyond the Qur'án Gate. The court has
  * an arcade of lodging rooms on two sides (walls in `seraiWalls.ts`), a
- * stone pool, water jars, travellers taking tea, and the swept threshold of
- * a room its guest has already left.
+ * stone pool (the shared `fountain-pool`), water jars, travellers taking
+ * tea, and the swept threshold of a room its guest has already left.
  */
 
-const STONE = 0x9a8a70;
-
 export const CH02_SERAI_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  /** The court's pool: a low stone kerb round still water that holds the sky. */
-  'ch2-serai-pool': (scene, def) => {
-    const texH = 40;
-    paintTexture(scene, def.texture, 64, texH, ctx => {
-      const box = cellCentredBox(texH, 30, 5);
-      walls(ctx, box, (c, w, h, light) => stone(c, w, h, { base: STONE, light, seed: light === 1 ? 641 : 642 }, 5));
-      onRoof(ctx, box, (w, d) => {
-        ctx.fillStyle = css(shade(0xb8a888, 1.1));
-        ctx.fillRect(0, 0, w, d);
-        const water = ctx.createLinearGradient(0, 0, w, d);
-        water.addColorStop(0, css(0x6a8a9a));
-        water.addColorStop(1, css(0x2e4a5a));
-        ctx.fillStyle = water;
-        ctx.fillRect(3, 3, w - 6, d - 6);
-        // Dawn on the water.
-        ctx.fillStyle = 'rgba(255,214,170,0.35)';
-        ctx.fillRect(6, 8, w - 14, 1.2);
-        ctx.fillRect(9, 13, w - 20, 1);
-      });
-      outlineBox(ctx, box);
-    });
-  },
-
   /** Three tall water jars on a timber stand, a tin cup on a cord. */
   'ch2-water-jars': (scene, def) => paintTexture(scene, def.texture, 48, 46, ctx => {
     ctx.fillStyle = css(0x5b3a20);
@@ -125,7 +98,6 @@ export const CH02_SERAI_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch2-serai-bay', label: 'Caravanserai', texture: 'ch2-serai-bay', kind: 'prop', category: 'buildings', color: 0xc49a64, blocks: true },
   { id: 'ch2-serai-bay-lit', label: 'Caravanserai', texture: 'ch2-serai-bay-lit', kind: 'prop', category: 'buildings', color: 0xc49a64, blocks: true },
   { id: 'ch2-serai-window', label: 'Caravanserai', texture: 'ch2-serai-window', kind: 'prop', category: 'buildings', color: 0xc49a64, blocks: true },
-  { id: 'ch2-serai-pool', label: 'Well', texture: 'ch2-serai-pool', kind: 'prop', category: 'bridges-water', color: 0x2e4a5a, blocks: true },
   { id: 'ch2-water-jars', label: 'Water Jar', texture: 'ch2-water-jars', kind: 'prop', category: 'market-supplies', color: 0xa8603a, blocks: true },
   { id: 'ch2-tea-travellers', label: 'Pilgrim Cluster', texture: 'ch2-tea-travellers', kind: 'prop', category: 'people-crowds', color: 0x6a5a40, blocks: true },
   { id: 'ch2-swept-threshold', label: 'House Threshold', texture: 'ch2-swept-threshold', kind: 'prop', category: 'furnishings', color: 0xc8a868, blocks: false },
