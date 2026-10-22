@@ -26,7 +26,8 @@ const LANE = 11;
 const ROAD_NORTH = { x: 30, w: 2 } as const;
 const NUR_HOUSE_DOOR = { x: 16, y: 8 } as const;
 
-const DOOR_CELL = { gridX: NUR_HOUSE_DOOR.x, gridY: NUR_HOUSE_DOOR.y, texture: 'ch4-uncle-door' } as const;
+/** The door is a piece of the courtyard wall; the interactions on it have no sprite of their own. */
+const DOOR_CELL = { gridX: NUR_HOUSE_DOOR.x, gridY: NUR_HOUSE_DOOR.y } as const;
 
 const tutorAtDawn = both(has('nurScrollGiven'), not('nurTutorWentIn'));
 const tutorWithAnswer = both(has('nurTutorCameOut'), not('nurGiftCarried'));
@@ -45,7 +46,7 @@ const buildings: BuildingSpec[] = [
 function walls(): DecorSpec[] {
   const w = 'compound-wall';
   return [
-    ...wallRun(w, 9, 8, 23, 8, [[NUR_HOUSE_DOOR.x, NUR_HOUSE_DOOR.y]]),
+    ...wallRun(w, 9, 8, 23, 8, { doors: [[NUR_HOUSE_DOOR.x, NUR_HOUSE_DOOR.y]] }),
     ...wallRun(w, 9, 0, 9, 7),
     ...wallRun(w, 23, 0, 23, 7),
     ...wallRun(w, 9, 16, 12, 16),

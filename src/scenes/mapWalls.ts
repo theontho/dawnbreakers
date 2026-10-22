@@ -1,13 +1,14 @@
 import type Phaser from 'phaser';
 import { TOWN_BUILDING_FACES } from '../assets/art/town';
 import { ensureWallTexture, wallTextureKey, WALL_E, WALL_N, WALL_S, WALL_W, type WallReach } from '../assets/art/wallPainter';
-import { WALL_STYLES } from '../assets/art/wallStyles';
+import { wallFamily, WALL_STYLES } from '../assets/art/wallStyles';
 import type { Building, Decor } from './baseMapTypes';
 
 /**
  * Joins wall pieces into continuous runs. Each one-cell wall (decor or a
  * 1x1 building) is given the texture painted for the neighbours it touches:
- * the same wall, or anything its style says it joins (a gate, a tower).
+ * the same wall (its door pieces included: a door is part of its wall), or
+ * anything its style says it joins (a gate, a tower).
  * Walls on the map's camera-facing edges are cut down so they do not hide
  * the scene.
  */
@@ -26,10 +27,14 @@ export function connectWalls(scene: Phaser.Scene, buildings: Building[], decor: 
   const connect = (item: { gridX: number; gridY: number; texture: string }): void => {
     const style = WALL_STYLES[item.texture];
     if (!style) return;
-    const same = (x: number, y: number): boolean => occupant.get(key(x, y)) === item.texture;
+    const family = wallFamily(item.texture);
+    const same = (x: number, y: number): boolean => {
+      const other = occupant.get(key(x, y));
+      return other !== undefined && wallFamily(other) === family;
+    };
     const joined = (x: number, y: number): boolean => {
       const other = occupant.get(key(x, y));
-      return other !== undefined && (style.joins ?? []).includes(other.split('~')[0]!);
+      return other !== undefined && (style.joins ?? []).includes(wallFamily(other.split('~')[0]!));
     };
     const { gridX: x, gridY: y } = item;
     // A wall runs into a joined building only where it meets it end on or

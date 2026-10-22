@@ -50,7 +50,7 @@ function walls(): DecorSpec[] {
   return [
     ...wallRun(w, 0, 8, GATE.gridX - 1, 8),
     ...wallRun(w, GATE.gridX + GATE.w, 8, W - 1, 8),
-    ...wallRun(w, W - 1, 9, W - 1, H - 1, [[W - 1, LANE_EXIT_Y], [W - 1, LANE_EXIT_Y + 1]]),
+    ...wallRun(w, W - 1, 9, W - 1, H - 1, { gaps: [[W - 1, LANE_EXIT_Y], [W - 1, LANE_EXIT_Y + 1]] }),
     ...wallRun(w, 0, H - 1, W - 2, H - 1),
     ...wallRun(w, 18, 27, 18, 31),
     ...wallRun(w, 33, 28, 33, 31),

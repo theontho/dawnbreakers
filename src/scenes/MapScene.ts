@@ -46,6 +46,7 @@ import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
 import { findPath, screenToGrid, type GridPoint } from './mapPathing';
+import { checkWallSeams } from './mapSeams';
 import type { DoorSpec, MapDefinition, NpcSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
 
@@ -223,6 +224,8 @@ export class MapScene extends Phaser.Scene {
         this.blocked[spec.gridY]![spec.gridX] = true;
       }
     }
+    // Doors and gates in walls are wall pieces; a block pasted into a wall fails in development.
+    if (import.meta.env.DEV) checkWallSeams(this.definition);
     connectWalls(this, this.buildings, this.decor, this.definition);
     connectBuildings(this, this.buildings);
     this.exits = widenExits(this.definition.exits, this.map, this.blocked);

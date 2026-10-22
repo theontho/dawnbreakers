@@ -147,7 +147,12 @@ export interface DialogueGate {
 export interface NpcSpec {
   gridX: number;
   gridY: number;
-  texture: string;
+  /**
+   * Its sprite. Left out for a story object the map already draws, such as
+   * a door piece in a wall run (`wallRun(..., { doors })`): the interaction
+   * sits on that cell with no block of its own.
+   */
+  texture?: string;
   /** Prompt shown when the player is adjacent. Should end with `[E]`. */
   prompt: string;
   /** Dialogue tree id launched on interaction. */

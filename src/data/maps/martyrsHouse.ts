@@ -1,5 +1,6 @@
 import { KALANTAR_DOOR } from './martyrsCity';
 import type { DecorSpec, MapDefinition } from './types';
+import { wallRun } from './wallRuns';
 
 /**
  * The house of Maḥmúd Khán-i-Kalántar in Ṭihrán, February 1850: the long
@@ -23,13 +24,12 @@ const H = 12;
 const DOOR_X = 7;
 const STAIR_X = 12;
 
+/** The back walls, and in the north one the door to the stair, left a finger's width ajar. */
 function roomWalls(): DecorSpec[] {
-  const out: DecorSpec[] = [];
-  for (let x = 0; x < W; x++) {
-    out.push({ gridX: x, gridY: 0, texture: x === STAIR_X ? 'martyrs-stair-door' : 'interior-wall', blocks: true });
-  }
-  for (let y = 1; y < H; y++) out.push({ gridX: 0, gridY: y, texture: 'interior-wall', blocks: true });
-  return out;
+  return [
+    ...wallRun('interior-wall', 0, 0, W - 1, 0, { doors: [[STAIR_X, 0]] }),
+    ...wallRun('interior-wall', 0, 1, 0, H - 1),
+  ];
 }
 
 const block = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>

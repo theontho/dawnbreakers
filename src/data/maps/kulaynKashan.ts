@@ -56,7 +56,7 @@ function walls(): DecorSpec[] {
     ...wallRun('ch7-garden-wall', 2, 16, 14, 16),
     ...wallRun('ch7-garden-wall', 2, 30, 14, 30),
     ...wallRun('ch7-garden-wall', 2, 17, 2, 29),
-    ...wallRun('ch7-garden-wall', 14, 17, 14, 29, orchard),
+    ...wallRun('ch7-garden-wall', 14, 17, 14, 29, { gaps: orchard }),
   ];
 }
 

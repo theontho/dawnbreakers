@@ -60,7 +60,7 @@ function walls(): DecorSpec[] {
     ...wallRun(fort, 30, 0, 30, 9),
     ...wallRun(fort, 44, 0, 44, 9),
     // Vaḥíd's street wall, and the garden walls of the quarter.
-    ...wallRun(court, 17, 11, 24, 11, [[VAHID_DOOR.x, VAHID_DOOR.y]]),
+    ...wallRun(court, 17, 11, 24, 11, { doors: [[VAHID_DOOR.x, VAHID_DOOR.y]] }),
     ...wallRun(court, 17, 5, 17, 10),
     ...wallRun(court, 24, 5, 24, 10),
     ...wallRun(court, 0, 22, 15, 22),
@@ -172,7 +172,7 @@ export const nayrizQuarterMap: MapDefinition = {
       dialogue: 'nz-woman-end',
       gate: { when: f => !!f.nzHeardAmbush, lockedDialogue: 'nz-woman-wait' },
       present: f => nzAfter(f) && !!f.nzLetterRead },
-    { gridX: VAHID_DOOR.x, gridY: VAHID_DOOR.y, texture: 'ch4-uncle-door',
+    { gridX: VAHID_DOOR.x, gridY: VAHID_DOOR.y,
       prompt: 'Stand at Vaḥíd\'s door  [E]',
       dialogue: 'nz-close',
       gate: { when: f => !!f.nzHeardEnd, lockedDialogue: 'nz-vahid-door-shut' } },

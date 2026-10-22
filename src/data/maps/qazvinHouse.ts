@@ -30,8 +30,8 @@ function walls(): DecorSpec[] {
     ...wallRun(w, 0, 0, W - 1, 0),
     ...wallRun(w, 0, 1, 0, H - 1),
     ...wallRun(w, W - 1, 1, W - 1, H - 2),
-    ...wallRun(w, 1, H - 1, W - 2, H - 1, [[GATE_X, H - 1], [GATE_X + 1, H - 1]]),
-    ...wallRun(w, 1, INNER_Y, W - 2, INNER_Y, [[INNER_DOOR.x, INNER_DOOR.y]]),
+    ...wallRun(w, 1, H - 1, W - 2, H - 1, { gaps: [[GATE_X, H - 1], [GATE_X + 1, H - 1]] }),
+    ...wallRun(w, 1, INNER_Y, W - 2, INNER_Y, { doors: [[INNER_DOOR.x, INNER_DOOR.y]] }),
   ];
 }
 
@@ -79,11 +79,11 @@ export const qazvinHouseMap: MapDefinition = {
   buildings,
   decor: [...walls(), ...props],
   npcs: [
-    { gridX: INNER_DOOR.x, gridY: INNER_DOOR.y, texture: 'ch4-uncle-door',
+    { gridX: INNER_DOOR.x, gridY: INNER_DOOR.y,
       prompt: 'Speak at the closed door  [E]',
       dialogue: 'qz-door',
       present: qzDay },
-    { gridX: INNER_DOOR.x, gridY: INNER_DOOR.y, texture: 'ch4-uncle-door',
+    { gridX: INNER_DOOR.x, gridY: INNER_DOOR.y,
       prompt: 'Look at the closed door  [E]',
       dialogue: 'qz-door-night',
       present: qzNight },

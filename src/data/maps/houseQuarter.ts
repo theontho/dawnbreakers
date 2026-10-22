@@ -34,7 +34,7 @@ function walls(): DecorSpec[] {
     // The Báb's court
     ...wallRun(w, 11, 2, 11, 12),
     ...wallRun(w, 23, 2, 23, 12),
-    ...wallRun(w, 12, 12, 22, 12, [[THRESHOLD.x, THRESHOLD.y]]),
+    ...wallRun(w, 12, 12, 22, 12, { gaps: [[THRESHOLD.x, THRESHOLD.y]] }),
     ...wallRun(w, 12, 2, 13, 2),
     ...wallRun(w, 20, 2, 22, 2),
     // The north-west garden and the west house's yard

@@ -2,16 +2,15 @@ import { css, groundPoint, onRoof, outlineBox, roofPoint, shade, type Ctx, type 
 import { ellipseShadow, litGradient, sideGradient } from './fieldKit';
 import { brick, planks } from './materials';
 import { flatTop, walls } from './ornaments';
-import { steps } from './streetLife';
 import { subBox } from './structureParts';
 import { jarAt } from './town/houseKit';
 import { minaret, tilePanel } from './town/monumentKit';
-import { copingBand, surface, TOWN_DOOR, townBeams, townDoor, TURQUOISE } from './town/townKit';
+import { surface, TURQUOISE } from './town/townKit';
 
 /**
  * Shíráz in 1845 at true scale: the governor's posted decree, a dyer's
- * vats, the neighbourhood minaret from which the new call was sounded, and
- * the street door of the uncle's house.
+ * vats, and the neighbourhood minaret from which the new call was sounded.
+ * The uncle's street door is a piece of the courtyard wall (see wallDoors.ts).
  */
 
 const DYES = [0x24406e, 0x7a2236, 0xc9a23a] as const;
@@ -198,32 +197,4 @@ export function drawMinaret(ctx: Ctx): void {
   outlineBox(ctx, base);
   const foot = roofPoint(base, base.w / 2, base.d / 2);
   minaret(ctx, foot.x, foot.y + 2, 10, 168, 0xbf9466);
-}
-
-/** Texture size of the uncle's street door: one cell of house front with a raised portal. */
-export const UNCLE_DOOR_TEX = { w: 80, h: 32 + 104 + 8 } as const;
-
-/**
- * The street door of the uncle's house (one cell): a raised portal frame in
- * the house's street wall, the studded door shut in its recess, a step and
- * a bench beside it. The door faces the lane on its left face.
- */
-export function drawUncleDoor(ctx: Ctx): void {
-  const cell: IsoBox = { x: 40, y: UNCLE_DOOR_TEX.h, w: 32, d: 32, h: 0 };
-  const wall = 0xc8a47a;
-  // Wider than the cell and a little thicker than the street wall, so the
-  // wall either side runs into the portal's flanks and stops there.
-  const front = subBox(cell, -12, 44, 9, 23, 104);
-  walls(ctx, front, (c, w, h, light) => surface(c, w, h, 'plaster', { base: wall, light, seed: 1301 + (light === 1 ? 0 : 7) }), {
-    left: (c, w, h, l) => {
-      copingBand(c, w, 0xd8c09a, l);
-      townBeams(c, w, 10, l, 16);
-      tilePanel(c, w / 2 - 14, h - TOWN_DOOR.h - 30, 28, 10, TURQUOISE, l, 1305, 4);
-      townDoor(c, w / 2, h, { frame: 0x6a4a2c, door: 0x4a2c18, surround: 0xa8784a, light: l, seed: 1307 });
-    },
-    right: (c, w, _h, l) => copingBand(c, w, 0xd8c09a, l),
-  });
-  flatTop(ctx, front, wall);
-  outlineBox(ctx, front);
-  steps(ctx, cell, 4, 28, 2, 10, 1, 'q', 4);
 }

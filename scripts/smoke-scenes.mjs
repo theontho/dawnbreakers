@@ -159,8 +159,8 @@ try {
           queue.push({ x: nx, y: ny });
         }
       }
-      // Doors and thresholds are meant to be met from one side.
-      const doorway = (i) => scene.doors.interactables.includes(i) || /door|threshold/.test(i.texture);
+      // Doors and thresholds are meant to be met from one side, as is anything the scenery draws (a door in a wall).
+      const doorway = (i) => scene.doors.interactables.includes(i) || !i.sprite || /door|threshold/.test(i.texture);
       return scene.npcs.interactables.map((i) => ({
         doorway: doorway(i),
         name: i.prompt.replace(/\s*\[E\]$/, ''),

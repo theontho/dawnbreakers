@@ -61,7 +61,8 @@ export function ensureWallTexture(
   const full = WALL_STYLES[texture];
   if (!full) return;
   const style: WallStyle = cut
-    ? { ...full, height: Math.min(full.height, CUT_HEIGHT), cap: 'flat', top: shade(full.top, 0.62) }
+    // A doorway does not survive a wall cut down at the map's edge.
+    ? { ...full, height: Math.min(full.height, CUT_HEIGHT), cap: 'flat', top: shade(full.top, 0.62), opening: undefined }
     : full;
   const texH = 32 + style.height + CAP_PAD[style.cap];
   // Arms reaching into the next cell need room either side (the texture stays centred on its cell).
@@ -104,6 +105,9 @@ function paintWall(ctx: Ctx, style: WallStyle, mask: number, topY: number, reach
     return parts.some(p => a > p.a0 && a < p.a1 && b > p.b0 && b < p.b1);
   };
   const e = 0.01;
+  // A door piece paints its doorway on the face its run shows: the south face
+  // of a run along x, the east face of a run along y.
+  const alongY = (has(WALL_N) || has(WALL_S)) && !has(WALL_E) && !has(WALL_W);
 
   // Contact shadow cast to the right of the wall.
   ctx.fillStyle = 'rgba(10,6,3,0.22)';
@@ -118,8 +122,14 @@ function paintWall(ctx: Ctx, style: WallStyle, mask: number, topY: number, reach
     const leftExposed = !covered((p.a0 + p.a1) / 2, p.b1 + e);
     const rightExposed = !covered(p.a1 + e, (p.b0 + p.b1) / 2);
     // Faces are painted in run-aligned pattern space so courses continue across cells.
-    if (leftExposed) onLeftWall(ctx, box, (w, h) => alignedFace(ctx, style, w, h, LIGHT.left, phase(p.a0 * 32)));
-    if (rightExposed) onRightWall(ctx, box, (w, h) => alignedFace(ctx, style, w, h, LIGHT.right, (1 - p.b1) * 32));
+    if (leftExposed) onLeftWall(ctx, box, (w, h) => {
+      alignedFace(ctx, style, w, h, LIGHT.left, phase(p.a0 * 32));
+      if (!alongY) cellOpening(ctx, style, w, h, LIGHT.left, p.a0 * 32);
+    });
+    if (rightExposed) onRightWall(ctx, box, (w, h) => {
+      alignedFace(ctx, style, w, h, LIGHT.right, (1 - p.b1) * 32);
+      if (alongY) cellOpening(ctx, style, w, h, LIGHT.right, (1 - p.b1) * 32);
+    });
     onRoof(ctx, box, (w, d) => {
       ctx.fillStyle = css(shade(style.top, LIGHT.roof));
       ctx.fillRect(0, 0, w, d);
@@ -137,6 +147,22 @@ function alignedFace(ctx: Ctx, style: WallStyle, w: number, h: number, light: nu
   const shift = offset % 32;
   ctx.translate(-shift, 0);
   style.face(ctx, w + shift, h, light);
+  ctx.restore();
+}
+
+/**
+ * A door piece's doorway, in cell space: `offset` is where this part's face
+ * starts within its cell, so the slices of one doorway painted on the arms
+ * and centre of a piece meet up.
+ */
+function cellOpening(ctx: Ctx, style: WallStyle, w: number, h: number, light: number, offset: number): void {
+  if (!style.opening) return;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, w, h);
+  ctx.clip();
+  ctx.translate(-offset, 0);
+  style.opening(ctx, h, light);
   ctx.restore();
 }
 

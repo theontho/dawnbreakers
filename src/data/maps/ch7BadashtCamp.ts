@@ -49,10 +49,10 @@ function gardenWall(g: Walled): DecorSpec[] {
   const gaps = [...g.gates, ...STREAM_X.flatMap(x => [[x, g.y0], [x, g.y1]] as const)];
   const w = 'ch7-garden-wall';
   return [
-    ...wallRun(w, g.x0, g.y0, g.x1, g.y0, gaps),
-    ...wallRun(w, g.x0, g.y1, g.x1, g.y1, gaps),
-    ...wallRun(w, g.x0, g.y0 + 1, g.x0, g.y1 - 1, gaps),
-    ...wallRun(w, g.x1, g.y0 + 1, g.x1, g.y1 - 1, gaps),
+    ...wallRun(w, g.x0, g.y0, g.x1, g.y0, { gaps }),
+    ...wallRun(w, g.x0, g.y1, g.x1, g.y1, { gaps }),
+    ...wallRun(w, g.x0, g.y0 + 1, g.x0, g.y1 - 1, { gaps }),
+    ...wallRun(w, g.x1, g.y0 + 1, g.x1, g.y1 - 1, { gaps }),
   ];
 }
 

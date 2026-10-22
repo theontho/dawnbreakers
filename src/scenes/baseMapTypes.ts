@@ -56,7 +56,8 @@ export interface Interactable {
   gridX: number;
   gridY: number;
   prompt: string;
-  texture: string;
+  /** Its sprite's texture; none for a story object the map's scenery draws (a door in a wall). */
+  texture?: string;
   action: () => void;
   sprite?: Phaser.GameObjects.Image;
 }

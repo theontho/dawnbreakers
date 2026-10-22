@@ -201,6 +201,30 @@ or courtyard wall, vary roof heights, and let something sit at the foot
 placed one cell at a time and join automatically; the styles are in
 `src/assets/art/wallStyles.ts`, the joining painter in `wallPainter.ts`.
 
+### Walls and doors
+
+A door or gate in a wall is a piece of that wall, never a block set in a
+gap. Every wall style tall enough for a person-sized door gets two pieces
+derived from it (`src/assets/art/wallDoors.ts`): `<style>-door`, shut, and
+`<style>-doorway`, open and walkable; a style gives its doorway character
+with a `door` look (a timber lintel and tile panel on a courtyard wall, a
+stone lintel on a city wall) or opts out with `door: false`. Place them with
+the run:
+
+```ts
+...wallRun('compound-wall', 9, 8, 23, 8, { doors: [[16, 8]] }),
+...wallRun('town-wall', 0, 26, 39, 26, { doors: [{ at: [7, 26], open: f => !!f.night }] }),
+```
+
+`gaps` leaves cells open (a lane mouth, a gatehouse's place). A story
+object at a door piece (a shut door to knock at) is an NPC with no
+`texture`: the wall draws it. A gatehouse, tower or house a wall should run
+into goes in that style's `joins`. `checkWallSeams` (`src/scenes/mapSeams.ts`)
+runs at map load in development, so `npm run smoke` fails a map that pastes
+a block into a wall's gap, puts anything but the wall on a wall cell, or
+sets a door, gate or tower against a run's end without joining it, and its
+message says which fix applies.
+
 Prefer existing objects (see `src/assets/mapAssetDefinitions.ts` and each
 `src/assets/chapters/chapterNN.ts`). New characters are cheap: add an entry
 to `CHNN_OBJECTS` with `kind: 'character'`, `category: 'characters'`, and a

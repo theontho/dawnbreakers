@@ -22,8 +22,6 @@ export const MARTYRS_OBJECTS: MapObjectDefinition[] = [
   { id: 'martyrs-serai-gate', label: 'Caravanserai Gate', texture: 'martyrs-serai-gate', kind: 'structure', category: 'buildings', color: 0xb08660, blocks: true, footprint: { w: 5, h: 3 }, isometric: true },
   { id: 'martyrs-greens-baskets', label: 'Baskets of Greens', texture: 'martyrs-greens-baskets', kind: 'prop', category: 'market-supplies', color: 0x3f6a2e, blocks: true },
   { id: 'martyrs-sweets-tray', label: 'Tray of Sweets', texture: 'martyrs-sweets-tray', kind: 'prop', category: 'market-supplies', color: 0xb0703a, blocks: true },
-  // The door to the stair in the Kalántar's house: a connected interior wall piece (see WALL_STYLES).
-  { id: 'martyrs-stair-door', label: 'Closed Door', texture: 'martyrs-stair-door', kind: 'prop', category: 'barriers-prison', color: 0xd6c9aa, blocks: true },
   { id: 'martyrs-swept-stones', label: 'Swept Stones', texture: 'martyrs-swept-stones', kind: 'prop', category: 'lighting-effects', color: 0x3a3c40, blocks: false },
   // The prisoners in the Kalántar's house.
   { id: 'martyrs-qurban', label: 'Dervish', texture: 'martyrs-qurban', kind: 'character', category: 'characters', color: 0xe8e2d4, blocks: true,

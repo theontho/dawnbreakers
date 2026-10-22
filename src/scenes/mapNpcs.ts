@@ -30,12 +30,16 @@ export function resolveNpcDialogue(spec: NpcSpec, flags: FlagState): string {
 interface PlacedNpc {
   spec: NpcSpec;
   interactable: Interactable;
-  sprite: Phaser.GameObjects.Image;
+  /** None for a story object the scenery draws, such as a door in a wall. */
+  sprite: Phaser.GameObjects.Image | undefined;
   marker: Phaser.GameObjects.Image;
   sway: Phaser.Tweens.Tween | undefined;
   /** Faint copy drawn above scenery when the NPC stands behind it. */
   ghost?: Phaser.GameObjects.Image;
 }
+
+/** How high a speech mark floats over a story object with no sprite: above a door's head. */
+const SCENERY_MARK_LIFT = 72;
 
 /** Above all world sprites, below the ambience wash and HUD. */
 const GHOST_DEPTH = 9000;
@@ -62,11 +66,11 @@ export function placeMapNpcs(
   const placed: PlacedNpc[] = specs.map(spec => {
     const pos = gridToScreen(spec.gridX, spec.gridY);
     const footY = pos.sy + TILE_H / 2;
-    const sprite = scene.add.image(pos.sx, footY, spec.texture)
+    const sprite = spec.texture === undefined ? undefined : scene.add.image(pos.sx, footY, spec.texture)
       .setOrigin(0.5, 1)
       .setDepth(pos.sy + 1);
     // The speech mark floats above scenery so a hidden speaker is still findable.
-    const marker = scene.add.image(pos.sx, footY - sprite.displayHeight - 8, MARKER_TEXTURE)
+    const marker = scene.add.image(pos.sx, footY - (sprite?.displayHeight ?? SCENERY_MARK_LIFT) - 8, MARKER_TEXTURE)
       .setOrigin(0.5, 1)
       .setDepth(GHOST_DEPTH + 1);
     scene.tweens.add({
@@ -78,7 +82,8 @@ export function placeMapNpcs(
       ease: 'Sine.easeInOut',
     });
     // People breathe; story objects (a pulpit, a posted decree, a shut door) stand still.
-    const sway = !isPersonTexture(spec.texture) ? undefined : scene.tweens.add({
+    const person = sprite !== undefined && isPersonTexture(spec.texture!);
+    const sway = !person ? undefined : scene.tweens.add({
       targets: sprite,
       scaleY: sprite.scaleY * 1.025,
       duration: Phaser.Math.Between(1500, 2100),
@@ -93,7 +98,7 @@ export function placeMapNpcs(
       marker,
       sway,
       // Only people get the x-ray silhouette; an object's speech mark is enough to find it.
-      ghost: isPersonTexture(spec.texture) && isOccluded(sprite, occluders) ? addGhost(scene, sprite) : undefined,
+      ghost: person && isOccluded(sprite, occluders) ? addGhost(scene, sprite) : undefined,
       interactable: {
         gridX: spec.gridX,
         gridY: spec.gridY,
@@ -114,7 +119,7 @@ export function placeMapNpcs(
       // rebuilt blocking without people, so only the present are marked.
       for (const npc of placed) {
         const here = npc.spec.present ? npc.spec.present(latest) : true;
-        npc.sprite.setVisible(here);
+        npc.sprite?.setVisible(here);
         npc.ghost?.setVisible(here);
         if (here) {
           blocked[npc.spec.gridY]![npc.spec.gridX] = true;

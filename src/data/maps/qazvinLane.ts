@@ -46,9 +46,8 @@ const buildings: BuildingSpec[] = [
 
 function walls(): DecorSpec[] {
   return [
-    ...wallRun('town-wall', 0, WALL_Y, W - 1, WALL_Y, [[POSTERN_X, WALL_Y]]),
     // The postern: a stout door by day; at night it stands open.
-    { gridX: POSTERN_X, gridY: WALL_Y, texture: 'ch4-uncle-door', blocks: true, present: qzDay },
+    ...wallRun('town-wall', 0, WALL_Y, W - 1, WALL_Y, { doors: [{ at: [POSTERN_X, WALL_Y], open: qzNight }] }),
     // Garden walls between the houses.
     ...wallRun('compound-wall', 8, 9, 9, 9),
     ...wallRun('compound-wall', 15, 10, 17, 10),

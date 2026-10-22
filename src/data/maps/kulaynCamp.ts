@@ -58,7 +58,7 @@ function walls(): DecorSpec[] {
     ...wallRun(w, 2, 18, 16, 18),
     ...wallRun(w, 2, 32, 16, 32),
     ...wallRun(w, 2, 19, 2, 31),
-    ...wallRun(w, 16, 19, 16, 31, gate),
+    ...wallRun(w, 16, 19, 16, 31, { gaps: gate }),
   ];
 }
 

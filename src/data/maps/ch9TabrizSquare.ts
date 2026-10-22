@@ -64,8 +64,8 @@ function compoundWalls(): DecorSpec[] {
     ...wallRun(w, 5, 33, 6, 33),
     ...wallRun(w, 12, 33, 12, 36),
     ...wallRun(w, 28, 33, 28, 37),
-    ...wallRun(w, 0, H - 1, W - 2, H - 1, [[19, H - 1], [20, H - 1], [21, H - 1]]),
-    ...wallRun(w, W - 1, 0, W - 1, H - 1, [[W - 1, ROOF_EXIT_Y], [W - 1, ROOF_EXIT_Y + 1]]),
+    ...wallRun(w, 0, H - 1, W - 2, H - 1, { gaps: [[19, H - 1], [20, H - 1], [21, H - 1]] }),
+    ...wallRun(w, W - 1, 0, W - 1, H - 1, { gaps: [[W - 1, ROOF_EXIT_Y], [W - 1, ROOF_EXIT_Y + 1]] }),
     ...wallRun(w, 37, 14, 37, 15),
     ...wallRun(w, 37, 24, 37, 25),
   ];

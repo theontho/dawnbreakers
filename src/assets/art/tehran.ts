@@ -1,4 +1,4 @@
-import { css, groundPoint, rng, shade, type Ctx, type IsoBox } from './canvasKit';
+import { css, groundPoint, shade, type Ctx, type IsoBox } from './canvasKit';
 import { wornPlaster } from './facade';
 import { brick, planks } from './materials';
 import { archPath, band, dome } from './ornaments';
@@ -13,7 +13,7 @@ import { roofFloor, spout, stairHut, townBlock, townDoor, TOWN_WINDOW, TIMBER } 
  * The prison quarter of Ṭihrán in August 1852, at true scale: mud-plastered
  * houses shut against the street, every door barred and every shutter
  * closed; bazaar shops behind plank shutters on their raised platforms;
- * and the broken street door of a plundered house. The sābāṭ over the lane
+ * and the wreckage before a plundered house's door. The sābāṭ over the lane
  * is in `tehranSabat.ts`, the western gate in `tehranGate.ts`.
  */
 
@@ -201,45 +201,15 @@ export function drawShutteredShop(ctx: Ctx, box: IsoBox): void {
   slab(ctx, subBox(box, 2, box.w - 2, 0, 14, PLATFORM_H), SILL, 86);
 }
 
-/** Texture size of the broken door: one cell of street wall with its portal. */
-export const BROKEN_DOOR_TEX = { w: 80, h: 32 + 100 + 8 } as const;
-
 /**
- * The street door of a plundered house (one cell, in a courtyard wall): one
- * leaf torn off its pivot and leaning, the other hanging open on the dark
- * of the passage, the bar split on the step. The door faces the lane on
- * its left face.
+ * What the plunderers left before a house's street door (one cell of lane,
+ * west of the door, which is the courtyard wall's own open doorway): one leaf
+ * torn off its pivot and leaning on the wall, the split bar on the ground.
  */
-export function drawBrokenDoor(ctx: Ctx): void {
-  const cell: IsoBox = { x: 40, y: BROKEN_DOOR_TEX.h, w: 32, d: 32, h: 0 };
-  const s: TownHouseStyle = { wall: 0xa88a62, door: 0x4a3424, frame: 0x6a5038, seed: 561 };
-  const front = subBox(cell, -3, 35, 10, 22, 100);
-  townBlock(ctx, front, {
-    wall: s.wall, seed: s.seed, material: 'mud', roof: 'flat', coping: shade(s.wall, 1.1), beams: 10,
-    left: (c, w, h, l) => {
-      const cx = w / 2;
-      // The doorway gapes: the passage dark behind it.
-      townDoor(c, cx, h, { ...doorOf(s, l), door: 0x140c06 });
-      archPath(c, cx - 10.5, h, 21, 46);
-      c.fillStyle = css(0x0e0804);
-      c.fill();
-      // The right leaf still hangs, swung in on its pivot: only its edge shows.
-      c.fillStyle = css(shade(s.door, l * 0.8));
-      c.fillRect(cx + 4, h - 44, 6, 44);
-      // Gouges round the lock and soot from a torch on the surround.
-      c.fillStyle = 'rgba(16,10,4,0.55)';
-      const rand = rng(s.seed + 3);
-      for (let i = 0; i < 9; i++) c.fillRect(cx - 14 + rand() * 4, h - 30 + rand() * 12, 2, 1);
-      const soot = c.createRadialGradient(cx + 8, h - 60, 1, cx + 8, h - 60, 16);
-      soot.addColorStop(0, 'rgba(20,14,8,0.45)');
-      soot.addColorStop(1, 'rgba(20,14,8,0)');
-      c.fillStyle = soot;
-      c.fillRect(cx - 10, h - 78, 36, 36);
-    },
-  });
-  // The torn-off leaf, leaning against the wall left of the door: its foot
-  // out on the lane, its head resting on the plaster.
-  const foot = groundPoint(cell, 3, -6);
+export function drawDoorWreckage(ctx: Ctx, cell: IsoBox): void {
+  const leaf = 0x4a3424;
+  // The leaf's foot out on the lane, its head resting on the plaster behind the cell.
+  const foot = groundPoint(cell, 8, 36);
   ctx.save();
   ctx.translate(foot.x, foot.y);
   ctx.transform(1, 0.5, 0.22, 1, 0, 0);
@@ -249,13 +219,13 @@ export function drawBrokenDoor(ctx: Ctx): void {
   ctx.beginPath();
   ctx.rect(0, 0, 11, 42);
   ctx.clip();
-  planks(ctx, 11, 42, { base: s.door, light: 0.95, seed: s.seed + 5 }, true, 3);
+  planks(ctx, 11, 42, { base: leaf, light: 0.95, seed: 566 }, true, 3);
   ctx.fillStyle = css(IRON, 0.8);
   ctx.fillRect(0, 10, 11, 1.5);
   ctx.fillRect(0, 30, 11, 1.5);
   ctx.restore();
-  // The split bar on the step.
-  const bar = groundPoint(cell, 20, -2);
+  // The split bar on the ground.
+  const bar = groundPoint(cell, 20, 24);
   ctx.strokeStyle = css(TIMBER);
   ctx.lineWidth = 3;
   ctx.beginPath();

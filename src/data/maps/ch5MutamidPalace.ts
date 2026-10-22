@@ -51,14 +51,14 @@ function walls(): DecorSpec[] {
   const w = 'compound-wall';
   return [
     ...wallRun(w, 0, 0, W - 1, 0),
-    ...wallRun(w, 0, 1, 0, H - 1, [[0, AXIS.y0], [0, AXIS.y0 + 1], [0, AXIS.y1]]),
+    ...wallRun(w, 0, 1, 0, H - 1, { gaps: [[0, AXIS.y0], [0, AXIS.y0 + 1], [0, AXIS.y1]] }),
     ...wallRun(w, W - 1, 1, W - 1, H - 1),
     ...wallRun(w, 1, H - 1, W - 2, H - 1),
     // The inner apartments: high walls, one carved door
     ...wallRun(w, 29, 24, 40, 24),
     ...wallRun(w, 29, 25, 29, 34),
     ...wallRun(w, 40, 25, 40, 34),
-    ...wallRun(w, 30, 34, 39, 34, [[CHAMBER_DOOR.x, CHAMBER_DOOR.y]]),
+    ...wallRun(w, 30, 34, 39, 34, { doors: [[CHAMBER_DOOR.x, CHAMBER_DOOR.y]] }),
   ];
 }
 
@@ -164,7 +164,7 @@ export const ch5MutamidPalaceMap: MapDefinition = {
       prompt: 'Speak with Gurgín Khán  [E]',
       dialogue: 'ch5-gurgin',
       present: f => !!f.mutamidDied },
-    { gridX: CHAMBER_DOOR.x, gridY: CHAMBER_DOOR.y, texture: 'ch4-uncle-door',
+    { gridX: CHAMBER_DOOR.x, gridY: CHAMBER_DOOR.y,
       prompt: 'Stand at the door of the inner apartments  [E]',
       dialogue: 'ch5-chamber',
       gate: {

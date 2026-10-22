@@ -25,8 +25,9 @@ import { wallRun } from './wallRuns';
  *   round a sunken court (y = 39, x = 32 and x = 47), broken at x 39..40 by
  *   the stair, which runs down to the south edge (exit at (39, 45)).
  * - South of the street: the lane x 8..9 runs under a sābāṭ (x 6..11,
- *   y 25..28) to the cross lane (y 34..35); the plundered house stands
- *   behind its courtyard wall at x 0..7, y 29..33, its broken door at (4, 33).
+ *   y 25..28) to the cross lane (y 34..35); the plundered house, x 0..5,
+ *   y 28..31, stands behind its court and its courtyard wall (x = 7 and
+ *   y = 33), the wall's door broken open at (4, 33).
  *   A second lane, x 28..29, joins the cross lane to the square.
  */
 
@@ -62,7 +63,7 @@ const buildings: BuildingSpec[] = [
   { gridX: 20, gridY: 25, w: 6, h: 4, texture: 'ch10-street-house' },
   { gridX: 12, gridY: 30, w: 6, h: 4, texture: 'ch10-street-house' },
   { gridX: 20, gridY: 30, w: 5, h: 4, texture: 'town-house-small' },
-  { gridX: 1, gridY: 29, w: 6, h: 4, texture: 'ch10-street-house' },
+  { gridX: 0, gridY: 28, w: 6, h: 4, texture: 'ch10-street-house' },
   // Along the cross lane, south.
   { gridX: 2, gridY: 37, w: 6, h: 4, texture: 'ch10-street-house' },
   { gridX: 10, gridY: 37, w: 5, h: 4, texture: 'town-house-small' },
@@ -76,12 +77,12 @@ function walls(): DecorSpec[] {
   return [
     ...wallRun(c, 1, 1, 12, 1),
     ...wallRun(c, 1, 2, 1, 12),
-    ...wallRun(c, 12, 2, 12, 12, [[12, 9], [12, 10]]),
+    ...wallRun(c, 12, 2, 12, 12, { gaps: [[12, 9], [12, 10]] }),
     ...wallRun(c, 2, 12, 11, 12),
     ...wallRun(c, 7, 29, 7, 32),
-    ...wallRun(c, 0, 33, 7, 33, [[BROKEN_DOOR.x, BROKEN_DOOR.y]]),
+    ...wallRun(c, 0, 33, 7, 33, { doors: [{ at: [BROKEN_DOOR.x, BROKEN_DOOR.y], open: true }] }),
     ...wallRun(citadel, 34, 0, 34, 17),
-    ...wallRun(citadel, 35, 17, 51, 17, [[41, 17], [42, 17], [43, 17]]),
+    ...wallRun(citadel, 35, 17, 51, 17, { gaps: [[41, 17], [42, 17], [43, 17]] }),
     ...wallRun(citadel, 51, 0, 51, 16),
     // The sunken court at the prison's mouth: an arcade round three sides, open to the stair.
     ...wallRun('ch10-low-arch', 32, 39, STAIR - 1, 39),
@@ -97,6 +98,8 @@ const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>)
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture }));
 
 const props: DecorSpec[] = [
+  // Before the plundered house's open door: the leaf torn off its pivot, the split bar.
+  ...loose('ch10-door-wreckage', [[BROKEN_DOOR.x - 1, BROKEN_DOOR.y + 1]]),
   // The garden: cypress and orange, roses and a planter gone to seed, a rug.
   ...block('cypress', [[2, 8], [2, 11], [10, 3]]),
   ...block('orange-tree', [[5, 9], [10, 11]]),
@@ -188,7 +191,7 @@ export const ch10TehranStreetMap: MapDefinition = {
       prompt: 'Listen to the whispering crowd  [E]',
       dialogue: 'ch10-whispers',
       present: f => !f.ch10Released },
-    { gridX: BROKEN_DOOR.x, gridY: BROKEN_DOOR.y, texture: 'ch10-broken-door',
+    { gridX: BROKEN_DOOR.x, gridY: BROKEN_DOOR.y,
       prompt: 'Look at the broken door  [E]',
       dialogue: 'ch10-plundered-house' },
     { gridX: 35, gridY: 41, texture: 'ch10-waiting-sister',

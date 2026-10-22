@@ -67,13 +67,13 @@ function walls(): DecorSpec[] {
     // The Imám-Jumʿih's court
     ...wallRun(w, 1, 0, 1, 11),
     ...wallRun(w, 12, 0, 12, 11),
-    ...wallRun(w, 1, 12, 12, 12, [[6, 12], [7, 12]]),
+    ...wallRun(w, 1, 12, 12, 12, { gaps: [[6, 12], [7, 12]] }),
     // The garden's wall on the road
-    ...wallRun(w, 13, 12, 22, 12, [[17, 12], [18, 12]]),
+    ...wallRun(w, 13, 12, 22, 12, { gaps: [[17, 12], [18, 12]] }),
     // The madrasa court
     ...wallRun(w, 34, 0, 34, 11),
     ...wallRun(w, 45, 0, 45, 11),
-    ...wallRun(w, 34, 12, 45, 12, [[39, 12], [40, 12]]),
+    ...wallRun(w, 34, 12, 45, 12, { gaps: [[39, 12], [40, 12]] }),
     // The house beyond, and the map's east edge
     ...wallRun(w, 46, 12, W - 2, 12),
     ...wallRun(w, W - 1, 0, W - 1, 12),
@@ -114,7 +114,7 @@ function riverbank(): DecorSpec[] {
 function lamps(): DecorSpec[] {
   const cells: Array<[number, number]> = [
     [BRIDGE.x0, 16], [BRIDGE.x1, 16], [BRIDGE.x0, 39], [BRIDGE.x1, 39],
-    [5, 12], [8, 12], [38, 12], [41, 12],
+    [5, 13], [8, 13], [38, 13], [41, 13],
     [10, 8], [43, 10], [26, 44], [30, 44], [36, 50], [41, 50],
   ];
   return cells.map(([gridX, gridY]) => ({ gridX, gridY, texture: 'lamp', blocks: true }));

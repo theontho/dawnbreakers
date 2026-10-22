@@ -1,5 +1,5 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
-import { BROKEN_DOOR_TEX, drawBrokenDoor, drawShutteredShop, TEHRAN_HOUSES } from '../art/tehran';
+import { drawDoorWreckage, drawShutteredShop, TEHRAN_HOUSES } from '../art/tehran';
 import { paintTehranGate } from '../art/tehranGate';
 import { drawSabat, SABAT_TOP } from '../art/tehranSabat';
 import { paintHouseSet } from '../art/town/townHouses';
@@ -41,7 +41,10 @@ export const CH10_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     paintTexture(scene, def.texture, texW, texH, ctx => drawShutteredShop(ctx, box));
   },
 
-  'ch10-broken-door': (scene, def) => paintTexture(scene, def.texture, BROKEN_DOOR_TEX.w, BROKEN_DOOR_TEX.h, drawBrokenDoor),
+  'ch10-door-wreckage': (scene, def) => {
+    const { box, texW, texH } = footprintBox(1, 1, 0, 56);
+    paintTexture(scene, def.texture, texW, texH, ctx => drawDoorWreckage(ctx, box));
+  },
 
   'ch10-west-gate': (scene, def) => paintTehranGate(scene, def.texture, ...footprint(def)),
 };
@@ -51,7 +54,7 @@ export const CH10_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch10-street-house', label: 'Tehran House', texture: 'ch10-street-house', kind: 'structure', category: 'buildings', color: 0x8a5a2a, blocks: true, footprint: { w: 6, h: 4 }, isometric: true },
   { id: 'ch10-street-arch', label: 'Street Arch', texture: 'ch10-street-arch', kind: 'structure', category: 'buildings', color: 0x6b6258, blocks: true, footprint: { w: 6, h: 4 }, isometric: true },
   { id: 'ch10-west-gate', label: 'City Gate', texture: 'ch10-west-gate', kind: 'structure', category: 'buildings', color: 0xa88660, blocks: true, footprint: { w: 3, h: 4 }, isometric: true },
-  { id: 'ch10-broken-door', label: 'Closed Door', texture: 'ch10-broken-door', kind: 'prop', category: 'furnishings', color: 0x4a3424, blocks: true },
+  { id: 'ch10-door-wreckage', label: 'Rubble', texture: 'ch10-door-wreckage', kind: 'prop', category: 'barriers-prison', color: 0x4a3424, blocks: false },
   { id: 'ch10-stone-pillar', label: 'Stone Pillar', texture: 'ch10-stone-pillar', kind: 'structure', category: 'barriers-prison', color: 0x8f897c, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch10-chain-pillar', label: 'Chain Pillar', texture: 'ch10-chain-pillar', kind: 'prop', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch10-chain-post', label: 'Chain Post', texture: 'ch10-chain-post', kind: 'prop', category: 'barriers-prison', color: 0x6b6258, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },

@@ -1,6 +1,6 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
 import { hawz } from '../art/town/fountain';
-import { DECREE_TEX, drawDecreeBoard, drawDyeVats, drawMinaret, drawUncleDoor, MINARET_TEX, UNCLE_DOOR_TEX } from '../art/shirazStreet';
+import { DECREE_TEX, drawDecreeBoard, drawDyeVats, drawMinaret, MINARET_TEX } from '../art/shirazStreet';
 import { drawMinbar, paintPrayerArcade } from '../art/vakil';
 import { drawHallColumn, drawQiblaIwan, HALL_COLUMN_TEX, paintVakilPortal } from '../art/vakilHall';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
@@ -9,7 +9,7 @@ import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapA
  * Chapter 4: return to Shíráz, 1845 to 1846, at true scale. The Vakíl
  * Mosque (its arcades, columned hall, iwans and marble minbar), the
  * governor's posted decree, a dyer's vats under the neighbourhood minaret,
- * the uncle's street door, and the people of a frightened city.
+ * and the people of a frightened city.
  */
 
 const footprint = (def: Parameters<TextureGenerator>[1]): [number, number] => [def.footprint?.w ?? 1, def.footprint?.h ?? 1];
@@ -40,7 +40,6 @@ export const CH04_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     paintTexture(scene, def.texture, texW, texH, ctx => drawDyeVats(ctx, box));
   },
   'ch4-minaret': (scene, def) => paintTexture(scene, def.texture, MINARET_TEX.w, MINARET_TEX.h, drawMinaret),
-  'ch4-uncle-door': (scene, def) => paintTexture(scene, def.texture, UNCLE_DOOR_TEX.w, UNCLE_DOOR_TEX.h, drawUncleDoor),
 };
 
 /** Placeable map objects owned by chapter 4. */
@@ -53,7 +52,6 @@ export const CH04_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch4-vakil-pool', label: 'Pool', texture: 'ch4-vakil-pool', kind: 'structure', category: 'bridges-water', color: 0x2c4a6b, blocks: true, footprint: { w: 9, h: 7 }, isometric: true },
   { id: 'ch4-vakil-wall', label: 'Courtyard Wall', texture: 'ch4-vakil-wall', kind: 'prop', category: 'barriers-prison', color: 0xc8a070, blocks: true },
   { id: 'ch4-minaret', label: 'Minaret', texture: 'ch4-minaret', kind: 'prop', category: 'shrines', color: 0xbf9466, blocks: true },
-  { id: 'ch4-uncle-door', label: 'Closed Door', texture: 'ch4-uncle-door', kind: 'prop', category: 'furnishings', color: 0x4a2c18, blocks: true },
   { id: 'ch4-officer', label: 'Officer', texture: 'ch4-officer', kind: 'character', category: 'characters', color: 0x39404a, blocks: true,
     character: { body: 0x31424a, skin: 0xd9c79a, clothing: { style: 'uniform', secondary: 0x6f2222, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x6f2222 }, shadow: true } },
   { id: 'ch4-witness', label: 'Witness', texture: 'ch4-witness', kind: 'character', category: 'characters', color: 0x6b5a44, blocks: true,

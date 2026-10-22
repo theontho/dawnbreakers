@@ -82,17 +82,17 @@ function compoundWalls(): DecorSpec[] {
     ...wallRun(w, W - 1, 0, W - 1, 19),
     ...wallRun(w, W - 1, 23, W - 1, H - 2),
     // The walled garden, its gateway off the main street
-    ...wallRun(w, 1, 23, 14, 23, [[6, 23], [7, 23]]),
+    ...wallRun(w, 1, 23, 14, 23, { gaps: [[6, 23], [7, 23]] }),
     ...wallRun(w, 15, 23, 15, 38),
     ...wallRun(w, 1, 38, 14, 38),
     // The uncle's street wall and door, and the court walls beside it
     ...wallRun(w, 30, 38, 30, 40),
-    ...wallRun(w, 31, 40, 37, 40, [[UNCLE_DOOR.x, UNCLE_DOOR.y]]),
+    ...wallRun(w, 31, 40, 37, 40, { doors: [[UNCLE_DOOR.x, UNCLE_DOOR.y]] }),
     ...wallRun(w, 37, 38, 37, 39),
     // The south-east garden
     ...wallRun(w, 38, 23, 38, 40),
     ...wallRun(w, 39, 23, 52, 23),
-    ...wallRun(w, 39, 40, 52, 40, [[44, 40], [45, 40]]),
+    ...wallRun(w, 39, 40, 52, 40, { gaps: [[44, 40], [45, 40]] }),
   ];
 }
 
@@ -237,7 +237,7 @@ export const ch4ShirazReturnMap: MapDefinition = {
       dialogue: 'ch4-vahid',
       present: f => !!f.vakilAddressHeard },
     // The uncle's door: the Báb is confined within and never seen
-    { gridX: UNCLE_DOOR.x, gridY: UNCLE_DOOR.y, texture: 'ch4-uncle-door',
+    { gridX: UNCLE_DOOR.x, gridY: UNCLE_DOOR.y,
       prompt: 'Keep watch at the uncle\'s door  [E]',
       dialogue: 'ch4-uncle-door',
       gate: {

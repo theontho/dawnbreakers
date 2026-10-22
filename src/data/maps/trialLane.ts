@@ -35,7 +35,7 @@ const buildings: BuildingSpec[] = [
 function walls(): DecorSpec[] {
   const w = 'compound-wall';
   return [
-    ...wallRun(w, 9, 8, 23, 8, [[DOOR.x, DOOR.y]]),
+    ...wallRun(w, 9, 8, 23, 8, { doors: [[DOOR.x, DOOR.y]] }),
     ...wallRun(w, 9, 0, 9, 7),
     ...wallRun(w, 23, 0, 23, 7),
     ...wallRun(w, 7, 16, 23, 16),
@@ -74,7 +74,7 @@ export const trialLaneMap: MapDefinition = {
   buildings,
   decor: [...walls(), ...props],
   npcs: [
-    { gridX: DOOR.x, gridY: DOOR.y, texture: 'ch4-uncle-door',
+    { gridX: DOOR.x, gridY: DOOR.y,
       prompt: 'Stand before the door of the Shaykhu\'l-Islám  [E]',
       dialogue: 'trial-shaykh-door',
       gate: { when: f => !!f.trialHeardBodyguard && !!f.trialHeardHouseBoy, lockedDialogue: 'trial-shaykh-door-locked' } },

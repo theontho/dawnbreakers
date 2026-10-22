@@ -52,7 +52,7 @@ function palisade(): DecorSpec[] {
   const ring = [
     ...wallRun(p, WALL.x0, WALL.y0, WALL.x1, WALL.y0),
     ...wallRun(p, WALL.x0, WALL.y1, WALL.x1, WALL.y1),
-    ...wallRun(p, WALL.x0, WALL.y0 + 1, WALL.x0, WALL.y1 - 1, [[WALL.x0, GATE_Y], [WALL.x0, GATE_Y + 1]]),
+    ...wallRun(p, WALL.x0, WALL.y0 + 1, WALL.x0, WALL.y1 - 1, { gaps: [[WALL.x0, GATE_Y], [WALL.x0, GATE_Y + 1]] }),
     ...wallRun(p, WALL.x1, WALL.y0 + 1, WALL.x1, WALL.y1 - 1),
   ];
   return ring.filter(d => !onTower(d.gridX, d.gridY));

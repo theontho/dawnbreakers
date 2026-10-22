@@ -28,7 +28,7 @@ function walls(): DecorSpec[] {
   return [
     ...wallRun(w, 2, 0, 25, 0),
     ...wallRun(w, 0, 2, 0, H - 1),
-    ...wallRun(w, 1, H - 1, W - 1, H - 1, [[GATE_X, H - 1], [GATE_X + 1, H - 1]]),
+    ...wallRun(w, 1, H - 1, W - 1, H - 1, { gaps: [[GATE_X, H - 1], [GATE_X + 1, H - 1]] }),
     ...wallRun(w, W - 1, 2, W - 1, H - 2),
   ];
 }

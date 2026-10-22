@@ -84,11 +84,11 @@ function compoundWalls(): DecorSpec[] {
     ...wallRun(w, 15, 8, 15, 17),
     ...wallRun(w, 2, 15, 2, 38),
     ...wallRun(w, 3, 17, 14, 17),
-    ...wallRun(w, 20, 0, 20, 21, [[20, 16], [20, 17], [20, 18]]),
+    ...wallRun(w, 20, 0, 20, 21, { gaps: [[20, 16], [20, 17], [20, 18]] }),
     // The Ílkhání court: its garden to the north, its gateway to the back lane
     ...wallRun(w, 21, 5, 35, 5),
     ...wallRun(w, 36, 0, 36, 21),
-    ...wallRun(w, 21, 21, 35, 21, [[27, 21], [28, 21], [29, 21]]),
+    ...wallRun(w, 21, 21, 35, 21, { gaps: [[27, 21], [28, 21], [29, 21]] }),
     // The walled garden in the north-east
     ...wallRun(w, 37, 21, 54, 21),
     // Behind the bazaar and around the houses by the east wall

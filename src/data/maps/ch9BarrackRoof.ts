@@ -28,11 +28,11 @@ function parapets(): DecorSpec[] {
   const p = 'ch9-parapet-low';
   return [
     ...wallRun(p, 0, 0, W - 1, 0),
-    ...wallRun(p, 0, 1, 0, H - 1, [[0, EXIT_Y]]),
+    ...wallRun(p, 0, 1, 0, H - 1, { gaps: [[0, EXIT_Y]] }),
     ...wallRun(p, W - 1, 1, W - 1, H - 1),
     ...wallRun(p, 1, H - 1, W - 2, H - 1),
-    ...wallRun(p, 12, 1, 12, H - 2, [[12, 5], [12, 6], [12, 19], [12, 20]]),
-    ...wallRun(p, 24, 1, 24, H - 2, [[24, 8], [24, 9], [24, 21], [24, 22]]),
+    ...wallRun(p, 12, 1, 12, H - 2, { gaps: [[12, 5], [12, 6], [12, 19], [12, 20]] }),
+    ...wallRun(p, 24, 1, 24, H - 2, { gaps: [[24, 8], [24, 9], [24, 21], [24, 22]] }),
   ];
 }
 

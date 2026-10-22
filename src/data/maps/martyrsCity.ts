@@ -17,7 +17,7 @@ import { wallRun } from './wallRuns';
  * Districts (x runs east, y runs south):
  * - The street: y 22..24 from the west edge (spawn (3, 23)) to the square.
  * - The Kalántar's house: x 2..9, y 12..18, its court wall on y = 21 with
- *   the carved door at (6, 21) (KALANTAR_DOOR).
+ *   the door at (6, 21) (KALANTAR_DOOR).
  * - The caravanserai: its gate x 14..18, y 19..21, the door at (16, 21)
  *   (SERAI_DOOR); its rooms behind, walls on x = 12 and x = 22.
  * - The palace: the portico at x 30..41, y 1..8, behind the citadel wall on
@@ -63,8 +63,8 @@ function walls(): DecorSpec[] {
   const c = 'compound-wall';
   const citadel = 'ch10-city-wall-snow';
   return [
-    // The Kalántar's court: front wall with the carved door, sides, back.
-    ...wallRun(c, 1, 21, 11, 21, [[KALANTAR_DOOR.x, KALANTAR_DOOR.y]]),
+    // The Kalántar's court: front wall with its door, sides, back.
+    ...wallRun(c, 1, 21, 11, 21, { doors: [[KALANTAR_DOOR.x, KALANTAR_DOOR.y]] }),
     ...wallRun(c, 1, 11, 1, 20),
     ...wallRun(c, 11, 11, 11, 20),
     ...wallRun(c, 2, 11, 10, 11),
@@ -90,8 +90,7 @@ const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>,
 const notMorning = (f: FlagState) => !martyrsMorning(f);
 
 const props: DecorSpec[] = [
-  // The Kalántar's door, carved and barred, and his man beside it.
-  ...block('ch4-uncle-door', [[KALANTAR_DOOR.x, KALANTAR_DOOR.y]]),
+  // The Kalántar's man beside his door.
   ...block('ch10-jailer', [[4, 22]], martyrsArrests),
   // Trees over the courts, snow lying in the lee of the walls.
   ...block('cypress', [[3, 20], [9, 20]]),
