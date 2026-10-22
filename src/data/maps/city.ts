@@ -170,7 +170,7 @@ const props: DecorSpec[] = [
   { gridX: 38, gridY: 48, texture: 'ch9-cloth-bundle', blocks: true },
   { gridX: 41, gridY: 49, texture: 'ch2-milestone', blocks: true },
   { gridX: 52, gridY: 42, texture: 'rug' },
-  { gridX: 52, gridY: 44, texture: 'crates', blocks: true },
+  { gridX: 53, gridY: 43, texture: 'crates', blocks: true },
 ];
 
 export const cityMap: MapDefinition = {
@@ -199,7 +199,7 @@ export const cityMap: MapDefinition = {
   decor: [...cityWall(), ...compoundWalls(), ...trees(), ...lamps(), ...props],
   npcs: [
     // Mullá Ḥusayn, the player's travelling companion; after this he goes ahead to the Quiet Quarter
-    { gridX: 42, gridY: 45, texture: 'ch1-mulla-husayn',
+    { gridX: 43, gridY: 44, texture: 'ch1-mulla-husayn',
       prompt: 'Speak with Mullá Ḥusayn  [E]',
       dialogue: 'ch1-mulla-husayn-gate',
       present: f => !f.metMullaHusayn },
@@ -209,10 +209,10 @@ export const cityMap: MapDefinition = {
     { gridX: 49, gridY: 46, texture: 'ch1-npc-guard',
       prompt: 'Speak with the Gate Guard  [E]',
       dialogue: 'rumour-gate-guard' },
-    { gridX: 23, gridY: 32, texture: 'npc-merchant',
+    { gridX: 23, gridY: 28, texture: 'npc-merchant',
       prompt: 'Speak with the Cloth Merchant  [E]',
       dialogue: 'rumour-merchant' },
-    { gridX: 38, gridY: 32, texture: 'ch1-npc-calligrapher',
+    { gridX: 38, gridY: 28, texture: 'ch1-npc-calligrapher',
       prompt: 'Speak with the Calligrapher  [E]',
       dialogue: 'rumour-calligrapher' },
     { gridX: 10, gridY: 29, texture: 'npc-mulla',

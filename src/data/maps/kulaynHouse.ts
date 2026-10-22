@@ -91,7 +91,7 @@ export const kulaynHouseMap: MapDefinition = {
       prompt: 'Look in at the open door  [E]',
       dialogue: 'kulayn-hall-empty',
       present: has('kulaynFarewell') },
-    { gridX: 16, gridY: 8, texture: 'kulayn-jani',
+    { gridX: 16, gridY: 7, texture: 'kulayn-jani',
       prompt: 'Speak with Ḥájí Mírzá Jání  [E]',
       dialogue: 'kulayn-jani-house',
       present: night },

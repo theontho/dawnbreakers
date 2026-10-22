@@ -13,7 +13,7 @@ import { ARRIVAL_NEEDED, arrivalRounds, nzAfter, nzArrival, nzGathering } from '
  *   where the player arrives at (1, 19).
  * - The masjid of Chinár-Súkhtih x 8..15, y 5..11, its door at (12, 11);
  *   the little square before it x 7..24, y 12..18, with the burnt plane
- *   tree that names the quarter at (16, 16).
+ *   tree that names the quarter at (19, 15).
  * - Vaḥíd's house x 18..23, y 5..9, behind its street wall on y = 11, the
  *   door at (21, 11).
  * - Mullá ʿAbdu'l-Ḥusayn's house x 1..5, y 12..15; the boy's mother's house
@@ -124,8 +124,8 @@ export const nayrizQuarterMap: MapDefinition = {
   buildings,
   decor: [...walls(), ...props],
   npcs: [
-    // The burnt plane tree that names the quarter.
-    { gridX: 16, gridY: 16, texture: 'nayriz-burnt-plane',
+    // The burnt plane tree that names the quarter, east of the masjid's door so as not to hide it.
+    { gridX: 19, gridY: 15, texture: 'nayriz-burnt-plane',
       prompt: 'Look at the burnt plane tree  [E]',
       dialogue: 'nz-plane' },
 

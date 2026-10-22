@@ -113,6 +113,8 @@ export const nurLaneMap: MapDefinition = {
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');
     paintRect(0, LANE - 1, W, 3, 'path');
+    // The lane flares where it leaves westward, so its mouth shows north of the bakery's house.
+    paintRect(0, LANE - 3, 2, 2, 'path');
     paintRect(ROAD_NORTH.x, 0, ROAD_NORTH.w, LANE - 1, 'path');
     paintRect(14, 9, 5, 1, 'stone');
   },

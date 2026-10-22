@@ -128,7 +128,7 @@ export const trialCourtMap: MapDefinition = {
     { gridX: 25, gridY: 11, texture: 'trial-coffee-maker',
       prompt: 'Speak with the Coffee-Maker  [E]',
       dialogue: 'trial-coffee-maker' },
-    { gridX: 22, gridY: 19, texture: 'trial-cormick',
+    { gridX: 21, gridY: 20, texture: 'trial-cormick',
       prompt: 'Speak with Dr Cormick  [E]',
       dialogue: 'trial-cormick',
       present: daysLater },

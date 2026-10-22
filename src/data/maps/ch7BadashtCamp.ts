@@ -152,8 +152,8 @@ export const ch7BadashtCampMap: MapDefinition = {
     ...MEADOW,
   ],
   npcs: [
-    // The Host's garden: the threshold of the blue tent, before its door.
-    { gridX: HOST_TENT.x + 2, gridY: HOST_TENT.y + 4, texture: 'lamp',
+    // The Host's garden: the threshold of the blue tent, a step out from its door so the tent leaves it in view.
+    { gridX: HOST_TENT.x + 2, gridY: HOST_TENT.y + 5, texture: 'lamp',
       prompt: 'Approach the lamplit tent  [E]',
       dialogue: 'ch7-host-tent' },
     { gridX: 13, gridY: 7, texture: 'crowd',
@@ -171,7 +171,7 @@ export const ch7BadashtCampMap: MapDefinition = {
       gate: { when: f => !!f.ch7HeardTahirih && !!f.ch7QuddusAfter, lockedDialogue: 'ch7-messenger-wait' },
       present: f => !!f.ch7WitnessedUnveiling },
     // Quddús's garden.
-    { gridX: 9, gridY: 26, texture: 'ch7-npc-quddus',
+    { gridX: 9, gridY: 25, texture: 'ch7-npc-quddus',
       prompt: 'Speak with Quddús  [E]',
       dialogue: 'ch7-quddus-tension',
       gate: { when: f => !!f.ch7WitnessedUnveiling, lockedDialogue: 'ch7-quddus-garden' } },

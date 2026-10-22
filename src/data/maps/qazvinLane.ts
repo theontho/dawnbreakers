@@ -103,7 +103,7 @@ export const qazvinLaneMap: MapDefinition = {
   decor: [...walls(), ...props],
   npcs: [
     // By day.
-    { gridX: 18, gridY: 18, texture: 'qazvin-baker',
+    { gridX: 18, gridY: 17, texture: 'qazvin-baker',
       prompt: 'Speak with the Baker  [E]',
       dialogue: 'qz-baker',
       present: qzDay },

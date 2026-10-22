@@ -109,7 +109,7 @@ function range(a: number, b: number): number[] {
   return Array.from({ length: b - a + 1 }, (_, i) => a + i);
 }
 
-const OUTSIDE_PEOPLE: Cell[] = [[4, 19], [3, 16], [9, 25]];
+const OUTSIDE_PEOPLE: Cell[] = [[4, 19], [3, 16], [5, 24]];
 
 function woods(): DecorSpec[] {
   const clear = new CellSet([...APPROACH, ...CAMP_TRACK]);
@@ -178,7 +178,8 @@ export const ch8TabarsiFortMap: MapDefinition = {
       prompt: 'Speak with the Companion at the Wall  [E]',
       dialogue: 'ch8-mason',
       present: f => !f.ch8MullaHusaynFell },
-    { gridX: 9, gridY: 25, texture: 'ch8-young-companion',
+    // On the ditch's outer bank: the berm inside it is behind the palisade from where we look.
+    { gridX: 5, gridY: 24, texture: 'ch8-young-companion',
       prompt: 'Speak with Riḍá at the ditch  [E]',
       dialogue: 'ch8-youth-digging',
       present: f => !!f.ch8MetYoungCompanion && !f.ch8QuddusArrived },
@@ -193,7 +194,7 @@ export const ch8TabarsiFortMap: MapDefinition = {
       prompt: 'Speak with Quddús  [E]',
       dialogue: 'ch8-quddus-counsel',
       present: f => !!f.ch8QuddusArrived && !f.ch8MullaHusaynFell },
-    { gridX: 31, gridY: 10, texture: 'ch8-young-companion',
+    { gridX: 29, gridY: 9, texture: 'ch8-young-companion',
       prompt: 'Speak with Riḍá on watch  [E]',
       dialogue: 'ch8-youth-watch',
       present: f => !!f.ch8QuddusArrived && !f.ch8MullaHusaynFell },

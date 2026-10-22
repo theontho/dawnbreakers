@@ -193,7 +193,7 @@ export const ch6MakuMap: MapDefinition = {
     { gridX: 4, gridY: 29, texture: 'ch6-maku-woman',
       prompt: 'Speak with the Woman of Mákú  [E]',
       dialogue: 'ch6-maku-woman' },
-    { gridX: 23, gridY: 37, texture: 'ch6-courier',
+    { gridX: 23, gridY: 36, texture: 'ch6-courier',
       prompt: 'Speak with the Mountain Courier  [E]',
       dialogue: 'ch6-courier-transfer',
       gate: { when: f => !!f.ch6ReadBayan && !!f.ch6MetMullaHusayn, lockedDialogue: 'ch6-courier-letters' } },

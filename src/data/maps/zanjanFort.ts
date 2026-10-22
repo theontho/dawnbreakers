@@ -129,7 +129,7 @@ export const zanjanFortMap: MapDefinition = {
       present: zjWinter },
 
     // Mihr-ʿAlí, a boy of the quarter.
-    { gridX: 20, gridY: 13, texture: 'zanjan-mihr-ali',
+    { gridX: 20, gridY: 12, texture: 'zanjan-mihr-ali',
       prompt: 'Speak with Mihr-ʿAlí  [E]',
       dialogue: 'zj-mihr-ali',
       present: zjSummer },
@@ -137,7 +137,7 @@ export const zanjanFortMap: MapDefinition = {
       prompt: 'Speak with Mihr-ʿAlí  [E]',
       dialogue: 'zj-mihr-ali-return',
       present: f => zjTruce(f) && !!f.zjMetSoldier },
-    { gridX: 20, gridY: 13, texture: 'zanjan-mihr-ali',
+    { gridX: 20, gridY: 12, texture: 'zanjan-mihr-ali',
       prompt: 'Speak with Mihr-ʿAlí  [E]',
       dialogue: 'zj-mihr-ali-winter',
       present: zjWinter },

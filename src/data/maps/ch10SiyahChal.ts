@@ -62,8 +62,8 @@ const PIT: DecorSpec[] = [
   ...block('ch10-prisoner', [[8, 22], [15, 22], [3, 18]]),
   ...block('ch10-chain-coil', [[2, 16], [17, 21]]),
   ...block('ch10-chain-pillar', [[9, 21]]),
-  // The place by the far pillar, where the light falls.
-  ...block('ch10-chain-pillar', [[27, 20]]),
+  // The place by the far pillar, where the light falls; the pillar stands behind its chain.
+  ...block('ch10-chain-pillar', [[26, 18]]),
   ...loose('ch10-straw', [[26, 21], [24, 21]]),
   ...block('ch10-chain-coil', [[29, 18]]),
 ];
@@ -113,7 +113,7 @@ export const ch10SiyahChalMap: MapDefinition = {
     { gridX: 11, gridY: 14, texture: 'ch10-prisoner',
       prompt: 'Speak with the Fellow Prisoner  [E]',
       dialogue: 'ch10-prisoner' },
-    { gridX: 17, gridY: 14, texture: 'ch10-young-prisoner',
+    { gridX: 17, gridY: 13, texture: 'ch10-young-prisoner',
       prompt: 'Speak with the young prisoner  [E]',
       dialogue: 'ch10-young-prisoner' },
     { gridX: 18, gridY: 14, texture: 'ch10-ruined-believer',

@@ -135,7 +135,7 @@ export const ch7BadashtHamletMap: MapDefinition = {
     { gridX: FIRE.x - 1, gridY: FIRE.y, texture: 'ch7-npc-cook',
       prompt: 'Speak with the Camp Cook  [E]',
       dialogue: 'ch7-cook' },
-    { gridX: 25, gridY: 20, texture: 'ch7-npc-khurasani',
+    { gridX: 25, gridY: 19, texture: 'ch7-npc-khurasani',
       prompt: 'Speak with the Believer from Khurásán  [E]',
       dialogue: 'ch7-khurasani' },
     { gridX: 9, gridY: 30, texture: 'ch7-npc-villager',

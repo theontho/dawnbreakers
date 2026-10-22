@@ -153,7 +153,7 @@ export const zanjanQuarterMap: MapDefinition = {
       prompt: 'Speak with Siyyid Ḥasan  [E]',
       dialogue: 'zj-hasan',
       present: f => zjSummer(f) && !entered(f) },
-    { gridX: 13, gridY: 26, texture: 'zanjan-mir-salah',
+    { gridX: 12, gridY: 26, texture: 'zanjan-mir-salah',
       prompt: 'Speak with the Sentinel  [E]',
       dialogue: 'zj-mir-salah-gate',
       gate: { when: f => !!f.zjMetHasan, lockedDialogue: 'zj-mir-salah-halt' },

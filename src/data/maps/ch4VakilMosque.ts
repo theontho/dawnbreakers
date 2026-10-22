@@ -133,7 +133,7 @@ export const ch4VakilMosqueMap: MapDefinition = {
         when: f => !!f.khalMet && !!f.quddusWitnessed && !!f.sadiqWitnessed,
         lockedDialogue: 'ch4-pulpit-waiting',
       } },
-    { gridX: 20, gridY: 4, texture: 'ch4-imam-jumih',
+    { gridX: 21, gridY: 4, texture: 'ch4-imam-jumih',
       prompt: 'Speak with Shaykh Abú-Turáb, the Imám-Jumʿih  [E]',
       dialogue: 'ch4-imam-jumih' },
     { gridX: 24, gridY: 4, texture: 'ch4-officer',

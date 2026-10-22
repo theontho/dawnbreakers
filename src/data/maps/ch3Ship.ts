@@ -113,7 +113,7 @@ export const ch3ShipMap: MapDefinition = {
     { gridX: 18, gridY: 6, texture: 'ch3-abul-hasan',
       prompt: 'Speak with Ḥájí Abu\'l-Ḥasan  [E]',
       dialogue: 'ch3-abul-hasan' },
-    { gridX: 22, gridY: 8, texture: 'ch3-ship-pilgrim',
+    { gridX: 21, gridY: 7, texture: 'ch3-ship-pilgrim',
       prompt: 'Speak with the Widow from Lár  [E]',
       dialogue: 'ch3-widow' },
   ],

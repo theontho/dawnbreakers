@@ -140,7 +140,7 @@ export const houseQuarterMap: MapDefinition = {
       prompt: 'Speak with Mullá Ḥusayn  [E]',
       dialogue: 'ch1-mulla-husayn-lane',
       present: f => !!f.metMullaHusayn && !f.vigilKept },
-    { gridX: 7, gridY: 20, texture: 'npc-merchant',
+    { gridX: 8, gridY: 19, texture: 'npc-merchant',
       prompt: 'Speak with the Quiet Neighbour  [E]',
       dialogue: 'rumour-neighbour' },
     { gridX: 19, gridY: 14, texture: 'ch1-npc-servant',

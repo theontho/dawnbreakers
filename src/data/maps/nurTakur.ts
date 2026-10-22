@@ -56,7 +56,7 @@ const HAND_DECOR: DecorSpec[] = [
   { gridX: 26, gridY: 11, texture: 'ch8-stump', blocks: true },
   // A few old trees left standing on the valley floor.
   ...blocking('ch8-alder', [[14, 19], [28, 15]]),
-  ...blocking('ch8-oak', [[13, 29], [30, 23]]),
+  ...blocking('ch8-oak', [[13, 29], [16, 28]]),
   ...blocking('ch8-mossy-rock', [[16, 23], [24, 30]]),
 ];
 
@@ -64,7 +64,7 @@ const HAND_DECOR: DecorSpec[] = [
 const FLOCKING: DecorSpec[] = [[19, 29], [20, 27], [19, 21], [20, 17], [16, 12], [22, 12]]
   .map(([x, y]) => ({ gridX: x!, gridY: y!, texture: 'crowd', blocks: true, present: has('nurHeardGroom') }));
 
-const PEOPLE: Cell[] = [[9, 14], [13, 11], [18, 13], [21, 13], [26, 13], [HOUSE_STEP.x, HOUSE_STEP.y]];
+const PEOPLE: Cell[] = [[8, 15], [13, 11], [18, 13], [21, 13], [24, 13], [HOUSE_STEP.x, HOUSE_STEP.y]];
 
 function woods(): DecorSpec[] {
   const clear = new CellSet(PATHS);
@@ -83,13 +83,14 @@ function woods(): DecorSpec[] {
   verge.addWithNeighbours(PATHS);
   return scatterWoodland({
     width: W, height: H, seed: 1260, palette: MAZINDARAN_WOODS,
-    clear, verge, open: sightlines([...PEOPLE, [19, 6]], 22, 5, W, H),
+    // The tallest oaks stand 34 rows high on the screen: none of them in front of anyone.
+    clear, verge, open: sightlines([...PEOPLE, [19, 6]], 34, 5, W, H),
     treeDensity: 0.32, spacing: 3, density: 0.12, coverDensity: 0.25,
   });
 }
 
 const npcs: NpcSpec[] = [
-  { gridX: 9, gridY: 14, texture: 'nur-woman',
+  { gridX: 8, gridY: 15, texture: 'nur-woman',
     prompt: 'Speak with the Village Woman  [E]',
     dialogue: 'nur-woman' },
   { gridX: 13, gridY: 11, texture: 'nur-elder',
@@ -104,7 +105,7 @@ const npcs: NpcSpec[] = [
     prompt: 'Speak with Mírzá Abu\'l-Qásim  [E]',
     dialogue: 'nur-abul-qasim',
     present: f => villageRounds(f) >= 2 && !f.nurEnvoysSent },
-  { gridX: 26, gridY: 13, texture: 'nur-groom',
+  { gridX: 24, gridY: 13, texture: 'nur-groom',
     prompt: 'Speak with the Groom  [E]',
     dialogue: 'nur-groom',
     present: has('nurEnvoysSent') },
