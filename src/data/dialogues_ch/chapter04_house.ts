@@ -113,6 +113,7 @@ export const ch4KhalHome: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Ḥájí Mírzá Siyyid ʿAlí',
+      onEnter: { set: { khalMet: true } },
       text: 'You were in the mosque? Then you saw more than I could bear to. He is home. The man at the corner counts the visitors. I count the hours.',
       choices: [
         { text: '"How does the household bear it?"', next: 'household' },

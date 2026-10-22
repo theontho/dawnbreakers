@@ -12,7 +12,8 @@ export const chapter04Story: ChapterStory = {
     },
     {
       text: 'Find the uncle near the governor\'s gate',
-      done: f => !!f.khalMet,
+      // After the address he goes home to his lane; meeting him there counts.
+      done: f => !!f.khalMet || !!f.vakilAddressHeard,
     },
     {
       text: 'Go east to the Vakíl Mosque and stand before the pulpit',
