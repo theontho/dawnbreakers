@@ -1,0 +1,39 @@
+diff --git a/node_modules/phaser/dist/phaser.esm.js b/node_modules/phaser/dist/phaser.esm.js
+index 32e7581..a7c9687 100644
+--- a/node_modules/phaser/dist/phaser.esm.js
++++ b/node_modules/phaser/dist/phaser.esm.js
+@@ -82972,7 +82972,7 @@ var Text = new Class({
+ 
+             if (style.rtl)
+             {
+-                linePositionX = w - linePositionX - padding.left - padding.right;
++                linePositionX = w / resolution - linePositionX - padding.left - padding.right;
+             }
+             else if (style.align === 'right')
+             {
+diff --git a/node_modules/phaser/dist/phaser.js b/node_modules/phaser/dist/phaser.js
+index 51b1458..ed24188 100644
+--- a/node_modules/phaser/dist/phaser.js
++++ b/node_modules/phaser/dist/phaser.js
+@@ -82984,7 +82984,7 @@ var Text = new Class({
+ 
+             if (style.rtl)
+             {
+-                linePositionX = w - linePositionX - padding.left - padding.right;
++                linePositionX = w / resolution - linePositionX - padding.left - padding.right;
+             }
+             else if (style.align === 'right')
+             {
+diff --git a/node_modules/phaser/src/gameobjects/text/Text.js b/node_modules/phaser/src/gameobjects/text/Text.js
+index a4f924f..69b07de 100644
+--- a/node_modules/phaser/src/gameobjects/text/Text.js
++++ b/node_modules/phaser/src/gameobjects/text/Text.js
+@@ -1357,7 +1357,7 @@ var Text = new Class({
+ 
+             if (style.rtl)
+             {
+-                linePositionX = w - linePositionX - padding.left - padding.right;
++                linePositionX = w / resolution - linePositionX - padding.left - padding.right;
+             }
+             else if (style.align === 'right')
+             {
