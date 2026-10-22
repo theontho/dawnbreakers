@@ -121,7 +121,10 @@ Textures are painted at boot with the canvas kit in `src/assets/art/`:
 `canvasKit.ts` gives each face of an isometric box a flat "face space" to
 draw in, `materials.ts` has plaster, brick, stone, planks and glazed tile,
 and `ornaments.ts` has arches, doors, lattice windows, domes, parapets and
-wind-catchers. Light comes from the upper left. `house`, `tree`, `cypress`
+wind-catchers. `facade.ts` has person-scaled openings (a door in a framed
+recess, an iwan, high windows, worn plaster) and `streetLife.ts` the things
+at a building's foot (benches, water jars, potted plants, steps, dust).
+Light comes from the upper left. `house`, `tree`, `cypress`
 and `stall` have variants that maps pick per placement automatically.
 Check new art with `npm run gallery -- --filter <id>`.
 

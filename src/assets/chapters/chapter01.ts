@@ -1,7 +1,10 @@
 import { css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, polygon, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
 import { foliageClump } from '../art/fieldKit';
-import { brick, glazedTiles, plaster, stone } from '../art/materials';
-import { archPath, band, clipped, flatTop, merlons, walls } from '../art/ornaments';
+import { brick, plaster } from '../art/materials';
+import { DOOR, highWindow, plinth, recessedDoor } from '../art/facade';
+import { archPath, band, flatTop, merlons, walls } from '../art/ornaments';
+import { sakku, steps } from '../art/streetLife';
+import { subBox } from '../art/structureParts';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
 /**
@@ -23,7 +26,7 @@ export const CH01_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   },
 
   'ch1-house-threshold': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 36, 14);
+    const { box, texW, texH } = footprintBox(1, 1, 66, 12);
     paintTexture(scene, def.texture, texW, texH, ctx => paintThreshold(ctx, box));
   },
 
@@ -70,64 +73,53 @@ function bird(ctx: Ctx, x: number, y: number, span: number, tilt: number): void 
 }
 
 /**
- * The Báb's house in the Quiet Quarter: a plastered entrance with stone
- * benches either side, a tile panel over the door, and lamplight spilling
- * from a door left ajar onto a worn step.
+ * The Báb's house in the Quiet Quarter: a tall plastered entrance front
+ * with stone benches either side, a tile panel over the recessed door, and
+ * lamplight spilling from the door left ajar onto a worn step.
  */
 function paintThreshold(ctx: Ctx, box: IsoBox): void {
   const wall = 0xcdb894;
-  groundShadow(ctx, box, 5);
-  walls(ctx, box, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 31 : 32 }), {
+  const front = subBox(box, 0, box.w - 6, 0, box.d, 66);
+  groundShadow(ctx, front, 5);
+  walls(ctx, front, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 31 : 32 }), {
     left: (c, w, h, l) => {
       band(c, w, 6, 2, shade(wall, 0.84), l);
-      // A stone dado where the plaster meets the lane.
-      c.save();
-      c.translate(0, h - 6);
-      clipped(c, w, 6, () => stone(c, w, 6, { base: 0x9a8a70, light: l, seed: 34 }, 3));
-      c.restore();
+      plinth(c, w, h, 6, 0x9a8a70, l, 34);
+      highWindow(c, w / 2 - 3.5, h, 42, { frame: 0x8a6440, light: l, arched: true, lit: true });
     },
     right: (c, w, h, l) => {
       band(c, w, 6, 2, shade(wall, 0.84), l);
-      // Tile panel over the door, set in a brick frame.
-      c.save();
-      c.beginPath();
-      c.rect(w * 0.22, 9, w * 0.56, 6);
-      c.clip();
-      glazedTiles(c, w, h, { base: 0x24477a, light: l, seed: 35 }, 4);
-      c.restore();
-      // The door ajar: a dark arch, a lit slit and one leaf swung inward.
-      const dx = w * 0.3;
-      const dw = w * 0.4;
-      archPath(c, dx - 1.5, h - 2, dw + 3, 21);
-      c.fillStyle = css(shade(0x8a6440, l));
-      c.fill();
-      archPath(c, dx, h - 2, dw, 19);
-      const glow = c.createLinearGradient(dx, 0, dx + dw, 0);
+      plinth(c, w, h, 6, 0x9a8a70, l, 35);
+      recessedDoor(c, w / 2, h, { frame: 0x8a6440, light: l, open: true, surround: shade(wall, 1.08), panel: 0x24477a, seed: 35 });
+      // The door ajar: lamplight within, one leaf swung inward.
+      const dx = w / 2 - DOOR.w / 2;
+      archPath(c, dx, h, DOOR.w, DOOR.h);
+      const glow = c.createLinearGradient(dx, 0, dx + DOOR.w, 0);
       glow.addColorStop(0, '#ffe2a0');
       glow.addColorStop(1, '#c47a2c');
       c.fillStyle = glow;
       c.fill();
       c.fillStyle = css(shade(0x4a2c18, l));
-      c.fillRect(dx + dw * 0.55, h - 19, dw * 0.45, 17);
+      c.fillRect(dx + DOOR.w * 0.6, h - DOOR.h * 0.8, DOOR.w * 0.4, DOOR.h * 0.8 - 1.5);
       c.fillStyle = css(0x2a1a0c, 0.6);
-      c.fillRect(dx + dw * 0.55, h - 19, 0.8, 17);
-      // Worn step.
-      c.fillStyle = css(shade(0xa89878, l));
-      c.fillRect(dx - 3, h - 2, dw + 6, 2);
+      c.fillRect(dx + DOOR.w * 0.6, h - DOOR.h * 0.8, 0.8, DOOR.h * 0.8 - 1.5);
     },
   });
-  flatTop(ctx, box, shade(wall, 0.95));
-  merlons(ctx, box, wall, 3, 3);
-  outlineBox(ctx, box);
-  // Lamplight pooling on the ground before the door.
-  const pool = groundPoint(box, box.w + 3, box.d / 2);
-  const g = ctx.createRadialGradient(pool.x, pool.y, 1, pool.x, pool.y, 10);
-  g.addColorStop(0, 'rgba(255,214,140,0.5)');
+  flatTop(ctx, front, shade(wall, 0.95));
+  merlons(ctx, front, wall, 3, 3);
+  outlineBox(ctx, front);
+  // Lamplight pooling on the ground before the door, then the benches either side.
+  const pool = groundPoint(box, box.w - 1, box.d / 2);
+  const g = ctx.createRadialGradient(pool.x, pool.y, 1, pool.x, pool.y, 12);
+  g.addColorStop(0, 'rgba(255,214,140,0.55)');
   g.addColorStop(1, 'rgba(255,214,140,0)');
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(pool.x, pool.y, 10, 5, 0, 0, Math.PI * 2);
+  ctx.ellipse(pool.x, pool.y, 12, 6, 0, 0, Math.PI * 2);
   ctx.fill();
+  sakku(ctx, box, box.w - 6, box.w - 1, box.d - 8, box.d - 1, 0xa89878, 36, 7);
+  steps(ctx, box, box.w - 6, box.w - 1, box.d / 2 - 9, box.d / 2 + 9, 1, 'p');
+  sakku(ctx, box, box.w - 6, box.w - 1, 1, 8, 0xa89878, 37, 7);
 }
 
 /** Placeable map objects owned by chapter 1. */

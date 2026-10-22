@@ -1,6 +1,7 @@
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 import { paintGate, paintLamp, paintMosque, paintWell } from './civic';
-import { HOUSE_VARIANTS, paintHouseVariants, paintStall } from './houses';
+import { HOUSE_VARIANTS, paintHouseVariants } from './houses';
+import { paintStall } from './stall';
 import { CYPRESS_VARIANTS, paintCypress, paintTree, TREE_VARIANTS } from './nature';
 import { paintCrates, paintRug } from './props';
 import { paintWallBase, WALL_STYLES } from './walls';

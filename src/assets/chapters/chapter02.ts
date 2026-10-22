@@ -1,8 +1,11 @@
-import { css, footprintBox, groundShadow, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
+import { css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from '../art/canvasKit';
 import { drawCaravanserai } from '../art/caravanserai';
 import { cellCentredBox, ellipseShadow, pebble } from '../art/fieldKit';
 import { brick, glazedTiles, plaster, stone } from '../art/materials';
-import { archPath, band, clipped, dome, doorway, flatTop, latticeWindow, merlons, parapetRoof, walls } from '../art/ornaments';
+import { highWindow, plinth, recessedDoor } from '../art/facade';
+import { archPath, band, clipped, dome, flatTop, latticeWindow, merlons, parapetRoof, walls } from '../art/ornaments';
+import { laneDust, waterJar } from '../art/streetLife';
+import { subBox } from '../art/structureParts';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH02_TRAVEL_TEXTURE_GENERATORS } from './chapter02Travel';
 
@@ -22,7 +25,7 @@ export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   ...CH02_TRAVEL_TEXTURE_GENERATORS,
 
   'ch2-caravanserai': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 2, 60, 30);
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 2, 64, 40);
     // Widened on both sides so the corner towers fit; the anchor stays centred.
     paintTexture(scene, def.texture, texW + 20, texH, ctx => {
       ctx.translate(10, 0);
@@ -37,7 +40,7 @@ export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
    * arch is cut into the x-facing (right) wall.
    */
   'ch2-quran-gate': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 3, 62, 50);
+    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 1, def.footprint?.h ?? 3, 84, 44);
     paintTexture(scene, def.texture, texW, texH, ctx => drawQuranGate(ctx, box));
   },
 
@@ -47,29 +50,34 @@ export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
    * tied to its window grille by travellers who stopped to pray.
    */
   'ch2-shrine': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 34, 36);
+    const { box, texW, texH } = footprintBox(1, 1, 54, 40);
     paintTexture(scene, def.texture, texW, texH, ctx => {
       const wall = 0xe0d6bc;
-      groundShadow(ctx, box, 5);
-      walls(ctx, box, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 41 : 42 }), {
+      const cube = subBox(box, 2, box.w - 3, 0, box.d - 2, 54);
+      groundShadow(ctx, cube, 5);
+      walls(ctx, cube, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 41 : 42 }), {
         left: (c, w, h, l) => {
           band(c, w, 4, 2.5, TURQUOISE, l);
-          latticeWindow(c, w / 2 - 4, h * 0.36, 8, 10, { frame: 0x6a5a48, light: l, arched: true });
+          plinth(c, w, h, 4, 0x9a8a70, l, 44);
+          highWindow(c, w / 2 - 4, h, 24, { frame: 0x6a5a48, light: l, arched: true }, 8, 12);
           // Votive rags knotted to the grille.
           for (const [dx, color] of [[-2.5, 0x2f7a3a], [0.5, 0xb83a2a], [3.5, 0xf2ead6]] as const) {
             c.fillStyle = css(shade(color, l));
-            c.fillRect(w / 2 + dx, h * 0.36 + 9, 1.4, 5);
+            c.fillRect(w / 2 + dx, h - 24, 1.4, 5);
           }
         },
         right: (c, w, h, l) => {
           band(c, w, 4, 2.5, TURQUOISE, l);
-          doorway(c, w / 2 - 6, h, 12, 21, { frame: 0x8a6440, door: 0x2f5f4a, light: l, seed: 43 });
+          plinth(c, w, h, 4, 0x9a8a70, l, 45);
+          recessedDoor(c, w / 2, h, { frame: 0x8a6440, door: 0x2f5f4a, light: l, seed: 43, surround: shade(wall, 1.04), w: 12, h: 34 });
         },
       });
-      flatTop(ctx, box, shade(wall, 0.95));
-      outlineBox(ctx, box);
-      const centre = roofPoint(box, box.w / 2, box.d / 2);
-      dome(ctx, centre.x, centre.y + 2, 11, { color: TURQUOISE, drum: 5, drumColor: wall, bulb: 1.15, ribs: true, finial: true });
+      flatTop(ctx, cube, shade(wall, 0.95));
+      outlineBox(ctx, cube);
+      const centre = roofPoint(cube, cube.w / 2, cube.d / 2);
+      dome(ctx, centre.x, centre.y + 2, 10, { color: TURQUOISE, drum: 6, drumColor: wall, bulb: 1.15, ribs: true, finial: true });
+      const lamp = groundPoint(box, 3, 3);
+      waterJar(ctx, lamp.x, lamp.y, 3.5, 0x9a6a4a);
     });
   },
 
@@ -108,12 +116,13 @@ export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   },
 };
 
-/** The Qur'án Gate: brick, a tile-framed arch, blind niches, and the chamber of the Book above. */
+/** The Qur'án Gate: brick, a tall tile-framed arch, blind niches, and the chamber of the Book above. */
 function drawQuranGate(ctx: Ctx, box: IsoBox): void {
   groundShadow(ctx, box, 8);
+  laneDust(ctx, box, box.w - 2, box.w + 8, box.d / 2 - 14, box.d / 2 + 14, 17);
   const niches = (c: Ctx, from: number, to: number, h: number, l: number) => {
     for (let u = from; u + 7 <= to; u += 11) {
-      for (const [base, ht] of [[h - 8, 16], [h - 30, 12]] as const) {
+      for (const [base, ht] of [[h - 10, 18], [h - 42, 15]] as const) {
         archPath(c, u, base, 7, ht);
         c.fillStyle = css(shade(0x6a4a2c, l), 0.8);
         c.fill();
@@ -122,40 +131,48 @@ function drawQuranGate(ctx: Ctx, box: IsoBox): void {
   };
   walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: GATE_BRICK, light, seed: light === 1 ? 11 : 12 }), {
     left: (c, w, h, l) => {
+      plinth(c, w, h, 6, 0x9a8a70, l, 16);
       band(c, w, 6, 4, TURQUOISE, l);
       niches(c, 6, w - 4, h, l);
     },
     right: (c, w, h, l) => {
+      plinth(c, w, h, 6, 0x9a8a70, l, 17);
       band(c, w, 6, 4, TURQUOISE, l);
-      const aw = 30;
+      const aw = 22;
+      const ah = 50;
       const ax = w / 2 - aw / 2;
-      // The pīshṭāq frame: lapis tiles bordered in cream.
+      // The pīshṭāq frame: lapis tiles bordered in cream, nearly twice as tall as it is wide.
       c.save();
       c.beginPath();
-      c.rect(ax - 7, 12, aw + 14, h - 12);
+      c.rect(ax - 8, 12, aw + 16, h - 12);
       c.clip();
       glazedTiles(c, w, h, { base: LAPIS, light: l, seed: 13 }, 5);
       c.restore();
       c.strokeStyle = css(shade(CREAM, l), 0.9);
       c.lineWidth = 1;
-      c.strokeRect(ax - 6, 13, aw + 12, h - 13);
-      archPath(c, ax - 2, h, aw + 4, h - 16);
+      c.strokeRect(ax - 7, 13, aw + 14, h - 13);
+      // An inscription band across the head of the frame.
+      c.fillStyle = css(shade(CREAM, l), 0.85);
+      c.fillRect(ax - 5, 16, aw + 10, 5);
+      c.fillStyle = css(shade(LAPIS, l * 0.8));
+      for (let u = ax - 3; u < ax + aw + 4; u += 3) c.fillRect(u, 17 + ((u * 7) % 3), 1.6, 2);
+      archPath(c, ax - 2, h, aw + 4, ah + 2);
       c.fillStyle = css(shade(CREAM, l));
       c.fill();
-      archPath(c, ax, h, aw, h - 18);
+      archPath(c, ax, h, aw, ah);
       c.fillStyle = css(0x1c120a);
       c.fill();
       // The road beyond, lit, framed by the far mouth of the passage.
-      archPath(c, ax + 6, h - 2, aw - 12, h - 30);
-      const far = c.createLinearGradient(0, h - 32, 0, h);
+      archPath(c, ax + 4, h - 2, aw - 8, ah - 12);
+      const far = c.createLinearGradient(0, h - ah, 0, h);
       far.addColorStop(0, '#e8c890');
       far.addColorStop(1, '#b8945c');
       c.fillStyle = far;
       c.fill();
       c.fillStyle = css(0x9a8a70);
       c.fillRect(ax - 3, h - 2, aw + 6, 2);
-      niches(c, 6, ax - 10, h, l);
-      niches(c, ax + aw + 10, w - 4, h, l);
+      niches(c, 6, ax - 12, h, l);
+      niches(c, ax + aw + 12, w - 4, h, l);
     },
   });
   parapetRoof(ctx, box, GATE_BRICK, { base: 0xa88560, light: 1, seed: 14 }, 3, 3);
@@ -166,7 +183,7 @@ function drawQuranGate(ctx: Ctx, box: IsoBox): void {
   const cw = 22;
   const cd = 36;
   const foot = roofPoint(box, box.w / 2 + cw / 2, box.d / 2 - cd / 2);
-  const chamber: IsoBox = { x: foot.x, y: foot.y + 3, w: cw, d: cd, h: 20 };
+  const chamber: IsoBox = { x: foot.x, y: foot.y + 3, w: cw, d: cd, h: 22 };
   walls(ctx, chamber, (c, w, h, light) => plaster(c, w, h, { base: 0xd8c6a0, light, seed: 15 }), {
     left: (c, w, h, l) => latticeWindow(c, w / 2 - 3, h * 0.3, 6, 8, { frame: 0x6a4a2c, light: l, arched: true }),
     right: (c, w, h, l) => {

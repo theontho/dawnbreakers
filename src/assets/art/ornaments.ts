@@ -13,7 +13,7 @@ import { earthRoof, planks, type Surface } from './materials';
 /** Brightness of each face under the game's late-afternoon light from the left. */
 export const LIGHT = { left: 1, right: 0.7, roof: 1.12 } as const;
 
-type FacePainter = (ctx: Ctx, w: number, h: number, light: number) => void;
+export type FacePainter = (ctx: Ctx, w: number, h: number, light: number) => void;
 
 /** Paints both walls with the same material and outlines the box. Roof is left to the caller. */
 export function walls(ctx: Ctx, box: IsoBox, paint: FacePainter, decorate?: { left?: FacePainter; right?: FacePainter }): void {

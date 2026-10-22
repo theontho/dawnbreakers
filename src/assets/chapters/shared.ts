@@ -2,7 +2,10 @@ import { CELL, css, footprintBox, groundPoint, groundShadow, outlineBox, paintTe
 import { figure, type FigureStyle } from '../art/crowds';
 import { cellCentredBox, ellipseShadow } from '../art/fieldKit';
 import { brick, planks, plaster, stone } from '../art/materials';
-import { archPath, beamEnds, clipped, doorway, flatTop, latticeWindow, parapetRoof, walls } from '../art/ornaments';
+import { highWindow, plinth, recessedDoor, wornPlaster } from '../art/facade';
+import { archPath, beamEnds, clipped, flatTop, parapetRoof, walls } from '../art/ornaments';
+import { steps } from '../art/streetLife';
+import { subBox } from '../art/structureParts';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
 /**
@@ -21,36 +24,32 @@ const LISTENERS: ReadonlyArray<{ dx: number; dy: number; style: FigureStyle }> =
 ];
 
 export const SHARED_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  /** A house front in a lane: plastered walls and a studded door under a brick arch, shut. */
+  /**
+   * A house front in a lane: a tall blank plaster wall, a high window, and
+   * a studded door shut in a brick-framed recess with its two knockers.
+   */
   'closed-door': (scene, def) => {
-    const { box, texW, texH } = footprintBox(1, 1, 42, 12);
+    const { box, texW, texH } = footprintBox(1, 1, 68, 10);
     paintTexture(scene, def.texture, texW, texH, ctx => {
-      groundShadow(ctx, box, 5);
-      walls(ctx, box, (c, w, h, light) => plaster(c, w, h, { base: 0x9a7e58, light, seed: light === 1 ? 61 : 62 }), {
+      const wall = 0x9a7e58;
+      const front = subBox(box, 0, box.w - 6, 0, box.d, 68);
+      groundShadow(ctx, front, 5);
+      walls(ctx, front, (c, w, h, light) => plaster(c, w, h, { base: wall, light, seed: light === 1 ? 61 : 62 }), {
         left: (c, w, h, l) => {
-          beamEnds(c, w, 4, l, 10);
-          latticeWindow(c, w / 2 - 3, h * 0.38, 6, 8, { frame: 0x6a4a2c, light: l, arched: true });
+          plinth(c, w, h, 5, 0x8a7a60, l, 66);
+          beamEnds(c, w, 5, l, 10);
+          highWindow(c, w / 2 - 3.5, h, 40, { frame: 0x6a4a2c, light: l, arched: true });
+          wornPlaster(c, 3, h * 0.6, 10, 7, wall, l, 67);
         },
         right: (c, w, h, l) => {
-          // Brick arch surround with a tympanum over the door leaves.
-          archPath(c, w * 0.16, h, w * 0.68, 36);
-          c.save();
-          c.clip();
-          brick(c, w, h, { base: 0xa8784a, light: l, seed: 64 }, 3, 7);
-          c.restore();
-          doorway(c, w * 0.24, h, w * 0.52, 30, { frame: 0x6a4a2c, door: 0x4a2c18, light: l, seed: 63 });
-          // Iron knocker rings: one for men, one for women, each with its own sound.
-          c.strokeStyle = css(shade(0x2a2420, l + 0.3));
-          c.lineWidth = 0.9;
-          c.beginPath();
-          c.arc(w * 0.44, h - 15, 1.8, 0, Math.PI * 2);
-          c.moveTo(w * 0.6 + 1.3, h - 15);
-          c.arc(w * 0.6, h - 15, 1.3, 0, Math.PI * 2);
-          c.stroke();
+          plinth(c, w, h, 5, 0x8a7a60, l, 68);
+          beamEnds(c, w, 5, l, 10);
+          recessedDoor(c, w / 2, h, { frame: 0x6a4a2c, door: 0x4a2c18, light: l, seed: 63, surround: 0xa8784a });
         },
       });
-      parapetRoof(ctx, box, 0x9a7e58, { base: 0x7a6040, light: 1, seed: 65 }, 3, 4);
-      outlineBox(ctx, box);
+      parapetRoof(ctx, front, wall, { base: 0x7a6040, light: 1, seed: 65 }, 3, 4);
+      outlineBox(ctx, front);
+      steps(ctx, box, box.w - 6, box.w, box.d / 2 - 9, box.d / 2 + 9, 1, 'p');
     });
   },
 

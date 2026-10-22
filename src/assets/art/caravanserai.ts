@@ -1,5 +1,6 @@
 import { css, groundPoint, groundShadow, outlineBox, polygon, roofPoint, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
 import { brick, glazedTiles, stone } from './materials';
+import { laneDust, waterJar } from './streetLife';
 import { archPath, band, clipped, cylinder, cylinderBand, doorway, flatTop, LIGHT, merlons, parapetRoof, walls } from './ornaments';
 
 /**
@@ -16,6 +17,7 @@ const CREAM = 0xe8d9a8;
 
 export function drawCaravanserai(ctx: Ctx, box: IsoBox): void {
   groundShadow(ctx, box, 9);
+  laneDust(ctx, box, box.w - 4, box.w + 10, box.d / 2 - 22, box.d / 2 + 22, 58);
   walls(ctx, box, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: light === 1 ? 51 : 52 }), {
     left: (c, w, h, l) => outerWall(c, w, h, l),
     right: (c, w, h, l) => outerWall(c, w, h, l),
@@ -31,6 +33,11 @@ export function drawCaravanserai(ctx: Ctx, box: IsoBox): void {
   tower(ctx, back!.x, back!.y, 7, 8);
   for (const corner of [left!, right!, front!]) tower(ctx, corner.x, corner.y + box.h - 3.5, 7, box.h + 5);
   portal(ctx, box);
+  // A drinking trough and water jars beside the gate for the caravans.
+  const jar = groundPoint(box, box.w + 3, box.d / 2 + 24);
+  waterJar(ctx, jar.x, jar.y, 4.5);
+  const jar2 = groundPoint(box, box.w + 2, box.d / 2 + 31);
+  waterJar(ctx, jar2.x, jar2.y, 3.6, 0x9a6a44);
 }
 
 /** Blank defensive walls: a stone plinth, a tiled string course and a few high slit windows. */
@@ -128,7 +135,7 @@ function portal(ctx: Ctx, box: IsoBox): void {
   const pw = 34;
   const out = 5;
   const at = groundPoint(box, box.w + out, box.d / 2 - pw / 2);
-  const p: IsoBox = { x: at.x, y: at.y, w: out, d: pw, h: box.h + 16 };
+  const p: IsoBox = { x: at.x, y: at.y, w: out, d: pw, h: box.h + 28 };
   walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 56 }), {
     right: (c, w, h, l) => {
       c.save();
