@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { css, footprintBox, groundShadow, onRoof, outlineBox, paintTexture, rng, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
 import { highWindow, iwanNiche } from './facade';
-import { glazedTiles, plaster, stone } from './materials';
+import { plaster, stone } from './materials';
 import { archPath, band, beamEnds, dome, flatTop, LIGHT, merlons, parapetRoof, walls } from './ornaments';
 import { pottedPlant, steps } from './streetLife';
 import { liftedPoint, subBox } from './structureParts';
@@ -98,7 +98,6 @@ export function paintPalacePortico(scene: Phaser.Scene, key: string, cellsW: num
     outlineBox(ctx, slab);
     const domeAt = roofPoint(slab, slab.w * 0.2, slab.d * 0.66);
     dome(ctx, domeAt.x, domeAt.y + 4, 12, { color: shade(WALL, 0.97), drum: 5, bulb: 1.05, finial: true });
-    pishtaq(ctx, slab);
     // Orange trees in pots at the head of the steps.
     for (const p of [mid - 26, mid + 26]) {
       const at = liftedPoint(fp, p, front + 2, TERRACE);
@@ -186,43 +185,3 @@ function talarColumn(ctx: Ctx, foot: { x: number; y: number }, h: number): void 
   }
 }
 
-/** The tiled portal rising over the centre of the roof, with the golden sun. */
-function pishtaq(ctx: Ctx, slab: IsoBox): void {
-  const pw = Math.min(40, slab.w * 0.28);
-  const p1 = slab.w / 2 + pw / 2;
-  const portal = subBox(slab, p1 - pw, p1, 0, 6, 26, slab.h);
-  walls(ctx, portal, (c, w, h, light) => plaster(c, w, h, { base: WALL, light, seed: 85 }), {
-    left: (c, w, h, l) => {
-      c.save();
-      c.beginPath();
-      c.rect(2, 2, w - 4, h - 2);
-      c.clip();
-      glazedTiles(c, w, h, { base: TURQUOISE, light: l, seed: 86 }, 5);
-      c.restore();
-      c.strokeStyle = css(shade(0xe8d9a8, l), 0.9);
-      c.lineWidth = 1;
-      c.strokeRect(2.5, 2.5, w - 5, h - 3);
-      // The sun: a gilded disc and rays.
-      const cx = w / 2;
-      const cy = h * 0.52;
-      c.strokeStyle = css(shade(GOLD, l));
-      c.lineWidth = 1;
-      for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
-        c.beginPath();
-        c.moveTo(cx + Math.cos(a) * 4, cy + Math.sin(a) * 4);
-        c.lineTo(cx + Math.cos(a) * 8, cy + Math.sin(a) * 8);
-        c.stroke();
-      }
-      const disc = c.createRadialGradient(cx - 1.5, cy - 1.5, 0.5, cx, cy, 5);
-      disc.addColorStop(0, '#fff2b0');
-      disc.addColorStop(1, css(shade(GOLD, l * 0.85)));
-      c.fillStyle = disc;
-      c.beginPath();
-      c.arc(cx, cy, 4.5, 0, Math.PI * 2);
-      c.fill();
-    },
-  });
-  flatTop(ctx, portal, WALL);
-  merlons(ctx, portal, WALL, 3, 3);
-  outlineBox(ctx, portal);
-}

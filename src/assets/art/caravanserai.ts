@@ -130,12 +130,12 @@ function innerArcade(c: Ctx, w: number, h: number, l: number): void {
   c.fillRect(0, 0, w, 3);
 }
 
-/** The pīshṭāq: a tiled portal rising above the right wall, its iwan open to the road. */
+/** The pīshṭāq: a tiled portal standing proud of the right wall, its iwan open to the road. */
 function portal(ctx: Ctx, box: IsoBox): void {
   const pw = 34;
   const out = 5;
   const at = groundPoint(box, box.w + out, box.d / 2 - pw / 2);
-  const p: IsoBox = { x: at.x, y: at.y, w: out, d: pw, h: box.h + 28 };
+  const p: IsoBox = { x: at.x, y: at.y, w: out, d: pw, h: box.h + 6 };
   walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 56 }), {
     right: (c, w, h, l) => {
       c.save();

@@ -8,6 +8,8 @@ import { subBox } from './structureParts';
 
 /** Mosques, city gates, wells and lanterns: the shared civic vocabulary. */
 
+/** Precinct wall height; the portal and prayer hall are measured from it. */
+const PRECINCT_H = 60;
 const TURQUOISE = 0x2e8c96;
 const LAPIS = 0x24477a;
 const CREAM = 0xe8d9a8;
@@ -21,7 +23,7 @@ const MOSQUE_BRICK = 0xc8a26e;
 export function paintMosque(scene: Phaser.Scene, key: string, cellsW = 2, cellsD = 2): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, 44, 104);
   paintTexture(scene, key, texW, texH, ctx => {
-    const precinct = subBox(box, 0, box.w - 3, 6, box.d, 44);
+    const precinct = subBox(box, 0, box.w - 3, 6, box.d, PRECINCT_H);
     groundShadow(ctx, precinct, 8);
     const foot = groundPoint(box, 9, box.d - 9);
     minaret(ctx, foot.x, foot.y, 6, 122);
@@ -32,7 +34,7 @@ export function paintMosque(scene: Phaser.Scene, key: string, cellsW = 2, cellsD
     parapetRoof(ctx, precinct, MOSQUE_BRICK, { base: 0xb09070, light: 1, seed: 6 }, 3, 4);
     outlineBox(ctx, precinct);
     // The prayer hall shows above the precinct: a drum of brick and the dome.
-    const hall = subBox(box, box.w - 40, box.w - 6, box.d - 36, box.d - 3, 16, 44);
+    const hall = subBox(box, box.w - 40, box.w - 6, box.d - 36, box.d - 3, 16, PRECINCT_H);
     walls(ctx, hall, (c, w, h, light) => brick(c, w, h, { base: MOSQUE_BRICK, light, seed: 7 }), {
       left: (c, w, _h, l) => band(c, w, 2, 3, TURQUOISE, l),
       right: (c, w, _h, l) => band(c, w, 2, 3, TURQUOISE, l),
@@ -60,11 +62,11 @@ function blindArcade(c: Ctx, w: number, h: number, l: number): void {
   }
 }
 
-/** The pīshṭāq: half as wide as it is tall, standing proud of the precinct's left wall. */
+/** The pīshṭāq: standing proud of the precinct's left wall, its crest just above the parapet. */
 function portal(ctx: Ctx, box: IsoBox, precinct: IsoBox): void {
   const pw = 30;
   const at = groundPoint(box, precinct.w * 0.48 + pw / 2, 1);
-  const p: IsoBox = { x: at.x, y: at.y, w: pw, d: 6, h: 72 };
+  const p: IsoBox = { x: at.x, y: at.y, w: pw, d: 6, h: PRECINCT_H + 6 };
   walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: MOSQUE_BRICK, light, seed: 9 }), {
     left: (c, w, h, l) => {
       c.save();

@@ -82,7 +82,7 @@ export function drawShrine(ctx: Ctx, box: IsoBox, wallH: number, pal: ShrinePale
   // The portal, centred on the sunlit wall.
   const pc = (p0 + p1) / 2;
   const pw = Math.min(36, chamber.w * 0.5);
-  const portal = subBox(box, pc - pw / 2, pc + pw / 2, q0 - 6, q0 + 4, wallH + Math.round(wallH * 0.22), terrace.h);
+  const portal = subBox(box, pc - pw / 2, pc + pw / 2, q0 - 6, q0 + 4, wallH + 5, terrace.h);
   walls(ctx, portal, (c, fw, fh, light) => plaster(c, fw, fh, { base: shade(pal.wall, 1.03), light, seed: s + 11 }), {
     left: (c, fw, fh, l) => portalFace(c, fw, fh, pal, l),
     right: (c, fw, _fh, l) => band(c, fw, 6, 2.5, shade(pal.wall, 0.82), l),

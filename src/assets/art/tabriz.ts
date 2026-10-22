@@ -215,7 +215,7 @@ export function drawBarrack(ctx: Ctx, box: IsoBox, style: BarrackStyle): void {
   if (portalSpan) {
     const [p0, p1] = portalSpan;
     slab(ctx, subBox(box, p0 + 6, p1 - 6, -4, INSET, 3), PLINTH, style.seed);
-    gatePortal(ctx, subBox(box, p0, p1, 0, INSET + 4, 120), style.seed + 11);
+    gatePortal(ctx, subBox(box, p0, p1, 0, INSET + 4, BARRACK_H + PARAPET), style.seed + 11);
   }
 }
 
