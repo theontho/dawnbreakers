@@ -438,7 +438,6 @@ export function analyzeLocalization() {
   const unwrappedTextErrors = [];
 
   for (const file of walk(srcDir)) {
-    if (file === i18nPath) continue;
     if (!relative(i18nModuleDir, file).startsWith('..')) continue;
     const source = stripComments(read(file));
     collectFromTranslationCalls(source, file, translationRequired, namesRequired);

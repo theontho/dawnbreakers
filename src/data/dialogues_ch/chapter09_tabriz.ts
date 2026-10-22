@@ -336,7 +336,7 @@ export const ch9SeveredRopes: DialogueTree = {
     end: {
       speaker: 'Narrator',
       onEnter: { set: { martyrdomComplete: true } },
-      text: 'The Báb was thirty years old. What began at a lamplit door in Shíráz was sealed at a wall in Tabríz, at noon on 9 July 1850. The Dawn is not put out by the shadow that crosses it. In Tihrán, the dark will deepen before it breaks.',
+      text: 'The Báb was thirty years old. What began at a lamplit door in Shíráz was sealed at a wall in Tabríz, at noon on 9 July 1850. The Dawn is not put out by the shadow that crosses it. In Zanján the siege goes on, and in Ṭihrán the dark will deepen before it breaks.',
     },
   },
 };

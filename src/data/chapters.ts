@@ -59,12 +59,12 @@ export interface Chapter {
   isComplete: (flags: FlagState) => boolean;
 }
 
-type ChapterSpec = Omit<Chapter, 'isComplete'>;
+/** A chapter as written below; its number is its place in the list. */
+type ChapterSpec = Omit<Chapter, 'isComplete' | 'number'>;
 
 const SPECS: ChapterSpec[] = [
   {
     id: 'shiraz',
-    number: 1,
     story: CHAPTER_STORIES['shiraz'],
     title: 'The Cup of Recognition',
     subtitle: 'Shíráz, 22 May 1844',
@@ -74,7 +74,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'road',
-    number: 2,
     story: CHAPTER_STORIES['road'],
     title: 'The Letters Disperse',
     subtitle: 'Beyond the Qur\'án Gate, summer 1844',
@@ -84,7 +83,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'mecca',
-    number: 3,
     story: CHAPTER_STORIES['mecca'],
     title: 'Pilgrimage to Mecca',
     subtitle: 'The Kaʿba, 1844 to 1845',
@@ -94,7 +92,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'shiraz-return',
-    number: 4,
     story: CHAPTER_STORIES['shiraz-return'],
     title: 'Return to Shíráz',
     subtitle: 'Shíráz, 1845 to 1846',
@@ -104,7 +101,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'isfahan',
-    number: 5,
     story: CHAPTER_STORIES['isfahan'],
     title: 'The Muʿtamid’s Sanctuary',
     subtitle: 'Iṣfahán, 1846 to 1847',
@@ -114,17 +110,15 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'mountain-prisons',
-    number: 6,
     story: CHAPTER_STORIES['mountain-prisons'],
     title: 'The Mountain Prisons',
-    subtitle: 'Mákú and Chihríq, 1847–1848',
+    subtitle: 'Mákú and Chihríq, 1847 to 1848',
     description: 'Snow on the ramparts of Mákú and Chihríq. A warden asks forgiveness, Mullá Ḥusayn arrives on foot from Mashhad, and in a prison without a lamp the Bayán is written down.',
     startScene: 'Ch6Maku',
     scenes: ['Ch6Maku', 'Ch6MakuChamber', 'Ch6Chihriq'],
   },
   {
     id: 'badasht',
-    number: 7,
     story: CHAPTER_STORIES['badasht'],
     title: 'The Conference of Badasht',
     subtitle: 'Three gardens, summer 1848',
@@ -133,8 +127,7 @@ const SPECS: ChapterSpec[] = [
     scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp', 'Ch7QuddusTent'],
   },
   {
-    id: 'tabriz-trial',
-    number: 0, // renumbered by the manager
+    id: 'tabriz-trial', // renumbered by the manager
     story: CHAPTER_STORIES['tabriz-trial'],
     title: 'The Trial at Tabríz',
     subtitle: 'Tabríz, summer 1848',
@@ -144,7 +137,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'tabarsi',
-    number: 8,
     story: CHAPTER_STORIES['tabarsi'],
     title: 'Fort Shaykh Ṭabarsí',
     subtitle: 'Mázindarán, 1848 to 1849',
@@ -154,7 +146,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'tabriz',
-    number: 9,
     story: CHAPTER_STORIES['tabriz'],
     title: 'Tabríz',
     subtitle: 'The barrack square, 9 July 1850',
@@ -163,8 +154,7 @@ const SPECS: ChapterSpec[] = [
     scenes: ['Ch9TabrizSquare', 'Ch9BarrackRoof'],
   },
   {
-    id: 'zanjan',
-    number: 0, // renumbered by the manager
+    id: 'zanjan', // renumbered by the manager
     story: CHAPTER_STORIES['zanjan'],
     title: 'Zanján',
     subtitle: 'The fort of ʿAlí-Mardán Khán, 1850 to 1851',
@@ -174,7 +164,6 @@ const SPECS: ChapterSpec[] = [
   },
   {
     id: 'siyah-chal',
-    number: 10,
     story: CHAPTER_STORIES['siyah-chal'],
     title: 'The Black Pit of Ṭihrán',
     subtitle: 'Ṭihrán, August 1852 to January 1853',
@@ -184,8 +173,9 @@ const SPECS: ChapterSpec[] = [
   },
 ];
 
-export const chapters: Chapter[] = SPECS.map(spec => ({
+export const chapters: Chapter[] = SPECS.map((spec, i) => ({
   ...spec,
+  number: i + 1,
   isComplete: (flags: FlagState) => chapterIsComplete(spec.id, flags),
 }));
 

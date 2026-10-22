@@ -1,14 +1,27 @@
-# Dawn-Breakers RPG - 10 Chapter Build Plan
+# Dawn-Breakers RPG - Chapter Build Plan
 
 This plan is the implementation contract for a dialogue-first, 2.5D isometric web RPG based on Nabíl-i-Aʿẓam's *The Dawn-Breakers* (*Maṭáliʿu'l-Anwár*). The game remains non-combat: walking, exploration, conversations, journals, choices, flags, chapter transitions, and reflective historical set pieces.
 
 ## Status (October 2026)
 
-All ten chapters are built out: 20 maps of roughly 20 to 32 cells a side with
-per-map ambience, several new people per chapter, objectives and journal
-entries for every chapter, and an epilogue map (`Ch10ExileRoad`). The
-per-chapter build goals below are kept as the original brief. For how to add
-or change content now, see `docs/content-guide.md`.
+The original ten chapters are built out: 20 maps of roughly 20 to 32 cells a
+side with per-map ambience, several new people per chapter, objectives and
+journal entries for every chapter, and an epilogue map (`Ch10ExileRoad`).
+Two chapters were added after the plan, so there are now twelve:
+
+- **The Trial at Tabríz** (`tabriz-trial`, summer 1848), between Badasht and
+  Ṭabarsí: `TrialStreet`, `TrialCourt`, `TrialLane`.
+- **Zanján** (`zanjan`, 1850 to 1851), between the martyrdom at Tabríz and the
+  Black Pit: `ZanjanQuarter`, `ZanjanFort`, `ZanjanHouse`.
+
+Chapter numbers come from the order of `SPECS` in `src/data/chapters.ts`, so
+the "Chapter N" headings below are the original plan's numbering. Episodes of
+the book not yet covered: Mullá Ḥusayn's mission to Ṭihrán and Núr, Káshán
+and Kulayn, Ṭáhirih's road from Karbilá to Qazvín, the Seven Martyrs of
+Ṭihrán, and Nayríz.
+
+The per-chapter build goals below are kept as the original brief. For how to
+add or change content now, see `docs/content-guide.md`.
 
 ## Core structure
 
