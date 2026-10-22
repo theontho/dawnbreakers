@@ -2285,7 +2285,7 @@ export const names: TranslationCatalog = {
   'ʿAlí Khán, Warden of Mákú': 'علی‌خان، زندانبان ماکو',
   'ʿAlí Khán': 'علی‌خان',
   'A Mountain Courier': 'پیک کوهستان',
-  'Mullá Ḥusayn': 'ملّا حسین',
+  'Mullá Ḥusayn': 'ملا حسین',
   Ṭáhirih: 'طاهره',
   'Messenger at the Central Tent': 'پیام‌آور چادر مرکزی',
   'A Shaken Believer': 'مؤمنی پریشان',

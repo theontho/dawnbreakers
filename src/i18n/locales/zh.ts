@@ -2295,7 +2295,7 @@ export const names: TranslationCatalog = {
   "Market Visitor": "市集来客",
   "Messenger at the Central Tent": "中央帐篷的信使",
   "Mosque Witness": "清真寺见证人",
-  "Mullá Ḥusayn": "毛拉侯赛因",
+  "Mullá Ḥusayn": "毛拉·侯赛因",
   "Mírzá Muḥíṭ-i-Kirmání": "米尔扎穆希特-克尔马尼",
   "Narrator": "旁白",
   "Officer of Ḥusayn Khán": "侯赛因汗的官员",

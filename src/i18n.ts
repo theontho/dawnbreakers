@@ -1,6 +1,11 @@
 import type { TranslationCatalog } from './i18n/types';
 
-export const SUPPORTED_LOCALES = ['en', 'fa', 'es', 'fr', 'he', 'zh', 'ja', 'ko'] as const;
+/**
+ * Three languages chosen to exercise the interface's hard cases: a Latin
+ * script, a right-to-left joined script with its own digits (Persian), and
+ * a CJK script with no spaces between words (Chinese).
+ */
+export const SUPPORTED_LOCALES = ['en', 'fa', 'zh'] as const;
 
 export type Locale = typeof SUPPORTED_LOCALES[number];
 
@@ -17,19 +22,13 @@ interface LocaleConfig {
 
 const FARSI_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'] as const;
 const ARABIC_SCRIPT_FONT_STACK = 'Tahoma, Arial, "Noto Naskh Arabic", "Noto Sans Arabic", sans-serif';
-const HEBREW_FONT_STACK = 'Arial, "Noto Sans Hebrew", sans-serif';
-const CJK_FONT_STACK = 'Arial, "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR", sans-serif';
+const CJK_FONT_STACK = 'Arial, "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif';
 const MAX_TEXT_RESOLUTION = 2;
 
 export const LOCALE_CONFIGS: Record<Locale, LocaleConfig> = {
   en: { name: 'English', shortName: 'EN', direction: 'ltr' },
   fa: { name: 'فارسی', shortName: 'FA', direction: 'rtl', fontStack: ARABIC_SCRIPT_FONT_STACK, digits: FARSI_DIGITS },
-  es: { name: 'Español', shortName: 'ES', direction: 'ltr' },
-  fr: { name: 'Français', shortName: 'FR', direction: 'ltr' },
-  he: { name: 'עברית', shortName: 'HE', direction: 'rtl', fontStack: HEBREW_FONT_STACK },
   zh: { name: '中文', shortName: '中文', direction: 'ltr', fontStack: CJK_FONT_STACK },
-  ja: { name: '日本語', shortName: '日本', direction: 'ltr', fontStack: CJK_FONT_STACK },
-  ko: { name: '한국어', shortName: '한국', direction: 'ltr', fontStack: CJK_FONT_STACK },
 };
 
 const isLocale = (value: string | null): value is Locale =>
@@ -84,23 +83,12 @@ export function languageButtonLabel(): string {
 type Params = Record<string, string | number>;
 
 const EMPTY_CATALOG: TranslationCatalog = {};
-const catalogs: Record<Locale, TranslationCatalog> = {
-  en: EMPTY_CATALOG, fa: EMPTY_CATALOG, es: EMPTY_CATALOG, fr: EMPTY_CATALOG,
-  he: EMPTY_CATALOG, zh: EMPTY_CATALOG, ja: EMPTY_CATALOG, ko: EMPTY_CATALOG,
-};
-const namesByLocale: Record<Locale, TranslationCatalog> = {
-  en: EMPTY_CATALOG, fa: EMPTY_CATALOG, es: EMPTY_CATALOG, fr: EMPTY_CATALOG,
-  he: EMPTY_CATALOG, zh: EMPTY_CATALOG, ja: EMPTY_CATALOG, ko: EMPTY_CATALOG,
-};
+const catalogs: Record<Locale, TranslationCatalog> = { en: EMPTY_CATALOG, fa: EMPTY_CATALOG, zh: EMPTY_CATALOG };
+const namesByLocale: Record<Locale, TranslationCatalog> = { en: EMPTY_CATALOG, fa: EMPTY_CATALOG, zh: EMPTY_CATALOG };
 
 const localeLoaders: Record<Exclude<Locale, 'en'>, () => Promise<{ text: TranslationCatalog; names: TranslationCatalog }>> = {
   fa: () => import('./i18n/locales/fa'),
-  es: () => import('./i18n/locales/es'),
-  fr: () => import('./i18n/locales/fr'),
-  he: () => import('./i18n/locales/he'),
   zh: () => import('./i18n/locales/zh'),
-  ja: () => import('./i18n/locales/ja'),
-  ko: () => import('./i18n/locales/ko'),
 };
 
 const inFlight = new Map<Locale, Promise<void>>();
@@ -129,12 +117,7 @@ export async function loadLocale(locale: Locale): Promise<void> {
 const speakWithTemplates: Record<Locale, string> = {
   en: 'Speak with {name}  [E]',
   fa: 'با {name} صحبت کن  [E]',
-  es: 'Hablar con {name}  [E]',
-  fr: 'Parler avec {name}  [E]',
-  he: 'דבר עם {name}  [E]',
   zh: '与{name}交谈  [E]',
-  ja: '{name}と話す  [E]',
-  ko: '{name}에게 말 걸기  [E]',
 };
 
 export function applyLocaleDocument(): void {

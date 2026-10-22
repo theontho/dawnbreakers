@@ -26,7 +26,8 @@
     "gallery": "node scripts/art-gallery.mjs",
     "render:music": "node scripts/render-music.mjs",
     "postinstall": "patch-package",
-    "look": "node scripts/look.mjs"
+    "look": "node scripts/look.mjs",
+    "i18n:glossary": "node scripts/i18n-glossary.mjs"
   },
   "keywords": [],
   "author": "",
