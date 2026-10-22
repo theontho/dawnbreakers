@@ -3,7 +3,9 @@ import { cityMap } from './city';
 import { ch1IlkhaniMosqueMap } from './ch1IlkhaniMosque';
 import { houseQuarterMap } from './houseQuarter';
 import { roadMap } from './road';
+import { ch2CaravanseraiMap } from './ch2Caravanserai';
 import { ch3ShipMap } from './ch3Ship';
+import { ch3ShipCabinMap } from './ch3ShipCabin';
 import { ch3MeccaMap } from './ch3Mecca';
 import { ch4ShirazReturnMap } from './ch4ShirazReturn';
 import { ch4VakilMosqueMap } from './ch4VakilMosque';
@@ -13,8 +15,10 @@ import { ch6MakuMap } from './ch6Maku';
 import { ch6ChihriqMap } from './ch6Chihriq';
 import { ch7BadashtHamletMap } from './ch7BadashtHamlet';
 import { ch7BadashtCampMap } from './ch7BadashtCamp';
+import { ch7QuddusTentMap } from './ch7QuddusTent';
 import { ch8ForestRoadMap } from './ch8ForestRoad';
 import { ch8TabarsiFortMap } from './ch8TabarsiFort';
+import { ch8TabarsiShrineMap } from './ch8TabarsiShrine';
 import { ch9TabrizSquareMap } from './ch9TabrizSquare';
 import { ch9BarrackRoofMap } from './ch9BarrackRoof';
 import { ch10TehranStreetMap } from './ch10TehranStreet';
@@ -33,7 +37,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch1IlkhaniMosqueMap,
   houseQuarterMap,
   roadMap,
+  ch2CaravanseraiMap,
   ch3ShipMap,
+  ch3ShipCabinMap,
   ch3MeccaMap,
   ch4ShirazReturnMap,
   ch4VakilMosqueMap,
@@ -43,8 +49,10 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch6ChihriqMap,
   ch7BadashtHamletMap,
   ch7BadashtCampMap,
+  ch7QuddusTentMap,
   ch8ForestRoadMap,
   ch8TabarsiFortMap,
+  ch8TabarsiShrineMap,
   ch9TabrizSquareMap,
   ch9BarrackRoofMap,
   ch10TehranStreetMap,

@@ -108,7 +108,9 @@ export const ch3ShipMap: MapDefinition = {
       gate: { when: f => !!f.ch3MetQuddus, lockedDialogue: 'ch3-cabin-quiet' } },
     { gridX: 6, gridY: 5, texture: 'ch3-quddus',
       prompt: 'Speak with Quddús  [E]',
-      dialogue: 'ch3-quddus-ship' },
+      dialogue: 'ch3-quddus-ship',
+      // After the storm he goes below to make a fair copy (see ch3ShipCabin).
+      present: f => !f.ch3StormWeathered },
     { gridX: 8, gridY: 4, texture: 'ch3-water-cask',
       prompt: 'Examine the water cask  [E]',
       dialogue: 'ch3-water-cask' },
@@ -127,6 +129,11 @@ export const ch3ShipMap: MapDefinition = {
     { gridX: 21, gridY: 7, texture: 'ch3-ship-pilgrim',
       prompt: 'Speak with the Widow from Lár  [E]',
       dialogue: 'ch3-widow' },
+  ],
+  doors: [
+    // The plank door on the port side, into the companions' cabin.
+    { gridX: 4, gridY: 8, prompt: 'Go into the companions\' cabin  [E]',
+      targetScene: 'Ch3ShipCabin', targetSpawnX: 5, targetSpawnY: 6 },
   ],
   exits: [
     { fromX: LADDER_X, fromY: 13, dx: 0, dy: 1,

@@ -68,6 +68,16 @@ export const chapter07Story: ChapterStory = {
       body: 'A young believer records each day\'s new name and each old custom laid aside. "It feels like being born in public."',
     },
     {
+      flag: 'ch7HeardBarfurushi',
+      title: 'Watch His Eyes',
+      body: 'In Quddús\'s tent a man of Bárfurúsh who had known him since boyhood poured you coffee. He had never seen Quddús angry longer than it takes to drink a cup.',
+    },
+    {
+      flag: 'ch7SawPapers',
+      title: 'A Letter Worn Soft',
+      body: 'On Quddús\'s desk, under a half-written page, lay a letter worn soft at the creases. You did not unfold it.',
+    },
+    {
       flag: 'ch7WitnessedUnveiling',
       title: 'The Day the Veil Fell',
       body: 'Ṭáhirih entered the assembly unveiled and proclaimed that the fetters of the past were broken. Men cried out and fled; Quddús disputed with her before everyone; from the tent came word to chant the Súrih of the Inevitable.',
@@ -105,6 +115,11 @@ export const chapter07Story: ChapterStory = {
       flag: 'ch7QuddusAfter',
       title: 'The Physician\'s Way',
       body: 'Quddús hinted that his quarrel with Ṭáhirih was a kindness: by standing against her he let the frightened stand with him, and stay, until they found the two were on one road.',
+    },
+    {
+      flag: 'ch7TentAfter',
+      title: 'The Lamp Across the Meadow',
+      body: 'After the assembly Quddús sent the friends who wanted to take his side to wait at the Host\'s tent instead. Then he had his tent flap tied back, to see the lamp in Ṭáhirih\'s garden.',
     },
     {
       flag: 'ch7SteadiedBeliever',

@@ -18,6 +18,8 @@ const DARK_TEAK = 0x4a2e18;
 const GILT = 0xc9a55c;
 const LOW = 58;
 const HIGH = 76;
+/** Centre of the port-side door along the cabin's length: the middle deck cell. */
+const PORT_DOOR_P = 48;
 
 /** `box` is the whole footprint; the door faces +x, centred on deck cell `doorQ` pixels back from the front. */
 export function drawCabin(ctx: Ctx, box: IsoBox, doorQ = 50): void {
@@ -49,7 +51,9 @@ export function drawCabin(ctx: Ctx, box: IsoBox, doorQ = 50): void {
   walls(ctx, cabin, teak(31), {
     left: (c, w, h, l) => {
       trim(c, w, l);
-      for (const t of [0.3, 0.7]) latticeWindow(c, w * t - 4, h - 38, 8, 11, { frame: GILT, light: l, lit: true });
+      for (const u of [11, 68]) latticeWindow(c, u, h - 38, 8, 11, { frame: GILT, light: l, lit: true });
+      // The companions' door, on the middle cell of the port side.
+      portDoor(c, PORT_DOOR_P - 2, h, l);
     },
     right: (c, w, h, l) => {
       trim(c, w, l);
@@ -80,7 +84,7 @@ export function drawCabin(ctx: Ctx, box: IsoBox, doorQ = 50): void {
   ctx.fill();
 
   // Life at the foot: a sea chest under the windows, a sweet-water jar, a coil of rope by the door.
-  const chest = subBox(box, 26, 50, 1, 8, 9);
+  const chest = subBox(box, 4, 26, 1, 8, 9);
   walls(ctx, chest, (c, w, h, light) => {
     planks(c, w, h, { base: 0x5a3a1f, light, seed: 37 }, false, 3);
     c.fillStyle = css(shade(0x2e2a26, light));
@@ -175,6 +179,29 @@ function cabinDoor(c: Ctx, cx: number, h: number, l: number): void {
   c.fillStyle = css(0x2a1a0a);
   c.fillRect(lx - 2.5, ly - 1, 5, 1.2);
   c.fillRect(lx - 0.4, ly - 4, 0.8, 3);
+}
+
+/** A plain plank door with a rope pull and a raised coaming: the companions' cabin. */
+function portDoor(c: Ctx, cx: number, h: number, l: number): void {
+  const w = 13;
+  const dh = 35;
+  const x = cx - w / 2;
+  const top = h - 3 - dh;
+  c.fillStyle = css(shade(DARK_TEAK, l * 0.9));
+  c.fillRect(x - 3, h - 3, w + 6, 3);
+  c.fillRect(x - 2, top - 2, w + 4, dh + 2);
+  c.save();
+  c.translate(x, top);
+  planks(c, w, dh, { base: 0x6a4325, light: l, seed: 39 }, true, 3.2);
+  c.restore();
+  c.fillStyle = css(shade(0x2e2a26, l));
+  c.fillRect(x, top + 7, w, 1.4);
+  c.fillRect(x, top + dh - 8, w, 1.4);
+  c.strokeStyle = css(shade(0xc8b48a, l));
+  c.lineWidth = 1;
+  c.beginPath();
+  c.arc(x + w - 3, top + dh * 0.5, 1.8, 0, Math.PI * 2);
+  c.stroke();
 }
 
 /** A tall lantern on an iron crook at the stern corner of the quarterdeck. */

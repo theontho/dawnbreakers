@@ -177,6 +177,11 @@ export const roadMap: MapDefinition = {
       prompt: 'Speak with the Fál-Reader  [E]',
       dialogue: 'ch2-fal-reader' },
   ],
+  doors: [
+    // The tiled portal of the caravanserai, into its court.
+    { gridX: 18, gridY: 12, prompt: 'Enter the caravanserai  [E]',
+      targetScene: 'Ch2Caravanserai', targetSpawnX: 14, targetSpawnY: 7 },
+  ],
   exits: [
     { fromX: 0, fromY: 16, dx: -1, dy: 0,
       targetScene: 'HouseQuarter', targetSpawnX: 18, targetSpawnY: 9,

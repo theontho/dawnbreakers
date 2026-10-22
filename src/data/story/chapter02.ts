@@ -53,6 +53,21 @@ export const chapter02Story: ChapterStory = {
       body: 'Mubárak was choosing mules for the road to Búshihr and the sea. His Master told him to pay the muleteer a little more than the price, because the man has children.',
     },
     {
+      flag: 'ch2SeraiMerchant',
+      title: 'A Letter from Qazvín',
+      body: 'A cloth merchant in the caravanserai shared his room with a young man from Qazvín who carried a sealed letter from a learned kinswoman. She is counted among the first, the young man said, though she never left her own house.',
+    },
+    {
+      flag: 'ch2CameleerTea',
+      title: 'Heavier than Salt',
+      body: 'An old cameleer saw one traveller set out on foot for Khurásán, singing. Good news, he says, must be set down carefully, in the right house, or it breaks.',
+    },
+    {
+      flag: 'ch2SweptRoom',
+      title: 'A Swept Room',
+      body: 'One of the guests swept his room before dawn and left the lamp filled with oil for whoever comes next.',
+    },
+    {
       flag: 'roadHeardDervish',
       title: 'The Two Tongues of the Road',
       body: 'A dervish by the roadside shrine spoke of the road\'s two tongues: dust beneath the foot, and silence inside the breast.',

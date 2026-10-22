@@ -56,6 +56,7 @@ const INSIDE_DECOR: DecorSpec[] = [
   // Shrine court
   { gridX: 12, gridY: 8, texture: 'lamp', blocks: true },
   { gridX: 17, gridY: 11, texture: 'lamp', blocks: true },
+  { gridX: 14, gridY: 11, texture: 'rug' },
   { gridX: 13, gridY: 12, texture: 'rug' },
   { gridX: 15, gridY: 12, texture: 'rug' },
   // Cook-fire, well and sleeping places
@@ -140,10 +141,7 @@ export const ch8TabarsiFortMap: MapDefinition = {
   ],
   decor: [...woods(), ...palisade(), ...INSIDE_DECOR, ...ROYAL_DECOR],
   npcs: [
-    // The shrine and the Standard stand through every season.
-    { gridX: 14, gridY: 11, texture: 'rug',
-      prompt: 'Rest your hand on the shrine door  [E]',
-      dialogue: 'ch8-shrine' },
+    // The Standard stands through every season.
     { gridX: 17, gridY: 8, texture: 'ch8-black-standard',
       prompt: 'Look up at the Black Standard  [E]',
       dialogue: 'ch8-standard-fort' },
@@ -204,6 +202,11 @@ export const ch8TabarsiFortMap: MapDefinition = {
       prompt: 'Look at the white flag  [E]',
       dialogue: 'ch8-truce-flag',
       present: f => !!f.ch8SharedHunger },
+  ],
+  doors: [
+    // The shrine itself: the tomb, the lamps, the men who keep watch inside.
+    { gridX: 14, gridY: 10, prompt: 'Enter the shrine  [E]',
+      targetScene: 'Ch8TabarsiShrine', targetSpawnX: 5, targetSpawnY: 8 },
   ],
   exits: [
     { fromX: 0, fromY: 13, dx: -1, dy: 0,

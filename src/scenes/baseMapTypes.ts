@@ -39,6 +39,11 @@ export interface Decor {
   blocks?: boolean;
   /** When provided, the prop only stands on the map while this returns true. */
   present?: (flags: ExitFlags) => boolean;
+  /**
+   * Hangs from the top of its texture and swings this many degrees either
+   * way (a lamp on a chain at sea).
+   */
+  swing?: number;
 }
 
 export interface Interactable {

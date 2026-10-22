@@ -14,6 +14,7 @@ import {
   unveiling,
 } from './chapter07_gardens';
 import { ch7Cook, ch7Khurasani, ch7Steward, ch7Villager } from './chapter07_hamlet';
+import { ch7QuddusPapers, ch7TentKeeper, ch7TentKeeperAfter } from './chapter07_tent';
 
 /** Chapter 7, the Conference of Badasht: the hamlet, then the three gardens. */
 const trees: DialogueTree[] = [
@@ -33,6 +34,9 @@ const trees: DialogueTree[] = [
   ch7Names,
   shakenBeliever,
   ch7Leaver,
+  ch7TentKeeper,
+  ch7TentKeeperAfter,
+  ch7QuddusPapers,
 ];
 
 export const chapter07Dialogues: Record<string, DialogueTree> = Object.fromEntries(trees.map(t => [t.id, t]));

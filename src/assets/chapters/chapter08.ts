@@ -4,6 +4,7 @@ import { drawShrine } from '../art/shrine';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH08_FOREST_TEXTURE_GENERATORS } from './chapter08Forest';
 import { CH08_FORT_TEXTURE_GENERATORS } from './chapter08Fort';
+import { CH08_SHRINE_OBJECTS, CH08_SHRINE_TEXTURE_GENERATORS } from './chapter08Shrine';
 
 /**
  * Chapter 8: the Mázindarán forest road and Fort Shaykh Ṭabarsí. The shrine,
@@ -14,6 +15,7 @@ import { CH08_FORT_TEXTURE_GENERATORS } from './chapter08Fort';
 export const CH08_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH08_FOREST_TEXTURE_GENERATORS,
   ...CH08_FORT_TEXTURE_GENERATORS,
+  ...CH08_SHRINE_TEXTURE_GENERATORS,
   // The shrine seen from the forest road, greened by the damp.
   'ch8-shrine-glimpse': (scene, def) => {
     const { box, texW, texH } = footprintBox(def.footprint?.w ?? 2, def.footprint?.h ?? 2, 64, 30);
@@ -33,6 +35,7 @@ export const CH08_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 
 /** Placeable map objects owned by chapter 8. */
 export const CH08_OBJECTS: MapObjectDefinition[] = [
+  ...CH08_SHRINE_OBJECTS,
   { id: 'ch8-shrine-glimpse', label: 'Shrine Glimpse', texture: 'ch8-shrine-glimpse', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch8-palisade', label: 'Palisade', texture: 'ch8-palisade', kind: 'prop', category: 'barriers-prison', color: 0x6b5136, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch8-shrine', label: 'Tabarsi Shrine', texture: 'ch8-shrine', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },

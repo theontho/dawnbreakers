@@ -161,6 +161,11 @@ export const ch7BadashtCampMap: MapDefinition = {
       dialogue: 'ch7-leaver',
       present: f => !!f.ch7WitnessedUnveiling },
   ],
+  doors: [
+    // Quddús's pavilion; the Host's tent is never entered.
+    { gridX: 4, gridY: 14, prompt: 'Enter Quddús\'s tent  [E]',
+      targetScene: 'Ch7QuddusTent', targetSpawnX: 4, targetSpawnY: 6 },
+  ],
   exits: [
     { fromX: 13, fromY: 25, dx: 0, dy: 1,
       targetScene: 'Ch7BadashtHamlet', targetSpawnX: 20, targetSpawnY: 1,

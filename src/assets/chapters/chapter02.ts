@@ -7,6 +7,7 @@ import { archPath, band, clipped, dome, flatTop, latticeWindow, merlons, parapet
 import { laneDust, waterJar } from '../art/streetLife';
 import { subBox } from '../art/structureParts';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
+import { CH02_SERAI_OBJECTS, CH02_SERAI_TEXTURE_GENERATORS } from './chapter02Serai';
 import { CH02_TRAVEL_TEXTURE_GENERATORS } from './chapter02Travel';
 
 /**
@@ -23,6 +24,7 @@ const GATE_BRICK = 0xc8a070;
 
 export const CH02_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH02_TRAVEL_TEXTURE_GENERATORS,
+  ...CH02_SERAI_TEXTURE_GENERATORS,
 
   'ch2-caravanserai': (scene, def) => {
     const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 2, 64, 40);
@@ -205,6 +207,7 @@ function drawQuranGate(ctx: Ctx, box: IsoBox): void {
 
 /** Placeable map objects owned by chapter 2. */
 export const CH02_OBJECTS: MapObjectDefinition[] = [
+  ...CH02_SERAI_OBJECTS,
   { id: 'ch2-caravanserai', label: 'Caravanserai', texture: 'ch2-caravanserai', kind: 'structure', category: 'buildings', color: 0xa87846, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch2-quran-gate', label: 'Gate', texture: 'ch2-quran-gate', kind: 'structure', category: 'buildings', color: 0xc9a26a, blocks: true, footprint: { w: 1, h: 3 }, isometric: true },
   { id: 'ch2-city-wall', label: 'City Wall', texture: 'ch2-city-wall', kind: 'structure', category: 'barriers-prison', color: 0xb08a5a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },

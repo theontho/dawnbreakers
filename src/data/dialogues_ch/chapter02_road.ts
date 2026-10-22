@@ -1,4 +1,5 @@
 import type { DialogueTree, FlagState } from '../../dialogue/types';
+import { chapter02SeraiDialogues } from './chapter02_serai';
 import { chapter02TravellerDialogues } from './chapter02_travellers';
 
 /**
@@ -17,6 +18,7 @@ const FAREWELL_FLAGS = [
   'ch2MubarakNews',
   'roadHeardDervish',
   'roadMetMuleteer',
+  'ch2SeraiMerchant',
 ] as const;
 
 /** Farewells needed before Mullá Ḥusayn waits at the milestone. */
@@ -231,4 +233,5 @@ export const chapter02Dialogues: Record<string, DialogueTree> = {
   [husaynParting.id]: husaynParting,
   [roadEncounter.id]: roadEncounter,
   ...chapter02TravellerDialogues,
+  ...chapter02SeraiDialogues,
 };

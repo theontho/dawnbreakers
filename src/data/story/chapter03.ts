@@ -65,9 +65,34 @@ export const chapter03Story: ChapterStory = {
       body: 'A widow from Lár carries her dead son\'s savings to pour out at the House of God, making the pilgrimage he could not.',
     },
     {
+      flag: 'ch3ShipBoy',
+      title: 'Oil for the Lamp',
+      body: 'The ship\'s boy fills every lamp aboard but one. Mubárak fills that one himself, and it has burned every night since Búshihr.',
+    },
+    {
+      flag: 'ch3WeighedPages',
+      title: 'Oilcloth',
+      body: 'Quddús keeps the verses written on the voyage wrapped in oilcloth against the spray. Somewhere off Arabia he stopped counting days and began counting pages.',
+    },
+    {
+      flag: 'ch3HonouredCurtain',
+      title: 'The Curtain',
+      body: 'In the companions\' cabin a curtain hangs before the inner room, slippers set side by side before it. You listened, and did not lift it.',
+    },
+    {
       flag: 'ch3StormWeathered',
       title: 'The Storm',
       body: 'Through the night of the storm you kept watch by the cabin door. The voice within never hurried, and the lamp never went out until the sun made it needless.',
+    },
+    {
+      flag: 'ch3ShipBoyStorm',
+      title: 'Not Hurrying',
+      body: 'Through the storm the ship\'s boy held the cabin lamp\'s chain, and took heart from the reading beyond the curtain: if He was not hurrying, neither would he.',
+    },
+    {
+      flag: 'ch3FairCopy',
+      title: 'A Fair Copy',
+      body: 'After the storm Quddús made a fair copy of the verses written that night. "The words did not shake. My hand did."',
     },
     {
       flag: 'ch3QuddusMecca',

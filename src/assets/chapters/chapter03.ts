@@ -2,6 +2,7 @@ import { footprintBox, paintTexture } from '../art/canvasKit';
 import { figure, type FigureStyle } from '../art/crowds';
 import { drawArcadeBay, drawKaaba, drawMaqam, drawMinaret } from '../art/mecca';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
+import { CH03_CABIN_OBJECTS, CH03_CABIN_TEXTURE_GENERATORS } from './chapter03Cabin';
 import { CH03_SHIP_TEXTURE_GENERATORS } from './chapter03Ship';
 
 /**
@@ -21,6 +22,7 @@ const PILGRIMS: ReadonlyArray<{ dx: number; dy: number; style: FigureStyle }> = 
 
 export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH03_SHIP_TEXTURE_GENERATORS,
+  ...CH03_CABIN_TEXTURE_GENERATORS,
 
   'ch3-kaaba': (scene, def) => {
     const { box, texW, texH } = footprintBox(2, 2, 88, 8);
@@ -80,6 +82,7 @@ export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 
 /** Placeable map objects owned by chapter 3. */
 export const CH03_OBJECTS: MapObjectDefinition[] = [
+  ...CH03_CABIN_OBJECTS,
   { id: 'ch3-kaaba', label: 'Kaaba', texture: 'ch3-kaaba', kind: 'structure', category: 'shrines', color: 0x181512, blocks: true, footprint: { w: 2, h: 2 }, isometric: true },
   { id: 'ch3-arcade', label: 'Colonnade', texture: 'ch3-arcade', kind: 'structure', category: 'shrines', color: 0xc8b48a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch3-minaret', label: 'Minaret', texture: 'ch3-minaret', kind: 'prop', category: 'shrines', color: 0xd8c7a0, blocks: true },

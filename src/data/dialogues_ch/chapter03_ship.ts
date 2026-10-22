@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../../dialogue/types';
+import { chapter03CabinDialogues } from './chapter03_cabin';
 
 /**
  * Chapter 3, autumn 1844: the pilgrim ship from Búshihr to Jidda. The voyage
@@ -352,4 +353,5 @@ export const chapter03ShipDialogues: Record<string, DialogueTree> = {
   [sailorRopes.id]: sailorRopes,
   [abulHasan.id]: abulHasan,
   [widowOfLar.id]: widowOfLar,
+  ...chapter03CabinDialogues,
 };

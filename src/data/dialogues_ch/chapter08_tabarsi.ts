@@ -1,5 +1,6 @@
 import type { DialogueTree } from '../../dialogue/types';
 import { chapter08ForestDialogues } from './chapter08_forest';
+import { chapter08ShrineDialogues } from './chapter08_shrine';
 import { chapter08SiegeDialogues } from './chapter08_siege';
 
 /**
@@ -244,24 +245,6 @@ export const quddusCounsel: DialogueTree = {
   },
 };
 
-/** The shrine of Shaykh Ṭabarsí itself. */
-export const shrine: DialogueTree = {
-  id: 'ch8-shrine',
-  startId: 'g',
-  nodes: {
-    g: {
-      speaker: 'Narrator',
-      text: 'The tomb of Shaykh Ṭabarsí, a scholar of long ago, under a small plain dome. Pilgrims\' candle smoke has darkened the lintel. The companions sleep in its shadow and pray at its door.',
-      choices: [{ text: '(Rest your hand on the door.)', next: 'door' }],
-    },
-    door: {
-      speaker: 'Narrator',
-      onEnter: { set: { ch8TouchedShrine: true } },
-      text: 'The wood is smooth with the touch of many hands. A man who lived and died in quiet now keeps three hundred guests, and an army at his gate. The dead are generous hosts.',
-    },
-  },
-};
-
 /** The Black Standard, raised over the fort. */
 export const standardFort: DialogueTree = {
   id: 'ch8-standard-fort',
@@ -283,6 +266,7 @@ export const standardFort: DialogueTree = {
 export const chapter08Dialogues: Record<string, DialogueTree> = {
   ...chapter08ForestDialogues,
   ...chapter08SiegeDialogues,
+  ...chapter08ShrineDialogues,
   [mullaHusaynWalls.id]: mullaHusaynWalls,
   [mullaHusaynAwaiting.id]: mullaHusaynAwaiting,
   [mullaHusaynWinter.id]: mullaHusaynWinter,
@@ -291,6 +275,5 @@ export const chapter08Dialogues: Record<string, DialogueTree> = {
   [youthDigging.id]: youthDigging,
   [youthWatch.id]: youthWatch,
   [quddusCounsel.id]: quddusCounsel,
-  [shrine.id]: shrine,
   [standardFort.id]: standardFort,
 };

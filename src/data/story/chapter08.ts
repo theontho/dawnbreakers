@@ -97,7 +97,32 @@ export const chapter08Story: ChapterStory = {
     {
       flag: 'ch8TouchedShrine',
       title: 'The Hospitable Dead',
-      body: 'You rested your hand on the door of the tomb of Shaykh Ṭabarsí, a scholar who lived in quiet and now kept three hundred guests and an army at his gate.',
+      body: 'Inside the shrine you rested your hand on the tomb of Shaykh Ṭabarsí, a scholar who lived in quiet and now kept three hundred guests and an army at his gate.',
+    },
+    {
+      flag: 'ch8HeardKeeperDream',
+      title: 'The Keeper\'s Dream',
+      body: 'The old keeper of the shrine dreamt, the night before the companions came, that the Prince of Martyrs and his faithful stood their ground at the tomb. In the morning he saw the black banner between the trees, and stayed.',
+    },
+    {
+      flag: 'ch8TrimmedLamps',
+      title: 'A Short Flame',
+      body: 'You helped the keeper trim the shrine\'s lamps, short, so they would drink less oil. The companions prayed at the tomb in turns all night.',
+    },
+    {
+      flag: 'ch8MetQazviniElder',
+      title: 'The Work That Makes No Noise',
+      body: 'An old man of Qazvín, driven from his shop after the murder of the mujtahid there, coughed by the shrine\'s west wall and prayed for the young men on the walls.',
+    },
+    {
+      flag: 'ch8SawEmptyBedroll',
+      title: 'A Sprig of Box',
+      body: 'In the spring the old man of Qazvín\'s bedroll lay empty, his cloak folded on it, and a sprig of green laid on the cloak.',
+    },
+    {
+      flag: 'ch8KeeperLastLamp',
+      title: 'One Wick',
+      body: 'In the hungry months the keeper kept one wick burning for the Shaykh. Quddús sat each dusk by the wall nearest Mullá Ḥusayn\'s grave and spoke to him low, as if through a door.',
     },
     {
       flag: 'ch8ShowedMercy',

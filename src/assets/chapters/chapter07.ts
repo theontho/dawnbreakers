@@ -1,6 +1,7 @@
 import { paintGardenCanopy, paintTent, QUDDUS_TENT, RECONCILIATION_TENT } from '../art/badasht';
 import { paintCookfire, paintCurtain, paintRosebush } from '../art/badashtProps';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
+import { CH07_TENT_OBJECTS, CH07_TENT_TEXTURE_GENERATORS } from './chapter07Tent';
 
 /**
  * Chapter 7: the Conference of Badasht. Adds the encampment tents, the
@@ -9,6 +10,7 @@ import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapA
  * lamp, and standard tree fall through to the shared base art.
  */
 export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
+  ...CH07_TENT_TEXTURE_GENERATORS,
   'ch7-tent-reconciliation': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2, RECONCILIATION_TENT),
   'ch7-tent-quddus': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2, QUDDUS_TENT),
   'ch7-garden-canopy': (scene, def) => paintGardenCanopy(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2),
@@ -19,6 +21,7 @@ export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 
 /** Placeable map objects owned by chapter 7. */
 export const CH07_OBJECTS: MapObjectDefinition[] = [
+  ...CH07_TENT_OBJECTS,
   { id: 'ch7-tent-quddus', label: 'Quddus Tent', texture: 'ch7-tent-quddus', kind: 'structure', category: 'buildings', color: 0xe0d6b8, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch7-tent-reconciliation', label: 'Reconciliation Tent', texture: 'ch7-tent-reconciliation', kind: 'structure', category: 'buildings', color: 0xc8b174, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
   { id: 'ch7-garden-canopy', label: 'Garden Canopy', texture: 'ch7-garden-canopy', kind: 'structure', category: 'buildings', color: 0x8f6f45, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },

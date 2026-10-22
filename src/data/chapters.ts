@@ -76,7 +76,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Beyond the Qur\'án Gate, summer 1844',
     description: 'The Letters of the Living set out from Shíráz in every direction, bidden to proclaim that the Gate has opened without yet speaking His name. You see them off, and a stranger on the road asks you the one thing you may not say.',
     startScene: 'Road',
-    scenes: ['Road'],
+    scenes: ['Road', 'Ch2Caravanserai'],
   },
   {
     id: 'mecca',
@@ -86,7 +86,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'The Kaʿba, 1844 to 1845',
     description: 'A storm-tossed voyage from Búshihr with Quddús and Mubárak, a lamp that never goes out, and a proclamation by the door of the Kaʿba that almost no one hears.',
     startScene: 'Ch3Ship',
-    scenes: ['Ch3Ship', 'Ch3Mecca'],
+    scenes: ['Ch3Ship', 'Ch3ShipCabin', 'Ch3Mecca'],
   },
   {
     id: 'shiraz-return',
@@ -126,7 +126,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Three gardens, summer 1848',
     description: 'Eighty-one believers gather in three rented gardens. Each day brings a new name; one day brings a proclamation that breaks with the past, and Bahá’u’lláh draws the shaken friends back together.',
     startScene: 'Ch7BadashtHamlet',
-    scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp'],
+    scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp', 'Ch7QuddusTent'],
   },
   {
     id: 'tabarsi',
@@ -136,7 +136,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Mázindarán, 1848 to 1849',
     description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
     startScene: 'Ch8ForestRoad',
-    scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort'],
+    scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort', 'Ch8TabarsiShrine'],
   },
   {
     id: 'tabriz',

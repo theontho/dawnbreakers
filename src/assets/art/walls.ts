@@ -4,7 +4,11 @@ import { css, onLeftWall, onRightWall, onRoof, paintTexture, polygon, shade, typ
 import { fortressStone } from './fortresses';
 import { brick, glazedTiles, planks, plaster, stone, type Surface } from './materials';
 import { archPath, clipped, LIGHT } from './ornaments';
+import { seraiBayFace, seraiWindowFace } from './seraiWalls';
+import { shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace } from './shipCabinWalls';
+import { shrineNicheFace, shrineWallFace } from './shrineInterior';
 import { snowEdge } from './structureParts';
+import { TENT_CLOTH, tentLiningFace } from './tentInterior';
 import { lashing, stakeRow } from './timber';
 
 /**
@@ -125,6 +129,37 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
       ctx.fill();
     },
   },
+  // The pilgrim ship's cabin, below the quarterdeck; see shipCabinWalls.ts.
+  'ch3-cabin-wall': {
+    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-port', 'ch3-cabin-pegs', 'ch3-cabin-curtain'],
+    face: shipTimberFace,
+  },
+  'ch3-cabin-port': {
+    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-pegs', 'ch3-cabin-curtain'],
+    face: shipPortFace,
+  },
+  'ch3-cabin-pegs': {
+    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-port', 'ch3-cabin-curtain'],
+    face: shipPegsFace,
+  },
+  // The partition into the inner room, hung with a curtain that is never drawn aside.
+  'ch3-cabin-curtain': {
+    height: 64, thickness: 0.26, top: 0x5a3a20, cap: 'flat', joins: ['ch3-cabin-wall', 'ch3-cabin-port', 'ch3-cabin-pegs'],
+    face: shipCurtainFace,
+  },
+  // The arcade of lodging rooms round a caravanserai court; see seraiWalls.ts.
+  'ch2-serai-bay': {
+    height: 72, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay-lit', 'ch2-serai-window'],
+    face: (ctx, w, h, l) => seraiBayFace(ctx, w, h, l, false),
+  },
+  'ch2-serai-bay-lit': {
+    height: 72, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-window'],
+    face: (ctx, w, h, l) => seraiBayFace(ctx, w, h, l, true),
+  },
+  'ch2-serai-window': {
+    height: 72, thickness: 0.34, top: 0xb89466, cap: 'coping', joins: ['ch2-serai-bay', 'ch2-serai-bay-lit'],
+    face: seraiWindowFace,
+  },
   'ch3-ship-rail': {
     height: 16, thickness: 0.14, top: 0x8a6440, cap: 'rail',
     face: (ctx, w, h, l) => {
@@ -135,6 +170,20 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
         planks(ctx, w, 6, surf(0x6b4a2c, l, 5), false, 3);
       });
     },
+  },
+  // The shrine of Shaykh Ṭabarsí: limewash, damp and lamp smoke; see shrineInterior.
+  'ch8-shrine-wall': {
+    height: 80, thickness: 0.34, top: 0xcfc8b4, cap: 'flat', joins: ['ch8-shrine-niche'],
+    face: shrineWallFace,
+  },
+  'ch8-shrine-niche': {
+    height: 80, thickness: 0.34, top: 0xcfc8b4, cap: 'flat', joins: ['ch8-shrine-wall'],
+    face: shrineNicheFace,
+  },
+  // A Badasht pavilion seen from inside: printed cotton lining; see tentInterior.
+  'ch7-tent-wall': {
+    height: 50, thickness: 0.12, top: TENT_CLOTH, cap: 'flat',
+    face: tentLiningFace,
   },
 };
 

@@ -62,11 +62,26 @@ export function renderBaseMapWorld(
       .setOrigin(0.5, 1)
       .setScale(figureScale(item.texture))
       .setDepth(pos.sy + 1 + nudge.y);
+    if (item.swing) swingFromTop(scene, sprite, item.swing);
     occludableSprites.push(sprite);
     if (item.present) conditionalDecor.push({ item, sprite });
   }
 
   return { occludableSprites, conditionalDecor };
+}
+
+/** Re-hangs a decor sprite from its top edge and rocks it gently, like a lamp on a chain. */
+function swingFromTop(scene: Phaser.Scene, sprite: Phaser.GameObjects.Image, degrees: number): void {
+  sprite.setOrigin(0.5, 0).setY(sprite.y - sprite.displayHeight);
+  sprite.setAngle(-degrees);
+  scene.tweens.add({
+    targets: sprite,
+    angle: degrees,
+    duration: 2600,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.easeInOut',
+  });
 }
 
 const NATURAL = new Set(
