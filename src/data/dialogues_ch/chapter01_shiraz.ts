@@ -11,6 +11,7 @@ import {
   travellerRumour,
   waterCarrierRumour,
 } from './chapter01_rumours';
+import { chapter01IlkhaniDialogues } from './chapter01_ilkhani';
 
 export { RUMOUR_FLAGS, rumourCount } from './chapter01_rumourFlags';
 
@@ -31,4 +32,5 @@ export const chapter01Dialogues: Record<string, DialogueTree> = {
   [calligrapherRumour.id]: calligrapherRumour,
   [orphanRumour.id]:       orphanRumour,
   [servantRumour.id]:      servantRumour,
+  ...chapter01IlkhaniDialogues,
 };

@@ -19,6 +19,8 @@ export interface GroundSpec {
   imageW: number;
   imageH: number;
   slab: number;
+  /** Indoors: the slab's cut edge is masonry, not earth. */
+  interior?: boolean;
 }
 
 type Rgb = [number, number, number];
@@ -32,6 +34,12 @@ const WATER_DEEP: Rgb = [26, 52, 82];
 const WATER_SHALLOW: Rgb = [52, 92, 112];
 const SIDE_EARTH: Rgb = [84, 62, 40];
 const SIDE_WATER: Rgb = [29, 53, 80];
+const SIDE_MASONRY: Rgb = [150, 124, 92];
+const TERRACOTTA: Rgb = [166, 106, 74];
+const BOARDS: Rgb = [124, 86, 54];
+
+/** Built floors keep straight edges; only natural ground wanders. */
+const BUILT: ReadonlySet<TileKind> = new Set(['floor', 'wood', 'stone']);
 
 /**
  * Low-frequency noise sampled every few pixels and interpolated: the warp
@@ -129,8 +137,9 @@ type KindAt = (x: number, y: number) => TileKind | undefined;
 
 function groundColour(fx: number, fy: number, kindAt: KindAt, fields: Fields, px: number, py: number): Rgb {
   // Wandering boundaries: sample the terrain through a smooth warp.
-  const wx = fields.wx.at(px, py);
-  const wy = fields.wy.at(px, py);
+  const built = BUILT.has(kindAt(Math.floor(fx), Math.floor(fy)) ?? 'grass');
+  const wx = built ? 0 : fields.wx.at(px, py);
+  const wy = built ? 0 : fields.wy.at(px, py);
   const broad = fields.broad.at(px, py);
   const mottle = fields.mottle.at(px, py);
   const sample = (ox: number, oy: number): TileKind =>
@@ -180,6 +189,30 @@ function surface(kind: TileKind, fx: number, fy: number, kindAt: KindAt, broad: 
       let c = scale(STONE, slabShade + (fine - 0.5) * 0.08 + broad * 0.06);
       if (u < 0.05 || v < 0.06) c = scale(c, 0.68);
       else if (u < 0.1 || v < 0.12) c = scale(c, 1.1);
+      return c;
+    }
+    case 'floor': {
+      // Square fired-clay tiles, two per cell each way, in a running grid.
+      const tx = Math.floor(fx * 2);
+      const ty = Math.floor(fy * 2);
+      const u = fx * 2 - tx;
+      const v = fy * 2 - ty;
+      let c = scale(TERRACOTTA, 0.88 + hash2(tx, ty, 53) * 0.2 + (fine - 0.5) * 0.06);
+      if ((tx + ty) % 7 === 0) c = mix(c, [46, 140, 150], 0.55);
+      if (u < 0.06 || v < 0.06) c = scale(c, 0.62);
+      else if (u < 0.12 || v < 0.12) c = scale(c, 1.08);
+      return c;
+    }
+    case 'wood': {
+      // Boards running along the x axis, staggered end joints, a little grain.
+      const row = Math.floor(fy * 4);
+      const along = fx + hash2(row, 0, 61) * 3;
+      const board = Math.floor(along / 1.5);
+      const v = fy * 4 - row;
+      const u = along / 1.5 - board;
+      let c = scale(BOARDS, 0.86 + hash2(board, row, 67) * 0.22);
+      c = scale(c, 1 + Math.sin(along * 40 + row) * 0.03 + (fine - 0.5) * 0.05);
+      if (v < 0.08 || u < 0.015) c = scale(c, 0.6);
       return c;
     }
     case 'water': {
@@ -236,6 +269,12 @@ function slabSide(
   if (depth < 0 || depth > spec.slab) return undefined;
   const t = depth / spec.slab;
   if (cell === 'water') return scale(SIDE_WATER, light * (1 - t * 0.35));
+  if (spec.interior) {
+    // Masonry: courses of dressed stone under a dark plinth line.
+    const course = Math.floor(depth / 6);
+    const joint = depth % 6 < 0.9 || (px + course * 9) % 18 < 0.9;
+    return scale(SIDE_MASONRY, light * (joint ? 0.7 : 1.05 - t * 0.3));
+  }
   const strata = Math.sin(depth * 0.9 + fbm(px * 0.05, depth * 0.2, 13) * 4) * 0.06;
   return scale(SIDE_EARTH, light * (1.15 - t * 0.45 + strata));
 }

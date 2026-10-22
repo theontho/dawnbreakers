@@ -22,6 +22,7 @@ interface BaseMapWorldState {
   originX: number;
   originY: number;
   map: TileKind[][];
+  interior?: boolean;
   blocked: boolean[][];
   buildings: Building[];
   decor: Decor[];

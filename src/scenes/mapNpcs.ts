@@ -55,6 +55,8 @@ export function placeMapNpcs(
   onInteract: (spec: NpcSpec) => void,
   flags: FlagState,
   occluders: readonly Phaser.GameObjects.Image[],
+  /** Other interactables (doors) listed after the people. */
+  extras: readonly Interactable[] = [],
 ): MapNpcs {
   ensureMarkerTexture(scene);
   const placed: PlacedNpc[] = specs.map(spec => {
@@ -123,6 +125,7 @@ export function placeMapNpcs(
         const unheard = !latest[talkedFlag(resolveNpcDialogue(npc.spec, latest))];
         npc.marker.setVisible(here && unheard);
       }
+      handle.interactables.push(...extras);
     },
   };
   handle.refresh(flags);

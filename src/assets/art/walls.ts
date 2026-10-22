@@ -2,8 +2,8 @@ import type Phaser from 'phaser';
 import { straw } from './badashtProps';
 import { css, onLeftWall, onRightWall, onRoof, paintTexture, polygon, shade, type Ctx, type IsoBox } from './canvasKit';
 import { fortressStone } from './fortresses';
-import { brick, planks, plaster, stone, type Surface } from './materials';
-import { clipped, LIGHT } from './ornaments';
+import { brick, glazedTiles, planks, plaster, stone, type Surface } from './materials';
+import { archPath, clipped, LIGHT } from './ornaments';
 import { snowEdge } from './structureParts';
 import { lashing, stakeRow } from './timber';
 
@@ -102,6 +102,27 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     face: (ctx, w, h) => {
       ctx.fillStyle = css(0x1a120a);
       ctx.fillRect(0, 0, w, h);
+    },
+  },
+  // Indoors; see interiorFace.
+  'interior-wall': {
+    height: 72, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-mihrab'],
+    face: (ctx, w, h, l) => interiorFace(ctx, w, h, l),
+  },
+  // The prayer niche set into the qibla wall: a tiled frame round a pointed arch.
+  'interior-mihrab': {
+    height: 72, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-wall'],
+    face: (ctx, w, h, l) => {
+      interiorFace(ctx, w, h, l);
+      ctx.fillStyle = css(shade(0x24477a, l));
+      ctx.fillRect(5, 8, 22, h - 8);
+      glazedFrame(ctx, 6, 9, 20, h - 10, l);
+      archPath(ctx, 10, h - 2, 12, h - 22);
+      ctx.fillStyle = css(shade(0xe8d9a8, l * 0.8));
+      ctx.fill();
+      archPath(ctx, 12, h - 2, 8, h - 28);
+      ctx.fillStyle = css(shade(0x6a5638, l));
+      ctx.fill();
     },
   },
   'ch3-ship-rail': {
@@ -291,6 +312,36 @@ function outlineEdges(ctx: Ctx, box: IsoBox, p: Part, covered: (a: number, b: nu
 function line(ctx: Ctx, a: { x: number; y: number }, b: { x: number; y: number }): void {
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
+}
+
+/** Indoor wall: lime plaster over a dado of glazed tile, with a moulded cornice. */
+function interiorFace(ctx: Ctx, w: number, h: number, l: number): void {
+  plaster(ctx, w, h, surf(0xd6c9aa, l, 301));
+  clipped(ctx, w, h, () => {
+    ctx.translate(0, h - 18);
+    glazedTiles(ctx, w, 18, surf(0x2e7c8a, l, 302), 4);
+  });
+  ctx.fillStyle = css(shade(0xe8d9a8, l));
+  ctx.fillRect(0, h - 19, w, 1.5);
+  ctx.fillStyle = css(shade(0xb8a888, l));
+  ctx.fillRect(0, 0, w, 3);
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(0, 3, w, 1);
+}
+
+/** A glazed-tile frame (turquoise border, cream bead) round a panel. */
+function glazedFrame(ctx: Ctx, x: number, y: number, w: number, h: number, l: number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.rect(x + 3, y + 3, w - 6, h - 3);
+  ctx.clip('evenodd');
+  ctx.translate(x, y);
+  glazedTiles(ctx, w, h, surf(0x2e8c96, l, 303), 3);
+  ctx.restore();
+  ctx.strokeStyle = css(shade(0xe8d9a8, l), 0.9);
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
 }
 
 /** Rammed earth: plaster with the horizontal lift lines of the formwork. */

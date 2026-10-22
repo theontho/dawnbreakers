@@ -3,7 +3,8 @@ import Phaser from 'phaser';
 export const TILE_W = 64;
 export const TILE_H = 32;
 
-export type TileKind = 'grass' | 'path' | 'stone' | 'water' | 'sand';
+/** Ground kinds; `floor` (tiled or brick) and `wood` (boards, decks) are for interiors. */
+export type TileKind = 'grass' | 'path' | 'stone' | 'water' | 'sand' | 'floor' | 'wood';
 
 export interface IsoPoint {
   x: number;

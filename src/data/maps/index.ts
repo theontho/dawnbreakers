@@ -1,5 +1,6 @@
 import type { MapDefinition } from './types';
 import { cityMap } from './city';
+import { ch1IlkhaniMosqueMap } from './ch1IlkhaniMosque';
 import { houseQuarterMap } from './houseQuarter';
 import { roadMap } from './road';
 import { ch3ShipMap } from './ch3Ship';
@@ -29,6 +30,7 @@ export type { MapDefinition } from './types';
  */
 export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   cityMap,
+  ch1IlkhaniMosqueMap,
   houseQuarterMap,
   roadMap,
   ch3ShipMap,

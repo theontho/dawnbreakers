@@ -66,7 +66,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Shíráz, 22 May 1844',
     description: 'You arrive in Shíráz with Mullá Ḥusayn, hear what the city whispers of a young Siyyid, and keep vigil at a lamplit door through the night the new age begins.',
     startScene: 'City',
-    scenes: ['City', 'HouseQuarter'],
+    scenes: ['City', 'Ch1IlkhaniMosque', 'HouseQuarter'],
   },
   {
     id: 'road',

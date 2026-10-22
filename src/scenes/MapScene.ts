@@ -37,12 +37,13 @@ import {
 } from './baseMapInteractables';
 import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
 import { connectWalls } from './mapWalls';
+import { placeMapDoors, type MapDoors } from './mapDoors';
 import { PERSON_SCALE } from './figureScale';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
 import { findPath, screenToGrid, type GridPoint } from './mapPathing';
-import type { MapDefinition, NpcSpec } from '../data/maps/types';
+import type { DoorSpec, MapDefinition, NpcSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
 
 const UI_DEPTH = 10000;
@@ -70,6 +71,7 @@ export class MapScene extends Phaser.Scene {
   private occludableSprites: Phaser.GameObjects.Image[] = [];
   private conditionalDecor: RenderedWorld['conditionalDecor'] = [];
   private ambience?: AmbienceHandle;
+  private doors!: MapDoors;
   private restoreAudio: () => void = () => {};
   private revealMasks: RevealMaskHandle = { states: [], candidates: [] };
   private highlights: InteractableHighlightHandle = createInteractableHighlightHandle();
@@ -148,6 +150,14 @@ export class MapScene extends Phaser.Scene {
     this.conditionalDecor = world.conditionalDecor;
     this.refreshDecor(getFlags());
     this.refreshExitGlows = renderExitGlows(this, this.worldState());
+    this.doors = placeMapDoors(
+      this,
+      this.definition.doors ?? [],
+      (gx, gy) => this.gridToScreen(gx, gy),
+      door => this.enterDoor(door),
+      () => playSfx('locked'),
+      getFlags(),
+    );
     this.npcs = placeMapNpcs(
       this,
       this.definition.npcs,
@@ -156,6 +166,7 @@ export class MapScene extends Phaser.Scene {
       spec => this.talkTo(spec),
       getFlags(),
       this.occludableSprites,
+      this.doors.interactables,
     );
     this.spawnPlayer();
     this.applyAmbience(getFlags());
@@ -235,6 +246,7 @@ export class MapScene extends Phaser.Scene {
       originX: this.originX,
       originY: this.originY,
       map: this.map,
+      interior: this.definition.interior,
       blocked: this.blocked,
       buildings: this.buildings,
       decor: this.decor,
@@ -283,6 +295,7 @@ export class MapScene extends Phaser.Scene {
     this.bookmark();
     const flags = getFlags();
     this.refreshDecor(flags);
+    this.doors.refresh(flags);
     this.npcs.refresh(flags);
     this.applyAmbience(flags);
     this.refreshExitGlows();
@@ -432,7 +445,11 @@ export class MapScene extends Phaser.Scene {
     }
   }
 
-  private transitionTo(exit: MapExit): void {
+  private enterDoor(door: DoorSpec): void {
+    this.transitionTo({ targetScene: door.targetScene, targetSpawnX: door.targetSpawnX, targetSpawnY: door.targetSpawnY });
+  }
+
+  private transitionTo(exit: Pick<MapExit, 'targetScene' | 'targetSpawnX' | 'targetSpawnY'>): void {
     this.moveCooldown = 600;
     this.walkPath.length = 0;
     playSfx('exit');

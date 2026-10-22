@@ -51,6 +51,9 @@ export const CH01_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
       foliageClump(ctx, mid.x, mid.y - 2, 7, { leaf: 0x436f3c, seed: 17, bloom: 0xd85a6a, masses: 5 });
     });
   },
+
+  /** Mullá Ḥusayn's nephew, asleep on the travel bundles under his cloak. */
+  'ch1-sleeping-nephew': (scene, def) => paintTexture(scene, def.texture, 48, 28, ctx => drawSleeper(ctx)),
 };
 
 /** A swift in flight: two scythe wings and a forked tail. */
@@ -141,7 +144,50 @@ export const CH01_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0x46345f, skin: 0xe6c89a, clothing: { style: 'vest', secondary: 0xe8d8b0, accent: 0x6f5636 }, hat: { style: 'cap', color: 0x5f4a72 }, shadow: true } },
   { id: 'ch1-npc-beggar', label: 'Mosque Orphan', texture: 'ch1-npc-beggar', kind: 'character', category: 'characters', color: 0x6b5a44, blocks: true,
     character: { body: 0x6b5a44, skin: 0xcaa978, clothing: { style: 'cloak', secondary: 0x4a3a2a, accent: 0x8a7450 }, hat: { style: 'hood', color: 0x4a3a2a }, shadow: true } },
+  { id: 'ch1-sleeping-nephew', label: 'Sleeping Traveller', texture: 'ch1-sleeping-nephew', kind: 'prop', category: 'people-crowds', color: 0x4a4032, blocks: true },
+  { id: 'ch1-ilkhani-attendant', label: 'Mosque Attendant', texture: 'ch1-ilkhani-attendant', kind: 'character', category: 'characters', color: 0x5a4a3a, blocks: true,
+    character: { body: 0x5a4a3a, skin: 0xcfae80, clothing: { style: 'apron', secondary: 0xd8cfb8, accent: 0x8a7450 }, hat: { style: 'cap', color: 0x3a3226 }, shadow: true } },
+  { id: 'ch1-ilkhani-student', label: 'Student', texture: 'ch1-ilkhani-student', kind: 'character', category: 'characters', color: 0x3a4a5a, blocks: true,
+    character: { body: 0x3a4a5a, skin: 0xe2c89c, clothing: { style: 'robe', secondary: 0xd8cfb8, accent: 0x6f5636 }, hat: { style: 'turban', color: 0xe8e5dc, accent: 0x3a4a5a }, shadow: true } },
   { id: 'ch1-npc-servant', label: 'House Servant', texture: 'ch1-npc-servant', kind: 'character', category: 'characters', color: 0x7a5a3a, blocks: true,
     // Mubárak, the household servant, was Ethiopian; matches his look in chapters 2 to 4.
     character: { body: 0x3f4a5a, skin: 0x6b4a32, clothing: { style: 'robe', secondary: 0xd8cfb8, accent: 0xc9a55c }, hat: { style: 'turban', color: 0xf2ead6, accent: 0x3f4a5a }, shadow: true } },
 ];
+
+function drawSleeper(ctx: Ctx): void {
+  ctx.fillStyle = 'rgba(10,6,3,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(25, 22, 20, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // The bundles he sleeps on.
+  for (const [x, y, rx, color] of [[16, 19, 9, 0x8a6a48], [30, 20, 10, 0x6a5a40]] as const) {
+    ctx.fillStyle = css(color);
+    ctx.beginPath();
+    ctx.ellipse(x, y, rx, 4.5, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // A body under a cloak, knees drawn up, turban for a pillow.
+  ctx.fillStyle = css(0x4a4032);
+  ctx.beginPath();
+  ctx.moveTo(10, 15);
+  ctx.quadraticCurveTo(20, 6, 34, 11);
+  ctx.quadraticCurveTo(40, 13, 38, 17);
+  ctx.quadraticCurveTo(24, 20, 10, 17);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = css(shade(0x4a4032, 1.35));
+  ctx.beginPath();
+  ctx.moveTo(13, 13);
+  ctx.quadraticCurveTo(22, 8, 32, 10);
+  ctx.lineTo(31, 12);
+  ctx.quadraticCurveTo(22, 10, 14, 15);
+  ctx.fill();
+  ctx.fillStyle = css(0xe8e2d0);
+  ctx.beginPath();
+  ctx.ellipse(8, 15, 4.5, 3.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = css(0xd9c79a);
+  ctx.beginPath();
+  ctx.arc(11, 13.5, 2.4, 0, Math.PI * 2);
+  ctx.fill();
+}

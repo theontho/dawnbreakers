@@ -34,6 +34,32 @@ export interface MapDefinition {
    * winter after a siege); it is re-evaluated after every dialogue.
    */
   ambience?: MapAmbience | ((flags: FlagState) => MapAmbience);
+  /** Doorways into other maps (usually a building's interior). */
+  doors?: DoorSpec[];
+  /**
+   * An indoor map: the cut edge of the slab is drawn as masonry rather than
+   * earth. Pair it with interior walls along the back edges and a door or
+   * edge exit back outside.
+   */
+  interior?: boolean;
+}
+
+/**
+ * A door the player can go through: stand next to the building cell
+ * `gridX, gridY` (where the door is painted) and press E or click it.
+ */
+export interface DoorSpec {
+  gridX: number;
+  gridY: number;
+  /** Prompt while the door is open, ending with `[E]`, e.g. "Enter the mosque  [E]". */
+  prompt: string;
+  targetScene: string;
+  targetSpawnX: number;
+  targetSpawnY: number;
+  /** When provided, the door only opens while this returns true. */
+  requires?: (flags: FlagState) => boolean;
+  /** Prompt while the door is shut. */
+  lockedLabel?: string;
 }
 
 export type ParticleKind = 'dust' | 'motes' | 'fireflies' | 'snow' | 'embers' | 'spray' | 'leaves' | 'rain';

@@ -153,9 +153,11 @@ export const cityMap: MapDefinition = {
     { gridX: 4, gridY: 14, texture: 'ch1-npc-water-carrier',
       prompt: 'Speak with the Water-Carrier  [E]',
       dialogue: 'rumour-water-carrier' },
-    { gridX: 18, gridY: 6, texture: 'ch1-brother',
-      prompt: 'Speak with Mullá Ḥusayn\'s Brother  [E]',
-      dialogue: 'ch1-brother' },
+  ],
+  doors: [
+    // The Masjid-i-Ílkhání, where Mullá Ḥusayn's brother and nephew wait.
+    { gridX: 17, gridY: 4, prompt: 'Enter the Masjid-i-Ílkhání  [E]',
+      targetScene: 'Ch1IlkhaniMosque', targetSpawnX: 7, targetSpawnY: 10 },
   ],
   exits: [
     { fromX: 12, fromY: 0, dx: 0, dy: -1,

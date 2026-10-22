@@ -18,6 +18,7 @@ interface GroundState {
   originX: number;
   originY: number;
   map: TileKind[][];
+  interior?: boolean;
 }
 
 export function renderMapGround(scene: Phaser.Scene, state: GroundState): Phaser.GameObjects.Image {
@@ -34,6 +35,7 @@ export function renderMapGround(scene: Phaser.Scene, state: GroundState): Phaser
     imageW: bounds.width,
     imageH: bounds.height,
     slab: SLAB_DEPTH,
+    interior: state.interior,
   }), 0, 0);
   texture.refresh();
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.textures.remove(key));

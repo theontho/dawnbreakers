@@ -10,6 +10,8 @@ export const TILE_OPTIONS: MapTileDefinition[] = [
   { kind: 'stone', label: 'Stone', color: 0x6b5a44, edge: 0x4a3d2e, texture: 'tile-stone', code: 's' },
   { kind: 'water', label: 'Water', color: 0x2c4a6b, edge: 0x1a3050, texture: 'tile-water', code: 'w' },
   { kind: 'sand', label: 'Sand', color: 0xb89968, edge: 0x856b42, texture: 'tile-sand', code: 'a' },
+  { kind: 'floor', label: 'Tiled Floor', color: 0xa66a4a, edge: 0x6e4430, texture: 'tile-floor', code: 'f' },
+  { kind: 'wood', label: 'Wooden Floor', color: 0x7c5636, edge: 0x4e3420, texture: 'tile-wood', code: 'd' },
 ];
 
 export const TILE_CODE = Object.fromEntries(TILE_OPTIONS.map(tile => [tile.kind, tile.code])) as Record<TileKind, string>;
@@ -28,6 +30,8 @@ const BASE_OBJECTS: MapObjectDefinition[] = [
   { id: 'rug', label: 'Rug', texture: 'rug', kind: 'prop', category: 'furnishings', color: 0x7a1f1f, blocks: false },
   { id: 'well', label: 'Well', texture: 'well', kind: 'prop', category: 'bridges-water', color: 0x8f8068, blocks: true },
   { id: 'closed-door', label: 'Closed Door', texture: 'closed-door', kind: 'prop', category: 'furnishings', color: 0x5b3320, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'interior-mihrab', label: 'Prayer Niche', texture: 'interior-mihrab', kind: 'prop', category: 'shrines', color: 0x24477a, blocks: true },
+  { id: 'interior-wall', label: 'Interior Wall', texture: 'interior-wall', kind: 'prop', category: 'barriers-prison', color: 0xd6c9aa, blocks: true },
   { id: 'writing-desk', label: 'Writing Desk', texture: 'writing-desk', kind: 'prop', category: 'furnishings', color: 0x8a5a2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'crowd', label: 'Crowd', texture: 'crowd', kind: 'prop', category: 'people-crowds', color: 0x6b5a44, blocks: true },
   { id: 'crowd-shadow', label: 'Crowd Shadow', texture: 'crowd-shadow', kind: 'prop', category: 'people-crowds', color: 0x2a221e, blocks: false },
