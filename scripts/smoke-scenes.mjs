@@ -38,6 +38,72 @@ await page.addInitScript(() => {
   localStorage.setItem('dawnbreakers.locale', 'en');
 });
 
+/**
+ * Runs in the page: talks to every NPC on map `k` in turn, choosing the first
+ * open choice until the dialogue ends. Waits on scene state rather than fixed
+ * sleeps, so a slow, loaded machine only takes longer. A dialogue still open
+ * after its step budget (its first choices go round in a loop) is closed by
+ * hand, and the map resumed, before the next NPC.
+ */
+async function walkDialogues(k) {
+  const game = window.__game;
+  const scene = game.scene.getScene(k);
+  const MAX_STEPS = 60;
+  const until = async (ready, ms = 10000) => {
+    const end = performance.now() + ms;
+    while (!ready()) {
+      if (performance.now() > end) return false;
+      await new Promise((r) => setTimeout(r, 16));
+    }
+    return true;
+  };
+  const dialogueOpen = () => game.scene.isActive('Dialogue') || game.scene.isPaused('Dialogue');
+  // The map is back in play: running, with no dialogue or chapter card over it.
+  const settle = async () => {
+    await until(() => !dialogueOpen() && (game.scene.isActive(k) || game.scene.isActive('ChapterEnd')), 3000);
+    if (game.scene.isActive('ChapterEnd') || game.scene.isPaused('ChapterEnd')) game.scene.stop('ChapterEnd');
+    if (game.scene.isPaused(k)) game.scene.resume(k);
+    return until(() => game.scene.isActive(k) && !dialogueOpen());
+  };
+  let talked = 0;
+  const unfinished = [];
+  // Doors lead to other maps; only people and story objects open dialogues.
+  const people = scene.npcs.interactables.filter((i) => !scene.doors.interactables.includes(i));
+  for (const npc of people) {
+    if (!(await settle())) {
+      unfinished.push(`${k} did not come back after a dialogue; skipped the rest`);
+      break;
+    }
+    npc.action();
+    const dialogue = game.scene.getScene('Dialogue');
+    const who = npc.prompt.replace(/\s*\[E\]$/, '');
+    if (!(await until(() => game.scene.isActive('Dialogue'), 5000))) {
+      unfinished.push(`${who} opened no dialogue`);
+      continue;
+    }
+    const tree = dialogue.tree;
+    let ended = false;
+    for (let step = 0; step < MAX_STEPS && !ended; step++) {
+      const node = dialogue.tree.nodes[dialogue.currentId];
+      const flags = JSON.parse(localStorage.getItem('dawnbreakers.flags.v1') ?? '{}');
+      const choices = node?.choices?.filter((c) => !c.requires || c.requires(flags)) ?? [{}];
+      const choice = choices[0] ?? {};
+      // Choosing a choice that leads nowhere finishes the dialogue; its stop lands on the next frame.
+      ended = !node || !choice.next || !dialogue.tree.nodes[choice.next];
+      dialogue.choose(choice);
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    if (!ended) {
+      unfinished.push(`${who} ("${tree.id}") did not end in ${MAX_STEPS} first choices; closed it`);
+      game.scene.stop('Dialogue');
+      game.scene.resume(k);
+    }
+    talked++;
+  }
+  await settle();
+  return { talked, unfinished };
+}
+
 let failed = false;
 try {
   await page.goto(url);
@@ -96,31 +162,7 @@ try {
     const tight = reach.filter((r) => r.sides === 1 && !r.doorway);
 
     // Open each NPC's dialogue and walk the first choice path to its end.
-    const talked = await page.evaluate(async (k) => {
-      const game = window.__game;
-      const scene = game.scene.getScene(k);
-      const npcs = scene.npcs.interactables.slice();
-      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-      let count = 0;
-      for (const npc of npcs) {
-        npc.action();
-        await sleep(60);
-        const dialogue = game.scene.getScene('Dialogue');
-        for (let step = 0; step < 40 && game.scene.isActive('Dialogue'); step++) {
-          const node = dialogue.tree.nodes[dialogue.currentId];
-          const flags = JSON.parse(localStorage.getItem('dawnbreakers.flags.v1') ?? '{}');
-          const choices = node.choices?.filter((c) => !c.requires || c.requires(flags)) ?? [{}];
-          dialogue.choose(choices[0] ?? {});
-          await sleep(20);
-        }
-        if (game.scene.isActive('ChapterEnd')) {
-          game.scene.stop('ChapterEnd');
-          game.scene.resume(k);
-        }
-        count++;
-      }
-      return count;
-    }, key);
+    const { talked, unfinished } = await page.evaluate(walkDialogues, key);
 
     const sceneErrors = errors.slice(before);
     const status = sceneErrors.length ? 'FAIL' : 'ok';
@@ -128,6 +170,8 @@ try {
     console.log(`${status.padEnd(4)} ${key.padEnd(20)} ${String(fps).padStart(4)} fps  ${talked} npc dialogues`);
     for (const e of sceneErrors) console.log(`       ${e}`);
     for (const r of tight) console.log(`       tight: ${r.name} at ${r.at} is reachable from one side only`);
+    // A dialogue whose first choices loop is closed by hand; that is only a note, page errors still fail.
+    for (const u of unfinished) console.log(`       note: ${u}`);
   }
 } catch (error) {
   failed = true;
