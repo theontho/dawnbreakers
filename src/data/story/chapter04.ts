@@ -31,7 +31,7 @@ export const chapter04Story: ChapterStory = {
     {
       flag: 'quddusWitnessed',
       title: 'Quddús in the Square',
-      body: 'You found Quddús under guard, to be driven from Shíráz for the new words sounded in the call to prayer. He told you not to look at the cord on his wrists, but at the sky.',
+      body: 'You found Quddús under guard, to be driven from Shíráz for the new words sounded in the call to prayer. They had pierced his nose to lead him by a cord through the streets. He told you not to look at the halter, but at the sky.',
     },
     {
       flag: 'ch4Response',

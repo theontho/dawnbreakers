@@ -93,7 +93,7 @@ export const kulaynStory: ChapterStory = {
     {
       flag: 'kulaynHeardKandi',
       title: 'Praise for Tears',
-      body: 'The Báb\'s face shone as He read. Nabíl records that the letter brought Him solace and strength: His weeping gave way to praise and thanksgiving, until the news of Shaykh Ṭabarsí clouded it.',
+      body: 'The Báb\'s face shone as He read. Nabíl records that the letter brought Him solace and strength: His weeping gave way, for a time, to praise and thanksgiving.',
     },
     {
       flag: 'kulaynHeardMoonlit',

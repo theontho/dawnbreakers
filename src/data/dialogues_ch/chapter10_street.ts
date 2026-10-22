@@ -50,7 +50,7 @@ export const ch10Shopkeeper: DialogueTree = {
     houses: {
       speaker: 'A Shopkeeper',
       onEnter: { set: { ch10HeardAttempt: true } },
-      text: 'Many. Even a nobleman of Núr, Bahá\'u\'lláh, who was the Grand Vizier\'s guest in the mountains when it happened. When He heard He was accused, He rode to the royal camp of His own accord. Who rides to his own accusers?',
+      text: 'Many. Even a nobleman of Núr, Mírzá Ḥusayn-ʿAlí, who was the Grand Vizier\'s guest in the mountains when it happened. When He heard He was accused, He rode to the royal camp of His own accord. Who rides to his own accusers?',
       choices: [{ text: '"Someone with nothing to hide."' }],
     },
     blame: {
@@ -99,7 +99,7 @@ export const ch10WaterSeller: DialogueTree = {
     },
     who: {
       speaker: 'A Water-Seller',
-      text: 'Bahá\'u\'lláh, son of the old Vazír of Núr. I filled His household\'s jars for ten years. The poor of this quarter called Him their father. Yesterday the poor threw stones.',
+      text: 'Mírzá Ḥusayn-ʿAlí, son of the old Vazír of Núr. I filled His household\'s jars for ten years. The poor of this quarter called Him their father. Yesterday the poor threw stones.',
       choices: [{ text: '"Did no one stop them?"', next: 'woman' }],
     },
     woman: {

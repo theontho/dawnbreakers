@@ -14,7 +14,7 @@ export const ch4QuddusWitness: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Quddús',
-      text: 'You have reached Shíráz in a bitter hour, friend. Do not look at the cord on my wrists. Look at the sky over the minaret. It is the same sky that covered us at sea.',
+      text: '(His beard is burned short, and a cord runs from his pierced nose to a guard\'s fist.) You have reached Shíráz in a bitter hour, friend. Do not look at the halter. Look at the sky over the minaret. It is the same sky that covered us at sea.',
       choices: [
         { text: '"What has happened here?"', next: 'what' },
         { text: '"Are you hurt?"', next: 'hurt' },
@@ -22,6 +22,8 @@ export const ch4QuddusWitness: DialogueTree = {
           requires: f => f.recognised === true },
         { text: '"I am still searching. Is this what searching costs?"', next: 'cost',
           requires: f => f.recognised === false },
+        { text: '"Is this what it costs, to follow Him?"', next: 'cost',
+          requires: f => f.recognised !== false },
       ],
     },
     what: {
