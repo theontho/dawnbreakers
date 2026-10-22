@@ -7,6 +7,7 @@ import { CH04_OBJECTS, CH04_TEXTURE_GENERATORS } from './chapter04';
 import { CH05_OBJECTS, CH05_TEXTURE_GENERATORS } from './chapter05';
 import { KULAYN_OBJECTS, KULAYN_TEXTURE_GENERATORS } from './kulayn';
 import { CH06_OBJECTS, CH06_TEXTURE_GENERATORS } from './chapter06';
+import { QAZVIN_OBJECTS } from './qazvin';
 import { CH07_OBJECTS, CH07_TEXTURE_GENERATORS } from './chapter07';
 import { TRIAL_OBJECTS, TRIAL_TEXTURE_GENERATORS } from './trial';
 import { CH08_OBJECTS, CH08_TEXTURE_GENERATORS } from './chapter08';
@@ -56,6 +57,7 @@ export const CHAPTER_OBJECTS: MapObjectDefinition[] = [
   ...CH05_OBJECTS,
   ...KULAYN_OBJECTS,
   ...CH06_OBJECTS,
+  ...QAZVIN_OBJECTS,
   ...CH07_OBJECTS,
   ...TRIAL_OBJECTS,
   ...CH08_OBJECTS,

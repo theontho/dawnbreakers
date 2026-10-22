@@ -22,6 +22,8 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('medina', 'Medina', [39.61, 24.47], 'The city of the Prophet in the Ḥijáz, where he is buried.'),
   place('jidda', 'Jidda', [39.19, 21.49], 'The Red Sea port where pilgrims landed for Mecca.'),
   place('qazvin', 'Qazvín', [50.0, 36.27], 'A city west of Ṭihrán, home of Ṭáhirih.'),
+  place('hamadan', 'Hamadán', [48.51, 34.8], 'An old city of western Persia on the road from Baghdád, where Ṭáhirih taught for two months in 1847.'),
+  place('kirmanshah', 'Kirmánsháh', [47.07, 34.31], 'The first great Persian city on the road east from Baghdád.'),
   place('kashan', 'Káshán', [51.43, 33.98], 'A city on the edge of the central desert, known for its silk and carpets.'),
   place('kulayn', 'Kulayn', [51.30, 35.34], 'A village half a day\'s ride south of Ṭihrán, the birthplace and resting-place of Shaykh Muḥammad-ibn-i-Yaʿqúb-i-Kulayní, who gathered the traditions of the Imáms. It belonged to Ḥájí Mírzá Áqásí, whose own tent was pitched there for the Báb in the spring of 1847.'),
   place('yazd', 'Yazd', [54.37, 31.9], 'A desert city of wind-catchers in central Persia.'),

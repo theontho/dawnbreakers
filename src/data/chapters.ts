@@ -11,6 +11,7 @@ export type ChapterId =
   | 'isfahan'
   | 'kashan-kulayn'
   | 'mountain-prisons'
+  | 'tahirih'
   | 'badasht'
   | 'tabriz-trial'
   | 'tabarsi'
@@ -34,6 +35,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   isfahan: 'isfahanComplete',
   'kashan-kulayn': 'kulaynComplete',
   'mountain-prisons': 'bayanComplete',
+  tahirih: 'qazvinComplete',
   badasht: 'badashtComplete',
   'tabriz-trial': 'trialComplete',
   tabarsi: 'tabarsiComplete',
@@ -140,6 +142,15 @@ const SPECS: ChapterSpec[] = [
     description: 'Snow on the ramparts of Mákú and Chihríq. A warden asks forgiveness, Mullá Ḥusayn arrives on foot from Mashhad, and in a prison without a lamp the Bayán is written down.',
     startScene: 'Ch6Maku',
     scenes: ['Ch6Maku', 'Ch6MakuChamber', 'Ch6Chihriq'],
+  },
+  {
+    id: 'tahirih',
+    story: CHAPTER_STORIES['tahirih'],
+    title: 'The Solace of the Eyes',
+    subtitle: 'Karbilá and Qazvín, 1845 to 1848',
+    description: 'Go back to Karbilá, where a woman who never saw the Báb teaches His Cause from behind a curtain. Follow her home to Qazvín, where her uncle is struck down at dawn prayer and she is shut in her father\'s house, and keep watch in the lane on the night a beggar woman comes to the gate.',
+    startScene: 'QazvinKarbila',
+    scenes: ['QazvinKarbila', 'QazvinLane', 'QazvinHouse'],
   },
   {
     id: 'badasht',
