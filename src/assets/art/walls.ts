@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
-import { straw } from './badashtProps';
+import { GARDEN_WALL_H, gardenWallFace } from './badashtProps';
 import { css, onLeftWall, onRightWall, onRoof, paintTexture, polygon, shade, type Ctx, type IsoBox } from './canvasKit';
-import { fortressStone } from './fortresses';
+import { RAMPART, rampartFace, rampartMerlons } from './fortressProps';
 import { brick, glazedTiles, plaster, stone, type Surface } from './materials';
 import { archPath, clipped, LIGHT } from './ornaments';
 import { SERAI_BAY_H, seraiBayFace, seraiWindowFace } from './seraiWalls';
@@ -9,11 +9,11 @@ import {
   SHIP_BULWARK_H, SHIP_CABIN_WALL_H, shipBulwarkFace, shipCurtainFace, shipPegsFace, shipPortFace, shipTimberFace,
 } from './shipCabinWalls';
 import { shrineNicheFace, shrineWallFace } from './shrineInterior';
-import { snowEdge } from './structureParts';
-import { TENT_CLOTH, tentLiningFace } from './tentInterior';
+import { TENT_CLOTH, TENT_WALL_H, tentLiningFace } from './tentInterior';
 import { lashing, stakeRow } from './timber';
 import { COMPOUND_WALL, compoundWallFace, TOWN_WALL, townWallFace } from './town/townWalls';
 import { vakilWallFace } from './vakilHall';
+import { BRIDGE_GALLERY_H, bridgeGalleryFace } from './isfahanBridge';
 
 /**
  * Connected walls. A wall is placed one cell at a time, but each cell's
@@ -32,7 +32,7 @@ export const WALL_W = 8;
 type Cap = 'merlons' | 'snowMerlons' | 'stakes' | 'coping' | 'rail' | 'flat' | 'battlements' | 'mudCoping';
 
 /** Headroom each cap needs above the wall. */
-const CAP_PAD: Record<Cap, number> = { merlons: 8, snowMerlons: 8, stakes: 10, coping: 3, rail: 3, flat: 3, battlements: 18, mudCoping: 6 };
+const CAP_PAD: Record<Cap, number> = { merlons: 8, snowMerlons: 22, stakes: 10, coping: 3, rail: 3, flat: 3, battlements: 18, mudCoping: 6 };
 
 export interface WallStyle {
   height: number;
@@ -49,12 +49,11 @@ export interface WallStyle {
 const surf = (base: number, light: number, seed: number): Surface => ({ base, light, seed });
 
 export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
+  // The mountain fortresses' outer wall (chapter 6), 8 m to the merlon tops; see fortressProps.
   'ch6-rampart': {
-    height: 46, thickness: 0.5, top: 0x7a838a, cap: 'snowMerlons',
-    face: (ctx, w, h, l) => {
-      fortressStone(ctx, w, h, 0x6a737a, l, 141);
-      snowEdge(ctx, w, 2.5, 142, l);
-    },
+    height: RAMPART.height, thickness: 0.6, top: 0x7a838a, cap: 'snowMerlons',
+    joins: ['ch6-fortress-gate', 'ch6-maku-fortress', 'ch6-chihriq-fortress'],
+    face: rampartFace,
   },
   'ch10-city-wall': {
     height: 60, thickness: 0.55, top: 0xa88660, cap: 'merlons', joins: ['gate'],
@@ -87,12 +86,10 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
       }
     },
   },
+  // Badasht's garden walls (chapter 7), at true scale; see badashtProps.
   'ch7-garden-wall': {
-    height: 32, thickness: 0.3, top: 0xa88456, cap: 'coping',
-    face: (ctx, w, h, l) => {
-      plaster(ctx, w, h, surf(0x9c7648, l, 261));
-      straw(ctx, w, h, l, 262);
-    },
+    height: GARDEN_WALL_H, thickness: 0.34, top: 0xa88456, cap: 'mudCoping',
+    face: gardenWallFace,
   },
   'ch8-palisade': {
     height: 42, thickness: 0.3, top: 0x5a4028, cap: 'stakes', joins: ['ch8-watchtower'],
@@ -169,7 +166,7 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // A Badasht pavilion seen from inside: printed cotton lining; see tentInterior.
   'ch7-tent-wall': {
-    height: 50, thickness: 0.12, top: TENT_CLOTH, cap: 'flat',
+    height: TENT_WALL_H, thickness: 0.12, top: TENT_CLOTH, cap: 'flat',
     face: tentLiningFace,
   },
   // True scale (the Shíráz pilot): the city wall, rammed earth under big merlons; see town/townWalls.
@@ -187,6 +184,11 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   'ch4-vakil-wall': {
     height: 150, thickness: 0.4, top: 0xc8a070, cap: 'coping', joins: ['ch4-qibla-iwan', 'ch4-prayer-arch', 'ch4-vakil-portal'],
     face: vakilWallFace,
+  },
+  // The Sí-o-Se-Pol's west gallery seen from the roadway (chapter 5): an arch to each cell; see isfahanBridge.ts.
+  'ch5-bridge-gallery': {
+    height: BRIDGE_GALLERY_H, thickness: 0.9, top: 0xc9a46a, cap: 'coping',
+    face: (ctx, w, h, l) => bridgeGalleryFace(ctx, w, h, l),
   },
 };
 
@@ -294,17 +296,15 @@ function capFaces(ctx: Ctx, style: WallStyle, box: IsoBox, p: Part, left: boolea
     const base = shade(style.top, light);
     switch (style.cap) {
       case 'merlons':
-      case 'snowMerlons':
         for (let k = -1; k < 6; k++) {
           const u = k * 8 + 2 - (offset % 8);
           if (u + 4 <= 0 || u >= w) continue;
           ctx.fillStyle = css(base);
           ctx.fillRect(Math.max(0, u), -5, Math.min(4, w - u, u + 4), 5);
-          if (style.cap === 'snowMerlons') {
-            ctx.fillStyle = 'rgba(240,244,250,0.95)';
-            ctx.fillRect(Math.max(0, u), -6.5, Math.min(4, w - u, u + 4), 2);
-          }
         }
+        break;
+      case 'snowMerlons':
+        rampartMerlons(ctx, w, base, offset);
         break;
       case 'stakes':
         ctx.save();

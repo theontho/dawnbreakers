@@ -1,163 +1,172 @@
-import type { MapDefinition } from './types';
+import type { BuildingSpec, DecorSpec, MapDefinition } from './types';
+import { wallRun } from './wallRuns';
 
 /**
  * The Palace of the Sun (ʿImárat-i-Khurshíd), Iṣfahán, winter 1846 to
- * spring 1847. A four-fold garden quartered by paths and water channels
- * around a central pool. North: the portico where the Muʿtamid receives.
- * West: the court of the writing desk. East: the pavilion of the gathering
- * of divines, with its empty seat of honour. South-east: the inner
- * apartments where the Báb was hidden. He is never on the map.
+ * spring 1847, at true scale: a Qajar palace garden quartered by a long
+ * pool and a cross walk. North: the columned tālār where the Muʿtamid
+ * receives. North-west: the chancery court with the writing desk. North-east:
+ * the carpeted terrace by a pool where the divines gathered, its seat of
+ * honour empty under a canopy. South-east: the walled inner apartments where
+ * the Báb was hidden; He is never on the map. South-west: rose beds and
+ * orange trees. The river road comes in through the west gate.
+ *
+ * Districts (x runs east, y runs south):
+ * - The tālār: x 16..27, y 2..9, its forecourt y 10..12.
+ * - The long pool: x 20..23, y 13..20 and 24..34, walks either side, cypress rows on x 17 and 26.
+ * - The cross walk: y 21..23 from the west gate (exit at (0, 22)) to the east wall.
+ * - Chancery court: x 2..14, y 8..19, the chancery house at x 3..8, y 3..7.
+ * - Gathering terrace: x 30..41, y 10..19.
+ * - Inner apartments: walls x 29..40, y 24..34, the carved door at (34, 34).
+ * - Rose garden: x 2..15, y 25..37.
  */
+
+const W = 44;
+const H = 40;
+const TALAR = { gridX: 16, gridY: 2, w: 12, h: 8 };
+/** The carved door of the inner apartments, in the enclosure's south wall. */
+const CHAMBER_DOOR = { x: 34, y: 34 };
+const AXIS = { y0: 21, y1: 23 } as const;
+const POOL = { x0: 20, x1: 23 } as const;
+
+const tree = (gridX: number, gridY: number, texture: string): DecorSpec => ({ gridX, gridY, texture, blocks: true });
+
+const buildings: BuildingSpec[] = [
+  { ...TALAR, texture: 'ch5-palace-portico' },
+  // The chancery, and the inner apartments within their walls
+  { gridX: 3, gridY: 3, w: 6, h: 5, texture: 'town-house' },
+  { gridX: 31, gridY: 26, w: 8, h: 7, texture: 'town-house-large' },
+  // The pool before the gathering terrace
+  { gridX: 38, gridY: 16, w: 3, h: 3, texture: 'fountain-pool' },
+];
+
+/** The garden walls, the west gate, and the walls of the inner apartments. */
+function walls(): DecorSpec[] {
+  const w = 'compound-wall';
+  return [
+    ...wallRun(w, 0, 0, W - 1, 0),
+    ...wallRun(w, 0, 1, 0, H - 1, [[0, AXIS.y0], [0, AXIS.y0 + 1], [0, AXIS.y1]]),
+    ...wallRun(w, W - 1, 1, W - 1, H - 1),
+    ...wallRun(w, 1, H - 1, W - 2, H - 1),
+    // The inner apartments: high walls, one carved door
+    ...wallRun(w, 29, 24, 40, 24),
+    ...wallRun(w, 29, 25, 29, 34),
+    ...wallRun(w, 40, 25, 40, 34),
+    ...wallRun(w, 30, 34, 39, 34, [[CHAMBER_DOOR.x, CHAMBER_DOOR.y]]),
+  ];
+}
+
+/** Cypress avenues down the pool, plane trees over the courts, orange trees in the beds. */
+function trees(): DecorSpec[] {
+  const avenue = [14, 16, 18, 26, 28, 30, 32, 34].flatMap(y => [tree(17, y, 'cypress-tall'), tree(26, y, 'cypress-tall')]);
+  return [
+    ...avenue,
+    // Either side of the tālār
+    tree(14, 3, 'cypress-tall'), tree(14, 7, 'plane-tree'), tree(29, 3, 'cypress-tall'), tree(30, 7, 'plane-tree'),
+    // The chancery court
+    tree(11, 4, 'plane-tree'), tree(2, 15, 'orange-tree'), tree(12, 17, 'orange-tree'),
+    // The gathering terrace
+    tree(31, 11, 'cypress-tall'), tree(41, 11, 'plane-tree'), tree(33, 19, 'orange-tree'),
+    // The rose garden
+    tree(3, 26, 'cypress-tall'), tree(14, 26, 'cypress-tall'), tree(3, 36, 'cypress-tall'), tree(14, 36, 'cypress-tall'),
+    tree(6, 29, 'orange-tree'), tree(11, 29, 'orange-tree'), tree(6, 33, 'orange-tree'), tree(11, 33, 'orange-tree'),
+    // Behind the inner apartments
+    tree(30, 25, 'cypress-tall'), tree(39, 25, 'cypress-tall'),
+  ];
+}
+
+/** Lamps on the forecourt, in the courts and at the carved door. */
+function lamps(): DecorSpec[] {
+  const cells: Array<[number, number]> = [
+    [16, 11], [27, 11], [3, 9], [13, 9],
+    [30, 13], [40, 14], [19, 22], [24, 22],
+    [32, 35], [36, 35], [1, 20], [1, 24],
+  ];
+  return cells.map(([gridX, gridY]) => ({ gridX, gridY, texture: 'lamp', blocks: true }));
+}
+
+const props: DecorSpec[] = [
+  // The chancery court: carpets, a planter, bundles of paper
+  { gridX: 6, gridY: 12, texture: 'rug' },
+  { gridX: 4, gridY: 11, texture: 'crates', blocks: true },
+  { gridX: 10, gridY: 14, texture: 'ch1-planter', blocks: true },
+  // The gathering terrace: carpets in a ring before the empty seat
+  { gridX: 33, gridY: 13, texture: 'rug' },
+  { gridX: 37, gridY: 13, texture: 'rug' },
+  { gridX: 34, gridY: 15, texture: 'rug' },
+  { gridX: 36, gridY: 15, texture: 'rug' },
+  { gridX: 39, gridY: 12, texture: 'ch1-planter', blocks: true },
+  // The Muʿtamid's own men at the inner apartments
+  { gridX: 37, gridY: 36, texture: 'ch4-officer', blocks: true },
+  // Rose beds
+  { gridX: 5, gridY: 27, texture: 'ch7-rosebush', blocks: true },
+  { gridX: 12, gridY: 27, texture: 'ch7-rosebush', blocks: true },
+  { gridX: 5, gridY: 35, texture: 'ch7-rosebush', blocks: true },
+  { gridX: 12, gridY: 35, texture: 'ch7-rosebush', blocks: true },
+  { gridX: 8, gridY: 26, texture: 'ch7-rosebush', blocks: true },
+  { gridX: 9, gridY: 36, texture: 'ch7-rosebush', blocks: true },
+  { gridX: 9, gridY: 31, texture: 'rug' },
+];
+
 export const ch5MutamidPalaceMap: MapDefinition = {
   key: 'Ch5MutamidPalace',
   title: 'Iṣfahán, the Palace of the Sun',
-  width: 28,
-  height: 26,
-  spawn: { x: 0, y: 13 },
-  build: ({ paintRect, setTile, block }) => {
-    paintRect(0, 0, 28, 26, 'grass');
-
-    const water = (x: number, y: number): void => {
-      setTile(x, y, 'water');
-      block(x, y);
-    };
-
-    // The two great axes of the garden
-    paintRect(0, 13, 28, 1, 'path');
-    paintRect(14, 4, 1, 21, 'path');
-
-    // Central pool with a paved ring around it
-    paintRect(12, 11, 5, 5, 'stone');
-    for (let y = 12; y <= 14; y++) for (let x = 13; x <= 15; x++) water(x, y);
-
-    // Water channels running beside each axis, with crossings left open
-    for (let x = 3; x <= 10; x++) {
-      if (x === 7) continue;
-      water(x, 12);
-      water(x, 14);
+  width: W,
+  height: H,
+  trueScale: true,
+  spawn: { x: 1, y: 22 },
+  build: ({ paintRect, block }) => {
+    paintRect(0, 0, W, H, 'grass');
+    // The forecourt of the tālār, and the walks down the pool
+    paintRect(14, 10, 16, 3, 'stone');
+    paintRect(18, 13, 8, 24, 'stone');
+    // The long pool, broken by the cross walk
+    for (const [y0, y1] of [[13, AXIS.y0 - 1], [AXIS.y1 + 1, 34]] as const) {
+      paintRect(POOL.x0, y0, POOL.x1 - POOL.x0 + 1, y1 - y0 + 1, 'water');
+      for (let y = y0; y <= y1; y++) for (let x = POOL.x0; x <= POOL.x1; x++) block(x, y);
     }
-    for (let x = 18; x <= 25; x++) {
-      if (x === 21) continue;
-      water(x, 12);
-      water(x, 14);
-    }
-    for (let y = 5; y <= 10; y++) {
-      if (y === 8) continue;
-      water(13, y);
-      water(15, y);
-    }
-    for (let y = 16; y <= 23; y++) {
-      if (y === 19) continue;
-      water(13, y);
-      water(15, y);
-    }
-
-    // Portico terrace
-    paintRect(10, 4, 9, 1, 'stone');
-
-    // West court of the writing desk
-    paintRect(3, 4, 7, 6, 'stone');
-    paintRect(7, 10, 1, 2, 'path');
-
-    // East pavilion of the gathering
-    paintRect(19, 4, 7, 6, 'stone');
-    paintRect(21, 10, 1, 2, 'path');
-
-    // Inner apartments yard, south-east
-    paintRect(18, 17, 8, 6, 'stone');
-    paintRect(21, 15, 1, 2, 'path');
-
-    // Rose garden paths, south-west
-    paintRect(4, 19, 7, 1, 'path');
-    paintRect(7, 15, 1, 7, 'path');
+    // The cross walk from the west gate
+    paintRect(0, AXIS.y0, W, AXIS.y1 - AXIS.y0 + 1, 'path');
+    // The chancery court and the gathering terrace
+    paintRect(2, 8, 13, 12, 'stone');
+    paintRect(30, 10, 12, 10, 'stone');
+    // Before the inner apartments, and the rose garden's paths
+    paintRect(29, 35, 12, 3, 'stone');
+    paintRect(8, 24, 2, 14, 'path');
+    paintRect(2, 30, 14, 2, 'path');
   },
-  buildings: [
-    { gridX: 12, gridY: 1, w: 5, h: 3, texture: 'ch5-palace-portico' },
-    { gridX: 22, gridY: 3, w: 3, h: 2, texture: 'ch7-garden-canopy' },
-    { gridX: 21, gridY: 18, w: 2, h: 2, texture: 'house' },
-  ],
-  decor: [
-    // Portico terrace
-    { gridX: 10, gridY: 4, texture: 'lamp', blocks: true },
-    { gridX: 18, gridY: 4, texture: 'lamp', blocks: true },
-    { gridX: 11, gridY: 1, texture: 'cypress', blocks: true },
-    { gridX: 17, gridY: 1, texture: 'cypress', blocks: true },
-    // West court: a lamp at each corner, carpets
-    { gridX: 3, gridY: 4, texture: 'lamp', blocks: true },
-    { gridX: 9, gridY: 4, texture: 'lamp', blocks: true },
-    { gridX: 5, gridY: 7, texture: 'rug' },
-    { gridX: 4, gridY: 8, texture: 'crates', blocks: true },
-    { gridX: 9, gridY: 9, texture: 'ch1-planter', blocks: true },
-    // East pavilion: a ring of carpets before the empty seat
-    { gridX: 19, gridY: 4, texture: 'lamp', blocks: true },
-    { gridX: 25, gridY: 4, texture: 'lamp', blocks: true },
-    { gridX: 20, gridY: 7, texture: 'rug' },
-    { gridX: 22, gridY: 7, texture: 'rug' },
-    { gridX: 24, gridY: 7, texture: 'rug' },
-    { gridX: 23, gridY: 8, texture: 'rug' },
-    { gridX: 25, gridY: 9, texture: 'ch1-planter', blocks: true },
-    // Inner apartments: the Muʿtamid's own men, lamps
-    { gridX: 19, gridY: 18, texture: 'lamp', blocks: true },
-    { gridX: 24, gridY: 18, texture: 'lamp', blocks: true },
-    { gridX: 24, gridY: 20, texture: 'ch4-officer', blocks: true },
-    { gridX: 25, gridY: 22, texture: 'cypress', blocks: true },
-    { gridX: 18, gridY: 22, texture: 'cypress', blocks: true },
-    // Rose garden
-    { gridX: 4, gridY: 17, texture: 'ch7-rosebush', blocks: true },
-    { gridX: 9, gridY: 17, texture: 'ch7-rosebush', blocks: true },
-    { gridX: 4, gridY: 21, texture: 'ch7-rosebush', blocks: true },
-    { gridX: 9, gridY: 21, texture: 'ch7-rosebush', blocks: true },
-    { gridX: 5, gridY: 16, texture: 'cypress', blocks: true },
-    { gridX: 10, gridY: 16, texture: 'cypress', blocks: true },
-    { gridX: 6, gridY: 23, texture: 'tree', blocks: true },
-    { gridX: 2, gridY: 19, texture: 'tree', blocks: true },
-    { gridX: 8, gridY: 20, texture: 'rug' },
-    // Cypress rows along the garden walls
-    { gridX: 1, gridY: 2, texture: 'cypress', blocks: true },
-    { gridX: 1, gridY: 7, texture: 'cypress', blocks: true },
-    { gridX: 1, gridY: 11, texture: 'cypress', blocks: true },
-    { gridX: 1, gridY: 15, texture: 'cypress', blocks: true },
-    { gridX: 1, gridY: 23, texture: 'cypress', blocks: true },
-    { gridX: 26, gridY: 2, texture: 'cypress', blocks: true },
-    { gridX: 26, gridY: 11, texture: 'cypress', blocks: true },
-    { gridX: 26, gridY: 15, texture: 'cypress', blocks: true },
-    { gridX: 11, gridY: 24, texture: 'cypress', blocks: true },
-    { gridX: 17, gridY: 24, texture: 'cypress', blocks: true },
-    { gridX: 11, gridY: 8, texture: 'tree', blocks: true },
-    { gridX: 17, gridY: 9, texture: 'tree', blocks: true },
-    { gridX: 11, gridY: 18, texture: 'tree', blocks: true },
-    { gridX: 17, gridY: 16, texture: 'tree', blocks: true },
-  ],
+  buildings,
+  decor: [...walls(), ...trees(), ...lamps(), ...props],
   npcs: [
-    // The Muʿtamid, until his death
-    { gridX: 16, gridY: 6, texture: 'ch5-mutamid',
+    // The Muʿtamid before his tālār, until his death
+    { gridX: 21, gridY: 11, texture: 'ch5-mutamid',
       prompt: 'Speak with Manúchihr Khán  [E]',
       dialogue: 'ch5-mutamid',
       present: f => !f.mutamidDied },
-    { gridX: 16, gridY: 6, texture: 'rug',
+    { gridX: 21, gridY: 11, texture: 'rug',
       prompt: 'Look at the Muʿtamid\'s empty place  [E]',
       dialogue: 'ch5-mutamid-empty',
       present: f => !!f.mutamidDied },
-    // West court
-    { gridX: 5, gridY: 6, texture: 'writing-desk',
+    // The chancery court
+    { gridX: 6, gridY: 11, texture: 'writing-desk',
       prompt: 'Read beside the writing desk  [E]',
       dialogue: 'ch5-treatise' },
-    { gridX: 7, gridY: 6, texture: 'ch5-scribe',
+    { gridX: 8, gridY: 12, texture: 'ch5-scribe',
       prompt: 'Speak with the Palace Scribe  [E]',
       dialogue: 'ch5-scribe' },
-    // East pavilion
-    { gridX: 22, gridY: 5, texture: 'ch5-seat-of-honour',
+    // The gathering terrace
+    { gridX: 35, gridY: 12, texture: 'ch5-seat-of-honour',
       prompt: 'Look at the empty seat of honour  [E]',
       dialogue: 'ch5-seat' },
-    { gridX: 20, gridY: 8, texture: 'ch5-philosopher',
+    { gridX: 32, gridY: 15, texture: 'ch5-philosopher',
       prompt: 'Speak with Mírzá Ḥasan-i-Núrí  [E]',
       dialogue: 'ch5-philosopher' },
-    // Inner apartments
-    { gridX: 20, gridY: 20, texture: 'ch5-gurgin',
+    // The inner apartments
+    { gridX: 31, gridY: 36, texture: 'ch5-gurgin',
       prompt: 'Speak with Gurgín Khán  [E]',
       dialogue: 'ch5-gurgin',
       present: f => !!f.mutamidDied },
-    { gridX: 22, gridY: 20, texture: 'closed-door',
+    { gridX: CHAMBER_DOOR.x, gridY: CHAMBER_DOOR.y, texture: 'ch4-uncle-door',
       prompt: 'Stand at the door of the inner apartments  [E]',
       dialogue: 'ch5-chamber',
       gate: {
@@ -166,13 +175,18 @@ export const ch5MutamidPalaceMap: MapDefinition = {
       } },
   ],
   exits: [
-    { fromX: 0, fromY: 13, dx: -1, dy: 0,
-      targetScene: 'Ch5IsfahanBridge', targetSpawnX: 29, targetSpawnY: 9,
+    { fromX: 0, fromY: 22, dx: -1, dy: 0,
+      targetScene: 'Ch5IsfahanBridge', targetSpawnX: 54, targetSpawnY: 14,
       label: '← West along the river road' },
   ],
   ambience: {
     wash: { color: 0x46507a, alpha: 0.34 },
     particles: 'motes', music: 'court',
     vignette: 0.55,
+    lights: [
+      { gridX: 21, gridY: 11, radius: 200, color: 0xffc070, intensity: 0.22 },
+      { gridX: 35, gridY: 13, radius: 160, color: 0xffc070, intensity: 0.24 },
+      { gridX: CHAMBER_DOOR.x, gridY: CHAMBER_DOOR.y + 1, radius: 140, color: 0xffb860, intensity: 0.28 },
+    ],
   },
 };

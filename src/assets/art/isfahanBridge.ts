@@ -1,194 +1,235 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundPoint, groundShadow, onRoof, outlineBox, paintTexture, polygon, shade, type Ctx, type IsoBox } from './canvasKit';
-import { brick, glazedTiles, stone } from './materials';
-import { archPath, band, clipped, flatTop, LIGHT, walls } from './ornaments';
-import { liftedPoint, subBox } from './structureParts';
+import { css, footprintBox, outlineBox, paintTexture, polygon, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import { brick } from './materials';
+import { archPath, band, dome, LIGHT, parapetRoof, walls } from './ornaments';
+import { liftedPoint, onPlane, subBox } from './structureParts';
+import { tilePanel } from './town/monumentKit';
+import { CREAM, TURQUOISE } from './town/townKit';
 
 /**
- * A span of the great bridge over the Zāyandih-Rūd. The river runs along
- * the footprint's length (grid x) and the road crosses it along grid y, so
- * the x-facing wall is the bridge's side elevation: water arches on a
- * pier with its cutwater, and above the deck the arcaded gallery that runs
- * along each edge of the roadway. The y-facing wall is the bridge's end at
- * the south bank: broad steps up between two abutments.
+ * The Sí-o-Se-Pol, the bridge of thirty-three arches over the Zāyandih-Rúd,
+ * at true scale (one cell is 1.4 m, a person 40 px). The bridge runs along
+ * grid y and the roadway on its deck is ordinary ground, so people walk it
+ * like a street; the river lies one drop below. `ch5-bridge-span` is a
+ * length of its east (camera-side) flank: the covered gallery whose arcade
+ * opens on the river, a pavilion at the span's north end, and below the
+ * deck the river arches on their piers, hanging over the water cells east
+ * of the deck. The west flank, seen from the roadway, is the connected
+ * `ch5-bridge-gallery` wall, painted with the same arcade.
+ *
+ * Span footprint (p east, q north): the gallery on p 0..64 (two cells of
+ * deck), the river face hanging from p = 64 over three cells of water.
  */
 
 const BRICK = 0xc9a46a;
 const RIVER = 0x2c4a6b;
-const TILE = 0x2e8c96;
-const DECK = 20;
-const GALLERY = 15;
-const RIM = 6;
-const CUTWATER = 7;
+/** The deck stands this far above the water. */
+const DROP = 44;
+/** The gallery's width on the deck, and its height above it. */
+const GALLERY = { p: 64, h: 76 } as const;
+/** The gallery's height above the deck, shared with the connected west gallery. */
+export const BRIDGE_GALLERY_H = GALLERY.h;
+/** The pavilion at the span's north end: its length along the bridge and its height. */
+const PAVILION = { q: 64, h: 128 } as const;
+/** Gallery arches: one to a cell, so the arcade runs on unbroken from piece to piece. */
+const BAY = 32;
 
-export function paintBridgeSpan(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
-  const { box: fp, texW, texH } = footprintBox(cellsW, cellsD, DECK + GALLERY + 8, 10);
-  paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, fp, 4, 0.2);
-    const body = subBox(fp, 0, fp.w - CUTWATER, 0, fp.d, DECK);
-    const abut = 30;
-    walls(ctx, body, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 51 }, 3, 7), {
-      left: (c, w, h, l) => bankEnd(c, w, h, l, abut),
-      right: (c, w, h, l) => waterArches(c, w, h, l),
-    });
-    onRoof(ctx, body, (w, d) => clipped(ctx, w, d, () => {
-      brick(ctx, w, d, { base: shade(BRICK, 0.92), light: LIGHT.roof, seed: 52 }, 4, 8);
-      // Worn stone flags down the roadway where the traffic runs.
-      ctx.beginPath();
-      ctx.rect(w * 0.3, 0, w * 0.4, d);
-      ctx.clip();
-      ctx.globalAlpha = 0.6;
-      stone(ctx, w, d, { base: 0xb8a684, light: LIGHT.roof, seed: 53 }, 6);
-    }));
-    outlineBox(ctx, body);
-    // The far gallery first, then the cutwater and the near gallery in front of it.
-    gallery(ctx, subBox(body, 0, RIM, 0, body.d, GALLERY, DECK), true);
-    pavilion(ctx, subBox(body, 0, RIM + 2, 0, RIM + 2, GALLERY + 7, DECK));
-    pavilion(ctx, subBox(body, body.w - RIM - 2, body.w, body.d - RIM - 2, body.d, GALLERY + 7, DECK));
-    for (let q = 32; q < body.d - 8; q += 32) cutwater(ctx, fp, body.w, q);
-    gallery(ctx, subBox(body, body.w - RIM, body.w, 0, body.d, GALLERY, DECK), false);
-    pavilion(ctx, subBox(body, body.w - RIM - 2, body.w, 0, RIM + 2, GALLERY + 7, DECK));
-    ripples(ctx, fp);
-  });
-}
-
-/** The south end: an abutment at each side, a broad flight of steps up to the deck between them. */
-function bankEnd(c: Ctx, w: number, h: number, l: number, abut: number): void {
-  const x0 = abut;
-  const x1 = w - abut;
-  c.fillStyle = css(shade(0x9a8466, l * 0.9));
-  c.fillRect(x0, 0, x1 - x0, h);
-  const treads = 6;
-  const rise = h / treads;
-  for (let i = 0; i < treads; i++) {
-    const y = i * rise;
-    c.fillStyle = css(shade(0xc8b48a, l));
-    c.fillRect(x0, y, x1 - x0, rise * 0.45);
-    c.fillStyle = 'rgba(40,24,10,0.25)';
-    c.fillRect(x0, y + rise * 0.45, x1 - x0, 0.8);
-  }
-  c.fillStyle = 'rgba(40,24,10,0.3)';
-  c.fillRect(x0, 0, 1.5, h);
-  c.fillRect(x1 - 1.5, 0, 1.5, h);
-  // A blind arch with a tiled tympanum in each abutment.
-  for (const x of [abut / 2, w - abut / 2]) {
-    archPath(c, x - 7, h - 3, 14, h - 6);
-    c.fillStyle = css(shade(0xe0c890, l * 0.9));
+/** The gallery's arcade on one face: an arched opening to each cell, a tile band, a brick cornice. */
+export function bridgeGalleryFace(c: Ctx, w: number, h: number, l: number, offset = 0): void {
+  brick(c, w, h, { base: BRICK, light: l, seed: 5101 }, 4, 8);
+  for (let u = BAY / 2 - offset; u - 10 < w; u += BAY) {
+    if (u + 10 < 0) continue;
+    // A pale brick ring, then the shadowed walk inside with the far opening's light.
+    archPath(c, u - 10, h - 6, 20, 52);
+    c.fillStyle = css(shade(0xe2cc98, l * 0.95));
     c.fill();
-    archPath(c, x - 5.5, h - 3, 11, h - 8);
-    c.save();
-    c.clip();
-    glazedTiles(c, x + 6, h, { base: TILE, light: l * 0.85, seed: 55 }, 4);
-    c.restore();
-  }
-  band(c, w, h - 3, 3, shade(BRICK, 0.8), l);
-}
-
-/** The side elevation: one river arch per cell, the water dark and glinting beneath. */
-function waterArches(c: Ctx, w: number, h: number, l: number): void {
-  band(c, w, 1, 2, shade(BRICK, 0.82), l);
-  const bays = Math.max(1, Math.round(w / 32));
-  const step = w / bays;
-  for (let i = 0; i < bays; i++) {
-    const aw = step * 0.62;
-    const ax = i * step + (step - aw) / 2;
-    archPath(c, ax - 1.5, h, aw + 3, h - 3);
-    c.fillStyle = css(shade(0xe0c890, l * 0.85));
-    c.fill();
-    archPath(c, ax, h, aw, h - 5);
-    const g = c.createLinearGradient(0, 4, 0, h);
-    g.addColorStop(0, css(0x120c08));
-    g.addColorStop(1, css(shade(RIVER, l * 0.8)));
+    archPath(c, u - 8, h - 6, 16, 49);
+    const g = c.createLinearGradient(0, h - 55, 0, h - 6);
+    g.addColorStop(0, css(shade(0x24160c, l + 0.1)));
+    g.addColorStop(1, css(shade(0x5a4430, l + 0.1)));
     c.fillStyle = g;
     c.fill();
-    // Light on the water beyond the arch.
-    c.fillStyle = 'rgba(190,220,235,0.45)';
-    c.fillRect(ax + aw * 0.25, h - 2.5, aw * 0.5, 0.8);
-  }
-}
-
-/** The arcaded gallery along one edge of the roadway: small pointed arches open to the river breeze. */
-function gallery(ctx: Ctx, g: IsoBox, far: boolean): void {
-  const arcade = (c: Ctx, w: number, h: number, l: number) => {
-    for (let u = 3; u + 6 < w; u += 9) {
-      archPath(c, u - 1, h - 1, 8, h - 4);
-      c.fillStyle = css(shade(0xe0c890, l * 0.9));
-      c.fill();
-      archPath(c, u, h - 1, 6, h - 6);
-      c.fillStyle = css(shade(far ? 0x8aa0a8 : 0x2a1a10, far ? l : l + 0.15), far ? 0.55 : 1);
-      c.fill();
-    }
-    band(c, w, 0, 2, shade(BRICK, 1.05), l);
-  };
-  walls(ctx, g, (c, w, h, light) => brick(c, w, h, { base: shade(BRICK, 1.04), light, seed: 54 }, 3, 7), {
-    right: arcade,
-  });
-  flatTop(ctx, g, shade(BRICK, 1.05));
-  outlineBox(ctx, g);
-}
-
-/** A little square pavilion rising at a gallery corner, its cap tiled. */
-function pavilion(ctx: Ctx, p: IsoBox): void {
-  const opening = (c: Ctx, w: number, h: number, l: number) => {
-    archPath(c, w / 2 - 2, h - 4, 4, 8);
-    c.fillStyle = css(shade(0x2a1a10, l));
+    c.fillStyle = 'rgba(240,220,170,0.28)';
+    c.fillRect(u - 2, h - 34, 4, 26);
+    // Small blind niche over each pier.
+    archPath(c, u + 13, h - 46, 6, 10);
+    c.fillStyle = css(shade(BRICK, l * 0.72));
     c.fill();
-  };
-  walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: shade(BRICK, 1.06), light, seed: 56 }, 3, 7), {
-    left: opening,
-    right: opening,
-  });
-  onRoof(ctx, p, (w, d) => {
-    ctx.fillStyle = css(shade(TILE, LIGHT.roof));
-    ctx.fillRect(0, 0, w, d);
-  });
-  outlineBox(ctx, p);
+  }
+  // The sill of the walk, the tile band and the cornice under the parapet.
+  c.fillStyle = css(shade(0xb8a684, l));
+  c.fillRect(0, h - 6, w, 6);
+  band(c, w, 10, 4, TURQUOISE, l);
+  band(c, w, 0, 4, shade(BRICK, 1.08), l);
 }
 
-/** A pointed cutwater on the pier between two arches, splitting the current. */
-function cutwater(ctx: Ctx, fp: IsoBox, face: number, q: number): void {
-  const half = 4;
-  const h = DECK - 6;
-  const at = (p: number, qq: number, lift: number) => liftedPoint(fp, p, qq, lift);
-  const tip = fp.w;
-  const lit = [at(face, q - half, 0), at(tip, q, 0), at(tip, q, h), at(face, q - half, h)];
-  const dark = [at(tip, q, 0), at(face, q + half, 0), at(face, q + half, h), at(tip, q, h)];
+export function paintBridgeSpan(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
+  const { box: fp, texW, texH } = footprintBox(cellsW, cellsD, PAVILION.h + 26, 6);
+  paintTexture(scene, key, texW, texH, ctx => {
+    const pavQ = fp.d - PAVILION.q;
+    riverFace(ctx, fp, pavQ);
+    // Cutwaters on the piers between the arches and under the pavilion.
+    const bay = pavQ / 3;
+    for (const q of [bay, bay * 2, pavQ + PAVILION.q / 2]) cutwater(ctx, fp, q);
+    ripples(ctx, fp, pavQ);
+    pavilion(ctx, subBox(fp, 0, GALLERY.p, pavQ, fp.d, PAVILION.h));
+    gallery(ctx, subBox(fp, 0, GALLERY.p, 0, pavQ, GALLERY.h));
+  });
+}
+
+/** Paints in the plane of the river face, which hangs from the deck edge (p = 64) to the water. */
+function onRiverFace(ctx: Ctx, fp: IsoBox, paint: (w: number, h: number) => void): void {
+  const o = liftedPoint(fp, GALLERY.p, 0, 0);
+  const a = liftedPoint(fp, GALLERY.p, fp.d, 0);
+  const b = liftedPoint(fp, GALLERY.p, 0, -DROP);
+  onPlane(ctx, o, a, b, fp.d, DROP, paint);
+}
+
+/** Three broad river arches on their piers, and under the pavilion a solid pier with a low passage. */
+function riverFace(ctx: Ctx, fp: IsoBox, pavQ: number): void {
+  onRiverFace(ctx, fp, (w, h) => {
+    const l = LIGHT.right;
+    brick(ctx, w, h, { base: shade(BRICK, 0.95), light: l, seed: 5103 }, 4, 8);
+    // Damp courses at the waterline.
+    const damp = ctx.createLinearGradient(0, h - 14, 0, h);
+    damp.addColorStop(0, 'rgba(40,46,40,0)');
+    damp.addColorStop(1, 'rgba(40,46,40,0.45)');
+    ctx.fillStyle = damp;
+    ctx.fillRect(0, h - 14, w, 14);
+    const bay = pavQ / 3;
+    for (let i = 0; i < 3; i++) riverArch(ctx, bay * (i + 0.5), 62, h, l);
+    // The pier under the pavilion, with the low vaulted passage that runs through the piers.
+    archPath(ctx, pavQ + PAVILION.q / 2 - 8, h - 8, 16, 22);
+    ctx.fillStyle = css(0x140c06);
+    ctx.fill();
+    ctx.fillStyle = css(shade(0xb8a684, l));
+    ctx.fillRect(pavQ + PAVILION.q / 2 - 12, h - 8, 24, 3);
+    band(ctx, w, 0, 4, shade(BRICK, 1.06), l);
+    ctx.fillStyle = 'rgba(28,18,10,0.6)';
+    ctx.fillRect(0, h - 1, w, 1);
+  });
+}
+
+function riverArch(ctx: Ctx, cx: number, aw: number, h: number, l: number): void {
+  archPath(ctx, cx - aw / 2 - 3, h, aw + 6, h - 4);
+  ctx.fillStyle = css(shade(0xe0c890, l * 0.9));
+  ctx.fill();
+  archPath(ctx, cx - aw / 2, h, aw, h - 8);
+  const g = ctx.createLinearGradient(0, 8, 0, h);
+  g.addColorStop(0, css(0x120c08));
+  g.addColorStop(0.7, css(0x1c1a18));
+  g.addColorStop(1, css(shade(RIVER, 0.9)));
+  ctx.fillStyle = g;
+  ctx.fill();
+  // Daylight on the far side of the arch, and its glint on the water.
+  ctx.save();
+  archPath(ctx, cx - aw / 2, h, aw, h - 8);
+  ctx.clip();
+  ctx.fillStyle = 'rgba(200,215,210,0.22)';
+  ctx.fillRect(cx - aw * 0.18, h - 18, aw * 0.36, 18);
+  ctx.fillStyle = 'rgba(210,232,240,0.55)';
+  ctx.fillRect(cx - aw * 0.3, h - 3, aw * 0.6, 1);
+  ctx.restore();
+}
+
+/** A pointed cutwater against a pier at `q`, splitting the current as it comes down from the west. */
+function cutwater(ctx: Ctx, fp: IsoBox, q: number): void {
+  const half = 11;
+  const out = 16;
+  const h = DROP - 20;
+  const face = GALLERY.p;
+  const at = (p: number, qq: number, lift: number) => liftedPoint(fp, p, qq, lift - DROP);
+  const lit = [at(face, q - half, 0), at(face + out, q, 0), at(face + out, q, h), at(face, q - half, h)];
+  const dark = [at(face + out, q, 0), at(face, q + half, 0), at(face, q + half, h), at(face + out, q, h)];
   polygon(ctx, lit);
-  ctx.fillStyle = css(shade(BRICK, LIGHT.left * 0.88));
+  ctx.fillStyle = css(shade(BRICK, LIGHT.left * 0.72));
   ctx.fill();
   polygon(ctx, dark);
-  ctx.fillStyle = css(shade(BRICK, LIGHT.right * 0.95));
+  ctx.fillStyle = css(shade(BRICK, LIGHT.right * 0.7));
   ctx.fill();
-  // The sloping stone cap.
-  const top = at(face, q, h + 3);
-  polygon(ctx, [at(face, q - half, h), at(tip, q, h), top]);
-  ctx.fillStyle = css(shade(0xb8a684, LIGHT.left));
+  const top = at(face, q, h + 6);
+  polygon(ctx, [at(face, q - half, h), at(face + out, q, h), top]);
+  ctx.fillStyle = css(shade(0x9a8a6a, LIGHT.left * 0.85));
   ctx.fill();
-  polygon(ctx, [at(tip, q, h), at(face, q + half, h), top]);
-  ctx.fillStyle = css(shade(0x9a8a6a, LIGHT.right));
+  polygon(ctx, [at(face + out, q, h), at(face, q + half, h), top]);
+  ctx.fillStyle = css(shade(0x8a7a5a, LIGHT.right * 0.85));
   ctx.fill();
   ctx.strokeStyle = 'rgba(28,18,10,0.7)';
   ctx.lineWidth = 0.8;
   polygon(ctx, [lit[0]!, lit[1]!, dark[1]!, dark[2]!, top, lit[3]!]);
   ctx.stroke();
-  // Foam where the river parts.
-  const foot = at(tip, q, 0);
+  const foot = at(face + out, q, 0);
   ctx.fillStyle = 'rgba(235,245,250,0.6)';
   ctx.beginPath();
-  ctx.ellipse(foot.x + 1, foot.y, 4, 1.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(foot.x + 2, foot.y, 7, 2, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
-/** Ripples on the water along the downstream side. */
-function ripples(ctx: Ctx, fp: IsoBox): void {
-  ctx.strokeStyle = 'rgba(210,230,240,0.35)';
-  ctx.lineWidth = 0.7;
-  for (let q = 8; q < fp.d - 4; q += 11) {
-    const a = groundPoint(fp, fp.w - 2, q);
-    const b = groundPoint(fp, fp.w - 2, q + 6);
+/** Ripples along the foot of the river face, and the wake below each pier. */
+function ripples(ctx: Ctx, fp: IsoBox, pavQ: number): void {
+  ctx.strokeStyle = 'rgba(210,230,240,0.4)';
+  ctx.lineWidth = 0.8;
+  for (let q = 6; q < fp.d - 6; q += 13) {
+    const a = liftedPoint(fp, GALLERY.p + 4, q, -DROP);
+    const b = liftedPoint(fp, GALLERY.p + 4, q + 7, -DROP);
     ctx.beginPath();
-    ctx.moveTo(a.x, a.y + 1);
-    ctx.lineTo(b.x, b.y + 1);
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
     ctx.stroke();
   }
+  ctx.strokeStyle = 'rgba(230,240,245,0.32)';
+  for (const q of [pavQ / 3, (pavQ * 2) / 3]) {
+    for (let k = 1; k <= 3; k++) {
+      const a = liftedPoint(fp, GALLERY.p + 20 + k * 6, q - 4 - k * 3, -DROP);
+      const b = liftedPoint(fp, GALLERY.p + 20 + k * 6, q + 4 + k * 3, -DROP);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+  }
+}
+
+/** The covered gallery along the deck edge: its arcade on the river, a walk on its roof. */
+function gallery(ctx: Ctx, g: IsoBox): void {
+  walls(ctx, g, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 5105 }, 4, 8), {
+    left: (c, w, h, l) => bridgeGalleryFace(c, w, h, l, (w % BAY) / 2),
+    right: (c, w, h, l) => bridgeGalleryFace(c, w, h, l),
+  });
+  parapetRoof(ctx, g, shade(BRICK, 1.04), { base: 0xb8a684, light: 1, seed: 5106 }, 5, 8);
+  outlineBox(ctx, g);
+}
+
+/** A two-storey pavilion over a pier: tall arched openings on its faces, a little tiled cupola. */
+function pavilion(ctx: Ctx, p: IsoBox): void {
+  const face = (c: Ctx, w: number, h: number, l: number): void => {
+    brick(c, w, h, { base: shade(BRICK, 1.03), light: l, seed: 5107 }, 4, 8);
+    const cx = w / 2;
+    tilePanel(c, cx - 22, h - 104, 44, 98, TURQUOISE, l, 5108, 5);
+    archPath(c, cx - 15, h - 6, 30, 92);
+    c.fillStyle = css(shade(CREAM, l));
+    c.fill();
+    archPath(c, cx - 12, h - 6, 24, 88);
+    const g = c.createLinearGradient(0, h - 94, 0, h);
+    g.addColorStop(0, css(shade(0x24160c, l + 0.1)));
+    g.addColorStop(1, css(shade(0x6a5236, l + 0.1)));
+    c.fillStyle = g;
+    c.fill();
+    // The balcony rail across the upper storey, and the floor between.
+    c.fillStyle = css(shade(0x6a4a2c, l));
+    c.fillRect(cx - 12, h - 52, 24, 3);
+    for (let u = cx - 10; u < cx + 11; u += 4) c.fillRect(u, h - 64, 1.2, 12);
+    c.fillRect(cx - 12, h - 65, 24, 1.5);
+    c.fillStyle = css(shade(0xb8a684, l));
+    c.fillRect(cx - 16, h - 6, 32, 6);
+    band(c, w, 0, 5, shade(BRICK, 1.1), l);
+  };
+  walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: shade(BRICK, 1.03), light, seed: 5107 }, 4, 8), {
+    left: face,
+    right: face,
+  });
+  parapetRoof(ctx, p, shade(BRICK, 1.06), { base: 0xb8a684, light: 1, seed: 5109 }, 5, 7);
+  outlineBox(ctx, p);
+  const top = roofPoint(p, p.w / 2, p.d / 2);
+  dome(ctx, top.x, top.y + 6, 15, { color: TURQUOISE, drum: 8, drumColor: shade(BRICK, 1.05), bulb: 1.1, pattern: 0x1c5a6a, finial: true });
 }

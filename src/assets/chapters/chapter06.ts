@@ -1,29 +1,38 @@
-import { paintBarredMarker, paintFootbridge } from '../art/fortresses';
+import { paintBarredMarker, paintFootbridge, paintFortressGate } from '../art/fortressProps';
 import { CHIHRIQ_FORTRESS, MAKU_FORTRESS, paintFortress } from '../art/mountainFortress';
-import { paintBrazier, paintPine, paintRock, paintSnowDrift, paintSnowShrub } from '../art/mountain';
+import { paintBrazier, paintPine, paintRock, paintSnowDrift, paintSnowShrub, PINE_VARIANTS, ROCK_VARIANTS } from '../art/mountain';
+import { paintMountainHouses } from '../art/mountainHouse';
+import { variantKey } from '../art/canvasKit';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
 /**
- * Chapter 6: the mountain prisons of Mákú and Chihríq. Adds the two
- * fortresses and their rampart blocks, the shared mountain rock, pines,
- * snow shrubs and drifts, the guards' brazier, and the barred window.
+ * Chapter 6: the mountain prisons of Mákú and Chihríq, at true scale. Adds
+ * the two castles, the rampart that rings them and its gate, the village
+ * houses of the mountains, the shared mountain rocks, pines, snow shrubs
+ * and drifts, the guards' brazier, and the barred window.
  */
+const footprint = (def: Parameters<TextureGenerator>[1]): [number, number] => [def.footprint?.w ?? 1, def.footprint?.h ?? 1];
+
 export const CH06_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
-  'ch6-maku-fortress': (scene, def) => paintFortress(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 3, MAKU_FORTRESS),
-  'ch6-chihriq-fortress': (scene, def) => paintFortress(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 3, CHIHRIQ_FORTRESS),
-  'ch6-rock': (scene, def) => paintRock(scene, def.texture),
+  'ch6-maku-fortress': (scene, def) => paintFortress(scene, def.texture, ...footprint(def), MAKU_FORTRESS),
+  'ch6-chihriq-fortress': (scene, def) => paintFortress(scene, def.texture, ...footprint(def), CHIHRIQ_FORTRESS),
+  'ch6-fortress-gate': (scene, def) => paintFortressGate(scene, def.texture, ...footprint(def)),
+  'ch6-mountain-house': (scene, def) => paintMountainHouses(scene, def.texture, ...footprint(def)),
+  'ch6-rock': (scene, def) => ROCK_VARIANTS.forEach((s, i) => paintRock(scene, variantKey(def.texture, i), s)),
   'ch6-snow-shrub': (scene, def) => paintSnowShrub(scene, def.texture),
   'ch6-barred-marker': (scene, def) => paintBarredMarker(scene, def.texture),
   'ch6-snow-drift': (scene, def) => paintSnowDrift(scene, def.texture),
-  'ch6-pine': (scene, def) => paintPine(scene, def.texture),
+  'ch6-pine': (scene, def) => PINE_VARIANTS.forEach((s, i) => paintPine(scene, variantKey(def.texture, i), s)),
   'ch6-brazier': (scene, def) => paintBrazier(scene, def.texture),
   'ch6-footbridge': (scene, def) => paintFootbridge(scene, def.texture),
 };
 
 /** Placeable map objects owned by chapter 6. */
 export const CH06_OBJECTS: MapObjectDefinition[] = [
-  { id: 'ch6-maku-fortress', label: 'Maku Fortress', texture: 'ch6-maku-fortress', kind: 'structure', category: 'barriers-prison', color: 0x786f68, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
-  { id: 'ch6-chihriq-fortress', label: 'Chihriq Fortress', texture: 'ch6-chihriq-fortress', kind: 'structure', category: 'barriers-prison', color: 0x6b6f76, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch6-maku-fortress', label: 'Maku Fortress', texture: 'ch6-maku-fortress', kind: 'structure', category: 'barriers-prison', color: 0x786f68, blocks: true, footprint: { w: 9, h: 7 }, isometric: true },
+  { id: 'ch6-chihriq-fortress', label: 'Chihriq Fortress', texture: 'ch6-chihriq-fortress', kind: 'structure', category: 'barriers-prison', color: 0x6b6f76, blocks: true, footprint: { w: 8, h: 8 }, isometric: true },
+  { id: 'ch6-fortress-gate', label: 'Gate', texture: 'ch6-fortress-gate', kind: 'structure', category: 'barriers-prison', color: 0x6a737a, blocks: true, footprint: { w: 3, h: 3 }, isometric: true },
+  { id: 'ch6-mountain-house', label: 'Small House', texture: 'ch6-mountain-house', kind: 'structure', category: 'buildings', color: 0x9a8064, blocks: true, footprint: { w: 5, h: 4 }, isometric: true },
   { id: 'ch6-rock', label: 'Mountain Rock', texture: 'ch6-rock', kind: 'prop', category: 'barriers-prison', color: 0x7c766f, blocks: true },
   { id: 'ch6-snow-shrub', label: 'Snow Shrub', texture: 'ch6-snow-shrub', kind: 'prop', category: 'plants', color: 0xd9e3e8, blocks: true },
   { id: 'ch6-barred-marker', label: 'Barred Marker', texture: 'ch6-barred-marker', kind: 'prop', category: 'barriers-prison', color: 0x3f4650, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },

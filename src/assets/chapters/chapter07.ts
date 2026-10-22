@@ -4,16 +4,18 @@ import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapA
 import { CH07_TENT_OBJECTS, CH07_TENT_TEXTURE_GENERATORS } from './chapter07Tent';
 
 /**
- * Chapter 7: the Conference of Badasht. Adds the encampment tents, the
- * garden canopy, mud-brick garden walls, the curtain behind which Ṭáhirih
- * first speaks, a cookfire for eighty-one guests, and the rosebush. Carpet,
- * lamp, and standard tree fall through to the shared base art.
+ * Chapter 7: the Conference of Badasht, at true scale. Adds the encampment
+ * tents (a guest's pavilion 5.6 x 4.2 m, the larger one with its awning
+ * 7 x 5.6 m), the garden canopy, mud-brick garden walls (in `art/walls.ts`),
+ * the curtain behind which Ṭáhirih first speaks, a cookfire for eighty-one
+ * guests, and the rosebush. Carpet and lamp fall through to the shared base
+ * art.
  */
 export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH07_TENT_TEXTURE_GENERATORS,
-  'ch7-tent-reconciliation': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2, RECONCILIATION_TENT),
-  'ch7-tent-quddus': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2, QUDDUS_TENT),
-  'ch7-garden-canopy': (scene, def) => paintGardenCanopy(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 2),
+  'ch7-tent-reconciliation': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 5, def.footprint?.h ?? 4, RECONCILIATION_TENT),
+  'ch7-tent-quddus': (scene, def) => paintTent(scene, def.texture, def.footprint?.w ?? 4, def.footprint?.h ?? 3, QUDDUS_TENT),
+  'ch7-garden-canopy': (scene, def) => paintGardenCanopy(scene, def.texture, def.footprint?.w ?? 4, def.footprint?.h ?? 3),
   'ch7-rosebush': (scene, def) => paintRosebush(scene, def.texture),
   'ch7-curtain': (scene, def) => paintCurtain(scene, def.texture),
   'ch7-cookfire': (scene, def) => paintCookfire(scene, def.texture),
@@ -22,9 +24,9 @@ export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 /** Placeable map objects owned by chapter 7. */
 export const CH07_OBJECTS: MapObjectDefinition[] = [
   ...CH07_TENT_OBJECTS,
-  { id: 'ch7-tent-quddus', label: 'Quddus Tent', texture: 'ch7-tent-quddus', kind: 'structure', category: 'buildings', color: 0xe0d6b8, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
-  { id: 'ch7-tent-reconciliation', label: 'Reconciliation Tent', texture: 'ch7-tent-reconciliation', kind: 'structure', category: 'buildings', color: 0xc8b174, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
-  { id: 'ch7-garden-canopy', label: 'Garden Canopy', texture: 'ch7-garden-canopy', kind: 'structure', category: 'buildings', color: 0x8f6f45, blocks: true, footprint: { w: 3, h: 2 }, isometric: true },
+  { id: 'ch7-tent-quddus', label: 'Quddus Tent', texture: 'ch7-tent-quddus', kind: 'structure', category: 'buildings', color: 0xe0d6b8, blocks: true, footprint: { w: 4, h: 3 }, isometric: true },
+  { id: 'ch7-tent-reconciliation', label: 'Reconciliation Tent', texture: 'ch7-tent-reconciliation', kind: 'structure', category: 'buildings', color: 0xc8b174, blocks: true, footprint: { w: 5, h: 4 }, isometric: true },
+  { id: 'ch7-garden-canopy', label: 'Garden Canopy', texture: 'ch7-garden-canopy', kind: 'structure', category: 'buildings', color: 0x8f6f45, blocks: true, footprint: { w: 4, h: 3 }, isometric: true },
   { id: 'ch7-rosebush', label: 'Rosebush', texture: 'ch7-rosebush', kind: 'prop', category: 'plants', color: 0xb93a4d, blocks: true },
   { id: 'ch7-npc-tahirih', label: 'Tahirih', texture: 'ch7-npc-tahirih', kind: 'character', category: 'characters', color: 0x6f2236, blocks: true,
     character: { body: 0xf0d9a4, skin: 0xd8b98a, clothing: { style: 'cloak', secondary: 0x6f3b5c, accent: 0xf7ecd0 }, hat: { style: 'veil', color: 0xf7ecd0, accent: 0x6f3b5c }, shadow: true } },

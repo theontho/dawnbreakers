@@ -1,110 +1,151 @@
 import type { DecorSpec, MapDefinition } from './types';
 
 /**
- * Badasht, early summer 1848: the hamlet and the guests' camp.
+ * Badasht, early summer 1848, at true scale: the hamlet and the guests' camp.
  *
  * The road from Sháhrúd comes in from the west edge, past the village
- * houses and orchard, and crosses the stream on a plank bridge. East of the
- * stream the eighty-one guests have pitched their tents around a cookfire.
- * The steward who receives each guest stands where the lane turns north to
- * the three rented gardens (`Ch7BadashtCamp`).
+ * houses, and crosses the stream on a plank bridge. East of the stream the
+ * eighty-one guests have pitched their tents around a cookfire. The steward
+ * who receives each guest stands where the lane turns north to the three
+ * rented gardens (`Ch7BadashtCamp`). South of the village are the threshing
+ * floor and the orchard, where the gardener minds his melons under the
+ * apricot trees.
+ *
+ * Districts (x runs east, y runs south):
+ * - The road: rows 17..18 from the west edge (0, 18) to the lane, bridged
+ *   over the stream at x 19..20.
+ * - The village: x 1..17, y 1..15, five mud-brick houses round a lane
+ *   (x 8..9) and a cross-lane (y 7), the well where the lane meets the road.
+ * - The threshing floor: x 2..9, y 21..25; the orchard: x 1..17, y 27..35.
+ * - The stream: x 19..20, north to south, poplars along its banks.
+ * - The camp: x 22..39, y 8..32, five pavilions round the cookfire at
+ *   (29, 15); the lane to the gardens runs north at x 31..32 to (31, 0).
  */
 
-const W = 26;
-const H = 24;
+const W = 40;
+const H = 36;
+const STREAM_X = [19, 20] as const;
+const ROAD_Y = [17, 18] as const;
+const VILLAGE_LANE_X = 8;
+const GARDEN_LANE_X = 31;
+const FIRE = { x: 29, y: 15 } as const;
 
 const blocking = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture, blocks: true }));
 const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture }));
 
+/** The village: its well, planters, a bread oven's woodpile, laundry and rugs airing. */
+const VILLAGE: DecorSpec[] = [
+  ...blocking('well', [[10, 15]]),
+  ...blocking('ch1-planter', [[7, 2], [16, 8], [1, 13]]),
+  ...blocking('crates', [[16, 4], [7, 12]]),
+  ...blocking('ch9-cloth-bundle', [[10, 8], [1, 6]]),
+  ...loose('rug', [[11, 7], [4, 7], [12, 15]]),
+  ...blocking('plane-tree', [[0, 0], [16, 1], [0, 15]]),
+  ...blocking('orange-tree', [[1, 8], [17, 14]]),
+];
+
+/** The threshing floor and the orchard south of the road. */
+const FIELDS: DecorSpec[] = [
+  ...blocking('ch9-rope-coils', [[3, 22]]),
+  ...blocking('ch9-cloth-bundle', [[6, 24]]),
+  ...loose('rug', [[5, 23], [6, 23]]),
+  ...blocking('orange-tree', [
+    [2, 28], [5, 28], [11, 28], [14, 28], [3, 31], [6, 31], [12, 31], [15, 31],
+    [2, 34], [5, 34], [11, 34], [14, 34], [17, 33],
+  ]),
+  ...blocking('ch7-rosebush', [[17, 27], [17, 30], [10, 26]]),
+  ...blocking('plane-tree', [[0, 20], [1, 26]]),
+];
+
+/** Poplars and reeds along both banks of the stream. */
+const STREAM_BANKS: DecorSpec[] = [
+  ...blocking('cypress-tall', [[18, 2], [18, 9], [21, 4], [21, 12], [18, 23], [21, 22], [18, 32], [21, 30]]),
+  ...blocking('ch5-river-reeds', [[18, 5], [21, 8], [18, 27], [21, 26], [18, 14], [21, 34]]),
+];
+
+/** The guests' camp: cookfire, water jars, saddle bundles, lamps, and the lane's trees. */
+const CAMP: DecorSpec[] = [
+  ...blocking('ch7-cookfire', [[FIRE.x, FIRE.y]]),
+  ...blocking('crates', [[36, 15], [23, 14]]),
+  ...blocking('ch9-cloth-bundle', [[24, 19], [37, 19], [32, 25]]),
+  ...blocking('lamp', [[30, 19], [33, 6], [27, 20], [32, 27]]),
+  ...loose('rug', [[30, 14], [28, 16], [30, 16], [36, 20], [26, 27]]),
+  ...blocking('ch7-rosebush', [[33, 3], [28, 7], [34, 14]]),
+  ...blocking('plane-tree', [[26, 2], [37, 3], [24, 30]]),
+  ...blocking('cypress-tall', [[29, 1], [34, 1]]),
+  ...blocking('orange-tree', [[38, 16], [38, 30], [36, 33], [27, 33], [23, 1]]),
+];
+
 export const ch7BadashtHamletMap: MapDefinition = {
   key: 'Ch7BadashtHamlet',
   title: 'Badasht, the Hamlet',
   width: W,
   height: H,
-  spawn: { x: 1, y: 12 },
-  build: ({ paintRect, paintPath, setTile, block }) => {
-    // Summer meadow; the village yards and the camp ground are bare earth.
-    paintRect(1, 2, 10, 7, 'sand');       // village yards
-    paintRect(15, 8, 9, 7, 'sand');       // the guests' camp ground
-    paintRect(2, 15, 9, 3, 'sand');       // the threshing floor
+  trueScale: true,
+  spawn: { x: 1, y: 18 },
+  build: ({ paintRect, setTile, block }) => {
+    // Summer meadow; the village yards, the threshing floor and the camp ground are bare earth.
+    paintRect(1, 1, 17, 15, 'sand');
+    paintRect(2, 21, 8, 5, 'sand');
+    paintRect(22, 8, 17, 22, 'sand');
 
     // The stream, crossed by a plank bridge on the road.
     for (let y = 0; y < H; y += 1) {
-      setTile(12, y, 'water');
-      setTile(13, y, 'water');
-      if (y !== 12) { block(12, y); block(13, y); }
+      for (const x of STREAM_X) {
+        setTile(x, y, 'water');
+        if (!(ROAD_Y as readonly number[]).includes(y)) block(x, y);
+      }
     }
 
     // The road from Sháhrúd, over the stream, into the camp.
-    paintPath([[0, 12], [1, 12], [2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [8, 12], [9, 12],
-      [10, 12], [11, 12], [14, 12], [15, 12], [16, 12], [17, 12], [18, 12], [19, 12], [20, 12]]);
+    for (let x = 0; x <= GARDEN_LANE_X + 1; x += 1) {
+      for (const y of ROAD_Y) if (!(STREAM_X as readonly number[]).includes(x)) setTile(x, y, 'path');
+    }
     // North lane to the gardens.
-    for (let y = 0; y < 12; y += 1) setTile(20, y, 'path');
-    // Village lanes.
-    paintPath([[5, 11], [5, 10], [5, 9], [5, 8], [5, 7], [5, 6], [4, 6], [3, 6], [6, 6], [7, 6], [8, 6], [9, 6]]);
-    paintPath([[6, 13], [6, 14], [6, 15], [6, 16], [6, 17], [6, 18], [6, 19], [6, 20], [6, 21]]);
+    for (let y = 0; y < ROAD_Y[0]; y += 1) { setTile(GARDEN_LANE_X, y, 'path'); setTile(GARDEN_LANE_X + 1, y, 'path'); }
+    // Village lanes, and the track south to the threshing floor and orchard.
+    for (let y = 1; y < ROAD_Y[0]; y += 1) { setTile(VILLAGE_LANE_X, y, 'path'); setTile(VILLAGE_LANE_X + 1, y, 'path'); }
+    for (let x = 1; x < 18; x += 1) setTile(x, 7, 'path');
+    for (let y = ROAD_Y[1] + 1; y < 34; y += 1) setTile(VILLAGE_LANE_X, y, 'path');
     // Camp paths between the tents.
-    paintPath([[17, 13], [17, 14], [17, 15], [17, 16], [17, 17], [17, 18], [18, 18], [19, 18], [20, 18], [21, 18], [22, 18]]);
+    for (let y = ROAD_Y[1] + 1; y < 28; y += 1) setTile(29, y, 'path');
+    for (let x = 24; x < 34; x += 1) setTile(x, 26, 'path');
+    for (let y = 13; y < ROAD_Y[0]; y += 1) setTile(26, y, 'path');
   },
   buildings: [
     // The village of Badasht.
-    { gridX: 2, gridY: 3, w: 2, h: 2, texture: 'house' },
-    { gridX: 7, gridY: 3, w: 2, h: 2, texture: 'house' },
-    { gridX: 2, gridY: 8, w: 2, h: 2, texture: 'house' },
-    { gridX: 8, gridY: 8, w: 2, h: 2, texture: 'house' },
-    { gridX: 8, gridY: 15, w: 2, h: 2, texture: 'house' },
-    // The guests' tents east of the stream.
-    { gridX: 19, gridY: 15, w: 3, h: 2, texture: 'ch7-tent-quddus' },
-    { gridX: 15, gridY: 19, w: 3, h: 2, texture: 'ch7-tent-quddus' },
-    { gridX: 20, gridY: 20, w: 3, h: 2, texture: 'ch7-tent-reconciliation' },
-    { gridX: 22, gridY: 9, w: 3, h: 2, texture: 'ch7-tent-reconciliation' },
-    { gridX: 15, gridY: 4, w: 3, h: 2, texture: 'ch7-tent-quddus' },
+    { gridX: 2, gridY: 2, w: 5, h: 4, texture: 'town-house-small' },
+    { gridX: 10, gridY: 2, w: 5, h: 4, texture: 'town-house-small' },
+    { gridX: 2, gridY: 9, w: 5, h: 4, texture: 'town-house-small' },
+    { gridX: 11, gridY: 10, w: 5, h: 4, texture: 'town-house-small' },
+    { gridX: 11, gridY: 21, w: 5, h: 4, texture: 'town-house-small' },
+    // The guests' pavilions east of the stream.
+    { gridX: 24, gridY: 10, w: 4, h: 3, texture: 'ch7-tent-quddus' },
+    { gridX: 34, gridY: 8, w: 5, h: 4, texture: 'ch7-tent-reconciliation' },
+    { gridX: 24, gridY: 22, w: 4, h: 3, texture: 'ch7-tent-quddus' },
+    { gridX: 33, gridY: 21, w: 5, h: 4, texture: 'ch7-tent-reconciliation' },
+    { gridX: 28, gridY: 28, w: 4, h: 3, texture: 'ch7-tent-quddus' },
   ],
-  decor: [
-    // Poplars and willows along the stream.
-    ...blocking('cypress', [[11, 1], [11, 5], [11, 9], [14, 2], [14, 7], [14, 16], [11, 15], [11, 19], [14, 22]]),
-    ...blocking('ch5-river-reeds', [[11, 3], [14, 10], [11, 21], [14, 19], [11, 7]]),
-    // The village: well, planters, a bread oven's woodpile, laundry, a sleeping dog's corner.
-    ...blocking('well', [[4, 10]]),
-    ...blocking('ch1-planter', [[4, 2], [9, 2], [1, 7]]),
-    ...blocking('crates', [[10, 4], [1, 10]]),
-    ...blocking('ch9-cloth-bundle', [[7, 9]]),
-    ...loose('rug', [[7, 7], [3, 16]]),
-    // The threshing floor and the orchard.
-    ...blocking('ch9-rope-coils', [[2, 15]]),
-    ...blocking('tree', [[2, 19], [4, 19], [8, 19], [2, 21], [4, 21], [8, 21], [3, 23], [7, 23], [9, 22], [1, 17]]),
-    ...blocking('ch7-rosebush', [[10, 18], [10, 20]]),
-    // Hedges and trees framing the meadow.
-    ...blocking('tree', [[0, 0], [0, 4], [0, 15], [0, 22], [10, 0], [4, 0]]),
-    // The guests' camp: cookfire, water jars, saddle bundles, lamps.
-    ...blocking('ch7-cookfire', [[19, 9]]),
-    ...blocking('crates', [[21, 8], [16, 9]]),
-    ...blocking('ch9-cloth-bundle', [[15, 13], [23, 13], [18, 21]]),
-    ...blocking('lamp', [[19, 13], [21, 2], [16, 17]]),
-    ...loose('rug', [[18, 10], [20, 10], [22, 17], [16, 22]]),
-    ...blocking('tree', [[24, 1], [25, 6], [24, 14], [25, 18], [24, 23], [18, 1], [22, 0], [16, 1]]),
-    ...blocking('cypress', [[19, 1], [21, 0]]),
-    ...blocking('ch7-rosebush', [[23, 6], [17, 7]]),
-  ],
+  decor: [...VILLAGE, ...FIELDS, ...STREAM_BANKS, ...CAMP, ...loose('ch6-footbridge', ROAD_Y.flatMap(y => STREAM_X.map(x => [x, y] as const)))],
   npcs: [
-    { gridX: 21, gridY: 3, texture: 'ch7-npc-steward',
+    { gridX: GARDEN_LANE_X - 1, gridY: 4, texture: 'ch7-npc-steward',
       prompt: 'Speak with the Steward of the Gardens  [E]',
       dialogue: 'ch7-steward' },
-    { gridX: 18, gridY: 9, texture: 'ch7-npc-cook',
+    { gridX: FIRE.x - 1, gridY: FIRE.y, texture: 'ch7-npc-cook',
       prompt: 'Speak with the Camp Cook  [E]',
       dialogue: 'ch7-cook' },
-    { gridX: 16, gridY: 13, texture: 'ch7-npc-khurasani',
+    { gridX: 25, gridY: 20, texture: 'ch7-npc-khurasani',
       prompt: 'Speak with the Believer from Khurásán  [E]',
       dialogue: 'ch7-khurasani' },
-    { gridX: 5, gridY: 20, texture: 'ch7-npc-villager',
+    { gridX: 9, gridY: 30, texture: 'ch7-npc-villager',
       prompt: 'Speak with the Gardener of Badasht  [E]',
       dialogue: 'ch7-villager' },
   ],
   exits: [
-    { fromX: 20, fromY: 0, dx: 0, dy: -1,
-      targetScene: 'Ch7BadashtCamp', targetSpawnX: 13, targetSpawnY: 24,
+    { fromX: GARDEN_LANE_X, fromY: 0, dx: 0, dy: -1,
+      targetScene: 'Ch7BadashtCamp', targetSpawnX: 18, targetSpawnY: 36,
       label: '↑ The lane to the three gardens',
       requires: f => !!f.ch7Arrived,
       lockedLabel: 'The gardens: the steward receives each guest first' },
@@ -112,7 +153,7 @@ export const ch7BadashtHamletMap: MapDefinition = {
   ambience: {
     wash: { color: 0xd08850, alpha: 0.26 },
     lights: [
-      { gridX: 19, gridY: 9, radius: 110, color: 0xffa050, intensity: 0.6 },
+      { gridX: FIRE.x, gridY: FIRE.y, radius: 150, color: 0xffa050, intensity: 0.6 },
     ],
     particles: 'motes', music: 'garden',
     vignette: 0.45,

@@ -1,36 +1,53 @@
 import type { DecorSpec, MapDefinition } from './types';
+import { wallRun } from './wallRuns';
 
 /**
- * Mákú, winter 1847 to spring 1848: the "Open Mountain".
+ * Mákú, winter 1847 to spring 1848, at true scale: the "Open Mountain".
  *
- * The fortress sits high in the north-west corner of the map behind snowy
- * ramparts. A switchback track drops from its gate to the little town at the
- * mountain's foot, where the people of Mákú gather each morning to look up
- * at the walls. A cold stream runs down the east side; across its bridge the
- * Tabríz road leaves for Chihríq, and the Mashhad road comes in from the
- * north, the road Mullá Ḥusayn walked on foot.
+ * The castle sits high in the north-west under its overhanging crag, and
+ * the rampart rings its snowy courtyard; the one gate opens south onto the
+ * mountainside. A switchback track drops from the gate to the little town
+ * at the mountain's foot, where the people of Mákú gather each morning to
+ * look up at the walls. A cold stream runs down the east side; across its
+ * bridge the Tabríz road leaves for Chihríq, and the Mashhad road comes in
+ * from the north, the road Mullá Ḥusayn walked on foot.
  *
  * The Báb is never on the map. He is reached through the barred window of
- * the keep and the copyist's desk, and through what others say of Him.
+ * the castle and the copyist's desk, and through what others say of Him.
+ *
+ * Districts (x runs east, y runs south):
+ * - The fortress: rampart x 1..22, y 1..19; the castle x 3..11, y 2..8, its
+ *   door at (7, 8); the copyist's corner x 13..18, y 3..8; the gate x 11..13,
+ *   y 18..20, its passage down x = 12.
+ * - Mountainside: switchbacks from the gate, along y 23..24, down x 27..28,
+ *   back along y 27..28 and down x 6..7 to the town; the shepherd's fold
+ *   at x 25..28, y 3..6.
+ * - The town: houses either side of the street (y 36..37), the lane from
+ *   the south where you arrive (x 14..15).
+ * - The stream x 33..34, bridged on the street's rows; the east bank with
+ *   the Mashhad road (x 39..40), the khan and its camels, and the Tabríz road
+ *   out at (45, 36).
  */
 
-const W = 28;
-const H = 28;
+const W = 46;
+const H = 46;
 
-/** Fortress enclosure: rampart ring from (2,1) to (13,10), gate gap at (8,10). */
-const FORT = { x0: 2, y0: 1, x1: 13, y1: 10, gateX: 8 };
+/** The rampart ring, and its gate in the south wall. */
+const FORT = { x0: 1, y0: 1, x1: 22, y1: 19 } as const;
+const GATE = { x: 11, y: 18, passage: 12 } as const;
+const CASTLE = { x: 3, y: 2, w: 9, h: 7 } as const;
+const STREET = 36;
+const STREAM = 33;
 
 function ramparts(): DecorSpec[] {
-  const out: DecorSpec[] = [];
-  for (let x = FORT.x0; x <= FORT.x1; x += 1) {
-    out.push({ gridX: x, gridY: FORT.y0, texture: 'ch6-rampart', blocks: true });
-    if (x !== FORT.gateX) out.push({ gridX: x, gridY: FORT.y1, texture: 'ch6-rampart', blocks: true });
-  }
-  for (let y = FORT.y0 + 1; y < FORT.y1; y += 1) {
-    out.push({ gridX: FORT.x0, gridY: y, texture: 'ch6-rampart', blocks: true });
-    out.push({ gridX: FORT.x1, gridY: y, texture: 'ch6-rampart', blocks: true });
-  }
-  return out;
+  const r = 'ch6-rampart';
+  return [
+    ...wallRun(r, FORT.x0, FORT.y0, FORT.x1, FORT.y0),
+    ...wallRun(r, FORT.x0, FORT.y0 + 1, FORT.x0, FORT.y1),
+    ...wallRun(r, FORT.x1, FORT.y0 + 1, FORT.x1, FORT.y1),
+    ...wallRun(r, FORT.x0 + 1, FORT.y1, GATE.x - 1, FORT.y1),
+    ...wallRun(r, GATE.x + 3, FORT.y1, FORT.x1 - 1, FORT.y1),
+  ];
 }
 
 const blocking = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
@@ -38,138 +55,153 @@ const blocking = (texture: string, cells: ReadonlyArray<readonly [number, number
 const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture }));
 
+/** Inside the walls: the guards' brazier, the copyist's chests and lamp, snow in the corners. */
+const COURTYARD: DecorSpec[] = [
+  ...blocking('ch6-brazier', [[4, 13]]),
+  ...blocking('crates', [[18, 3], [18, 4]]),
+  ...blocking('lamp', [[17, 3]]),
+  ...loose('rug', [[14, 4], [14, 8], [8, 12]]),
+  ...loose('ch6-snow-drift', [[2, 10], [3, 16], [9, 15], [14, 11], [20, 10], [18, 15], [20, 5], [6, 17]]),
+];
+
+/** The mountainside: rocks and pines between the switchbacks, the shepherd's fold. */
+const MOUNTAINSIDE: DecorSpec[] = [
+  ...blocking('ch6-brazier', [[10, 22]]),
+  ...blocking('ch6-rock', [
+    [2, 21], [0, 24], [4, 25], [9, 25], [15, 25], [20, 26], [24, 25], [30, 24], [31, 28],
+    [17, 21], [23, 21], [29, 20], [25, 15], [30, 12], [24, 9], [31, 3], [27, 0],
+  ]),
+  ...blocking('ch6-pine', [
+    [0, 22], [3, 23], [6, 25], [12, 26], [18, 25], [22, 26], [26, 22], [20, 21], [31, 25], [30, 30],
+    [24, 18], [27, 16], [31, 17], [24, 12], [28, 10], [31, 8], [24, 2], [29, 1], [32, 14], [30, 21],
+  ]),
+  ...blocking('ch6-snow-shrub', [[8, 21], [16, 22], [11, 25], [26, 26], [29, 23], [2, 26], [26, 13], [29, 7]]),
+  ...loose('ch6-snow-drift', [
+    [5, 21], [14, 21], [21, 22], [7, 26], [17, 26], [24, 23], [29, 26], [26, 19], [29, 14], [25, 7], [31, 10],
+  ]),
+  ...wallRun('ch8-palisade', 25, 3, 25, 6),
+  ...wallRun('ch8-palisade', 26, 6, 28, 6),
+];
+
+/** The town: a well, the market, the courier's bales, people watching the walls. */
+const TOWN: DecorSpec[] = [
+  ...blocking('well', [[9, 35]]),
+  ...blocking('crates', [[24, 38], [11, 39]]),
+  ...blocking('ch9-cloth-bundle', [[25, 39]]),
+  ...blocking('crowd', [[2, 28], [3, 27]]),
+  ...blocking('lamp', [[5, 35], [16, 35], [28, 35], [13, 39]]),
+  ...blocking('ch6-pine', [[0, 38], [16, 44], [23, 44], [31, 39], [5, 45], [31, 33]]),
+  ...blocking('ch6-snow-shrub', [[14, 34], [22, 34], [30, 44], [6, 39], [22, 42]]),
+  ...loose('ch6-snow-drift', [[3, 34], [19, 38], [27, 34], [8, 44], [22, 43], [29, 40], [15, 32]]),
+  ...loose('rug', [[20, 38]]),
+];
+
+/** East bank: the Mashhad road, the milestone, the fields under snow. */
+const EAST_BANK: DecorSpec[] = [
+  ...loose('ch6-footbridge', [[STREAM, STREET], [STREAM + 1, STREET], [STREAM, STREET + 1], [STREAM + 1, STREET + 1]]),
+  ...blocking('ch2-milestone', [[41, 33]]),
+  ...blocking('ch6-pine', [[36, 1], [43, 3], [36, 8], [44, 10], [36, 15], [43, 17], [37, 22], [44, 25], [36, 28], [44, 31]]),
+  ...blocking('ch6-rock', [[42, 6], [37, 12], [42, 14], [43, 21], [37, 25], [42, 28]]),
+  ...blocking('ch2-camel', [[42, 40], [43, 42]]),
+  ...blocking('crates', [[38, 44]]),
+  ...loose('ch6-snow-drift', [[38, 4], [42, 9], [38, 18], [42, 23], [36, 33], [44, 39], [35, 44]]),
+];
+
 export const ch6MakuMap: MapDefinition = {
   key: 'Ch6Maku',
   title: 'Mákú, the Open Mountain',
   width: W,
   height: H,
-  spawn: { x: 8, y: 26 },
-  build: ({ paintRect, paintPath, setTile, block }) => {
-    // Bare mountain everywhere; the town and the courtyard are trodden earth and flagstone.
+  trueScale: true,
+  spawn: { x: 14, y: 44 },
+  build: ({ paintRect, setTile, block }) => {
+    // Bare mountain everywhere; the town is trodden earth, the courtyard flagstone.
     paintRect(0, 0, W, H, 'stone');
-    paintRect(FORT.x0 + 1, FORT.y0 + 1, FORT.x1 - FORT.x0 - 1, FORT.y1 - FORT.y0 - 1, 'stone');
-    paintRect(9, 2, 4, 4, 'sand');        // the copyist's corner of the courtyard
-    paintRect(0, 18, 18, 10, 'sand');     // the town at the mountain's foot
-    paintRect(21, 22, 7, 6, 'sand');      // the east bank fields under snow
-    paintRect(16, 2, 3, 3, 'sand');       // a shepherd's fold above the stream
-
+    paintRect(0, 29, STREAM, H - 29, 'sand');
+    paintRect(STREAM + 2, 38, W - STREAM - 2, H - 38, 'sand');
+    paintRect(13, 3, 6, 6, 'sand');        // the copyist's corner of the courtyard
+    paintRect(25, 3, 3, 3, 'sand');        // the shepherd's fold
+    // Inside the walls: from the gate to the castle door, and to the copyist's corner.
+    paintRect(GATE.passage, 9, 1, GATE.y + 3 - 9, 'path');
+    paintRect(7, 9, 6, 2, 'path');
+    paintRect(GATE.passage, 7, 3, 2, 'path');
+    // Switchbacks down the mountain, two cells wide.
+    paintRect(GATE.passage, 21, 2, 3, 'path');
+    paintRect(GATE.passage, 23, 17, 2, 'path');
+    paintRect(27, 25, 2, 2, 'path');
+    paintRect(6, 27, 23, 2, 'path');
+    paintRect(6, 29, 2, STREET - 29, 'path');
+    // The street through the town and over the bridge, and out on the Tabríz road.
+    paintRect(0, STREET, W, 2, 'path');
+    // The lane from the south where you arrive.
+    paintRect(14, STREET + 2, 2, H - STREET - 2, 'path');
+    // The Mashhad road comes down the east bank from the north.
+    paintRect(39, 0, 2, STREET, 'path');
     // The cold stream running down from the heights.
     for (let y = 0; y < H; y += 1) {
-      setTile(19, y, 'water');
-      setTile(20, y, 'water');
-      if (y !== 21) { block(19, y); block(20, y); }
+      for (const x of [STREAM, STREAM + 1]) {
+        setTile(x, y, 'water');
+        if (y !== STREET && y !== STREET + 1) block(x, y);
+      }
     }
-
-    // Inside the walls: gate to the keep, and to the copyist's corner.
-    paintPath([[8, 10], [8, 9], [8, 8], [8, 7], [8, 6], [8, 5], [9, 5], [10, 5]]);
-    // Switchbacks down the mountain.
-    paintPath([[8, 11], [8, 12], [8, 13]]);
-    paintPath([[9, 13], [10, 13], [11, 13], [12, 13], [13, 13], [14, 13], [15, 13]]);
-    paintPath([[15, 14], [15, 15], [15, 16], [15, 17]]);
-    paintPath([[14, 17], [13, 17], [12, 17], [11, 17], [10, 17], [9, 17], [8, 17], [7, 17], [6, 17]]);
-    paintPath([[6, 18], [6, 19], [6, 20], [6, 21]]);
-    // Through the town, over the bridge, and out on the Tabríz road.
-    paintPath([[4, 21], [5, 21], [7, 21], [8, 21], [9, 21], [10, 21], [11, 21], [12, 21], [13, 21],
-      [14, 21], [15, 21], [16, 21], [17, 21], [21, 21], [22, 21], [23, 21], [24, 21], [25, 21], [26, 21], [27, 21]]);
-    // The lane from the south where you arrive.
-    paintPath([[8, 27], [8, 26], [8, 25], [8, 24], [8, 23], [8, 22]]);
-    // The Mashhad road comes down the east bank from the north.
-    for (let y = 0; y <= 20; y += 1) setTile(24, y, 'path');
+    // The gate's towers either side of its passage.
+    for (let y = GATE.y; y < GATE.y + 3; y += 1) {
+      block(GATE.x, y);
+      block(GATE.x + 2, y);
+    }
   },
   buildings: [
-    { gridX: 4, gridY: 2, w: 3, h: 3, texture: 'ch6-maku-fortress' },
+    { gridX: CASTLE.x, gridY: CASTLE.y, w: CASTLE.w, h: CASTLE.h, texture: 'ch6-maku-fortress' },
+    { gridX: GATE.x, gridY: GATE.y, w: 3, h: 3, texture: 'ch6-fortress-gate', blocks: false },
     // The town of Mákú.
-    { gridX: 1, gridY: 19, w: 2, h: 2, texture: 'house' },
-    { gridX: 1, gridY: 23, w: 2, h: 2, texture: 'house' },
-    { gridX: 4, gridY: 25, w: 2, h: 2, texture: 'house' },
-    { gridX: 11, gridY: 24, w: 2, h: 2, texture: 'house' },
-    { gridX: 14, gridY: 18, w: 2, h: 2, texture: 'house' },
-    { gridX: 13, gridY: 23, w: 1, h: 1, texture: 'stall' },
-    // A caravanserai on the east bank, where the Tabríz road begins.
-    { gridX: 24, gridY: 23, w: 3, h: 2, texture: 'ch2-caravanserai' },
+    { gridX: 0, gridY: 30, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 9, gridY: 30, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 17, gridY: 29, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 23, gridY: 30, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 1, gridY: 40, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 8, gridY: 40, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 16, gridY: 40, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 25, gridY: 41, w: 5, h: 4, texture: 'ch6-mountain-house' },
+    { gridX: 22, gridY: 39, w: 2, h: 2, texture: 'market-stall-large' },
+    // A khan on the east bank, where the Tabríz road begins.
+    { gridX: 37, gridY: 39, w: 5, h: 4, texture: 'ch6-mountain-house' },
   ],
-  decor: [
-    ...ramparts(),
-    // The plank bridge over the stream (walkable).
-    ...loose('ch6-footbridge', [[19, 21], [20, 21]]),
-    // In the courtyard: the guards' brazier, the copyist's chests and lamp.
-    ...blocking('ch6-brazier', [[4, 8]]),
-    ...blocking('crates', [[12, 2]]),
-    ...blocking('lamp', [[12, 4]]),
-    ...loose('rug', [[10, 3], [10, 8]]),
-    ...loose('ch6-snow-drift', [[3, 2], [3, 6], [11, 8], [7, 8], [12, 7]]),
-    // Outside the gate: the warden's brazier.
-    ...blocking('ch6-brazier', [[10, 11]]),
-
-    // Mountainside: rocks and pines shaping the switchbacks.
-    ...blocking('ch6-rock', [
-      [0, 2], [1, 5], [0, 9], [1, 12], [3, 14], [0, 15], [10, 12], [12, 11], [14, 11],
-      [16, 9], [17, 6], [15, 6], [17, 12], [11, 15], [13, 15], [9, 15], [17, 15], [16, 0], [14, 0],
-    ]),
-    ...blocking('ch6-pine', [
-      [1, 0], [0, 7], [1, 10], [2, 12], [4, 12], [6, 13], [5, 15], [14, 2], [15, 4], [17, 1],
-      [16, 11], [12, 15], [10, 15], [16, 14], [18, 16],
-    ]),
-    ...blocking('ch6-snow-shrub', [[6, 11], [11, 11], [3, 13], [14, 15], [8, 15], [17, 18], [18, 13]]),
-    ...loose('ch6-snow-drift', [
-      [0, 0], [2, 11], [5, 12], [13, 12], [16, 12], [7, 14], [12, 14], [14, 14], [16, 16],
-      [10, 16], [3, 16], [18, 3], [16, 7], [18, 10], [0, 13], [15, 1],
-    ]),
-    // The shepherd's fold above the stream.
-    ...blocking('ch8-palisade', [[16, 2], [16, 3], [16, 4]]),
-
-    // The town: a well, the market, the courier's bales, people watching the walls.
-    ...blocking('well', [[10, 20]]),
-    ...blocking('crates', [[16, 22], [12, 22]]),
-    ...blocking('ch9-cloth-bundle', [[16, 20]]),
-    ...blocking('crowd', [[3, 17], [4, 16]]),
-    ...blocking('lamp', [[7, 20], [13, 20]]),
-    ...blocking('ch6-pine', [[0, 17], [0, 26], [3, 27], [15, 26], [17, 24], [10, 27]]),
-    ...blocking('ch6-snow-shrub', [[3, 21], [9, 24], [14, 25], [6, 24]]),
-    ...loose('ch6-snow-drift', [[0, 22], [3, 25], [7, 26], [13, 27], [16, 25], [10, 18], [12, 19]]),
-    ...loose('rug', [[11, 22]]),
-
-    // East bank: the Mashhad road, the milestone, the fields.
-    ...blocking('ch2-milestone', [[25, 18]]),
-    ...blocking('ch6-pine', [[22, 1], [26, 2], [22, 6], [27, 8], [22, 11], [26, 13], [22, 15], [27, 17], [21, 25], [27, 27]]),
-    ...blocking('ch6-rock', [[26, 5], [21, 9], [25, 10], [27, 14], [21, 18]]),
-    ...loose('ch6-snow-drift', [[23, 3], [25, 7], [23, 12], [25, 15], [22, 23], [23, 26], [26, 26], [22, 19]]),
-  ],
+  decor: [...ramparts(), ...COURTYARD, ...MOUNTAINSIDE, ...TOWN, ...EAST_BANK],
   npcs: [
     // Inside the walls.
-    { gridX: 7, gridY: 3, texture: 'ch6-barred-marker',
+    { gridX: 10, gridY: 9, texture: 'ch6-barred-marker',
       prompt: 'Stand beneath the barred window  [E]',
       dialogue: 'ch6-maku-window' },
-    { gridX: 11, gridY: 3, texture: 'writing-desk',
+    { gridX: 15, gridY: 5, texture: 'writing-desk',
       prompt: 'Read the pages on the copyist\'s desk  [E]',
       dialogue: 'ch6-bayan',
       gate: { when: f => !!f.ch6WardenSoftened && !!f.ch6MetAmanuensis, lockedDialogue: 'ch6-desk-closed' } },
-    { gridX: 11, gridY: 5, texture: 'ch6-amanuensis',
+    { gridX: 15, gridY: 7, texture: 'ch6-amanuensis',
       prompt: 'Speak with Siyyid Ḥusayn, the Amanuensis  [E]',
       dialogue: 'ch6-amanuensis' },
-    { gridX: 5, gridY: 8, texture: 'ch6-fortress-guard',
+    { gridX: 3, gridY: 12, texture: 'ch6-fortress-guard',
       prompt: 'Speak with the Fortress Guard  [E]',
       dialogue: 'ch6-fortress-guard' },
     // At the gate.
-    { gridX: 9, gridY: 11, texture: 'ch6-warden',
+    { gridX: 14, gridY: 22, texture: 'ch6-warden',
       prompt: 'Speak with ʿAlí Khán  [E]',
       dialogue: 'ch6-warden-softens' },
     // The town.
-    { gridX: 5, gridY: 18, texture: 'ch6-maku-woman',
+    { gridX: 4, gridY: 29, texture: 'ch6-maku-woman',
       prompt: 'Speak with the Woman of Mákú  [E]',
       dialogue: 'ch6-maku-woman' },
-    { gridX: 15, gridY: 22, texture: 'ch6-courier',
+    { gridX: 23, gridY: 37, texture: 'ch6-courier',
       prompt: 'Speak with the Mountain Courier  [E]',
       dialogue: 'ch6-courier-transfer',
       gate: { when: f => !!f.ch6ReadBayan && !!f.ch6MetMullaHusayn, lockedDialogue: 'ch6-courier-letters' } },
     // East bank, where the Mashhad road comes in.
-    { gridX: 23, gridY: 19, texture: 'ch6-mulla-husayn',
+    { gridX: 38, gridY: 32, texture: 'ch6-mulla-husayn',
       prompt: 'Speak with Mullá Ḥusayn  [E]',
       dialogue: 'ch6-mulla-husayn-visit' },
   ],
   exits: [
-    { fromX: 27, fromY: 21, dx: 1, dy: 0,
-      targetScene: 'Ch6Chihriq', targetSpawnX: 1, targetSpawnY: 15,
+    { fromX: W - 1, fromY: STREET, dx: 1, dy: 0,
+      targetScene: 'Ch6Chihriq', targetSpawnX: 1, targetSpawnY: 27,
       label: '→ The road to Chihríq',
       requires: f => !!f.ch6TransferOrdered,
       lockedLabel: 'The Tabríz road: no reason yet to leave Mákú' },
@@ -177,8 +209,9 @@ export const ch6MakuMap: MapDefinition = {
   ambience: {
     wash: { color: 0x6a7a96, alpha: 0.42 },
     lights: [
-      { gridX: 4, gridY: 8, radius: 90, color: 0xff9a4a, intensity: 0.6 },
-      { gridX: 10, gridY: 11, radius: 90, color: 0xff9a4a, intensity: 0.6 },
+      { gridX: 4, gridY: 13, radius: 140, color: 0xff9a4a, intensity: 0.6 },
+      { gridX: 10, gridY: 22, radius: 140, color: 0xff9a4a, intensity: 0.6 },
+      { gridX: 10, gridY: 10, radius: 90, color: 0xf3d79a, intensity: 0.3 },
     ],
     particles: 'snow', music: 'mountain',
     vignette: 0.6,

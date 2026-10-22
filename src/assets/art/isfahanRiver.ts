@@ -5,44 +5,45 @@ import { flatTop, LIGHT, walls } from './ornaments';
 import { post, subBox } from './structureParts';
 
 /**
- * The Zāyandih-Rūd at Iṣfahán: reeds at the water's edge and a
- * cloth-printer's awning in the bazaar. The bridge is in `isfahanBridge.ts`.
+ * The Zāyandih-Rūd at Iṣfahán, at true scale (a person is 40 px, 1.75 m):
+ * reeds at the water's edge standing as high as a man and more, and a
+ * cloth-printer's booth in the bazaar. The bridge is in `isfahanBridge.ts`.
  */
 
 const RIVER = 0x2c4a6b;
 
-/** Reeds and bulrushes standing in a shallow pool at the river's edge. */
+/** Reeds and bulrushes, 1.5 to 2.5 m tall, standing in a shallow pool at the river's edge. */
 export function paintRiverReeds(scene: Phaser.Scene, key: string): void {
-  paintTexture(scene, key, 48, 44, ctx => {
+  paintTexture(scene, key, 72, 80, ctx => {
     const rand = rng(77);
-    const cx = 24;
-    const base = 38;
-    const pool = ctx.createRadialGradient(cx - 4, base - 2, 2, cx, base, 22);
+    const cx = 36;
+    const base = 70;
+    const pool = ctx.createRadialGradient(cx - 5, base - 2, 2, cx, base, 30);
     pool.addColorStop(0, css(shade(RIVER, 1.35), 0.9));
     pool.addColorStop(1, css(RIVER, 0));
     ctx.fillStyle = pool;
     ctx.beginPath();
-    ctx.ellipse(cx, base, 22, 6.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, base, 30, 9, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = 'rgba(200,225,240,0.4)';
     ctx.lineWidth = 0.7;
-    for (const r of [8, 14]) {
+    for (const r of [11, 19, 26]) {
       ctx.beginPath();
       ctx.ellipse(cx + 2, base + 1, r, r * 0.28, 0, Math.PI * 0.1, Math.PI * 0.9);
       ctx.stroke();
     }
     // Back stalks are darker; front stalks catch the light on the left.
-    const stalks = Array.from({ length: 22 }, () => ({
-      x: cx - 13 + rand() * 26,
-      h: 16 + rand() * 18,
-      bend: (rand() - 0.4) * 8,
+    const stalks = Array.from({ length: 34 }, () => ({
+      x: cx - 19 + rand() * 38,
+      h: 34 + rand() * 24,
+      bend: (rand() - 0.4) * 12,
       depth: rand(),
     })).sort((a, b) => a.depth - b.depth);
     for (const s of stalks) {
-      const y = base - 1 + s.depth * 3;
+      const y = base - 2 + s.depth * 5;
       const lit = s.x < cx;
       ctx.strokeStyle = css(shade(mix(0x516b38, 0x7a8a3a, rand()), (lit ? 1.15 : 0.8) * (0.7 + s.depth * 0.4)));
-      ctx.lineWidth = 1.1 + rand() * 0.6;
+      ctx.lineWidth = 1.2 + rand() * 0.7;
       ctx.beginPath();
       ctx.moveTo(s.x, y);
       ctx.quadraticCurveTo(s.x + s.bend * 0.2, y - s.h * 0.6, s.x + s.bend, y - s.h);
@@ -53,59 +54,69 @@ export function paintRiverReeds(scene: Phaser.Scene, key: string): void {
         const hy = y - s.h * 0.78;
         ctx.fillStyle = css(shade(0x7a5228, lit ? 1.1 : 0.8));
         ctx.beginPath();
-        ctx.ellipse(hx, hy, 1.6, 4, s.bend * 0.03, 0, Math.PI * 2);
+        ctx.ellipse(hx, hy, 1.8, 5, s.bend * 0.02, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = 'rgba(255,220,170,0.35)';
-        ctx.fillRect(hx - 1, hy - 3, 0.8, 4);
+        ctx.fillRect(hx - 1, hy - 4, 0.8, 5);
       }
     }
     // A few long blades arching over.
     ctx.strokeStyle = css(0x6f8a44, 0.9);
     ctx.lineWidth = 1;
-    for (const [x, dir] of [[18, -1], [30, 1], [24, 1]] as const) {
+    for (const [x, dir] of [[26, -1], [44, 1], [36, 1], [30, -1]] as const) {
       ctx.beginPath();
       ctx.moveTo(x, base);
-      ctx.quadraticCurveTo(x + dir * 4, base - 22, x + dir * 12, base - 16);
+      ctx.quadraticCurveTo(x + dir * 6, base - 36, x + dir * 18, base - 26);
       ctx.stroke();
     }
   });
 }
 
-/** A cloth-printer's booth: a peaked canvas roof on posts over a counter of block-printed cotton. */
-export function paintMarketAwning(scene: Phaser.Scene, key: string): void {
-  // The eave stands a little above a man's head, so the printer works in its shade.
-  const { box, texW, texH } = footprintBox(1, 1, 42, 26);
+/**
+ * A cloth-printer's booth: a peaked canvas roof on four posts, its eave a
+ * little above a man's head (2.3 m), over a hip-high counter stacked with
+ * bolts of block-printed cotton (qalamkār).
+ */
+export function paintMarketAwning(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
+  const eave = 54;
+  const rise = 30;
+  const { box, texW, texH } = footprintBox(cellsW, cellsD, eave, rise + 8);
   paintTexture(scene, key, texW, texH, ctx => {
-    groundShadow(ctx, box, 4, 0.22);
+    groundShadow(ctx, box, 6, 0.22);
     const cloth = 0x315f68;
     const wood = 0x5b3f24;
-    const rise = 20;
     const corner = (p: number, q: number) => roofPoint(box, p, q);
     // The back post stands behind everything else.
-    const backPost = corner(0, box.d);
-    post(ctx, backPost.x, backPost.y + box.h, box.h, 2.5, wood);
-    // Counter with bolts of qalamkār cloth, madder red and indigo.
-    const counter = subBox(box, 5, box.w - 5, 5, box.d - 5, 15);
-    walls(ctx, counter, (c, w, h, light) => planks(c, w, h, { base: 0x7a5232, light, seed: 61 }, false, 3), {
+    const backPost = corner(4, box.d - 4);
+    post(ctx, backPost.x, backPost.y + box.h, box.h, 3.5, wood);
+    // The counter across the front, 0.9 m high, with a length of print hung over it.
+    const counter = subBox(box, 8, box.w - 8, 10, box.d * 0.5, 20);
+    walls(ctx, counter, (c, w, h, light) => planks(c, w, h, { base: 0x7a5232, light, seed: 61 }, false, 4), {
       left: (c, w, h, l) => drapedPrint(c, w, h, l),
     });
     flatTop(ctx, counter, 0x8a6240);
     outlineBox(ctx, counter);
-    const bolts = [0x9a2e22, 0x24406e, 0xd8c7a0, 0x8e5a2a];
+    const bolts = [0x9a2e22, 0x24406e, 0xd8c7a0, 0x8e5a2a, 0x3a6a4a, 0x9a2e22];
     bolts.forEach((color, i) => {
-      const at = roofPoint(counter, 5 + i * 5, 5 + (i % 2) * 8);
+      const at = roofPoint(counter, 6 + i * ((counter.w - 12) / bolts.length), 6 + (i % 2) * 10);
       ctx.fillStyle = css(color);
-      ctx.fillRect(at.x - 5, at.y - 6, 10, 4);
+      ctx.fillRect(at.x - 6, at.y - 7, 12, 5);
       ctx.fillStyle = css(shade(color, 1.3));
-      ctx.fillRect(at.x - 5, at.y - 6, 10, 1);
+      ctx.fillRect(at.x - 6, at.y - 7, 12, 1);
       ctx.fillStyle = css(shade(color, 0.6));
       ctx.beginPath();
-      ctx.ellipse(at.x + 5, at.y - 4, 1.2, 2, 0, 0, Math.PI * 2);
+      ctx.ellipse(at.x + 6, at.y - 4.5, 1.4, 2.5, 0, 0, Math.PI * 2);
       ctx.fill();
     });
-    for (const [p, q] of [[0, 0], [box.w, 0], [box.w, box.d]] as const) {
+    // The printer's wooden blocks and a dye tray at the counter's end.
+    const tray = roofPoint(counter, counter.w - 8, counter.d - 8);
+    ctx.fillStyle = css(0x24406e);
+    ctx.fillRect(tray.x - 5, tray.y - 3, 10, 3);
+    ctx.fillStyle = css(0x6a4a2c);
+    ctx.fillRect(tray.x - 9, tray.y - 6, 4, 3);
+    for (const [p, q] of [[4, 4], [box.w - 4, 4], [box.w - 4, box.d - 4]] as const) {
       const top = corner(p, q);
-      post(ctx, top.x, top.y + box.h, box.h, 2.5, wood);
+      post(ctx, top.x, top.y + box.h, box.h, 3.5, wood);
     }
     // Pyramid roof: the two faces toward the viewer.
     const apex = roofPoint(box, box.w / 2, box.d / 2);
@@ -139,7 +150,7 @@ export function paintMarketAwning(scene: Phaser.Scene, key: string): void {
       }
       ctx.restore();
       // Scalloped valance hanging from the eave.
-      const n = 4;
+      const n = 7;
       for (let i = 0; i < n; i++) {
         const x0 = a.x + ((b.x - a.x) * i) / n;
         const y0 = a.y + ((b.y - a.y) * i) / n;
@@ -148,7 +159,7 @@ export function paintMarketAwning(scene: Phaser.Scene, key: string): void {
         ctx.beginPath();
         ctx.moveTo(x0, y0);
         ctx.lineTo(x1, y1);
-        ctx.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 6, x0, y0);
+        ctx.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 8, x0, y0);
         ctx.fillStyle = css(shade(0x9a2e22, light));
         ctx.fill();
       }

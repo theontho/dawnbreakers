@@ -5,16 +5,18 @@ import { archPath } from './ornaments';
 import { glow, post } from './structureParts';
 
 /**
- * Inside a pavilion tent at Badasht, summer 1848: walls lined with
- * block-printed cotton (qalamkār) in arched panels, lamplight coming
- * through the cloth, mattresses and bolsters along the walls, and the
- * tent pole with its lantern.
+ * Inside a pavilion tent at Badasht, summer 1848, at true scale: walls
+ * 2.4 m high lined with block-printed cotton (qalamkār) in arched panels,
+ * lamplight coming through the cloth, mattresses and bolsters along the
+ * walls, and the tent pole, 4.3 m to the ridge, with its lantern.
  */
 
 const LINING = 0xeedcae;
 const MADDER = 0x9a3a2a;
 const INDIGO = 0x2f3f6a;
 export const TENT_CLOTH = 0x48613e;
+/** The lining's height inside: the eave of the pavilion seen from without (see pavilion.ts). */
+export const TENT_WALL_H = 56;
 
 /** The inner face of the tent wall: arched printed panels under a scalloped valance. */
 export function tentLiningFace(ctx: Ctx, w: number, h: number, l: number): void {
@@ -72,16 +74,16 @@ export function tentLiningFace(ctx: Ctx, w: number, h: number, l: number): void 
 
 /** The tent's main pole, a brass finial lost in the shadow above, a lantern hung from its hook. */
 export function paintTentPole(scene: Phaser.Scene, key: string): void {
-  paintTexture(scene, key, 32, 128, ctx => {
+  paintTexture(scene, key, 32, 112, ctx => {
     const cx = 16;
-    const foot = 122;
+    const foot = 106;
     ellipseShadow(ctx, cx + 1, foot, 5, 2, 0.35);
-    post(ctx, cx, foot, 116, 3.6, 0x6a4428);
+    post(ctx, cx, foot, 100, 3.6, 0x6a4428);
     // Its foot wrapped in felt against the carpets.
     ctx.fillStyle = css(0x8a3a2a);
     ctx.fillRect(cx - 2.6, foot - 6, 5.2, 6);
     // The hook and the lantern: a pierced brass cage with a candle.
-    const hookY = foot - 64;
+    const hookY = foot - 56;
     ctx.strokeStyle = css(0x3a2a1a);
     ctx.lineWidth = 0.8;
     ctx.beginPath();

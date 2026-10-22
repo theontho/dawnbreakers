@@ -1,21 +1,35 @@
 import type Phaser from 'phaser';
 import { css, paintTexture, rng, shade, type Ctx } from './canvasKit';
 import { ellipseShadow, embers, flames, glow, onPlane, post } from './structureParts';
+import { plaster } from './materials';
 import { LIGHT } from './ornaments';
 
 /**
- * Badasht's gardens and camp: damask roses, mud-brick garden walls, the
- * curtain behind which Ṭáhirih first spoke, and the cookfire that fed
- * eighty-one guests.
+ * Badasht's gardens and camp at true scale (1 m is about 23 px): damask
+ * roses as tall as a man's shoulder, mud-brick garden walls, the curtain
+ * behind which Ṭáhirih first spoke, and the cookfire that fed eighty-one
+ * guests.
  */
 
-/** A damask rosebush (gul-i-muḥammadī): clustered leaves scattered with open blooms. */
+/**
+ * A damask rosebush (gul-i-muḥammadī), about 1.5 m high and as wide:
+ * arching canes, clustered leaves, open blooms scattered over the top.
+ */
 export function paintRosebush(scene: Phaser.Scene, key: string): void {
-  paintTexture(scene, key, 48, 40, ctx => {
+  paintTexture(scene, key, 60, 56, ctx => {
     const rand = rng(251);
-    ellipseShadow(ctx, 26, 36, 17, 4.5, 0.28);
+    ellipseShadow(ctx, 32, 50, 22, 5.5, 0.28);
     const leaf = 0x3d6a3c;
-    const clumps = Array.from({ length: 10 }, () => ({ x: 12 + rand() * 24, y: 14 + rand() * 18, r: 6 + rand() * 4 }))
+    // A few bare canes at the foot, where the leaves thin out.
+    ctx.strokeStyle = css(0x4a3a22);
+    ctx.lineWidth = 1.2;
+    for (const dx of [-9, -3, 4, 10]) {
+      ctx.beginPath();
+      ctx.moveTo(31 + dx * 0.4, 50);
+      ctx.quadraticCurveTo(31 + dx, 44, 31 + dx * 1.3, 36);
+      ctx.stroke();
+    }
+    const clumps = Array.from({ length: 16 }, () => ({ x: 13 + rand() * 34, y: 17 + rand() * 24, r: 6 + rand() * 4.5 }))
       .sort((a, b) => a.y - b.y);
     for (const c of clumps) {
       ctx.fillStyle = css(shade(leaf, 0.55));
@@ -34,17 +48,17 @@ export function paintRosebush(scene: Phaser.Scene, key: string): void {
       ctx.fill();
     }
     // Serrated leaf flecks.
-    for (let i = 0; i < 70; i++) {
-      const x = 8 + rand() * 32;
-      const y = 8 + rand() * 26;
-      ctx.fillStyle = css(shade(leaf, x + y < 44 ? 1.5 : 0.6), 0.75);
+    for (let i = 0; i < 120; i++) {
+      const x = 8 + rand() * 44;
+      const y = 6 + rand() * 38;
+      ctx.fillStyle = css(shade(leaf, x + y < 52 ? 1.5 : 0.6), 0.75);
       ctx.fillRect(x, y, 1.5, 1);
     }
     // Blooms: layered petals, deep at the heart.
-    for (let i = 0; i < 9; i++) {
-      const x = 10 + rand() * 28;
-      const y = 9 + rand() * 22;
-      const r = 2 + rand() * 1.2;
+    for (let i = 0; i < 15; i++) {
+      const x = 11 + rand() * 38;
+      const y = 12 + rand() * 25;
+      const r = 2.2 + rand() * 1.4;
       ctx.fillStyle = css(0x9a2a44);
       ctx.beginPath();
       ctx.arc(x + 0.5, y + 0.5, r, 0, Math.PI * 2);
@@ -93,13 +107,43 @@ export function mudBrickPatch(ctx: Ctx, x: number, y: number, w: number, h: numb
   ctx.restore();
 }
 
-/** A curtain hung on a frame along one diagonal of its cell, lamplight showing through. */
+/** The garden walls' height: 2.8 m of mud brick, too high to see over (the gardener's wife climbed it). */
+export const GARDEN_WALL_H = 64;
+
+/**
+ * A garden wall at Badasht: mud brick under a straw-flecked kahgel plaster,
+ * the plaster fallen away in places, rain-streaked from the coping and
+ * darkened at the foot where the channels water the roses.
+ */
+export function gardenWallFace(ctx: Ctx, w: number, h: number, l: number): void {
+  const base = 0x9c7648;
+  plaster(ctx, w, h, { base, light: l, seed: 261 });
+  straw(ctx, w, h, l, 262);
+  // Spaced unevenly within the cell so a long run does not stamp.
+  for (let k = 0; k < w; k += 32) {
+    for (const [u, len] of [[4, 22], [17, 12], [26, 30]] as const) {
+      const g = ctx.createLinearGradient(0, 6, 0, 6 + len);
+      g.addColorStop(0, css(shade(base, l * 0.75), 0.4));
+      g.addColorStop(1, css(shade(base, l * 0.75), 0));
+      ctx.fillStyle = g;
+      ctx.fillRect(k + u, 6, 2, len);
+    }
+    mudBrickPatch(ctx, k + 6 + ((k / 32) % 2) * 9, h * 0.45, 14, 9, l);
+  }
+  const damp = ctx.createLinearGradient(0, h - 12, 0, h);
+  damp.addColorStop(0, 'rgba(40,28,14,0)');
+  damp.addColorStop(1, 'rgba(40,28,14,0.35)');
+  ctx.fillStyle = damp;
+  ctx.fillRect(0, h - 12, w, 12);
+}
+
+/** A curtain 2.3 m high hung on a frame along one diagonal of its cell, lamplight showing through. */
 export function paintCurtain(scene: Phaser.Scene, key: string): void {
-  paintTexture(scene, key, 64, 66, ctx => {
-    const hang = 46;
-    const a = { x: 10, y: 42 };
-    const b = { x: 54, y: 64 };
-    ellipseShadow(ctx, 34, 55, 24, 6, 0.24);
+  paintTexture(scene, key, 64, 84, ctx => {
+    const hang = 54;
+    const a = { x: 10, y: 60 };
+    const b = { x: 54, y: 82 };
+    ellipseShadow(ctx, 34, 73, 24, 6, 0.24);
     post(ctx, a.x, a.y, hang + 4, 2.5, 0x5a3f26);
     const top0 = { x: a.x, y: a.y - hang };
     const top1 = { x: b.x, y: b.y - hang };
@@ -139,11 +183,18 @@ export function paintCurtain(scene: Phaser.Scene, key: string): void {
   });
 }
 
-/** A ring of hearthstones, a log fire and a great copper cauldron hung from a tripod. */
+/**
+ * A ring of hearthstones, a log fire and a great copper cauldron, nearly a
+ * metre across, hung from a tripod a little shorter than a man.
+ */
 export function paintCookfire(scene: Phaser.Scene, key: string): void {
-  paintTexture(scene, key, 48, 42, ctx => {
+  const s = 1.3;
+  paintTexture(scene, key, 64, 56, ctx => {
     const cx = 24;
     const base = 34;
+    // Painted at 1:1 about the hearth, then scaled up to its true size.
+    ctx.translate(32 - cx * s, 46 - base * s);
+    ctx.scale(s, s);
     glow(ctx, cx, base - 6, 22, 0xff9a40, 0.22);
     ellipseShadow(ctx, cx + 1, base + 2, 17, 5, 0.25);
     // Back stones, embers and logs, then the front stones.

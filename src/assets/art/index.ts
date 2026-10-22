@@ -5,6 +5,8 @@ import { HOUSE_VARIANTS, paintHouseVariants } from './houses';
 import { paintStall } from './stall';
 import { CYPRESS_VARIANTS, paintCypress, paintTree, TREE_VARIANTS } from './nature';
 import { paintCrates, paintRug } from './props';
+import { PINE_VARIANTS, ROCK_VARIANTS } from './mountain';
+import { MOUNTAIN_HOUSES } from './mountainHouse';
 import { TOWN_TEXTURE_VARIANTS } from './town';
 import { paintWallBase, WALL_STYLES } from './walls';
 
@@ -27,6 +29,9 @@ export const TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   cypress: CYPRESS_VARIANTS.length,
   stall: STALLS.length,
   ...TOWN_TEXTURE_VARIANTS,
+  'ch6-pine': PINE_VARIANTS.length,
+  'ch6-rock': ROCK_VARIANTS.length,
+  'ch6-mountain-house': MOUNTAIN_HOUSES.length,
 };
 
 export const BASE_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
