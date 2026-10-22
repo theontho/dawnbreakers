@@ -114,12 +114,12 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
   },
   // Indoors; see interiorFace.
   'interior-wall': {
-    height: 72, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-mihrab'],
+    height: 90, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-mihrab'],
     face: (ctx, w, h, l) => interiorFace(ctx, w, h, l),
   },
   // The prayer niche set into the qibla wall: a tiled frame round a pointed arch.
   'interior-mihrab': {
-    height: 72, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-wall'],
+    height: 90, thickness: 0.3, top: 0xd8ccb0, cap: 'flat', joins: ['interior-wall'],
     face: (ctx, w, h, l) => {
       interiorFace(ctx, w, h, l);
       ctx.fillStyle = css(shade(0x24477a, l));
