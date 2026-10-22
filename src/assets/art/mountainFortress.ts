@@ -44,10 +44,12 @@ const INSET = 16;
 
 export function paintFortress(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, style: FortressStyle): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, style.wallH, style.topPad);
+  // The front tower, the footing and the snow banked before the door spill
+  // past the footprint's front corner: a foot margin keeps them whole.
   paintTexture(scene, key, texW + 24, texH, ctx => {
     ctx.translate(12, 0);
     drawFortress(ctx, box, style);
-  });
+  }, 48);
 }
 
 function drawFortress(ctx: Ctx, box: IsoBox, style: FortressStyle): void {

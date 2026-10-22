@@ -18,10 +18,13 @@ export type Ctx = CanvasRenderingContext2D;
 export const CELL = TILE_W / 2;
 
 /** Paints a canvas-backed texture once; later calls with the same key are no-ops. */
-export function paintTexture(scene: Phaser.Scene, key: string, w: number, h: number, draw: (ctx: Ctx) => void): void {
+export function paintTexture(scene: Phaser.Scene, key: string, w: number, h: number, draw: (ctx: Ctx) => void, foot = 0): void {
   if (scene.textures.exists(key)) return;
-  const tex = scene.textures.createCanvas(key, Math.ceil(w), Math.ceil(h));
+  const tex = scene.textures.createCanvas(key, Math.ceil(w), Math.ceil(h + foot));
   if (!tex) return;
+  // Room below the anchor (`h`) for what spills in front of the footprint;
+  // the maps hang the sprite from the anchor, not the canvas's bottom edge.
+  if (foot) (tex.customData as { foot?: number }).foot = Math.ceil(foot);
   const ctx = tex.getContext();
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';

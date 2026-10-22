@@ -22,7 +22,7 @@ const IRON = 0x2e2a26;
 
 /** The hull and the slices of its near bulwark, placed by the deck map. */
 export const CH03_SHIP_OBJECTS: MapObjectDefinition[] = SHIP_SPRITES.map(sprite => ({
-  id: sprite.texture, label: 'Ship\'s Hull', texture: sprite.texture, kind: 'structure', category: 'bridges-water',
+  id: sprite.texture, label: 'Ship\'s Hull', texture: sprite.texture, kind: 'prop', category: 'bridges-water',
   color: TEAK, blocks: false,
 }));
 

@@ -48,8 +48,7 @@ export function renderBaseMapWorld(
     const frontX = building.gridX + building.w - 1;
     const frontY = building.gridY + building.h - 1;
     const front = gridToIsoScreen(state.originX, state.originY, frontX, frontY);
-    const sprite = scene.add.image(front.sx, front.sy + TILE_H / 2, building.texture)
-      .setOrigin(0.5, 1)
+    const sprite = anchorAtFoot(scene.add.image(front.sx, front.sy + TILE_H / 2, building.texture))
       .setDepth(front.sy + 1);
     occludableSprites.push(sprite);
   }
@@ -57,8 +56,7 @@ export function renderBaseMapWorld(
   for (const item of state.decor) {
     const pos = gridToIsoScreen(state.originX, state.originY, item.gridX, item.gridY);
     const nudge = naturalOffset(item.texture, item.gridX, item.gridY);
-    const sprite = scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture)
-      .setOrigin(0.5, 1)
+    const sprite = anchorAtFoot(scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture))
       .setDepth((item.sortAt ? gridToIsoScreen(state.originX, state.originY, item.sortAt.x, item.sortAt.y).sy : pos.sy + nudge.y) + 1);
     if (item.swing) swingFromTop(scene, sprite, item.swing);
     occludableSprites.push(sprite);
@@ -66,6 +64,12 @@ export function renderBaseMapWorld(
   }
 
   return { occludableSprites, conditionalDecor };
+}
+
+/** Hangs a sprite from its footprint's front corner: the bottom edge, less any foot margin painted below it. */
+function anchorAtFoot(sprite: Phaser.GameObjects.Image): Phaser.GameObjects.Image {
+  const foot = (sprite.texture.customData as { foot?: number }).foot ?? 0;
+  return sprite.setOrigin(0.5, 1 - foot / sprite.height);
 }
 
 /** Re-hangs a decor sprite from its top edge and rocks it gently, like a lamp on a chain. */
