@@ -1,8 +1,8 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
 import { hawz } from '../art/town/fountain';
 import { DECREE_TEX, drawDecreeBoard, drawDyeVats, drawMinaret, drawUncleDoor, MINARET_TEX, UNCLE_DOOR_TEX } from '../art/shirazStreet';
-import { drawMinbar, drawPrayerArcade } from '../art/vakil';
-import { drawHallColumn, drawQiblaIwan, drawVakilPortal, HALL_COLUMN_TEX } from '../art/vakilHall';
+import { drawMinbar, paintPrayerArcade } from '../art/vakil';
+import { drawHallColumn, drawQiblaIwan, HALL_COLUMN_TEX, paintVakilPortal } from '../art/vakilHall';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 
 /**
@@ -21,20 +21,14 @@ export const CH04_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     paintTexture(scene, def.texture, texW, texH, ctx => drawMinbar(ctx, box));
   },
   /** A 3 x 3 piece of the Vakíl court arcade; pieces join along either axis. */
-  'ch4-prayer-arch': (scene, def) => {
-    const { box, texW, texH } = footprintBox(...footprint(def), 136, 10);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawPrayerArcade(ctx, box));
-  },
+  'ch4-prayer-arch': (scene, def) => paintPrayerArcade(scene, def.texture, ...footprint(def)),
   /** A spiral column of the prayer hall with its arches back to the west and north. Place every third cell. */
   'ch4-spiral-column': (scene, def) => paintTexture(scene, def.texture, HALL_COLUMN_TEX.w, HALL_COLUMN_TEX.h, drawHallColumn),
   'ch4-qibla-iwan': (scene, def) => {
     const { box, texW, texH } = footprintBox(...footprint(def), 240, 6);
     paintTexture(scene, def.texture, texW, texH, ctx => drawQiblaIwan(ctx, box));
   },
-  'ch4-vakil-portal': (scene, def) => {
-    const { box, texW, texH } = footprintBox(...footprint(def), 250, 6);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawVakilPortal(ctx, box));
-  },
+  'ch4-vakil-portal': (scene, def) => paintVakilPortal(scene, def.texture, ...footprint(def)),
   /** The great pool of the court: a broad stone rim to sit on, the water still. */
   'ch4-vakil-pool': (scene, def) => {
     const { box, texW, texH } = footprintBox(...footprint(def), 14, 8);

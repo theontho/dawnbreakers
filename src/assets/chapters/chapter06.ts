@@ -36,6 +36,7 @@ export const CH06_OBJECTS: MapObjectDefinition[] = [
   { id: 'ch6-rock', label: 'Mountain Rock', texture: 'ch6-rock', kind: 'prop', category: 'barriers-prison', color: 0x7c766f, blocks: true },
   { id: 'ch6-snow-shrub', label: 'Snow Shrub', texture: 'ch6-snow-shrub', kind: 'prop', category: 'plants', color: 0xd9e3e8, blocks: true },
   { id: 'ch6-barred-marker', label: 'Barred Marker', texture: 'ch6-barred-marker', kind: 'prop', category: 'barriers-prison', color: 0x3f4650, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'ch6-fold-wall', label: 'Garden Wall', texture: 'ch6-fold-wall', kind: 'prop', category: 'barriers-prison', color: 0x7c766c, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch6-rampart', label: 'Fortress Wall', texture: 'ch6-rampart', kind: 'prop', category: 'barriers-prison', color: 0x6a737a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch6-footbridge', label: 'Bridge', texture: 'ch6-footbridge', kind: 'prop', category: 'bridges-water', color: 0x8a6a44, blocks: false, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch6-snow-drift', label: 'Snow Drift', texture: 'ch6-snow-drift', kind: 'prop', category: 'lighting-effects', color: 0xdfe7ec, blocks: false },

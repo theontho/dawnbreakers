@@ -79,8 +79,8 @@ const MOUNTAINSIDE: DecorSpec[] = [
   ...loose('ch6-snow-drift', [
     [5, 21], [14, 21], [21, 22], [7, 26], [17, 26], [24, 23], [29, 26], [26, 19], [29, 14], [25, 7], [31, 10],
   ]),
-  ...wallRun('ch8-palisade', 25, 3, 25, 6),
-  ...wallRun('ch8-palisade', 26, 6, 28, 6),
+  ...wallRun('ch6-fold-wall', 25, 3, 25, 6),
+  ...wallRun('ch6-fold-wall', 26, 6, 28, 6),
 ];
 
 /** The town: a well, the market, the courier's bales, people watching the walls. */

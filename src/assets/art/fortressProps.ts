@@ -1,8 +1,8 @@
 import type Phaser from 'phaser';
 import { css, footprintBox, groundPoint, groundShadow, onRoof, outlineBox, paintTexture, shade, type Ctx, type IsoBox } from './canvasKit';
 import { planks } from './materials';
-import { archPath, LIGHT, walls } from './ornaments';
-import { barredWindow, batteredFooting, EDGE, fortressStone, slit, snowRoof, snowyMerlons } from './fortresses';
+import { archPath, LIGHT, walls, type FacePainter } from './ornaments';
+import { barredWindow, batteredFooting, fortressStone, paintStoneParts, slit, stonePart } from './fortresses';
 import { liftedPoint, post, snowEdge, subBox } from './structureParts';
 
 /**
@@ -51,6 +51,41 @@ export function rampartMerlons(ctx: Ctx, w: number, color: number, offset: numbe
   }
 }
 
+/** A shepherd's fold wall: dry stone a little over a metre high, laid without mortar. */
+export const FOLD_WALL = { height: 28, color: 0x7c766c } as const;
+
+/**
+ * One face of the fold wall: flat field stones laid in rough courses with
+ * through-stones jutting at intervals, lichen on the north side, snow drifted
+ * at the foot. On a 32 px period so runs join.
+ */
+export function foldWallFace(ctx: Ctx, w: number, h: number, l: number): void {
+  ctx.fillStyle = css(shade(0x3a3630, l));
+  ctx.fillRect(0, 0, w, h);
+  const courses = [0, 7, 14, 21];
+  courses.forEach((v, row) => {
+    const len = row % 2 ? [9, 12, 11] : [12, 8, 12];
+    for (let k = -1; k * 32 < w; k++) {
+      let u = k * 32 + (row % 2 ? 4 : 0);
+      len.forEach((n, i) => {
+        const tone = 0.82 + ((row * 3 + i) % 4) * 0.08;
+        ctx.fillStyle = css(shade(FOLD_WALL.color, l * tone));
+        ctx.fillRect(u + 0.6, v + 0.6, n - 1.2, 6);
+        ctx.fillStyle = 'rgba(255,255,255,0.14)';
+        ctx.fillRect(u + 0.6, v + 0.6, n - 1.2, 1);
+        u += n;
+      });
+    }
+  });
+  // Through-stones, their ends a shade paler, one to a cell.
+  for (let u = 11; u < w; u += 32) {
+    ctx.fillStyle = css(shade(0x9a9488, l));
+    ctx.fillRect(u, 9, 6, 5);
+  }
+  ctx.fillStyle = 'rgba(236,241,245,0.9)';
+  ctx.fillRect(0, h - 4, w, 4);
+}
+
 const GATE_TOWER_H = 214;
 const GATE_ARCH = { w: 32, h: 84 } as const;
 
@@ -77,58 +112,44 @@ function drawGate(ctx: Ctx, box: IsoBox): void {
     ctx.ellipse(at.x, at.y, 22, 9, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  // The west tower first, then the arch block, then the east tower nearest the camera.
-  const left = subBox(box, 0, towerW, 2, box.d - 2, GATE_TOWER_H);
-  const right = subBox(box, box.w - towerW, box.w, 2, box.d - 2, GATE_TOWER_H);
-  const arch = subBox(box, towerW, box.w - towerW, 10, box.d - 10, GATE_TOWER_H - 26);
-  tower(ctx, left, color, 401);
-  walls(ctx, arch, (c, w, h, l) => fortressStone(c, w, h, shade(color, 1.03), l, 405), {
-    left: (c, w, h, l) => {
-      archPath(c, w / 2 - GATE_ARCH.w / 2 - 4, h, GATE_ARCH.w + 8, GATE_ARCH.h + 5);
-      c.fillStyle = css(shade(color, l * 1.25));
-      c.fill();
-      archPath(c, w / 2 - GATE_ARCH.w / 2, h, GATE_ARCH.w, GATE_ARCH.h);
-      const vault = c.createLinearGradient(0, h - GATE_ARCH.h, 0, h);
-      vault.addColorStop(0, css(0x0c0e12));
-      vault.addColorStop(1, css(0x262a30));
-      c.fillStyle = vault;
-      c.fill();
-      // The far mouth of the passage: snow light from the courtyard.
-      archPath(c, w / 2 - 9, h - 6, 18, GATE_ARCH.h * 0.6);
-      c.fillStyle = 'rgba(200,210,222,0.55)';
-      c.fill();
-      // The raised portcullis, its teeth just showing under the arch.
-      c.fillStyle = css(0x1a1a1e);
-      for (let u = w / 2 - GATE_ARCH.w / 2 + 4; u < w / 2 + GATE_ARCH.w / 2 - 3; u += 5) c.fillRect(u, h - GATE_ARCH.h + 26, 2, 10);
-      c.fillRect(w / 2 - GATE_ARCH.w / 2 + 3, h - GATE_ARCH.h + 26, GATE_ARCH.w - 6, 2);
-      barredWindow(c, w / 2 - 6, 34, 12, 16, l, true);
-      snowEdge(c, w, 5, 406, l);
-    },
-    right: (c, w, _h, l) => snowEdge(c, w, 5, 407, l),
-  });
-  snowRoof(ctx, arch, 8);
-  snowyMerlons(ctx, arch, shade(color, 1.05));
-  outlineBox(ctx, arch, EDGE);
-  tower(ctx, right, color, 403);
-}
-
-function tower(ctx: Ctx, t: IsoBox, color: number, seed: number): void {
-  groundShadow(ctx, t, 10, 0.3);
-  walls(ctx, t, (c, w, h, l) => fortressStone(c, w, h, color, l, seed), {
-    left: (c, w, h, l) => {
-      slit(c, w / 2, h * 0.5, l);
-      slit(c, w / 2, 40, l, 18);
-      snowEdge(c, w, 5, seed + 1, l);
-    },
-    right: (c, w, h, l) => {
-      slit(c, w * 0.3, h * 0.55, l);
-      slit(c, w * 0.7, h * 0.3, l);
-      snowEdge(c, w, 5, seed + 2, l);
-    },
-  });
-  snowRoof(ctx, t);
-  snowyMerlons(ctx, t, shade(color, 1.05), 10, 8, 16);
-  outlineBox(ctx, t, EDGE);
+  // The two towers and the vaulted block between them are one mass: the
+  // arch block is built into the towers' flanks, set back a little from
+  // their fronts, and rises to just under their merlons.
+  const archFace: FacePainter = (c, w, h, l) => {
+    archPath(c, w / 2 - GATE_ARCH.w / 2 - 4, h, GATE_ARCH.w + 8, GATE_ARCH.h + 5);
+    c.fillStyle = css(shade(color, l * 1.25));
+    c.fill();
+    archPath(c, w / 2 - GATE_ARCH.w / 2, h, GATE_ARCH.w, GATE_ARCH.h);
+    const vault = c.createLinearGradient(0, h - GATE_ARCH.h, 0, h);
+    vault.addColorStop(0, css(0x0c0e12));
+    vault.addColorStop(1, css(0x262a30));
+    c.fillStyle = vault;
+    c.fill();
+    // The far mouth of the passage: snow light from the courtyard.
+    archPath(c, w / 2 - 9, h - 6, 18, GATE_ARCH.h * 0.6);
+    c.fillStyle = 'rgba(200,210,222,0.55)';
+    c.fill();
+    // The raised portcullis, its teeth just showing under the arch.
+    c.fillStyle = css(0x1a1a1e);
+    for (let u = w / 2 - GATE_ARCH.w / 2 + 4; u < w / 2 + GATE_ARCH.w / 2 - 3; u += 5) c.fillRect(u, h - GATE_ARCH.h + 26, 2, 10);
+    c.fillRect(w / 2 - GATE_ARCH.w / 2 + 3, h - GATE_ARCH.h + 26, GATE_ARCH.w - 6, 2);
+    barredWindow(c, w / 2 - 6, 34, 12, 16, l, true);
+    snowEdge(c, w, 5, 406, l);
+  };
+  const towerLeft = (seed: number): FacePainter => (c, w, h, l) => {
+    slit(c, w / 2, h * 0.5, l);
+    slit(c, w / 2, 40, l, 18);
+    snowEdge(c, w, 5, seed + 1, l);
+  };
+  const towerRight = (seed: number): FacePainter => (c, w, h, l) => {
+    slit(c, w * 0.3, h * 0.55, l);
+    slit(c, w * 0.7, h * 0.3, l);
+    snowEdge(c, w, 5, seed + 2, l);
+  };
+  const west = stonePart(0, towerW, 2, box.d - 2, GATE_TOWER_H, color, 401, towerLeft(401), towerRight(401));
+  const east = stonePart(box.w - towerW, box.w, 2, box.d - 2, GATE_TOWER_H, color, 403, towerLeft(403), towerRight(403));
+  const arch = stonePart(towerW, box.w - towerW, 10, box.d - 10, GATE_TOWER_H - 26, shade(color, 1.03), 405, archFace, (c, w, _h, l) => snowEdge(c, w, 5, 407, l));
+  paintStoneParts(ctx, box, [west, arch, east], [], part => (part === arch ? { walk: 8 } : { merlon: [10, 8, 16] }));
 }
 
 /** A stone pier 5.5 m high, a barred window set in it above a man's reach, a lamp still burning within. */

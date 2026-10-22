@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { GARDEN_WALL_H, gardenWallFace } from './badashtProps';
 import { css, onLeftWall, onRightWall, onRoof, paintTexture, polygon, shade, type Ctx, type IsoBox } from './canvasKit';
-import { RAMPART, rampartFace, rampartMerlons } from './fortressProps';
+import { FOLD_WALL, foldWallFace, RAMPART, rampartFace, rampartMerlons } from './fortressProps';
 import { brick, glazedTiles, plaster, stone, type Surface } from './materials';
 import { archPath, clipped, LIGHT } from './ornaments';
 import { SERAI_BAY_H, seraiBayFace, seraiWindowFace } from './seraiWalls';
@@ -57,6 +57,11 @@ export const WALL_STYLES: Readonly<Record<string, WallStyle>> = {
     height: RAMPART.height, thickness: 0.6, top: 0x7a838a, cap: 'snowMerlons',
     joins: ['ch6-fortress-gate', 'ch6-maku-fortress', 'ch6-chihriq-fortress'],
     face: rampartFace,
+  },
+  // A shepherd's fold on the mountainside (chapter 6): 1.2 m of dry stone under a cap of snow; see fortressProps.
+  'ch6-fold-wall': {
+    height: FOLD_WALL.height, thickness: 0.3, top: 0xe6ecf0, cap: 'mudCoping',
+    face: foldWallFace,
   },
   // Ṭihrán's city wall (chapter 10), 5.7 m of rammed earth, plain in summer and snowbound in winter; see tehranGate.
   'ch10-city-wall': {
@@ -203,8 +208,29 @@ export function isWallTexture(texture: string): boolean {
   return texture in WALL_STYLES;
 }
 
-export function wallTextureKey(texture: string, mask: number, cut = false): string {
-  return `${texture}#${mask}${cut ? 'c' : ''}`;
+/**
+ * How far a building's walls stand in from the south and east edges of its
+ * footprint. A wall running up to it from the south or east reaches on by
+ * that much, so it meets the face instead of stopping short of it.
+ */
+export interface BuildingFaces {
+  s: number;
+  e: number;
+}
+
+/** How far a wall's north (`n`) and west (`w`) arms reach on into the building they join. */
+export interface WallReach {
+  n: number;
+  w: number;
+}
+
+const NO_REACH: WallReach = { n: 0, w: 0 };
+/** Side margin of a wall texture whose arms reach into the next cell. */
+const REACH_PAD = 16;
+
+export function wallTextureKey(texture: string, mask: number, cut = false, reach: WallReach = NO_REACH): string {
+  const into = reach.n || reach.w ? `r${reach.n},${reach.w}` : '';
+  return `${texture}#${mask}${cut ? 'c' : ''}${into}`;
 }
 
 /**
@@ -216,17 +242,24 @@ const CUT_HEIGHT = 34;
 
 /** The base texture (used by the editor palette) is a straight east-west run. */
 export function paintWallBase(scene: Phaser.Scene, texture: string): void {
-  ensureWallTexture(scene, texture, WALL_E | WALL_W, false, texture);
+  ensureWallTexture(scene, texture, WALL_E | WALL_W, false, NO_REACH, texture);
 }
 
-export function ensureWallTexture(scene: Phaser.Scene, texture: string, mask: number, cut = false, key = wallTextureKey(texture, mask, cut)): void {
+export function ensureWallTexture(
+  scene: Phaser.Scene, texture: string, mask: number, cut = false, reach: WallReach = NO_REACH, key = wallTextureKey(texture, mask, cut, reach),
+): void {
   const full = WALL_STYLES[texture];
   if (!full) return;
   const style: WallStyle = cut
     ? { ...full, height: Math.min(full.height, CUT_HEIGHT), cap: 'flat', top: shade(full.top, 0.62) }
     : full;
   const texH = 32 + style.height + CAP_PAD[style.cap];
-  paintTexture(scene, key, 64, texH, ctx => paintWall(ctx, style, mask, texH - 32));
+  // Arms reaching into the next cell need room either side (the texture stays centred on its cell).
+  const pad = reach.n || reach.w ? REACH_PAD : 0;
+  paintTexture(scene, key, 64 + pad * 2, texH, ctx => {
+    ctx.translate(pad, 0);
+    paintWall(ctx, style, mask, texH - 32, reach);
+  });
 }
 
 interface Part {
@@ -241,14 +274,14 @@ function at(topY: number, a: number, b: number): { x: number; y: number } {
   return { x: 32 + (a - b) * 32, y: topY + (a + b) * 16 };
 }
 
-function paintWall(ctx: Ctx, style: WallStyle, mask: number, topY: number): void {
+function paintWall(ctx: Ctx, style: WallStyle, mask: number, topY: number, reach: WallReach): void {
   const c0 = 0.5 - style.thickness / 2;
   const c1 = 0.5 + style.thickness / 2;
   const has = (bit: number) => (mask & bit) !== 0;
   // Back arms, centre, front arms: painter's order.
   const parts: Part[] = [];
-  if (has(WALL_W)) parts.push({ a0: 0, a1: c0, b0: c0, b1: c1 });
-  if (has(WALL_N)) parts.push({ a0: c0, a1: c1, b0: 0, b1: c0 });
+  if (has(WALL_W)) parts.push({ a0: -Math.min(reach.w, REACH_PAD) / 32, a1: c0, b0: c0, b1: c1 });
+  if (has(WALL_N)) parts.push({ a0: c0, a1: c1, b0: -Math.min(reach.n, REACH_PAD) / 32, b1: c0 });
   parts.push({ a0: c0, a1: c1, b0: c0, b1: c1 });
   if (has(WALL_E)) parts.push({ a0: c1, a1: 1, b0: c0, b1: c1 });
   if (has(WALL_S)) parts.push({ a0: c0, a1: c1, b0: c1, b1: 1 });
@@ -275,7 +308,7 @@ function paintWall(ctx: Ctx, style: WallStyle, mask: number, topY: number): void
     const leftExposed = !covered((p.a0 + p.a1) / 2, p.b1 + e);
     const rightExposed = !covered(p.a1 + e, (p.b0 + p.b1) / 2);
     // Faces are painted in run-aligned pattern space so courses continue across cells.
-    if (leftExposed) onLeftWall(ctx, box, (w, h) => alignedFace(ctx, style, w, h, LIGHT.left, p.a0 * 32));
+    if (leftExposed) onLeftWall(ctx, box, (w, h) => alignedFace(ctx, style, w, h, LIGHT.left, phase(p.a0 * 32)));
     if (rightExposed) onRightWall(ctx, box, (w, h) => alignedFace(ctx, style, w, h, LIGHT.right, (1 - p.b1) * 32));
     onRoof(ctx, box, (w, d) => {
       ctx.fillStyle = css(shade(style.top, LIGHT.roof));
@@ -284,6 +317,11 @@ function paintWall(ctx: Ctx, style: WallStyle, mask: number, topY: number): void
     capFaces(ctx, style, box, p, leftExposed, rightExposed);
     outlineEdges(ctx, box, p, covered, e);
   }
+}
+
+/** A run position as a phase within the 32 px period (arms reaching into the next cell start before 0). */
+function phase(x: number): number {
+  return ((x % 32) + 32) % 32;
 }
 
 function alignedFace(ctx: Ctx, style: WallStyle, w: number, h: number, light: number, offset: number): void {
@@ -367,7 +405,7 @@ function capFaces(ctx: Ctx, style: WallStyle, box: IsoBox, p: Part, left: boolea
         break;
     }
   };
-  if (left) onLeftWall(ctx, box, w => paint(w, LIGHT.left, p.a0 * 32));
+  if (left) onLeftWall(ctx, box, w => paint(w, LIGHT.left, phase(p.a0 * 32)));
   if (right) onRightWall(ctx, box, w => paint(w, LIGHT.right, (1 - p.b1) * 32));
   if (style.cap === 'snowMerlons') {
     onRoof(ctx, box, (w, d) => {

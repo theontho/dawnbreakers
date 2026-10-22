@@ -1,9 +1,10 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundPoint, onRoof, paintTexture, rng, shade, type Ctx, type IsoBox } from './canvasKit';
+import { baseCorners, css, footprintBox, groundPoint, onRoof, paintTexture, rng, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
 import { plinth, wornPlaster } from './facade';
 import { LIGHT } from './ornaments';
 import { post, snowEdge, subBox } from './structureParts';
 import { doorOf, threshold, windowOf, type TownHouseStyle } from './town/houseKit';
+import { joinedMass, type MassPart } from './town/joinedMass';
 import { STONE, townBlock, townDoor, townWindow } from './town/townKit';
 
 /**
@@ -152,42 +153,51 @@ const stoneHouse: HouseDraw = (ctx, box, s) => {
 
 /** Built into the slope: the living rooms over the stable, a wide stable door below. */
 const steppedHouse: HouseDraw = (ctx, box, s) => {
-  const back = subBox(box, 0, box.w - 6, 58, box.d, 150);
-  townBlock(ctx, back, {
-    wall: s.wall, seed: s.seed, material: 'mud', roof: 'flat', beams: 10,
-    left: (c, w, h, l) => {
-      lowerStone(c, w, h, l, s.seed + 1);
-      townWindow(c, w * 0.3, h, 104, windowOf(s, l, true, false));
-      townWindow(c, w * 0.66, h, 104, windowOf(s, l, false, false));
-      snowEdge(c, w, 7, s.seed + 2, l);
+  // The upper house and the stable range in front of it share their right
+  // wall, built as one mass (see joinedMass): no seam down the corner.
+  const back: MassPart = {
+    p0: 0, p1: box.w - 6, q0: 58, q1: box.d, h: 150,
+    spec: {
+      wall: s.wall, seed: s.seed, material: 'mud', roof: 'none', beams: 10,
+      left: (c, w, h, l) => {
+        lowerStone(c, w, h, l, s.seed + 1);
+        townWindow(c, w * 0.3, h, 104, windowOf(s, l, true, false));
+        townWindow(c, w * 0.66, h, 104, windowOf(s, l, false, false));
+        snowEdge(c, w, 7, s.seed + 2, l);
+      },
+      right: (c, w, h, l) => {
+        lowerStone(c, w, h, l, s.seed + 3);
+        townWindow(c, w * 0.5, h, 104, windowOf(s, l, false, false));
+        snowEdge(c, w, 7, s.seed + 4, l);
+      },
     },
-    right: (c, w, h, l) => {
-      lowerStone(c, w, h, l, s.seed + 3);
-      townWindow(c, w * 0.5, h, 104, windowOf(s, l, false, false));
-      snowEdge(c, w, 7, s.seed + 4, l);
-    },
-  });
-  snowRoof(ctx, back, s.seed + 5);
-  smoke(ctx, back, back.w * 0.4, back.d * 0.4, s.seed + 6);
-  const front = subBox(box, 8, box.w - 6, 8, 58, 74);
+  };
   const doorU = 70;
-  townBlock(ctx, front, {
-    wall: shade(s.wall, 0.92), seed: s.seed + 7, material: 'mud', roof: 'flat', beams: 10,
-    left: (c, w, h, l) => {
-      lowerStone(c, w, h, l, s.seed + 8);
-      // The stable's wide plank door, and the house door beside it.
-      c.fillStyle = css(shade(0x3a2a1a, l));
-      c.fillRect(20, h - 50, 34, 50);
-      c.strokeStyle = css(shade(0x6a4a2c, l));
-      c.lineWidth = 1;
-      for (let u = 24; u < 54; u += 6) c.strokeRect(u, h - 49, 0.5, 48);
-      c.strokeRect(20, h - 50, 34, 50);
-      townDoor(c, doorU + 30, h, doorOf(s, l));
-      snowEdge(c, w, 7, s.seed + 9, l);
+  const front: MassPart = {
+    p0: 8, p1: box.w - 6, q0: 8, q1: 58, h: 74,
+    spec: {
+      wall: shade(s.wall, 0.92), seed: s.seed + 7, material: 'mud', roof: 'none', beams: 10,
+      left: (c, w, h, l) => {
+        lowerStone(c, w, h, l, s.seed + 8);
+        // The stable's wide plank door, and the house door beside it.
+        c.fillStyle = css(shade(0x3a2a1a, l));
+        c.fillRect(20, h - 50, 34, 50);
+        c.strokeStyle = css(shade(0x6a4a2c, l));
+        c.lineWidth = 1;
+        for (let u = 24; u < 54; u += 6) c.strokeRect(u, h - 49, 0.5, 48);
+        c.strokeRect(20, h - 50, 34, 50);
+        townDoor(c, doorU + 30, h, doorOf(s, l));
+        snowEdge(c, w, 7, s.seed + 9, l);
+      },
+      right: (c, w, _h, l) => snowEdge(c, w, 7, s.seed + 10, l),
     },
-    right: (c, w, _h, l) => snowEdge(c, w, 7, s.seed + 10, l),
-  });
-  snowRoof(ctx, front, s.seed + 11, false);
+  };
+  const backBox = subBox(box, back.p0, back.p1, back.q0, back.q1, back.h);
+  snowRoof(ctx, backBox, s.seed + 5);
+  joinedMass(ctx, box, [back], [front]);
+  smoke(ctx, backBox, backBox.w * 0.4, backBox.d * 0.4, s.seed + 6);
+  snowRoof(ctx, subBox(box, front.p0, front.p1, front.q0, front.q1, front.h), s.seed + 11, false);
+  joinedMass(ctx, box, [front], [back]);
   threshold(ctx, box, 8 + doorU + 30, 8, s);
   woodpile(ctx, box, 12, 4, 4);
   banks(ctx, box, s.seed + 12);
@@ -222,14 +232,27 @@ const porchHouse: HouseDraw = (ctx, box, s) => {
     post(ctx, at.x, at.y, porch.h, 5, 0x6a4a2c);
   }
   const slab = subBox(porch, 0, porch.w, 0, porch.d, 8, porch.h);
-  townBlock(ctx, slab, { wall: 0x7a5a38, seed: s.seed + 8, material: 'mud', roof: 'flat', plinth: false, shadow: false,
+  townBlock(ctx, slab, { wall: 0x7a5a38, seed: s.seed + 8, material: 'mud', roof: 'flat', plinth: false, shadow: false, outline: false,
     left: (c, w, _h, l) => snowEdge(c, w, 5, s.seed + 9, l),
     right: (c, w, _h, l) => snowEdge(c, w, 5, s.seed + 10, l),
   });
   snowRoof(ctx, slab, s.seed + 11, false);
+  porchOutline(ctx, slab);
   woodpile(ctx, box, box.w - 4, 54, 4);
   banks(ctx, box, s.seed + 12);
 };
+
+/** The porch roof's outline, left open along its back edge where it is built into the house wall. */
+function porchOutline(ctx: Ctx, b: IsoBox): void {
+  const [f, r, , l] = baseCorners(b);
+  const [, rt, bt, lt] = topCorners(b);
+  ctx.strokeStyle = 'rgba(28,18,10,0.85)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(rt!.x, rt!.y);
+  for (const pt of [r!, f!, l!, lt!, bt!]) ctx.lineTo(pt.x, pt.y);
+  ctx.stroke();
+}
 
 export const MOUNTAIN_HOUSES: readonly MountainHouse[] = [
   { draw: stoneHouse, top: 150, style: { wall: 0x9a8064, door: 0x4a3420, frame: 0x6a4a2c, seed: 611, shutters: 0x4a3a2a, lit: true } },

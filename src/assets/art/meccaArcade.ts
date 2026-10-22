@@ -1,7 +1,9 @@
-import { css, groundShadow, onLeftWall, onRightWall, onRoof, outlineBox, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import type Phaser from 'phaser';
+import { baseCorners, css, footprintBox, groundShadow, onLeftWall, onRightWall, onRoof, paintTexture, roofPoint, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
 import { stone } from './materials';
 import { archPath, band, cylinder, dome, flatTop, LIGHT, walls } from './ornaments';
 import { subBox } from './structureParts';
+import { SIDE_E, SIDE_N, SIDE_S, SIDE_W } from './town/joinedMass';
 
 /**
  * The Ottoman colonnade of the Sacred Mosque and its minarets, at true
@@ -23,6 +25,66 @@ const PIER = 9;
 
 /** Height of a colonnade bay's walls, to the cornice. */
 export const ARCADE_H = 190;
+const EDGE = 0x4a3a24;
+
+/**
+ * The colonnade is laid bay by bay (and a minaret at each corner), but it is
+ * one building: `mask` names the sides (N, E, S, W on the map, see
+ * joinedBuildings) where the next bay or minaret carries it on, and there
+ * the roof runs through with no rim or outline at the seam.
+ */
+export function paintArcadeBay(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
+  const { box, texW, texH } = footprintBox(cellsW, cellsD, ARCADE_H, 66);
+  paintTexture(scene, key, texW, texH, ctx => drawArcadeBay(ctx, box, mask));
+}
+
+export function paintMinaret(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
+  const { box, texW, texH } = footprintBox(cellsW, cellsD, ARCADE_H, 272);
+  paintTexture(scene, key, texW, texH, ctx => drawMinaret(ctx, box, mask));
+}
+
+/** A flat roof whose pale rim runs only along the sides nothing continues. */
+function openTop(ctx: Ctx, box: IsoBox, color: number, mask: number): void {
+  onRoof(ctx, box, (w, d) => {
+    ctx.fillStyle = css(shade(color, LIGHT.roof));
+    ctx.fillRect(0, 0, w, d);
+    ctx.strokeStyle = css(shade(color, 1.35), 0.5);
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    if (!(mask & SIDE_W)) ctx.rect(0.5, 0.5, 0, d - 1);
+    if (!(mask & SIDE_E)) ctx.rect(w - 0.5, 0.5, 0, d - 1);
+    if (!(mask & SIDE_S)) ctx.rect(0.5, 0.5, w - 1, 0);
+    if (!(mask & SIDE_N)) ctx.rect(0.5, d - 0.5, w - 1, 0);
+    ctx.stroke();
+  });
+}
+
+/** `outlineBox` without the edges and arrises that a joined neighbour carries on. */
+function outlineOpen(ctx: Ctx, box: IsoBox, mask: number): void {
+  const [f, r, , l] = baseCorners(box);
+  const [ft, rt, bt, lt] = topCorners(box);
+  const seg = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+  };
+  ctx.save();
+  ctx.strokeStyle = css(EDGE, 0.85);
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  if (!(mask & SIDE_S)) seg(l!, f!);
+  if (!(mask & SIDE_E)) seg(f!, r!);
+  if (!(mask & (SIDE_E | SIDE_N))) seg(r!, rt!);
+  if (!(mask & SIDE_N)) seg(rt!, bt!);
+  if (!(mask & SIDE_W)) seg(bt!, lt!);
+  if (!(mask & (SIDE_W | SIDE_S))) seg(lt!, l!);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,240,210,0.35)';
+  ctx.beginPath();
+  if (!(mask & (SIDE_E | SIDE_S))) seg({ x: f!.x, y: f!.y - 1 }, { x: ft!.x, y: ft!.y + 1 });
+  if (!(mask & SIDE_S)) seg({ x: lt!.x + 1, y: lt!.y }, ft!);
+  ctx.stroke();
+  ctx.restore();
+}
 
 /**
  * The opening of a bay's arch in face space, added to the current path (so
@@ -107,7 +169,7 @@ function bayFace(c: Ctx, w: number, h: number, l: number, inner: boolean, seed: 
 }
 
 /** One domed bay of the colonnade, filling its footprint. */
-export function drawArcadeBay(ctx: Ctx, box: IsoBox): void {
+function drawArcadeBay(ctx: Ctx, box: IsoBox, mask: number): void {
   groundShadow(ctx, box, 6, 0.2);
   // The raised marble floor.
   const floor = subBox(box, 0, box.w, 0, box.d, FLOOR_H);
@@ -139,19 +201,20 @@ export function drawArcadeBay(ctx: Ctx, box: IsoBox): void {
   // The near arches.
   onLeftWall(ctx, box, (w, h) => bayFace(ctx, w, h, LIGHT.left, false, 9));
   onRightWall(ctx, box, (w, h) => bayFace(ctx, w, h, LIGHT.right, false, 10));
-  flatTop(ctx, box, WHITEWASH);
-  outlineBox(ctx, box, 0x4a3a24);
+  openTop(ctx, box, WHITEWASH, mask);
+  outlineOpen(ctx, box, mask);
   const top = roofPoint(box, box.w / 2, box.d / 2);
   dome(ctx, top.x, top.y + 2, box.w * 0.34, { color: WHITEWASH, drum: 8, drumColor: LIMESTONE, bulb: 0.95, finial: true });
 }
 
 /**
  * An Ottoman minaret on a 3 x 3 footprint, about 20 m: a square stone base
- * to the colonnade's cornice, a tall round shaft banded in red stone with
- * two corbelled balconies for the call to prayer, and a lead-grey spire.
+ * filling the corner of the colonnade up to its cornice, a tall round shaft
+ * banded in red stone with two corbelled balconies for the call to prayer,
+ * and a lead-grey spire.
  */
-export function drawMinaret(ctx: Ctx, box: IsoBox): void {
-  const base = subBox(box, 14, box.w - 14, 14, box.d - 14, box.h);
+function drawMinaret(ctx: Ctx, box: IsoBox, mask: number): void {
+  const base = box;
   groundShadow(ctx, base, 12, 0.3);
   const face = (c: Ctx, w: number, h: number, l: number): void => {
     archPath(c, w / 2 - 12, h, 24, 52);
@@ -165,8 +228,8 @@ export function drawMinaret(ctx: Ctx, box: IsoBox): void {
     band(c, w, 0, 6, shade(LIMESTONE, 0.9), l);
   };
   walls(ctx, base, (c, w, h, light) => stone(c, w, h, { base: LIMESTONE, light, seed: 9 }, 8), { left: face, right: face });
-  flatTop(ctx, base, LIMESTONE);
-  outlineBox(ctx, base, 0x4a3a24);
+  openTop(ctx, base, LIMESTONE, mask);
+  outlineOpen(ctx, base, mask);
   const cx = roofPoint(base, base.w / 2, base.d / 2).x;
   let y = roofPoint(base, base.w / 2, base.d / 2).y;
   const stage = (r: number, h: number): void => {

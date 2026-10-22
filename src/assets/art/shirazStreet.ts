@@ -211,8 +211,9 @@ export const UNCLE_DOOR_TEX = { w: 80, h: 32 + 104 + 8 } as const;
 export function drawUncleDoor(ctx: Ctx): void {
   const cell: IsoBox = { x: 40, y: UNCLE_DOOR_TEX.h, w: 32, d: 32, h: 0 };
   const wall = 0xc8a47a;
-  // A little wider than the cell, so the portal stands proud of the walls either side.
-  const front = subBox(cell, -3, 35, 10, 22, 104);
+  // Wider than the cell and a little thicker than the street wall, so the
+  // wall either side runs into the portal's flanks and stops there.
+  const front = subBox(cell, -12, 44, 9, 23, 104);
   walls(ctx, front, (c, w, h, light) => surface(c, w, h, 'plaster', { base: wall, light, seed: 1301 + (light === 1 ? 0 : 7) }), {
     left: (c, w, h, l) => {
       copingBand(c, w, 0xd8c09a, l);

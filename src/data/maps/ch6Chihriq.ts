@@ -85,8 +85,8 @@ const CRAG: DecorSpec[] = [
 
 /** The hamlet: houses, the fold, a well, firewood, people of the mountain. */
 const HAMLET: DecorSpec[] = [
-  ...wallRun('ch8-palisade', 37, 29, 41, 29),
-  ...wallRun('ch8-palisade', 41, 30, 41, 33),
+  ...wallRun('ch6-fold-wall', 37, 29, 41, 29),
+  ...wallRun('ch6-fold-wall', 41, 30, 41, 33),
   ...blocking('well', [[22, 35]]),
   ...blocking('crates', [[18, 34], [29, 33]]),
   ...blocking('ch9-cloth-bundle', [[23, 37]]),

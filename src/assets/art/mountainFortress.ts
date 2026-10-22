@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, rng, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
-import { walls } from './ornaments';
-import { barredWindow, batteredFooting, EDGE, fortressStone, ironDoor, keep, roundTower, slit, snowRoof, snowyMerlons, squareTower } from './fortresses';
+import { css, footprintBox, groundPoint, groundShadow, paintTexture, rng, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import { barredWindow, batteredFooting, ironDoor, keep, paintStoneParts, roundTower, slit, squareTower, stonePart } from './fortresses';
+import type { MassPart } from './town/joinedMass';
 import { snowEdge, subBox } from './structureParts';
 import { boulder } from './woodland';
 
@@ -60,34 +60,34 @@ function drawFortress(ctx: Ctx, box: IsoBox, style: FortressStyle): void {
   const size = Math.min(w, d) * 0.42;
   const k0 = INSET + 14;
   keep(ctx, subBox(box, k0, k0 + size, d - k0 - size, d - k0, style.keepRise + 30, style.wallH - 30), style.wall, s + 9);
-  walls(ctx, curtain, (c, fw, fh, light) => fortressStone(c, fw, fh, style.wall, light, s), {
-    left: (c, fw, fh, l) => {
-      // The gatehouse covers the middle; small openings flank it, high up.
-      barredWindow(c, fw * 0.14, fh - 150, 14, 18, l, false);
-      slit(c, fw * 0.24, fh * 0.42, l);
-      barredWindow(c, fw * 0.76, fh - 142, 14, 18, l, true);
-      slit(c, fw * 0.88, fh * 0.38, l);
-      stringCourse(c, fw, 22, style.wall, l);
-      snowEdge(c, fw, 6, s + 1, l);
-    },
-    right: (c, fw, fh, l) => {
-      for (const [u, lit] of [[0.24, false], [0.52, true], [0.8, false]] as const) barredWindow(c, fw * u - 7, fh - 146, 14, 18, l, lit);
-      slit(c, fw * 0.38, fh * 0.4, l);
-      slit(c, fw * 0.66, fh * 0.46, l);
-      // A soot stain down from the guardroom flue.
-      const g = c.createLinearGradient(0, 40, 0, fh * 0.75);
-      g.addColorStop(0, 'rgba(18,16,14,0.35)');
-      g.addColorStop(1, 'rgba(18,16,14,0)');
-      c.fillStyle = g;
-      c.fillRect(fw * 0.52 - 3, 40, 6, fh * 0.5);
-      stringCourse(c, fw, 22, style.wall, l);
-      snowEdge(c, fw, 6, s + 2, l);
-    },
+  // The curtain and the gatehouse pushed forward from it are one mass (see
+  // joinedMass): the gatehouse rises through the curtain's merlons, with no
+  // seam where its flanks meet the wall.
+  const gateP = w * 0.46;
+  const curtainPart = stonePart(INSET, w - INSET, INSET, d - INSET, style.wallH, style.wall, s, (c, fw, fh, l) => {
+    // The gatehouse covers the middle; small openings flank it, high up.
+    barredWindow(c, fw * 0.14, fh - 150, 14, 18, l, false);
+    slit(c, fw * 0.24, fh * 0.42, l);
+    barredWindow(c, fw * 0.76, fh - 142, 14, 18, l, true);
+    slit(c, fw * 0.88, fh * 0.38, l);
+    stringCourse(c, fw, 22, style.wall, l);
+    snowEdge(c, fw, 6, s + 1, l);
+  }, (c, fw, fh, l) => {
+    for (const [u, lit] of [[0.24, false], [0.52, true], [0.8, false]] as const) barredWindow(c, fw * u - 7, fh - 146, 14, 18, l, lit);
+    slit(c, fw * 0.38, fh * 0.4, l);
+    slit(c, fw * 0.66, fh * 0.46, l);
+    // A soot stain down from the guardroom flue.
+    const g = c.createLinearGradient(0, 40, 0, fh * 0.75);
+    g.addColorStop(0, 'rgba(18,16,14,0.35)');
+    g.addColorStop(1, 'rgba(18,16,14,0)');
+    c.fillStyle = g;
+    c.fillRect(fw * 0.52 - 3, 40, 6, fh * 0.5);
+    stringCourse(c, fw, 22, style.wall, l);
+    snowEdge(c, fw, 6, s + 2, l);
   });
-  snowRoof(ctx, curtain, 14);
-  outlineBox(ctx, curtain, EDGE);
+  const gatePart = gatehouse(gateP - 42, gateP + 42, 0, INSET + 30, style.wallH + 22, style.wall, s + 21);
+  paintStoneParts(ctx, box, [curtainPart], [gatePart], () => ({ walk: 14 }));
   batteredFooting(ctx, box, 3, INSET, 34, style.wall, s + 4);
-  snowyMerlons(ctx, curtain, shade(style.wall, 1.05));
   // Corner towers back to front: left, right, then the gatehouse and the front tower.
   const tower = ([p, q, rise]: readonly [number, number, number], front: boolean): void => {
     const h = style.wallH + rise;
@@ -96,28 +96,21 @@ function drawFortress(ctx: Ctx, box: IsoBox, style: FortressStyle): void {
   };
   tower([INSET, INSET, style.towerRise[0]], false);
   tower([w - INSET, d - INSET, style.towerRise[2]], false);
-  const gateP = w * 0.46;
-  gatehouse(ctx, subBox(box, gateP - 42, gateP + 42, 0, INSET + 30, style.wallH + 22), style.wall, s + 21);
+  paintStoneParts(ctx, box, [gatePart], [curtainPart], () => ({ merlon: [12, 9, 16] }));
   tower([w - INSET, INSET, style.towerRise[1]], true);
   foot(ctx, box, gateP, s + 7);
 }
 
 /** The gatehouse: a tower block pushed forward from the front curtain, holding the castle's one door. */
-function gatehouse(ctx: Ctx, g: IsoBox, color: number, seed: number): void {
-  walls(ctx, g, (c, w, h, light) => fortressStone(c, w, h, shade(color, 1.02), light, seed), {
-    left: (c, w, h, l) => {
-      ironDoor(c, w / 2, h, color, l);
-      slit(c, w / 2, 26, l, 18);
-      snowEdge(c, w, 6, seed + 1, l);
-    },
-    right: (c, w, h, l) => {
-      slit(c, w / 2, h * 0.4, l);
-      snowEdge(c, w, 6, seed + 2, l);
-    },
+function gatehouse(p0: number, p1: number, q0: number, q1: number, h: number, color: number, seed: number): MassPart {
+  return stonePart(p0, p1, q0, q1, h, shade(color, 1.02), seed, (c, w, fh, l) => {
+    ironDoor(c, w / 2, fh, color, l);
+    slit(c, w / 2, 26, l, 18);
+    snowEdge(c, w, 6, seed + 1, l);
+  }, (c, w, fh, l) => {
+    slit(c, w / 2, fh * 0.4, l);
+    snowEdge(c, w, 6, seed + 2, l);
   });
-  snowRoof(ctx, g);
-  snowyMerlons(ctx, g, shade(color, 1.05), 12, 9, 16);
-  outlineBox(ctx, g, EDGE);
 }
 
 /** A darker band of dressed stone a little below the merlons. */

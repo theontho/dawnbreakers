@@ -1,8 +1,9 @@
 import type Phaser from 'phaser';
-import { css, footprintBox, outlineBox, paintTexture, polygon, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import { css, footprintBox, paintTexture, polygon, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
 import { brick } from './materials';
-import { archPath, band, dome, LIGHT, parapetRoof, walls } from './ornaments';
+import { archPath, band, dome, LIGHT } from './ornaments';
 import { liftedPoint, onPlane, subBox } from './structureParts';
+import { joinedMass, SIDE_N, SIDE_S, type MassPart } from './town/joinedMass';
 import { tilePanel } from './town/monumentKit';
 import { CREAM, TURQUOISE } from './town/townKit';
 
@@ -63,7 +64,13 @@ export function bridgeGalleryFace(c: Ctx, w: number, h: number, l: number, offse
   band(c, w, 0, 4, shade(BRICK, 1.08), l);
 }
 
-export function paintBridgeSpan(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
+/**
+ * One span. `mask` names the ends another span continues (see
+ * joinedBuildings): north, where this span's pavilion meets the next
+ * span's gallery, and south, where its gallery runs into the next span's
+ * pavilion. Gallery and pavilion are one mass, so they meet without seams.
+ */
+export function paintBridgeSpan(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
   const { box: fp, texW, texH } = footprintBox(cellsW, cellsD, PAVILION.h + 26, 6);
   paintTexture(scene, key, texW, texH, ctx => {
     const pavQ = fp.d - PAVILION.q;
@@ -72,8 +79,16 @@ export function paintBridgeSpan(scene: Phaser.Scene, key: string, cellsW: number
     const bay = pavQ / 3;
     for (const q of [bay, bay * 2, pavQ + PAVILION.q / 2]) cutwater(ctx, fp, q);
     ripples(ctx, fp, pavQ);
-    pavilion(ctx, subBox(fp, 0, GALLERY.p, pavQ, fp.d, PAVILION.h));
-    gallery(ctx, subBox(fp, 0, GALLERY.p, 0, pavQ, GALLERY.h));
+    const pav = pavilionPart(pavQ, fp.d);
+    const gal = galleryPart(0, pavQ);
+    const beyond: MassPart[] = [];
+    if (mask & SIDE_N) beyond.push(galleryPart(fp.d, fp.d + pavQ));
+    if (mask & SIDE_S) beyond.push(pavilionPart(-PAVILION.q, 0));
+    joinedMass(ctx, fp, [pav], [gal, ...beyond]);
+    const p = subBox(fp, 0, GALLERY.p, pavQ, fp.d, PAVILION.h);
+    const top = roofPoint(p, p.w / 2, p.d / 2);
+    dome(ctx, top.x, top.y + 10, 15, { color: TURQUOISE, drum: 8, drumColor: shade(BRICK, 1.05), bulb: 1.1, pattern: 0x1c5a6a, finial: true });
+    joinedMass(ctx, fp, [gal], [pav, ...beyond]);
   });
 }
 
@@ -191,17 +206,19 @@ function ripples(ctx: Ctx, fp: IsoBox, pavQ: number): void {
 }
 
 /** The covered gallery along the deck edge: its arcade on the river, a walk on its roof. */
-function gallery(ctx: Ctx, g: IsoBox): void {
-  walls(ctx, g, (c, w, h, light) => brick(c, w, h, { base: BRICK, light, seed: 5105 }, 4, 8), {
-    left: (c, w, h, l) => bridgeGalleryFace(c, w, h, l, (w % BAY) / 2),
-    right: (c, w, h, l) => bridgeGalleryFace(c, w, h, l),
-  });
-  parapetRoof(ctx, g, shade(BRICK, 1.04), { base: 0xb8a684, light: 1, seed: 5106 }, 5, 8);
-  outlineBox(ctx, g);
+function galleryPart(q0: number, q1: number): MassPart {
+  return {
+    p0: 0, p1: GALLERY.p, q0, q1, h: GALLERY.h,
+    spec: {
+      wall: BRICK, seed: 5105, material: 'brick', plinth: false, shadow: false,
+      left: (c, w, h, l) => bridgeGalleryFace(c, w, h, l, (w % BAY) / 2),
+      right: (c, w, h, l) => bridgeGalleryFace(c, w, h, l),
+    },
+  };
 }
 
 /** A two-storey pavilion over a pier: tall arched openings on its faces, a little tiled cupola. */
-function pavilion(ctx: Ctx, p: IsoBox): void {
+function pavilionPart(q0: number, q1: number): MassPart {
   const face = (c: Ctx, w: number, h: number, l: number): void => {
     brick(c, w, h, { base: shade(BRICK, 1.03), light: l, seed: 5107 }, 4, 8);
     const cx = w / 2;
@@ -224,12 +241,8 @@ function pavilion(ctx: Ctx, p: IsoBox): void {
     c.fillRect(cx - 16, h - 6, 32, 6);
     band(c, w, 0, 5, shade(BRICK, 1.1), l);
   };
-  walls(ctx, p, (c, w, h, light) => brick(c, w, h, { base: shade(BRICK, 1.03), light, seed: 5107 }, 4, 8), {
-    left: face,
-    right: face,
-  });
-  parapetRoof(ctx, p, shade(BRICK, 1.06), { base: 0xb8a684, light: 1, seed: 5109 }, 5, 7);
-  outlineBox(ctx, p);
-  const top = roofPoint(p, p.w / 2, p.d / 2);
-  dome(ctx, top.x, top.y + 6, 15, { color: TURQUOISE, drum: 8, drumColor: shade(BRICK, 1.05), bulb: 1.1, pattern: 0x1c5a6a, finial: true });
+  return {
+    p0: 0, p1: GALLERY.p, q0, q1, h: PAVILION.h,
+    spec: { wall: shade(BRICK, 1.03), seed: 5107, material: 'brick', plinth: false, shadow: false, left: face, right: face },
+  };
 }

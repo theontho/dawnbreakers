@@ -1,7 +1,7 @@
 import { footprintBox, paintTexture } from '../art/canvasKit';
 import { figure, type FigureStyle } from '../art/crowds';
 import { drawKaaba, drawMaqam } from '../art/mecca';
-import { ARCADE_H, drawArcadeBay, drawMinaret } from '../art/meccaArcade';
+import { paintArcadeBay, paintMinaret } from '../art/meccaArcade';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
 import { CH03_CABIN_OBJECTS, CH03_CABIN_TEXTURE_GENERATORS } from './chapter03Cabin';
 import { CH03_SHIP_TEXTURE_GENERATORS } from './chapter03Ship';
@@ -35,17 +35,11 @@ export const CH03_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
     paintTexture(scene, def.texture, texW, texH, ctx => drawKaaba(ctx, box));
   },
 
-  /** One domed bay of the colonnade (3 x 3). */
-  'ch3-arcade': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, ARCADE_H, 66);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawArcadeBay(ctx, box));
-  },
+  /** One domed bay of the colonnade (3 x 3); bays and minarets join (see joinedBuildings). */
+  'ch3-arcade': (scene, def) => paintArcadeBay(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 3),
 
   /** A minaret at a corner of the colonnade (3 x 3), about 20 m to the crescent. */
-  'ch3-minaret': (scene, def) => {
-    const { box, texW, texH } = footprintBox(def.footprint?.w ?? 3, def.footprint?.h ?? 3, 150, 272);
-    paintTexture(scene, def.texture, texW, texH, ctx => drawMinaret(ctx, box));
-  },
+  'ch3-minaret': (scene, def) => paintMinaret(scene, def.texture, def.footprint?.w ?? 3, def.footprint?.h ?? 3),
 
   /** The Station of Abraham (2 x 2). */
   'ch3-maqam': (scene, def) => {

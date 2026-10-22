@@ -5,7 +5,8 @@ import { archPath, clipped, dome, flatTop, latticeWindow, walls } from './orname
 import { laneDust } from './streetLife';
 import { subBox } from './structureParts';
 import { inscriptionBand, tilePanel } from './town/monumentKit';
-import { CREAM, LAPIS, roofFloor, townBlock, townMerlons, TURQUOISE } from './town/townKit';
+import { joinedMass, type MassPart } from './town/joinedMass';
+import { CREAM, LAPIS, roofFloor, townMerlons, TURQUOISE } from './town/townKit';
 
 /**
  * The Darvázih-i-Qur'án at true scale (3 x 7: 96 x 224 px of ground): a
@@ -30,30 +31,41 @@ export function paintQuranGate(scene: Phaser.Scene, key: string, cellsW: number,
 function drawQuranGate(ctx: Ctx, box: IsoBox): void {
   const mid = box.d / 2;
   laneDust(ctx, box, box.w - 8, box.w + 40, mid - 48, mid + 48, 17);
-  const house = subBox(box, 0, box.w - 12, 0, box.d, HOUSE_H);
-  townBlock(ctx, house, {
-    wall: GATE_BRICK, seed: 11, material: 'brick', coping: shade(GATE_BRICK, 1.1),
-    left: (c, w, h, l) => {
-      c.fillStyle = css(shade(TURQUOISE, l));
-      c.fillRect(0, 26, w, 4);
-      niches(c, 10, w - 6, h, l);
+  const band = (c: Ctx, w: number, l: number): void => {
+    c.fillStyle = css(shade(TURQUOISE, l));
+    c.fillRect(0, 26, w, 4);
+  };
+  const house: MassPart = {
+    p0: 0, p1: box.w - 12, q0: 0, q1: box.d, h: HOUSE_H,
+    spec: {
+      wall: GATE_BRICK, seed: 11, material: 'brick', coping: shade(GATE_BRICK, 1.1),
+      left: (c, w, h, l) => {
+        band(c, w, l);
+        niches(c, 10, w - 6, h, l);
+      },
+      right: (c, w, h, l) => {
+        band(c, w, l);
+        niches(c, 8, mid - ARCH.w / 2 - 34, h, l);
+        niches(c, mid + ARCH.w / 2 + 34, w - 4, h, l);
+      },
     },
-    right: (c, w, h, l) => {
-      c.fillStyle = css(shade(TURQUOISE, l));
-      c.fillRect(0, 26, w, 4);
-      niches(c, 8, mid - ARCH.w / 2 - 34, h, l);
-      niches(c, mid + ARCH.w / 2 + 34, w - 4, h, l);
+  };
+  // The pīshṭāq stands proud of the gatehouse on the road side and rises
+  // over it, built through the gatehouse wall rather than set against it.
+  const frame: MassPart = {
+    p0: box.w - 12, p1: box.w, q0: mid - ARCH.w / 2 - 30, q1: mid + ARCH.w / 2 + 30, h: PISHTAQ_H,
+    spec: {
+      wall: GATE_BRICK, seed: 14, material: 'brick', roof: 'flat', coping: CREAM,
+      left: (c, w, _h, l) => band(c, w, l),
+      right: (c, w, h, l) => pishtaq(c, w, h, l),
     },
-  });
-  townMerlons(ctx, house, GATE_BRICK, 8, 8, 10);
-  bookChamber(ctx, house);
-  // The pīshṭāq stands proud of the gatehouse on the road side.
-  const frame = subBox(box, box.w - 12, box.w, mid - ARCH.w / 2 - 30, mid + ARCH.w / 2 + 30, PISHTAQ_H);
-  townBlock(ctx, frame, {
-    wall: GATE_BRICK, seed: 14, material: 'brick', roof: 'flat', coping: CREAM,
-    right: (c, w, h, l) => pishtaq(c, w, h, l),
-  });
-  townMerlons(ctx, frame, GATE_BRICK, 7, 7, 9);
+  };
+  joinedMass(ctx, box, [house], [frame]);
+  const houseBox = subBox(box, house.p0, house.p1, house.q0, house.q1, HOUSE_H);
+  townMerlons(ctx, houseBox, GATE_BRICK, 8, 8, 10);
+  bookChamber(ctx, houseBox);
+  joinedMass(ctx, box, [frame], [house]);
+  townMerlons(ctx, subBox(box, frame.p0, frame.p1, frame.q0, frame.q1, PISHTAQ_H), GATE_BRICK, 7, 7, 9);
 }
 
 /** Two tiers of blind arched niches along a stretch of face. */

@@ -1,10 +1,12 @@
-import { css, groundShadow, outlineBox, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
+import type Phaser from 'phaser';
+import { css, footprintBox, groundShadow, outlineBox, paintTexture, roofPoint, shade, type Ctx, type IsoBox } from './canvasKit';
 import { ellipseShadow } from './fieldKit';
 import { brick, glazedTiles } from './materials';
 import { archPath, clipped, cylinder, cylinderBand, flatTop, LIGHT, walls } from './ornaments';
 import { onPlane, subBox, type Pt } from './structureParts';
+import { continuations, joinedMass, SIDE_N, SIDE_S, type MassPart } from './town/joinedMass';
 import { inscriptionBand, tilePanel, townIwan } from './town/monumentKit';
-import { ARCADE_H, haftRang, saucerDome, VAKIL_BRICK, VAKIL_MARBLE } from './vakil';
+import { haftRang, saucerDome, VAKIL_BRICK, VAKIL_MARBLE, vakilArcadePart } from './vakil';
 
 /**
  * The Vakíl prayer hall, its qibla iwan and its street portal at true
@@ -199,18 +201,30 @@ export function vakilWallFace(ctx: Ctx, w: number, h: number, l: number): void {
   });
 }
 
-/** A tall pīshṭāq block: haft-rang and lapis tile, a frieze, a cream coping. */
-function pishtaqBlock(ctx: Ctx, b: IsoBox, seed: number, front: 'left' | 'right', vault: (c: Ctx, w: number, h: number, l: number) => void): void {
-  groundShadow(ctx, b, 14, 0.3);
-  const side = (c: Ctx, w: number, h: number, l: number): void => {
+type Painter = (c: Ctx, w: number, h: number, l: number) => void;
+
+/** The flank of a pīshṭāq: lapis tile round a haft-rang field. */
+function pishtaqSide(seed: number): Painter {
+  return (c, w, h, l) => {
     tilePanel(c, 3, 6, w - 6, h - 6, LAPIS, l, seed + 1, 7);
     haftRang(c, 7, 24, w - 14, h - 40, l, seed + 2);
   };
-  const face = (c: Ctx, w: number, h: number, l: number): void => {
+}
+
+/** The front of a pīshṭāq: a turquoise frame, a frieze and its vault. */
+function pishtaqFace(seed: number, vault: Painter): Painter {
+  return (c, w, h, l) => {
     tilePanel(c, 3, 4, w - 6, h - 4, TURQUOISE, l, seed + 3, 7);
     inscriptionBand(c, w, 10, 14, l);
     vault(c, w, h, l);
   };
+}
+
+/** A tall pīshṭāq block: haft-rang and lapis tile, a frieze, a cream coping. */
+function pishtaqBlock(ctx: Ctx, b: IsoBox, seed: number, front: 'left' | 'right', vault: Painter): void {
+  groundShadow(ctx, b, 14, 0.3);
+  const face = pishtaqFace(seed, vault);
+  const side = pishtaqSide(seed);
   walls(ctx, b, (c, w, h, light) => brick(c, w, h, { base: VAKIL_BRICK, light, seed }, 3, 8), {
     left: front === 'left' ? face : side,
     right: front === 'right' ? face : side,
@@ -296,33 +310,46 @@ export function drawQiblaIwan(ctx: Ctx, box: IsoBox): void {
  * The portal from the street (3 x 6: 96 x 192 px of ground), in the west
  * range of the court. A tiled pīshṭāq faces the court on its right face,
  * its iwan open through to the street over footprint rows 2 and 3 from the
- * front (q 64..128); arcade wings stand either side. The map leaves those
- * rows walkable.
+ * front (q 64..128); arcade wings either side carry the court arcade on
+ * into it, so the pīshṭāq rises out of one range. `mask` names the sides the
+ * arcade continues (see joinedBuildings). The map leaves the passage rows
+ * walkable.
  */
-export function drawVakilPortal(ctx: Ctx, box: IsoBox): void {
-  const wing = (q0: number, q1: number, seed: number): void => {
-    const b = subBox(box, 0, box.w, q0, q1, ARCADE_H);
-    walls(ctx, b, (c, w, h, light) => brick(c, w, h, { base: VAKIL_BRICK, light, seed }, 3, 8), {
-      left: (c, w, h, l) => {
-        inscriptionBand(c, w, 5, 11, l);
-        haftRang(c, 6, 22, w - 12, h - 40, l, seed + 1);
-      },
-      right: (c, w, h, l) => {
-        inscriptionBand(c, w, 5, 11, l);
-        haftRang(c, 4, 22, w - 8, h - 40, l, seed + 2);
-        c.fillStyle = css(shade(VAKIL_MARBLE, l));
-        c.fillRect(0, h - 14, w, 14);
-      },
-    });
-    flatTop(ctx, b, VAKIL_BRICK);
-    outlineBox(ctx, b);
+export function drawVakilPortal(ctx: Ctx, box: IsoBox, mask = 0): void {
+  const wingFaces = (seed: number) => ({
+    left: (c: Ctx, w: number, h: number, l: number) => {
+      inscriptionBand(c, w, 5, 11, l);
+      haftRang(c, 6, 22, w - 12, h - 40, l, seed + 1);
+    },
+    right: (c: Ctx, w: number, h: number, l: number) => {
+      inscriptionBand(c, w, 5, 11, l);
+      haftRang(c, 4, 22, w - 8, h - 40, l, seed + 2);
+      c.fillStyle = css(shade(VAKIL_MARBLE, l));
+      c.fillRect(0, h - 14, w, 14);
+    },
+  });
+  const back = vakilArcadePart(0, box.w, 152, box.d, 1111, wingFaces(1111));
+  const front = vakilArcadePart(0, box.w, 0, 40, 1131, wingFaces(1131));
+  const pishtaq: MassPart = {
+    p0: 0, p1: box.w, q0: 40, q1: 152, h: QIBLA_H - 16,
+    spec: {
+      wall: VAKIL_BRICK, seed: 1121, material: 'brick', plinth: false, roof: 'flat', coping: CREAM,
+      left: pishtaqSide(1121),
+      right: pishtaqFace(1121, (c, w, h, l) =>
+        townIwan(c, w / 2, h, 76, 150, { wall: VAKIL_BRICK, frame: TURQUOISE, door: 0x4a2a14, light: l, seed: 1125, open: true, lantern: true })),
+    },
   };
-  wing(152, 192, 1111);
-  pishtaqBlock(ctx, subBox(box, 0, box.w, 40, 152, QIBLA_H - 16), 1121, 'right', (c, w, h, l) =>
-    townIwan(c, w / 2, h, 76, 150, { wall: VAKIL_BRICK, frame: TURQUOISE, door: 0x4a2a14, light: l, seed: 1125, open: true, lantern: true }));
-  const top = subBox(box, 0, box.w, 40, 152, QIBLA_H - 16);
+  const all = [back, pishtaq, front];
+  const beyond = [...continuations(box, back, mask & SIDE_N), ...continuations(box, front, mask & SIDE_S)];
+  joinedMass(ctx, box, [back, pishtaq], [front, ...beyond]);
+  const top = subBox(box, 0, box.w, 40, 152, pishtaq.h);
   const at = roofPoint(top, top.w / 2, top.d / 2);
   saucerDome(ctx, at.x, at.y + 6, 20);
   cylinderBand(ctx, at.x, at.y + 4, 20, 2, TURQUOISE);
-  wing(0, 40, 1131);
+  joinedMass(ctx, box, [front], [...all.filter(p => p !== front), ...beyond]);
+}
+
+export function paintVakilPortal(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
+  const { box, texW, texH } = footprintBox(cellsW, cellsD, 250, 6);
+  paintTexture(scene, key, texW, texH, ctx => drawVakilPortal(ctx, box, mask));
 }

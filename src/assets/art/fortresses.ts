@@ -1,7 +1,8 @@
 import { css, onLeftWall, onRightWall, onRoof, outlineBox, polygon, rng, shade, type Ctx, type IsoBox } from './canvasKit';
 import { stone } from './materials';
-import { archPath, cylinder, LIGHT, walls } from './ornaments';
+import { archPath, clipped, cylinder, LIGHT, walls, type FacePainter } from './ornaments';
 import { liftedPoint, snowEdge, subBox, type Pt } from './structureParts';
+import { joinedMass, type MassPart } from './town/joinedMass';
 import { TOWN_DOOR } from './town/townKit';
 
 /**
@@ -86,6 +87,41 @@ export function snowyMerlons(ctx: Ctx, box: IsoBox, color: number, size: number 
   };
   onLeftWall(ctx, box, w => paint(w, LIGHT.left));
   onRightWall(ctx, box, w => paint(w, LIGHT.right));
+}
+
+/** A part of a stone building for `paintStoneParts`: rubble faces, then whatever `left` and `right` add. */
+export function stonePart(p0: number, p1: number, q0: number, q1: number, h: number, color: number, seed: number, left?: FacePainter, right?: FacePainter): MassPart {
+  const face = (paint?: FacePainter): FacePainter => (c, w, fh, l) => {
+    clipped(c, w, fh, () => {
+      fortressStone(c, w, fh, color, l, seed + (l === LIGHT.left ? 0 : 1));
+      paint?.(c, w, fh, l);
+    });
+  };
+  return { p0, p1, q0, q1, h, spec: { wall: color, seed, plinth: false, roof: 'none', left: face(left), right: face(right) } };
+}
+
+export interface StoneTop {
+  /** Width of the trodden wall-walk on the snow roof. */
+  walk?: number;
+  merlon?: readonly [size: number, gap: number, rise: number];
+}
+
+/**
+ * Stone parts of one building painted back to front as one mass (see
+ * joinedMass): no outline down a joint, snow on each roof and merlons along
+ * the faces that show. `others` are parts painted in another pass.
+ */
+export function paintStoneParts(ctx: Ctx, box: IsoBox, parts: readonly MassPart[], others: readonly MassPart[] = [], top: (part: MassPart) => StoneTop = () => ({})): void {
+  const all = [...parts, ...others];
+  const depth = (m: MassPart) => (m.p0 + m.p1) - (m.q0 + m.q1);
+  for (const part of [...parts].sort((a, b) => depth(a) - depth(b))) {
+    const b = subBox(box, part.p0, part.p1, part.q0, part.q1, part.h);
+    const t = top(part);
+    snowRoof(ctx, b, t.walk ?? 0);
+    joinedMass(ctx, box, [part], all.filter(n => n !== part));
+    const [size, gap, rise] = t.merlon ?? [MERLON.size, MERLON.gap, MERLON.rise];
+    snowyMerlons(ctx, b, shade(part.spec.wall, 1.05), size, gap, rise);
+  }
 }
 
 /** A walled roof under snow, the wall-walk trodden grey along the parapet. */

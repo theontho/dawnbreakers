@@ -1,4 +1,4 @@
-import { css, groundPoint, onRightWall, onRoof, outlineBox, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
+import { baseCorners, css, groundPoint, onRightWall, onRoof, outlineBox, shade, topCorners, type Ctx, type IsoBox } from './canvasKit';
 import { coilPath, rope } from './cordage';
 import { ellipseShadow } from './fieldKit';
 import { planks } from './materials';
@@ -83,7 +83,8 @@ export function drawCabin(ctx: Ctx, box: IsoBox, doors: CabinDoors): void {
     },
   });
   deckTop(ctx, cabin, 33);
-  outlineBox(ctx, cabin);
+  // Built against the poop: no outline where its roof and side meet the poop's forward face.
+  outlineOpenAft(ctx, cabin);
   const [ft, rt, , lt] = topCorners(cabin);
   rail(ctx, [lt!, ft!, rt!], 12);
 
@@ -109,6 +110,23 @@ export function drawCabin(ctx: Ctx, box: IsoBox, doors: CabinDoors): void {
   waterJar(ctx, jar.x, jar.y, 6, 0x9a5a34);
   const coil = groundPoint(box, doors.portP + 26, 2);
   rope(ctx, coilPath(coil.x, coil.y, 9, 4, 3), 2);
+}
+
+/** `outlineBox` less the aft edges a deckhouse built against a taller one shares with it. */
+function outlineOpenAft(ctx: Ctx, box: IsoBox): void {
+  const [f, r, , l] = baseCorners(box);
+  const [, rt, bt] = topCorners(box);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(28,18,10,0.85)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(l!.x, l!.y);
+  ctx.lineTo(f!.x, f!.y);
+  ctx.lineTo(r!.x, r!.y);
+  ctx.lineTo(rt!.x, rt!.y);
+  ctx.lineTo(bt!.x, bt!.y);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function teak(seed: number) {

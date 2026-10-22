@@ -6,7 +6,8 @@ import { archPath, clipped, cylinder, cylinderBand, dome, LIGHT } from './orname
 import { laneDust, waterJar } from './streetLife';
 import { subBox } from './structureParts';
 import { inscriptionBand, tilePanel } from './town/monumentKit';
-import { CREAM, LAPIS, roofFloor, STONE, townBlock, townMerlons, TURQUOISE } from './town/townKit';
+import { joinedMass, type MassPart } from './town/joinedMass';
+import { CREAM, LAPIS, roofFloor, STONE, townMerlons, TURQUOISE } from './town/townKit';
 
 /**
  * The Sháh's road caravanserai outside the Qur'án Gate, at true scale: 20 x
@@ -89,11 +90,16 @@ function drawCaravanserai(ctx: Ctx, full: IsoBox): void {
   const [front, right, back, left] = topCorners(main);
   // The back tower stands behind everything; only its upper part shows over the roof.
   tower(ctx, back!.x, back!.y + WALL_H, TOWER_R, TOWER_H);
-  townBlock(ctx, main, {
-    wall: BRICK, seed: 51, material: 'brick', coping: shade(BRICK, 1.12),
-    left: (c, w, h, l) => outerWall(c, w, h, l, 0),
-    right: (c, w, h, l) => outerWall(c, w, h, l, 1),
-  });
+  const range: MassPart = {
+    p0: INSET, p1: W_PX - INSET, q0: FRONT_INSET, q1: D_PX - INSET, h: WALL_H,
+    spec: {
+      wall: BRICK, seed: 51, material: 'brick', coping: shade(BRICK, 1.12),
+      left: (c, w, h, l) => outerWall(c, w, h, l, 0),
+      right: (c, w, h, l) => outerWall(c, w, h, l, 1),
+    },
+  };
+  const gate = portalPart();
+  joinedMass(ctx, full, [range], [gate]);
   court(ctx, main);
   roofVaults(ctx, main);
   townMerlons(ctx, main, BRICK, 8, 8, 10);
@@ -102,7 +108,8 @@ function drawCaravanserai(ctx: Ctx, full: IsoBox): void {
   for (const p of [140, 520]) buttress(ctx, groundPoint(main, p - INSET, 0));
   for (const q of [150, 330]) buttress(ctx, groundPoint(main, main.w, q));
   tower(ctx, front!.x, front!.y + WALL_H, TOWER_R, TOWER_H);
-  portal(ctx, full);
+  joinedMass(ctx, full, [gate], [range]);
+  townMerlons(ctx, subBox(full, gate.p0, gate.p1, gate.q0, gate.q1, PORTAL_H), BRICK, 7, 7, 9);
   // A trough and water jars beside the gate for the caravans.
   for (const [p, q, r, color] of [[PORTAL.p0 - 22, -6, 10, 0xa8603a], [PORTAL.p0 - 40, -2, 8, 0x9a6a44], [PORTAL.p1 + 30, 8, 9, 0xa8603a]] as const) {
     const at = groundPoint(full, p, q);
@@ -243,28 +250,30 @@ function innerArcade(c: Ctx, w: number, h: number, l: number): void {
 }
 
 /**
- * The pīshṭāq: a tiled frame standing proud of the south wall, higher than
- * it, with a deep iwan whose gate leaves stand open on the court.
+ * The pīshṭāq: a tiled frame standing proud of the south wall and higher
+ * than it, built into the range (one mass with it, no seam), with a deep
+ * iwan whose gate leaves stand open on the court.
  */
-function portal(ctx: Ctx, full: IsoBox): void {
-  const p = subBox(full, PORTAL.p0, PORTAL.p1, 0, FRONT_INSET + 18, PORTAL_H);
-  townBlock(ctx, p, {
-    wall: BRICK, seed: 56, material: 'brick', roof: 'flat', coping: CREAM, plinth: true,
-    left: (c, w, h, l) => {
-      tilePanel(c, 4, 6, w - 8, h - 6, LAPIS, l, 57, 6);
-      c.save();
-      c.translate(8, 0);
-      inscriptionBand(c, w - 16, 14, 10, l);
-      c.restore();
-      gateIwan(c, w / 2, h, l);
+function portalPart(): MassPart {
+  return {
+    p0: PORTAL.p0, p1: PORTAL.p1, q0: 0, q1: FRONT_INSET, h: PORTAL_H,
+    spec: {
+      wall: BRICK, seed: 56, material: 'brick', roof: 'flat', coping: CREAM, plinth: true,
+      left: (c, w, h, l) => {
+        tilePanel(c, 4, 6, w - 8, h - 6, LAPIS, l, 57, 6);
+        c.save();
+        c.translate(8, 0);
+        inscriptionBand(c, w - 16, 14, 10, l);
+        c.restore();
+        gateIwan(c, w / 2, h, l);
+      },
+      right: (c, w, h, l) => {
+        tilePanel(c, 3, 6, w - 6, h - 40, TURQUOISE, l, 58, 5);
+        c.fillStyle = css(shade(0x1a100a, l + 0.2));
+        c.fillRect(w / 2 - 2, 50, 4, 14);
+      },
     },
-    right: (c, w, h, l) => {
-      tilePanel(c, 3, 6, w - 6, h - 40, TURQUOISE, l, 58, 5);
-      c.fillStyle = css(shade(0x1a100a, l + 0.2));
-      c.fillRect(w / 2 - 2, 50, 4, 14);
-    },
-  });
-  townMerlons(ctx, p, BRICK, 7, 7, 9);
+  };
 }
 
 /** The vault of the portal and the gate at its back: 2 m wide, nearly 4 m high, both leaves open. */

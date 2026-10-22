@@ -36,6 +36,7 @@ import {
   type RevealMaskHandle,
 } from './baseMapInteractables';
 import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
+import { connectBuildings } from './mapJoins';
 import { connectWalls } from './mapWalls';
 import { nearestFreeCell, widenExits } from './mapExits';
 import { placeMapDoors, type MapDoors } from './mapDoors';
@@ -218,6 +219,7 @@ export class MapScene extends Phaser.Scene {
       }
     }
     connectWalls(this, this.buildings, this.decor, this.definition);
+    connectBuildings(this, this.buildings);
     this.exits = widenExits(this.definition.exits, this.map, this.blocked);
   }
 

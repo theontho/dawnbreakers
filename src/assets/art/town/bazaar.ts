@@ -4,6 +4,7 @@ import { litGradient } from '../fieldKit';
 import { planks } from '../materials';
 import { archPath, dome } from '../ornaments';
 import { post, subBox, type Pt } from '../structureParts';
+import { continuations, joinedMass, SIDE_E, SIDE_W, type MassPart } from './joinedMass';
 import { CREAM, roofFloor, TIMBER, townBlock, TURQUOISE } from './townKit';
 
 /**
@@ -15,6 +16,7 @@ import { CREAM, roofFloor, TIMBER, townBlock, TURQUOISE } from './townKit';
 
 const BRICK = 0xb88e5e;
 const BAY = 64;
+const ROW_H = 108;
 
 interface Shop {
   cloth: number;
@@ -189,9 +191,14 @@ function streetGoods(ctx: Ctx, box: IsoBox, seed: number): void {
   }
 }
 
-function paintRow(ctx: Ctx, box: IsoBox): void {
-  const row = subBox(box, 0, box.w, 30, box.d, 108);
-  townBlock(ctx, row, { wall: BRICK, seed: 901, material: 'brick', coping: CREAM, left: shopFronts, right: laneMouth });
+/** One row; `mask` names the ends another row continues (see joinedBuildings), where the vault runs on unbroken. */
+function paintRow(ctx: Ctx, box: IsoBox, mask: number): void {
+  const part: MassPart = {
+    p0: 0, p1: box.w, q0: 30, q1: box.d, h: ROW_H,
+    spec: { wall: BRICK, seed: 901, material: 'brick', coping: CREAM, left: shopFronts, right: mask & SIDE_E ? undefined : laneMouth },
+  };
+  joinedMass(ctx, box, [part], continuations(box, part, mask & (SIDE_E | SIDE_W)));
+  const row = subBox(box, 0, box.w, 30, box.d, ROW_H);
   // A low dome over each bay, a light-hole at its crown.
   for (let i = 0; i < row.w / BAY; i++) {
     const at = roofFloor(row, i * BAY + BAY / 2, row.d / 2);
@@ -210,9 +217,9 @@ function paintRow(ctx: Ctx, box: IsoBox): void {
   streetGoods(ctx, box, 920);
 }
 
-export function paintBazaarRow(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
+export function paintBazaarRow(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, 150, 4);
-  paintTexture(scene, key, texW, texH, ctx => paintRow(ctx, box));
+  paintTexture(scene, key, texW, texH, ctx => paintRow(ctx, box, mask));
 }
 
 // The open stall ---------------------------------------------------------------

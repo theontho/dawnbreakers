@@ -1,8 +1,10 @@
-import { css, groundPoint, groundShadow, onRoof, outlineBox, roofPoint, rng, shade, type Ctx, type IsoBox } from './canvasKit';
-import { brick, stone } from './materials';
+import type Phaser from 'phaser';
+import { css, footprintBox, groundPoint, groundShadow, onRoof, outlineBox, paintTexture, roofPoint, rng, shade, type Ctx, type IsoBox } from './canvasKit';
+import { stone } from './materials';
 import { recess } from './massing';
-import { flatTop, LIGHT, parapetRoof, walls } from './ornaments';
+import { flatTop, LIGHT, walls, type FacePainter } from './ornaments';
 import { subBox } from './structureParts';
+import { continuations, joinedMass, type MassPart } from './town/joinedMass';
 import { inscriptionBand } from './town/monumentKit';
 
 /**
@@ -121,27 +123,39 @@ function arcadeFace(c: Ctx, w: number, h: number, l: number): void {
   }
 }
 
+/** The court arcade as a block of joinedMass: yellow brick, both faces arcaded, a sunk roof of saucer domes. */
+function arcadePart(p0: number, p1: number, q0: number, q1: number, seed: number): MassPart {
+  return { p0, p1, q0, q1, h: ARCADE_H, spec: { wall: VAKIL_BRICK, seed, material: 'brick', plinth: false, left: arcadeFace, right: arcadeFace } };
+}
+
+/** The court arcade in the Vakíl portal's wings, as a part to join with it. */
+export function vakilArcadePart(p0: number, p1: number, q0: number, q1: number, seed: number, faces?: { left?: FacePainter; right?: FacePainter }): MassPart {
+  const part = arcadePart(p0, p1, q0, q1, seed);
+  return { ...part, spec: { ...part.spec, ...faces } };
+}
+
 /**
  * One 3 x 3 piece of the court arcade (96 x 96 px of ground, the arches
  * about 3.6 m high). Pieces join end to end along either axis, so a run of
- * them rings a court; both faces are arcaded.
+ * them rings a court; both faces are arcaded. `mask` names the sides another
+ * piece (or the portal) continues, where the roof runs on without a seam.
  */
-export function drawPrayerArcade(ctx: Ctx, footprint: IsoBox): void {
+export function drawPrayerArcade(ctx: Ctx, footprint: IsoBox, mask = 0): void {
+  const part = arcadePart(0, footprint.w, 0, footprint.d, 71);
+  joinedMass(ctx, footprint, [part], continuations(footprint, part, mask));
   const block = subBox(footprint, 0, footprint.w, 0, footprint.d, ARCADE_H);
-  groundShadow(ctx, block, 12, 0.3);
-  walls(ctx, block, (c, w, h, light) => brick(c, w, h, { base: VAKIL_BRICK, light, seed: light === 1 ? 71 : 72 }, 3, 8), {
-    left: arcadeFace,
-    right: arcadeFace,
-  });
-  parapetRoof(ctx, block, VAKIL_BRICK, { base: 0xb08a60, light: 1, seed: 73 }, 5, 6);
   const tops = [24, 72].flatMap(p => [24, 72].map(q => roofPoint(block, p, q))).sort((a, b) => a.y - b.y);
-  for (const t of tops) saucerDome(ctx, t.x, t.y + 7, 15);
-  outlineBox(ctx, block);
+  for (const t of tops) saucerDome(ctx, t.x, t.y + 12, 15);
   // Slippers left at the threshold of a bay.
   for (const [p, color] of [[30, 0x3a2a1c], [38, 0x6a2a22]] as const) {
     const at = groundPoint(footprint, p, -4);
     slippers(ctx, at.x, at.y, color);
   }
+}
+
+export function paintPrayerArcade(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number, mask = 0): void {
+  const { box, texW, texH } = footprintBox(cellsW, cellsD, 136, 10);
+  paintTexture(scene, key, texW, texH, ctx => drawPrayerArcade(ctx, box, mask));
 }
 
 /** A pair of slippers on the paving, toes toward the arcade. */

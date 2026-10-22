@@ -1,10 +1,11 @@
 import type Phaser from 'phaser';
 import { css, footprintBox, groundShadow, onRoof, outlineBox, paintTexture, shade, type Ctx, type IsoBox } from './canvasKit';
 import { plaster, stone } from './materials';
-import { band, beamEnds, LIGHT, parapetRoof, walls } from './ornaments';
+import { band, beamEnds, LIGHT, walls } from './ornaments';
 import { pottedPlant, steps } from './streetLife';
 import { liftedPoint, subBox } from './structureParts';
 import { orosi } from './town/houseKit';
+import { joinedMass } from './town/joinedMass';
 import { inscriptionBand, tilePanel, townIwan } from './town/monumentKit';
 import { townBeams, townDoor, townWindow } from './town/townKit';
 
@@ -26,11 +27,10 @@ const LAPIS = 0x24477a;
 const TURQUOISE = 0x2e8c96;
 const GOLD = 0xd8b04a;
 const MARBLE = 0xd8d0bc;
-/** Heights: the terrace, the columns (8 m), the painted roof timbers, the wing. */
+/** Heights: the terrace, the columns (8 m), the painted roof timbers (the wing rises to them). */
 const TERRACE = 14;
 const COLUMN = 184;
 const ROOF = 24;
-const WING = 168;
 /** The terrace stands back from the footprint's front to leave room for the steps. */
 const FRONT = 28;
 /** Depth of the porch from the terrace edge to the hall front. */
@@ -66,8 +66,13 @@ export function paintPalacePortico(scene: Phaser.Scene, key: string, cellsW: num
     for (const q of [FRONT + PORCH - 40, FRONT + 14]) {
       for (let i = 0; i < COLUMNS; i++) talarColumn(ctx, liftedPoint(fp, colP(i), q, TERRACE), COLUMN);
     }
-    roof(ctx, subBox(fp, 0, main, FRONT, fp.d, ROOF, TERRACE + COLUMN));
-    wing(ctx, subBox(fp, main, fp.w - 6, FRONT + 20, fp.d, WING, TERRACE));
+    // The wing rises to the porch roof, and the two share one roofline.
+    wingWalls(ctx, subBox(fp, main, fp.w - 6, FRONT + 20, fp.d, COLUMN + 2, TERRACE));
+    const eaves = subBox(fp, 0, fp.w, 0, fp.d, 0, TERRACE + COLUMN);
+    joinedMass(ctx, eaves, [
+      { p0: 0, p1: main, q0: FRONT, q1: fp.d, h: ROOF, spec: { wall: WALL, seed: 83, plinth: false, shadow: false, left: fascia, right: fascia } },
+      { p0: main, p1: fp.w - 6, q0: FRONT + 20, q1: fp.d, h: ROOF, spec: { wall: WALL, seed: 87, plinth: false, shadow: false, left: wingCornice, right: wingCornice } },
+    ]);
     // Orange trees in pots along the terrace edge either side of the steps.
     for (const p of [mid - 84, mid - 64, mid + 64, mid + 84]) {
       const at = liftedPoint(fp, p, FRONT + 4, TERRACE);
@@ -126,40 +131,39 @@ function hallFront(c: Ctx, w: number, h: number, l: number): void {
   }
 }
 
-/** The flat roof on its painted timbers: lapis and gold fascia, beam ends, a low parapet. */
-function roof(ctx: Ctx, r: IsoBox): void {
-  walls(ctx, r, (c, w, h, light) => {
-    c.fillStyle = css(shade(WOOD, light));
-    c.fillRect(0, 0, w, h);
-    band(c, w, 0, 5, LAPIS, light);
-    c.fillStyle = css(shade(GOLD, light), 0.85);
-    for (let u = 3; u < w; u += 8) c.fillRect(u, 1.5, 3, 2);
-    band(c, w, 9, 3, TURQUOISE, light);
-    beamEnds(c, w, h - 6, light, 12);
-  });
-  parapetRoof(ctx, r, WALL, { base: 0xb09070, light: 1, seed: 83 }, 5, 8);
-  outlineBox(ctx, r);
+/** The porch roof's painted timbers: lapis and gold fascia, beam ends. */
+function fascia(c: Ctx, w: number, h: number, light: number): void {
+  c.fillStyle = css(shade(WOOD, light));
+  c.fillRect(0, 0, w, h);
+  band(c, w, 0, 5, LAPIS, light);
+  c.fillStyle = css(shade(GOLD, light), 0.85);
+  for (let u = 3; u < w; u += 8) c.fillRect(u, 1.5, 3, 2);
+  band(c, w, 9, 3, TURQUOISE, light);
+  beamEnds(c, w, h - 6, light, 12);
 }
 
-/** The east wing: two storeys of rooms, a door onto the terrace, sash windows above. */
-function wing(ctx: Ctx, b: IsoBox): void {
-  walls(ctx, b, (c, w, h, light) => plaster(c, w, h, { base: shade(WALL, 0.97), light, seed: 87 }), {
+/** The top of the wing, level with the porch roof: plaster under beam ends. */
+function wingCornice(c: Ctx, w: number, _h: number, l: number): void {
+  townBeams(c, w, 8, l, 24);
+}
+
+/** The east wing's walls below the shared roof: two storeys of rooms, a door onto the terrace, sash windows above. */
+function wingWalls(ctx: Ctx, b: IsoBox): void {
+  walls(ctx, b, (c, w, h, light) => plaster(c, w, h, { base: WALL, light, seed: 87 }), {
     left: (c, w, h, l) => {
       band(c, w, h - 84, 3, TURQUOISE, l);
-      townBeams(c, w, 10, l, 24);
       townDoor(c, w / 2, h, { frame: WOOD, door: 0x4a2a14, surround: 0xe8d9a8, light: l, seed: 871, panel: TURQUOISE });
       orosi(c, w / 2 - 14, h - 150, 28, 52, WOOD, l, true);
     },
     right: (c, w, h, l) => {
       band(c, w, h - 84, 3, TURQUOISE, l);
-      townBeams(c, w, 10, l, 24);
       for (const t of [0.2, 0.45, 0.7]) {
         townWindow(c, w * t, h, 40, { frame: WOOD, light: l, arched: true });
         orosi(c, w * t - 11, h - 150, 22, 46, WOOD, l);
       }
     },
   });
-  parapetRoof(ctx, b, WALL, { base: 0xb09070, light: 1, seed: 88 }, 5, 10);
+  // Two px taller than the columns, so its top outline is buried under the shared roof's faces.
   outlineBox(ctx, b);
 }
 

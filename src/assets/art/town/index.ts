@@ -1,5 +1,6 @@
 import type { MapObjectId, TextureGenerator } from '../../mapAssetTypes';
 import { variantKey } from '../canvasKit';
+import type { BuildingFaces } from '../walls';
 import { LARGE_STALLS, paintBazaarRow, paintLargeStall } from './bazaar';
 import { paintCityGateLarge } from './cityGate';
 import { COURTYARD_HOUSES } from './courtyardHouse';
@@ -29,6 +30,12 @@ export const TOWN_TEXTURE_VARIANTS: Readonly<Record<string, number>> = {
   'cypress-tall': TALL_CYPRESS_VARIANTS.length,
   'orange-tree': ORANGE_VARIANTS.length,
 };
+
+/** Where each house variant's south and east walls stand within its footprint, keyed by texture variant (see BuildingFaces). */
+export const TOWN_BUILDING_FACES: Readonly<Record<string, BuildingFaces>> = Object.fromEntries(
+  ([['town-house-small', SMALL_HOUSES], ['town-house', TOWN_HOUSES], ['town-house-large', COURTYARD_HOUSES]] as const)
+    .flatMap(([key, variants]) => variants.flatMap((v, i) => (v.faces ? [[variantKey(key, i), v.faces] as const] : []))),
+);
 
 export const TOWN_ART_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   'town-house-small': (scene, def) => paintHouseSet(scene, def.texture, ...footprint(def), SMALL_HOUSES),
