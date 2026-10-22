@@ -115,6 +115,7 @@ function gallery(ctx: Ctx, box: IsoBox): void {
   const deck = subBox(box, -o, box.w + o, -o, box.d + o, 5, DECK);
   walls(ctx, deck, (c, fw, fh, light) => planks(c, fw, fh, { base: 0x6b4a2c, light, seed: 21 }, false, 2.5));
   outlineBox(ctx, deck);
+  floorboards(ctx, deck);
   const breast = subBox(box, -o, box.w + o, -o, box.d + o, BREAST, DECK + 4);
   // The far inside faces of the breastwork, in shadow.
   const b = baseCorners(breast);
@@ -130,6 +131,30 @@ function gallery(ctx: Ctx, box: IsoBox): void {
   });
   outlineBox(ctx, breast);
   lookout(ctx, subBox(box, -o, box.w + o, -o, box.d + o, LOOKOUT, DECK + 4 + BREAST));
+}
+
+/** The gallery's floor, seen inside the breastwork: planks in the roof's shade. */
+function floorboards(ctx: Ctx, deck: IsoBox): void {
+  const t = topCorners(deck);
+  polygon(ctx, t);
+  ctx.fillStyle = css(0x4a3420);
+  ctx.fill();
+  ctx.save();
+  polygon(ctx, t);
+  ctx.clip();
+  // Seams running along the deck, from the left edge to the right.
+  ctx.strokeStyle = css(0x2a1a0e, 0.8);
+  ctx.lineWidth = 0.8;
+  for (let k = 1; k < 9; k++) {
+    const f = k / 9;
+    const a = { x: t[0]!.x + (t[3]!.x - t[0]!.x) * f, y: t[0]!.y + (t[3]!.y - t[0]!.y) * f };
+    const b = { x: t[1]!.x + (t[2]!.x - t[1]!.x) * f, y: t[1]!.y + (t[2]!.y - t[1]!.y) * f };
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function loopholes(ctx: Ctx, w: number): void {
