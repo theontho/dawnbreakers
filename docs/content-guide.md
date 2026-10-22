@@ -68,6 +68,18 @@ Flags carried forward:
   `dx/dy`. Optional `requires: f => ...` and `lockedLabel` keep an exit shut
   until the story allows. Pair every exit with a matching return exit on the
   target map. Make sure the target spawn cell is walkable.
+- `doors`: a way into another map, usually a building's interior. Put it on
+  the building cell where the door is painted (`gridX/gridY`); the player
+  stands in front and presses E or clicks it. `requires` and `lockedLabel`
+  keep it shut until the story allows, and a small golden arch marks it.
+  Make sure the cell in front is walkable, and give the interior an exit
+  that returns the player there.
+- Interiors are ordinary maps with `interior: true` (masonry slab edges).
+  Floor them with `floor` (fired tile) or `wood`, run `interior-wall` pieces
+  (or another connected interior wall style) along the back edges, `y = 0`
+  and `x = 0`, and leave the front open as a cut-away. `interior-mihrab` is
+  a prayer niche that sits flush in an interior wall. See
+  `src/data/maps/ch1IlkhaniMosque.ts`.
 - `ambience` sets the mood. It can be a function of flags
   (`ambience: f => f.stormBroke ? {...} : {...}`) and is re-applied after
   every dialogue:
