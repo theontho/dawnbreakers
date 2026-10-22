@@ -37,6 +37,7 @@ import {
 } from './baseMapInteractables';
 import { blockFootprintInto, emptyMap, inBounds, makeTileCanvas } from './baseMapTileCanvas';
 import { connectWalls } from './mapWalls';
+import { nearestFreeCell, widenExits } from './mapExits';
 import { placeMapDoors, type MapDoors } from './mapDoors';
 import { setupMapCameras, type MapCameras } from './mapCamera';
 import { personScale } from './figureScale';
@@ -171,6 +172,8 @@ export class MapScene extends Phaser.Scene {
       this.doors.interactables,
       !!this.definition.trueScale,
     );
+    // Arrivals across a widened exit can land on a blocked cell: step aside.
+    this.playerGrid = nearestFreeCell(this.blocked, this.playerGrid.x, this.playerGrid.y);
     this.spawnPlayer();
     this.applyAmbience(getFlags());
     this.revealMasks = setupPlayerRevealMasks(this, this.occludableSprites, this.player, this.scene.key);
@@ -215,7 +218,7 @@ export class MapScene extends Phaser.Scene {
       }
     }
     connectWalls(this, this.buildings, this.decor, this.definition);
-    this.exits = this.definition.exits.map(exit => ({ ...exit }));
+    this.exits = widenExits(this.definition.exits, this.map, this.blocked);
   }
 
   /** Show or hide flag-dependent props, keeping their cells' blocking in step. */
