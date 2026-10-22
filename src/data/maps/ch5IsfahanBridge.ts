@@ -129,8 +129,9 @@ const props: DecorSpec[] = [
   // The garden
   { gridX: 16, gridY: 6, texture: 'ch7-rosebush', blocks: true },
   { gridX: 19, gridY: 5, texture: 'ch7-rosebush', blocks: true },
-  // The madrasa court: a desk where the students copy, the well, carpets
-  { gridX: 37, gridY: 10, texture: 'writing-desk', blocks: true },
+  // The madrasa court: a students' rug with a Qur'án stand, a lap board and pen case, the well
+  { gridX: 37, gridY: 10, texture: 'ch8-rahl', blocks: true },
+  { gridX: 37, gridY: 9, texture: 'floor-writing-board', blocks: true },
   { gridX: 44, gridY: 11, texture: 'well', blocks: true },
   { gridX: 38, gridY: 11, texture: 'rug' },
   { gridX: 41, gridY: 9, texture: 'rug' },

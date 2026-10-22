@@ -106,7 +106,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Iṣfahán, 1846 to 1847',
     description: 'Across the river, an Imám-Jumʿih pours water for his Guest, a hard old governor finds one thing worth doing, and the divines of Iṣfahán sign what they would not come to debate.',
     startScene: 'Ch5IsfahanBridge',
-    scenes: ['Ch5IsfahanBridge', 'Ch5MutamidPalace'],
+    scenes: ['Ch5IsfahanBridge', 'Ch5MutamidPalace', 'Ch5ReceptionRoom'],
   },
   {
     id: 'mountain-prisons',
@@ -116,7 +116,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Mákú and Chihríq, 1847–1848',
     description: 'Snow on the ramparts of Mákú and Chihríq. A warden asks forgiveness, Mullá Ḥusayn arrives on foot from Mashhad, and in a prison without a lamp the Bayán is written down.',
     startScene: 'Ch6Maku',
-    scenes: ['Ch6Maku', 'Ch6Chihriq'],
+    scenes: ['Ch6Maku', 'Ch6MakuChamber', 'Ch6Chihriq'],
   },
   {
     id: 'badasht',

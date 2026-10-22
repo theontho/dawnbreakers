@@ -2,8 +2,9 @@ import type { DialogueTree } from '../../dialogue/types';
 
 /**
  * Mákú, the "Open Mountain", winter 1847 to spring 1848. The Báb is never a
- * speaker: He is reached through the barred window, the copyist's desk, and
- * the testimony of the warden, the guards, the town, and Mullá Ḥusayn.
+ * speaker: He is reached through the barred window, the pages in His
+ * amanuensis's room, and the testimony of the warden, the guards, the town,
+ * and Mullá Ḥusayn.
  */
 
 export const ch6MakuWoman: DialogueTree = {
@@ -110,12 +111,12 @@ export const ch6WardenSoftens: DialogueTree = {
     },
     now: {
       speaker: 'ʿAlí Khán',
-      text: 'Now the gate opens to pilgrims, and I climb up most days to sit by the door. If Ṭihrán hears of it they will move Him somewhere colder. Let them hear. Go in. Siyyid Ḥusayn, His amanuensis, keeps the pages in the courtyard.',
+      text: 'Now the gate opens to pilgrims, and I climb up most days to sit by the door. If Ṭihrán hears of it they will move Him somewhere colder. Let them hear. Go in. Siyyid Ḥusayn, His amanuensis, keeps the pages in his room off the courtyard.',
       choices: [{ text: '(Bow, and pass through the gate.)' }],
     },
     honour: {
       speaker: 'ʿAlí Khán',
-      text: 'Honour. (A short laugh.) I have had honour all my life. This is something else. Go in, and speak quietly. Siyyid Ḥusayn, His amanuensis, keeps the pages in the courtyard.',
+      text: 'Honour. (A short laugh.) I have had honour all my life. This is something else. Go in, and speak quietly. Siyyid Ḥusayn, His amanuensis, keeps the pages in his room off the courtyard.',
       choices: [{ text: '(Bow, and pass through the gate.)' }],
     },
   },
@@ -146,8 +147,8 @@ export const ch6Amanuensis: DialogueTree = {
     invite: {
       speaker: 'Siyyid Ḥusayn, the Amanuensis',
       onEnter: { set: { ch6MetAmanuensis: true } },
-      text: 'If the Khán has let you in, sit at my desk and read. The pages will go down the mountain soon enough, sewn into saddle-cloths. Better that a few should read them warm from the pen.',
-      choices: [{ text: '(Thank him, and turn to the desk.)' }],
+      text: 'If the Khán has let you in, sit on my mat and read. The pages will go down the mountain soon enough, sewn into saddle-cloths. Better that a few should read them warm from the pen.',
+      choices: [{ text: '(Thank him, and kneel by the pages.)' }],
     },
   },
 };
@@ -158,7 +159,7 @@ export const ch6DeskClosed: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'Pages lie heaped on the copyist\'s desk under a flat stone to keep off the wind. They are not yours to take up uninvited. The warden at the gate must first allow you, and the amanuensis who keeps them must know who you are.',
+      text: 'The fair copy lies on the copyist\'s mat, wrapped in a blue cloth and tied. It is not yours to untie uninvited. The warden at the gate must first allow you, and the amanuensis who keeps it must know who you are.',
     },
   },
 };
@@ -178,7 +179,7 @@ export const ch6Bayan: DialogueTree = {
     },
     awe: {
       speaker: 'Narrator',
-      text: 'The cold courtyard seems to widen around you. What was meant as a place of forgetting has become the place where a new Book is written down.',
+      text: 'The cold little room seems to widen around you. What was meant as a place of forgetting has become the place where a new Book is written down.',
       choices: [{ text: '(Read on.)', next: 'promise' }],
     },
     study: {

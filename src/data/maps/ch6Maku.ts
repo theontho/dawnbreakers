@@ -13,11 +13,14 @@ import { wallRun } from './wallRuns';
  * from the north, the road Mullá Ḥusayn walked on foot.
  *
  * The Báb is never on the map. He is reached through the barred window of
- * the castle and the copyist's desk, and through what others say of Him.
+ * the castle, the pages in His amanuensis's room, and what others say of Him.
+ * That room is a mud-roofed lodging built against the castle's east wall;
+ * Siyyid Ḥusayn writes there, indoors, as scribes did, seated on the floor.
  *
  * Districts (x runs east, y runs south):
  * - The fortress: rampart x 1..22, y 1..19; the castle x 3..11, y 2..8, its
- *   door at (7, 8); the copyist's corner x 13..18, y 3..8; the gate x 11..13,
+ *   door at (7, 8); the amanuensis's room x 12..16, y 3..6, its door at
+ *   (14, 6) (Ch6MakuChamber), stores beside it; the gate x 11..13,
  *   y 18..20, its passage down x = 12.
  * - Mountainside: switchbacks from the gate, along y 23..24, down x 27..28,
  *   back along y 27..28 and down x 6..7 to the town; the shepherd's fold
@@ -36,6 +39,13 @@ const H = 46;
 const FORT = { x0: 1, y0: 1, x1: 22, y1: 19 } as const;
 const GATE = { x: 11, y: 18, passage: 12 } as const;
 const CASTLE = { x: 3, y: 2, w: 9, h: 7 } as const;
+/**
+ * The amanuensis's lodging against the castle's east wall. At this cell the
+ * mountain house paints its first variant (the stone house), whose door is
+ * centred on the third cell of its front.
+ */
+const LODGING = { x: 12, y: 3, w: 5, h: 4 } as const;
+export const AMANUENSIS_DOOR = { x: LODGING.x + 2, y: LODGING.y + LODGING.h - 1 } as const;
 const STREET = 36;
 const STREAM = 33;
 
@@ -55,12 +65,12 @@ const blocking = (texture: string, cells: ReadonlyArray<readonly [number, number
 const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>): DecorSpec[] =>
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture }));
 
-/** Inside the walls: the guards' brazier, the copyist's chests and lamp, snow in the corners. */
+/** Inside the walls: the guards' brazier, the stores and a lamp by the lodging, snow in the corners. */
 const COURTYARD: DecorSpec[] = [
   ...blocking('ch6-brazier', [[4, 13]]),
   ...blocking('crates', [[18, 3], [18, 4]]),
   ...blocking('lamp', [[17, 3]]),
-  ...loose('rug', [[14, 4], [14, 8], [8, 12]]),
+  ...loose('rug', [[14, 8], [8, 12]]),
   ...loose('ch6-snow-drift', [[2, 10], [3, 16], [9, 15], [14, 11], [20, 10], [18, 15], [20, 5], [6, 17]]),
 ];
 
@@ -118,9 +128,9 @@ export const ch6MakuMap: MapDefinition = {
     paintRect(0, 0, W, H, 'stone');
     paintRect(0, 29, STREAM, H - 29, 'sand');
     paintRect(STREAM + 2, 38, W - STREAM - 2, H - 38, 'sand');
-    paintRect(13, 3, 6, 6, 'sand');        // the copyist's corner of the courtyard
+    paintRect(13, 3, 6, 6, 'sand');        // round the amanuensis's lodging
     paintRect(25, 3, 3, 3, 'sand');        // the shepherd's fold
-    // Inside the walls: from the gate to the castle door, and to the copyist's corner.
+    // Inside the walls: from the gate to the castle door, and to the amanuensis's door.
     paintRect(GATE.passage, 9, 1, GATE.y + 3 - 9, 'path');
     paintRect(7, 9, 6, 2, 'path');
     paintRect(GATE.passage, 7, 3, 2, 'path');
@@ -151,6 +161,7 @@ export const ch6MakuMap: MapDefinition = {
   },
   buildings: [
     { gridX: CASTLE.x, gridY: CASTLE.y, w: CASTLE.w, h: CASTLE.h, texture: 'ch6-maku-fortress' },
+    { gridX: LODGING.x, gridY: LODGING.y, w: LODGING.w, h: LODGING.h, texture: 'ch6-mountain-house' },
     { gridX: GATE.x, gridY: GATE.y, w: 3, h: 3, texture: 'ch6-fortress-gate', blocks: false },
     // The town of Mákú.
     { gridX: 0, gridY: 30, w: 5, h: 4, texture: 'ch6-mountain-house' },
@@ -171,13 +182,6 @@ export const ch6MakuMap: MapDefinition = {
     { gridX: 10, gridY: 9, texture: 'ch6-barred-marker',
       prompt: 'Stand beneath the barred window  [E]',
       dialogue: 'ch6-maku-window' },
-    { gridX: 15, gridY: 5, texture: 'writing-desk',
-      prompt: 'Read the pages on the copyist\'s desk  [E]',
-      dialogue: 'ch6-bayan',
-      gate: { when: f => !!f.ch6WardenSoftened && !!f.ch6MetAmanuensis, lockedDialogue: 'ch6-desk-closed' } },
-    { gridX: 15, gridY: 7, texture: 'ch6-amanuensis',
-      prompt: 'Speak with Siyyid Ḥusayn, the Amanuensis  [E]',
-      dialogue: 'ch6-amanuensis' },
     { gridX: 3, gridY: 12, texture: 'ch6-fortress-guard',
       prompt: 'Speak with the Fortress Guard  [E]',
       dialogue: 'ch6-fortress-guard' },
@@ -197,6 +201,11 @@ export const ch6MakuMap: MapDefinition = {
     { gridX: 38, gridY: 32, texture: 'ch6-mulla-husayn',
       prompt: 'Speak with Mullá Ḥusayn  [E]',
       dialogue: 'ch6-mulla-husayn-visit' },
+  ],
+  doors: [
+    // Siyyid Ḥusayn's room, where the pages are written and kept.
+    { gridX: AMANUENSIS_DOOR.x, gridY: AMANUENSIS_DOOR.y, prompt: 'Go into the amanuensis\'s room  [E]',
+      targetScene: 'Ch6MakuChamber', targetSpawnX: 3, targetSpawnY: 4 },
   ],
   exits: [
     { fromX: W - 1, fromY: STREET, dx: 1, dy: 0,

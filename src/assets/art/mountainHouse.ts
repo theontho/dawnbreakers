@@ -128,7 +128,8 @@ function banks(ctx: Ctx, box: IsoBox, seed: number): void {
 /** One storey: the door and a lit window under the roof edge, wood stacked at the side. */
 const stoneHouse: HouseDraw = (ctx, box, s) => {
   const main = subBox(box, 0, box.w - 8, 16, box.d, 84);
-  const doorU = 96;
+  // Centred on the third cell along the front, so a map can open it as a door.
+  const doorU = 80;
   townBlock(ctx, main, {
     wall: s.wall, seed: s.seed, material: 'mud', roof: 'flat', beams: 10,
     left: (c, w, h, l) => {

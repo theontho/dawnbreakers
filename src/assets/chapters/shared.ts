@@ -2,6 +2,7 @@ import { CELL, css, footprintBox, groundPoint, groundShadow, outlineBox, paintTe
 import { figure, type FigureStyle } from '../art/crowds';
 import { cellCentredBox, ellipseShadow } from '../art/fieldKit';
 import { brick, planks, stone } from '../art/materials';
+import { paintFloorWritingBoard } from '../art/scribeGear';
 import { archPath, clipped, flatTop, walls } from '../art/ornaments';
 import type { MapObjectId, TextureGenerator } from '../mapAssetTypes';
 
@@ -27,6 +28,8 @@ export const SHARED_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
       for (const { dx, dy, style } of LISTENERS) figure(ctx, dx, dy, style);
     });
   },
+
+  'floor-writing-board': (scene, def) => paintFloorWritingBoard(scene, def.texture),
 
   /** A low walnut writing table with a sheet, a pen case and an inkwell. */
   'writing-desk': (scene, def) => {

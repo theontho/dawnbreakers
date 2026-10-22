@@ -4,7 +4,8 @@ import type { DialogueTree } from '../../dialogue/types';
  * Chapter 5, the Palace of the Sun, winter 1846 to spring 1847. The
  * Muʿtamid's protection, the treatise on the specific mission of Muḥammad,
  * the gathering of divines, and the governor's death. The Báb is shown
- * through the writing desk, the empty seat of honour, and a closed door.
+ * through the writing board in the reception room, the empty seat of
+ * honour, and a closed door.
  */
 
 /** Manúchihr Khán, the Muʿtamidu'd-Dawlih, Governor of Iṣfahán. */
@@ -36,7 +37,7 @@ export const mutamidDialogue: DialogueTree = {
     },
     question: {
       speaker: 'Manúchihr Khán, the Muʿtamid',
-      text: 'I asked Him to prove the specific mission of Muḥammad, which the learned argue over for whole winters. In less than two hours He had written fifty pages on it. Read them at the desk in the west court, if you have your letters. Then hear what the divines made of Him.',
+      text: 'I asked Him to prove the specific mission of Muḥammad, which the learned argue over for whole winters. In less than two hours He had written fifty pages on it. Read them in the reception room off the west court, if you have your letters. Then hear what the divines made of Him.',
     },
     plan: {
       speaker: 'Manúchihr Khán, the Muʿtamid',
@@ -66,34 +67,34 @@ export const mutamidDialogue: DialogueTree = {
   },
 };
 
-/** The writing desk in the west court, where the treatise was written. */
+/** The writing board in the reception room, where the treatise was written. */
 export const treatiseDialogue: DialogueTree = {
   id: 'ch5-treatise',
   startId: 'g',
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'A low writing desk stands on a carpet in the west court, a reed pen laid across the inkwell. The pages are gone to the copyists, but the desk keeps the shape of the work: a worn place where a sleeve rested, a single drop of ink dried on the wood.',
+      text: 'A lap board lies on the carpet before the bolsters, a reed pen laid across the inkwell. The pages are gone to the copyists, but the board keeps the shape of the work: a worn place where a sleeve rested, a single drop of ink dried on the wood.',
       choices: [
         { text: '"Let learning bow before a living proof."', next: 'learning', effect: { set: { isfahanStance: 'learning' } } },
         { text: '"Can a governor shelter such a claim from politics?"', next: 'politics', effect: { set: { isfahanStance: 'politics' } } },
-        { text: '"I only wonder that such words came down in this quiet court."', next: 'wonder', effect: { set: { isfahanStance: 'wonder' } } },
+        { text: '"I only wonder that such words came down in this quiet room."', next: 'wonder', effect: { set: { isfahanStance: 'wonder' } } },
       ],
     },
     learning: {
       speaker: 'Narrator',
       text: 'You think of the scholars of Karbilá, who asked for measured argument their whole lives. Here, in an afternoon, someone gave them oceans in the vessel of a page.',
-      choices: [{ text: '(Read the copy left beside the desk.)', next: 'writing' }],
+      choices: [{ text: '(Read the copy left beside the board.)', next: 'writing' }],
     },
     politics: {
       speaker: 'Narrator',
       text: 'The palace walls are thick, but not thicker than fear. Still, the Muʿtamid has opened them, and protection itself has become a kind of testimony.',
-      choices: [{ text: '(Read the copy left beside the desk.)', next: 'writing' }],
+      choices: [{ text: '(Read the copy left beside the board.)', next: 'writing' }],
     },
     wonder: {
       speaker: 'Narrator',
       text: 'Wonder is no small beginning. Many arrive with ledgers of proof. Some depart with a silence no ledger can contain.',
-      choices: [{ text: '(Read the copy left beside the desk.)', next: 'writing' }],
+      choices: [{ text: '(Read the copy left beside the board.)', next: 'writing' }],
     },
     writing: {
       speaker: 'Narrator',

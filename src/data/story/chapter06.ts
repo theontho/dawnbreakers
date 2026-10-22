@@ -50,13 +50,13 @@ export const chapter06Story: ChapterStory = {
     {
       flag: 'ch6ReadBayan',
       title: 'The Persian Bayán',
-      body: 'You read the pages of the Bayán at the copyist\'s desk: laws, a calendar of nineteen months, and everywhere Him whom God shall make manifest.',
+      body: 'You read the pages of the Bayán in the amanuensis\'s room: laws, a calendar of nineteen months, and everywhere Him whom God shall make manifest.',
     },
     {
       flag: 'ch6BayanStance',
       equals: 'awe',
       title: 'Read in Awe',
-      body: 'The cold courtyard seemed to widen as you read. A place of forgetting had become the place where a Book was written.',
+      body: 'The cold little room seemed to widen as you read. A place of forgetting had become the place where a Book was written.',
     },
     {
       flag: 'ch6BayanStance',

@@ -26,6 +26,7 @@ const BASE_OBJECTS: MapObjectDefinition[] = [
   { id: 'interior-mihrab', label: 'Prayer Niche', texture: 'interior-mihrab', kind: 'prop', category: 'shrines', color: 0x24477a, blocks: true },
   { id: 'interior-wall', label: 'Interior Wall', texture: 'interior-wall', kind: 'prop', category: 'barriers-prison', color: 0xd6c9aa, blocks: true },
   { id: 'writing-desk', label: 'Writing Desk', texture: 'writing-desk', kind: 'prop', category: 'furnishings', color: 0x8a5a2a, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
+  { id: 'floor-writing-board', label: 'Writing Board', texture: 'floor-writing-board', kind: 'prop', category: 'furnishings', color: 0xb89a6a, blocks: true },
   { id: 'crowd', label: 'Crowd', texture: 'crowd', kind: 'prop', category: 'people-crowds', color: 0x6b5a44, blocks: true },
   { id: 'crowd-shadow', label: 'Crowd Shadow', texture: 'crowd-shadow', kind: 'prop', category: 'people-crowds', color: 0x2a221e, blocks: false },
   { id: 'traveller', label: 'Traveller', texture: 'editor-char-traveller', kind: 'character', category: 'characters', color: 0x4a3a2a, blocks: true, character: characterOptions(0x4a3a2a, 'sash', 'headscarf') },

@@ -11,7 +11,9 @@ import { ch4ShirazReturnMap } from './ch4ShirazReturn';
 import { ch4VakilMosqueMap } from './ch4VakilMosque';
 import { ch5IsfahanBridgeMap } from './ch5IsfahanBridge';
 import { ch5MutamidPalaceMap } from './ch5MutamidPalace';
+import { ch5ReceptionRoomMap } from './ch5ReceptionRoom';
 import { ch6MakuMap } from './ch6Maku';
+import { ch6MakuChamberMap } from './ch6MakuChamber';
 import { ch6ChihriqMap } from './ch6Chihriq';
 import { ch7BadashtHamletMap } from './ch7BadashtHamlet';
 import { ch7BadashtCampMap } from './ch7BadashtCamp';
@@ -45,7 +47,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch4VakilMosqueMap,
   ch5IsfahanBridgeMap,
   ch5MutamidPalaceMap,
+  ch5ReceptionRoomMap,
   ch6MakuMap,
+  ch6MakuChamberMap,
   ch6ChihriqMap,
   ch7BadashtHamletMap,
   ch7BadashtCampMap,

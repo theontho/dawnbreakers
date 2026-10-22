@@ -5,7 +5,9 @@ import { wallRun } from './wallRuns';
  * The Palace of the Sun (ʿImárat-i-Khurshíd), Iṣfahán, winter 1846 to
  * spring 1847, at true scale: a Qajar palace garden quartered by a long
  * pool and a cross walk. North: the columned tālār where the Muʿtamid
- * receives. North-west: the chancery court with the writing desk. North-east:
+ * receives. North-west: the chancery court and the chancery house, whose
+ * ground-floor reception room (Ch5ReceptionRoom) is where the treatise was
+ * written at a gathering, on a lap board, and where it is copied. North-east:
  * the carpeted terrace by a pool where the divines gathered, its seat of
  * honour empty under a canopy. South-east: the walled inner apartments where
  * the Báb was hidden; He is never on the map. South-west: rose beds and
@@ -15,7 +17,8 @@ import { wallRun } from './wallRuns';
  * - The tālār: x 16..27, y 2..9, its forecourt y 10..12.
  * - The long pool: x 20..23, y 13..20 and 24..34, walks either side, cypress rows on x 17 and 26.
  * - The cross walk: y 21..23 from the west gate (exit at (0, 22)) to the east wall.
- * - Chancery court: x 2..14, y 8..19, the chancery house at x 3..8, y 3..7.
+ * - Chancery court: x 2..14, y 8..19, the chancery house at x 3..8, y 3..7,
+ *   its door into the reception room at (6, 7).
  * - Gathering terrace: x 30..41, y 10..19.
  * - Inner apartments: walls x 29..40, y 24..34, the carved door at (34, 34).
  * - Rose garden: x 2..15, y 25..37.
@@ -26,6 +29,9 @@ const H = 40;
 const TALAR = { gridX: 16, gridY: 2, w: 12, h: 8 };
 /** The carved door of the inner apartments, in the enclosure's south wall. */
 const CHAMBER_DOOR = { x: 34, y: 34 };
+/** The chancery house; at this cell the town house paints its two-storey variant, door on the fourth cell. */
+const CHANCERY = { gridX: 3, gridY: 3, w: 6, h: 5 } as const;
+export const RECEPTION_DOOR = { x: CHANCERY.gridX + 3, y: CHANCERY.gridY + CHANCERY.h - 1 } as const;
 const AXIS = { y0: 21, y1: 23 } as const;
 const POOL = { x0: 20, x1: 23 } as const;
 
@@ -34,7 +40,7 @@ const tree = (gridX: number, gridY: number, texture: string): DecorSpec => ({ gr
 const buildings: BuildingSpec[] = [
   { ...TALAR, texture: 'ch5-palace-portico' },
   // The chancery, and the inner apartments within their walls
-  { gridX: 3, gridY: 3, w: 6, h: 5, texture: 'town-house' },
+  { ...CHANCERY, texture: 'town-house' },
   { gridX: 31, gridY: 26, w: 8, h: 7, texture: 'town-house-large' },
   // The pool before the gathering terrace
   { gridX: 38, gridY: 16, w: 3, h: 3, texture: 'fountain-pool' },
@@ -146,13 +152,6 @@ export const ch5MutamidPalaceMap: MapDefinition = {
       prompt: 'Look at the Muʿtamid\'s empty place  [E]',
       dialogue: 'ch5-mutamid-empty',
       present: f => !!f.mutamidDied },
-    // The chancery court
-    { gridX: 6, gridY: 11, texture: 'writing-desk',
-      prompt: 'Read beside the writing desk  [E]',
-      dialogue: 'ch5-treatise' },
-    { gridX: 8, gridY: 12, texture: 'ch5-scribe',
-      prompt: 'Speak with the Palace Scribe  [E]',
-      dialogue: 'ch5-scribe' },
     // The gathering terrace
     { gridX: 35, gridY: 12, texture: 'ch5-seat-of-honour',
       prompt: 'Look at the empty seat of honour  [E]',
@@ -172,6 +171,11 @@ export const ch5MutamidPalaceMap: MapDefinition = {
         when: f => !!f.mutamidDied && !!f.gurginMet,
         lockedDialogue: 'ch5-chamber-locked',
       } },
+  ],
+  doors: [
+    // The reception room, where the treatise was written and is copied.
+    { gridX: RECEPTION_DOOR.x, gridY: RECEPTION_DOOR.y, prompt: 'Enter the reception room  [E]',
+      targetScene: 'Ch5ReceptionRoom', targetSpawnX: 4, targetSpawnY: 4 },
   ],
   exits: [
     { fromX: 0, fromY: 22, dx: -1, dy: 0,
