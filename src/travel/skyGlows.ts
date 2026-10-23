@@ -8,7 +8,7 @@ import type { SkyLight } from './skyLight';
 
 /** The sun high up and a full moon at night, in multiples of SDR white, as far as the screen allows. */
 const SUN_GAIN = 3.2;
-const MOON_GAIN = 2;
+const MOON_GAIN = 3;
 
 /** Anything that stands up from the horizon: the hills, or the sea and its ship. */
 interface Skyline {

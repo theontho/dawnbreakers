@@ -14,6 +14,12 @@ export interface HdrGpu {
 
 type HdrListener = (gpu: HdrGpu | undefined) => void;
 
+/**
+ * Why the glow is or is not showing, for the Settings line and the HDR
+ * check on the mini-game screen: on; turned off; or the first thing missing.
+ */
+export type HdrDiagnosis = 'on' | 'off' | 'no-webgpu' | 'no-adapter' | 'no-extended' | 'sdr-screen';
+
 const STORAGE_KEY = 'dawnbreakers.hdrGlow';
 const DISPLAY_QUERY = '(dynamic-range: high)';
 const HDR_FORMAT: GPUTextureFormat = 'rgba16float';
@@ -23,6 +29,8 @@ let enabled = readStoredPreference();
 let probe: Promise<HdrGpu | undefined> | undefined;
 let display: MediaQueryList | undefined;
 let generation = 0;
+/** Why the last probe found no HDR GPU. */
+let probeFailure: HdrDiagnosis | undefined;
 
 function readStoredPreference(): boolean {
   try {
@@ -67,21 +75,47 @@ function probeHdrGpu(): Promise<HdrGpu | undefined> {
 
 async function requestHdrGpu(): Promise<HdrGpu | undefined> {
   try {
-    const adapter = await navigator.gpu?.requestAdapter({ powerPreference: 'high-performance' });
-    if (!adapter) return undefined;
+    // WebGPU is only offered to secure pages: https, or localhost.
+    if (!navigator.gpu) return failed('no-webgpu');
+    const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+    if (!adapter) return failed('no-adapter');
     const device = await adapter.requestDevice();
     if (!canvasTakesExtendedRange(device)) {
       device.destroy();
-      return undefined;
+      return failed('no-extended');
     }
+    probeFailure = undefined;
+    console.info('[hdr] WebGPU canvas takes extended tone mapping: the sun and moon can glow past white.');
     void device.lost.then(() => {
       probe = undefined;
       notify();
     });
     return { device, format: HDR_FORMAT };
-  } catch {
-    return undefined;
+  } catch (error) {
+    console.info('[hdr] WebGPU failed while probing:', error);
+    return failed('no-adapter');
   }
+}
+
+function failed(reason: HdrDiagnosis): undefined {
+  probeFailure = reason;
+  console.info(`[hdr] no HDR glow: ${reason}`);
+  return undefined;
+}
+
+/** Why the glow is or is not showing here, probing the GPU if it has not been yet. */
+export async function hdrGlowDiagnosis(): Promise<HdrDiagnosis> {
+  if (!(await probeHdrGpu())) return probeFailure ?? 'no-adapter';
+  if (!hdrDisplay()?.matches) return 'sdr-screen';
+  return enabled ? 'on' : 'off';
+}
+
+/**
+ * The GPU for drawing HDR whatever the screen says and whether or not the
+ * player has the glow on, for the HDR check; undefined where there is none.
+ */
+export function hdrGpu(): Promise<HdrGpu | undefined> {
+  return probeHdrGpu();
 }
 
 function canvasTakesExtendedRange(device: GPUDevice): boolean {

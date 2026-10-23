@@ -46,7 +46,7 @@ export class CoffeeGame extends MiniGameScene {
     super('CoffeeGame');
   }
 
-  protected readonly heading = 'At the Doors of the Hall';
+  readonly heading = 'At the Doors of the Hall';
   protected readonly hint = 'Climb with ↑ and go down with ↓, or click where to stand. Fill the tray at the coffee-maker, and be at the doors with hot coffee when they open.';
 
   private station = 1;

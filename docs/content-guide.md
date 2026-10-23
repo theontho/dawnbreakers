@@ -221,6 +221,11 @@ Rules for them:
   Keep time with `elapsed` and `dt`, which follow the wall clock.
 - `npm run minigames` plays each one start to finish with a bot and saves a
   screenshot of each (`--quick` skips after the screenshot).
+- The title's Mini-games screen plays any of them as practice
+  (`practice: true` in the launch): the result is shown, not written to the
+  flags. Add a new game there too. The same screen checks for HDR: it says
+  why the sun and moon glow is or is not on, and draws a patch of white
+  beside 4× white.
 
 ## Objectives and journal (`ChapterStory`)
 

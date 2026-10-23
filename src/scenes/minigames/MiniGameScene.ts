@@ -4,9 +4,12 @@ import type { FlagState } from '../../dialogue/types';
 import { localizedStyle, rtl, t } from '../../i18n';
 import { buttonFont, responsiveFont, safeLayout } from '../../ui/responsive';
 
-/** What a dialogue choice hands a mini-game: called once it is over and its result is in the flags. */
+/** What a dialogue choice (or the practice picker) hands a mini-game. */
 export interface MiniGameLaunch {
-  onFinish: () => void;
+  /** Called once the game is over, with its result (already in the flags unless practising). */
+  onFinish: (result: FlagState) => void;
+  /** Played from the mini-game picker: the result is reported but not kept. */
+  practice?: boolean;
 }
 
 /** The play area: the safe layout under the heading and above the hint. */
@@ -35,7 +38,8 @@ const DEPTH_UI = 100;
  * rebuild; text objects they make are placed again in `layout()`.
  */
 export abstract class MiniGameScene extends Phaser.Scene {
-  private onFinish?: () => void;
+  private onFinish?: (result: FlagState) => void;
+  private practice = false;
   private done = false;
   protected gfx!: Phaser.GameObjects.Graphics;
   private headingText!: Phaser.GameObjects.Text;
@@ -49,12 +53,13 @@ export abstract class MiniGameScene extends Phaser.Scene {
   private covered: Phaser.Scene[] = [];
 
   /** The heading over the game, in English (it goes through `t`). */
-  protected abstract readonly heading: string;
+  abstract readonly heading: string;
   /** One line under the game saying how to play, in English. */
   protected abstract readonly hint: string;
 
   init(data: MiniGameLaunch): void {
     this.onFinish = data.onFinish;
+    this.practice = data.practice ?? false;
     this.done = false;
     this.elapsed = 0;
   }
@@ -130,14 +135,14 @@ export abstract class MiniGameScene extends Phaser.Scene {
   protected finish(result: FlagState): void {
     if (this.done) return;
     this.done = true;
-    applyEffect({ set: result });
+    if (!this.practice) applyEffect({ set: result });
     this.input.enabled = false;
     this.cameras.main.fadeOut(450, 0, 0, 0);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       const onFinish = this.onFinish;
       this.uncover();
       this.scene.stop();
-      onFinish?.();
+      onFinish?.(result);
     });
   }
 

@@ -40,7 +40,7 @@ export class LanesGame extends MiniGameScene {
     super('LanesGame');
   }
 
-  protected readonly heading = 'Through the Dark Lanes';
+  readonly heading = 'Through the Dark Lanes';
   protected readonly hint = 'Walk with → and stop or step back with ←, or hold the pointer on either side. Stand in a doorway while a lantern passes.';
 
   private x = 1;

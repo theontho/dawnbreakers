@@ -17,6 +17,9 @@ import { addSunriseTransport } from './titleTransport';
  */
 type TitleResume = { clock: SunriseClockState; musicLeadSeconds: number };
 
+/** The space between the two buttons of a pair in the menu. */
+const PAIR_GAP = 12;
+
 export class TitleScene extends Phaser.Scene {
   private titleStartedAtMs = 0;
   private clock?: SunriseClock;
@@ -82,32 +85,39 @@ export class TitleScene extends Phaser.Scene {
       }
     };
 
-    const chapters = this.add.text(centerX, safe.y + safe.height * 0.67, t('Chapters ›'), localizedStyle({
+    // The menu's pairs read from the right in a right-to-left language.
+    const pairOffset = (rtl ? -PAIR_GAP : PAIR_GAP) / 2;
+    const chapters = this.add.text(centerX, safe.y + safe.height * 0.68, t('Chapters ›'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
     }, 'center')).setOrigin(0.5);
 
-    const journeys = this.add.text(centerX, safe.y + safe.height * 0.74, t('Journeys'), localizedStyle({
+    const journeys = this.add.text(centerX - pairOffset, safe.y + safe.height * 0.76, t('Journeys'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(0.5);
+    }, 'center')).setOrigin(textOriginX(1), 0.5);
 
-    const skyRewind = this.add.text(centerX, safe.y + safe.height * 0.81, t('Sky Rewind'), localizedStyle({
+    const miniGames = this.add.text(centerX + pairOffset, safe.y + safe.height * 0.76, t('Mini-games'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(0.5);
+    }, 'center')).setOrigin(textOriginX(0), 0.5);
 
-    const editor = this.add.text(centerX, safe.y + safe.height * 0.88, t('Map Editor'), localizedStyle({
+    const skyRewind = this.add.text(centerX - pairOffset, safe.y + safe.height * 0.84, t('Sky Rewind'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(0.5);
+    }, 'center')).setOrigin(textOriginX(1), 0.5);
+
+    const editor = this.add.text(centerX + pairOffset, safe.y + safe.height * 0.84, t('Map Editor'), localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
+      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
+    }, 'center')).setOrigin(textOriginX(0), 0.5);
 
     const reset = this.add.text(rtl ? safe.x : safe.right, safe.bottom, t('Reset story'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(14, size), color: '#9c8458',
       backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
     })).setOrigin(textOriginX(1), 1);
 
-    titleLayer.add([title, subtitle, startButton, chapters, journeys, skyRewind, editor, reset]);
+    titleLayer.add([title, subtitle, startButton, chapters, journeys, miniGames, skyRewind, editor, reset]);
 
     const showMenu = (clock: SunriseClock) => {
       this.clock = clock;
@@ -118,6 +128,7 @@ export class TitleScene extends Phaser.Scene {
       activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
       activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
       activateTitleTextButton(this, journeys, '#c9b07a', '#fff1c0', () => this.scene.start('Journey'));
+      activateTitleTextButton(this, miniGames, '#c9b07a', '#fff1c0', () => this.scene.start('MiniGamePicker'));
       activateTitleTextButton(this, skyRewind, '#c9b07a', '#fff1c0', () => {
         window.location.assign('./skyrewind.html');
       });

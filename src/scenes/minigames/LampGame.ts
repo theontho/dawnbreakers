@@ -31,7 +31,7 @@ export class LampGame extends MiniGameScene {
     super('LampGame');
   }
 
-  protected readonly heading = 'The Galley Lantern';
+  readonly heading = 'The Galley Lantern';
   protected readonly hint = 'Turn your cloak into the wind: move the pointer, or ← and →. Watch the spray for where the next gust comes from.';
 
   private shield = 0;

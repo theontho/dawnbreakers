@@ -52,7 +52,7 @@ export class RationGame extends MiniGameScene {
     super('RationGame');
   }
 
-  protected readonly heading = 'Sharing Out the Stores';
+  readonly heading = 'Sharing Out the Stores';
   protected readonly hint = 'Click a table, or press 1, 2 or 3, to give it a portion; − or Backspace takes one back. Press Enter, or Share it out, to end the week.';
 
   private groups: Group[] = [];

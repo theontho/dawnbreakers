@@ -45,7 +45,7 @@ export class CurtainGame extends MiniGameScene {
     super('CurtainGame');
   }
 
-  protected readonly heading = 'At the Curtain\'s Edge';
+  readonly heading = 'At the Curtain\'s Edge';
   protected readonly hint = 'Lean along the curtain toward her voice: move the pointer, or ← and →. Words you are near enough to hear stay with you.';
 
   private lean = 0.5;

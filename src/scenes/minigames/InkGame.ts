@@ -32,7 +32,7 @@ export class InkGame extends MiniGameScene {
     super('InkGame');
   }
 
-  protected readonly heading = 'A Fair Copy';
+  readonly heading = 'A Fair Copy';
   protected readonly hint = 'Draw the pen along the line from right to left, or hold ←. When the ink freezes, warm it at the brazier: click the inkwell, or press ↓.';
 
   private written = 0;

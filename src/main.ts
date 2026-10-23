@@ -11,6 +11,7 @@ import { ChapterEndScene } from './scenes/ChapterEndScene';
 import { JourneyScene } from './scenes/JourneyScene';
 import { MapEditorScene } from './scenes/MapEditorScene';
 import { miniGameScenes } from './scenes/minigames';
+import { MiniGamePickerScene } from './scenes/MiniGamePickerScene';
 import { activeLocale, applyLocaleDocument, loadLocale } from './i18n';
 import { attachConsolePanel } from './ui/consolePanel';
 import { measuredSafeAreaInsets } from './ui/responsive';
@@ -54,7 +55,7 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [
     BootScene, TitleScene, ChapterSelectScene,
     ...MAP_DEFINITIONS.map(def => new MapScene(def)),
-    DialogueScene, ...miniGameScenes(), JournalScene, SettingsScene, ChapterEndScene, JourneyScene, MapEditorScene,
+    DialogueScene, MiniGamePickerScene, ...miniGameScenes(), JournalScene, SettingsScene, ChapterEndScene, JourneyScene, MapEditorScene,
   ],
 };
 
