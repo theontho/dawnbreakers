@@ -139,7 +139,7 @@ function normalizeCurveSettings(settings: TimeCurveSettings): TimeCurveSettings 
   };
 }
 
-function cinematicInertiaEase(value: number, curve: TimeCurveSettings): number {
+export function cinematicInertiaEase(value: number, curve: TimeCurveSettings): number {
   const t = clamp(value, 0, 1);
   const inertiaPortion = clamp(curve.inertiaPortion, 0, 0.8);
   const driftProgress = clamp(curve.driftProgress, 0, 0.2);

@@ -1,5 +1,3 @@
-import type { Vec3 } from './types';
-
 export const TAU = Math.PI * 2;
 export const DEG_TO_RAD = Math.PI / 180;
 export const RAD_TO_DEG = 180 / Math.PI;
@@ -15,16 +13,6 @@ export function clamp(value: number, min: number, max: number): number {
 export function wrapRadians(value: number): number {
   const wrapped = value % TAU;
   return wrapped < 0 ? wrapped + TAU : wrapped;
-}
-
-export function normalizeVec3(vec: Vec3): Vec3 {
-  const length = Math.hypot(vec.x, vec.y, vec.z);
-  if (length === 0) return { x: 0, y: 0, z: 0 };
-  return { x: vec.x / length, y: vec.y / length, z: vec.z / length };
-}
-
-export function scaleVec3(vec: Vec3, scale: number): Vec3 {
-  return { x: vec.x * scale, y: vec.y * scale, z: vec.z * scale };
 }
 
 export function decimalYear(date: Date): number {

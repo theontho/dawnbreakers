@@ -78,7 +78,7 @@ export class TitleScene extends Phaser.Scene {
     }, 'center')).setOrigin(0.5);
 
     let bookmark = loadBookmark();
-    const startButton = this.add.text(centerX, safe.y + safe.height * 0.66, t(bookmark ? 'Continue' : 'Start'), localizedStyle({
+    const startButton = this.add.text(centerX, safe.y + safe.height * 0.6, t(bookmark ? 'Continue' : 'Start'), localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: buttonFont(22, size),
       color: '#e8d9b0',
@@ -96,17 +96,22 @@ export class TitleScene extends Phaser.Scene {
       }
     };
 
-    const chapters = this.add.text(centerX, safe.y + safe.height * 0.74, t('Chapters ›'), localizedStyle({
+    const chapters = this.add.text(centerX, safe.y + safe.height * 0.67, t('Chapters ›'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
     }, 'center')).setOrigin(0.5);
 
-    const skyRewind = this.add.text(centerX, safe.y + safe.height * 0.82, t('Sky Rewind'), localizedStyle({
+    const journeys = this.add.text(centerX, safe.y + safe.height * 0.74, t('Journeys'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
     }, 'center')).setOrigin(0.5);
 
-    const editor = this.add.text(centerX, safe.y + safe.height * 0.9, t('Map Editor'), localizedStyle({
+    const skyRewind = this.add.text(centerX, safe.y + safe.height * 0.81, t('Sky Rewind'), localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
+      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
+    }, 'center')).setOrigin(0.5);
+
+    const editor = this.add.text(centerX, safe.y + safe.height * 0.88, t('Map Editor'), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
       backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
     }, 'center')).setOrigin(0.5);
@@ -116,7 +121,7 @@ export class TitleScene extends Phaser.Scene {
       backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
     })).setOrigin(textOriginX(1), 1);
 
-    titleLayer.add([title, subtitle, startButton, chapters, skyRewind, editor, reset]);
+    titleLayer.add([title, subtitle, startButton, chapters, journeys, skyRewind, editor, reset]);
     titleLayer.setAlpha(0);
 
     this.waitForTitleStart(size, () => {
@@ -138,6 +143,7 @@ export class TitleScene extends Phaser.Scene {
           addSunriseTransport(this, size, clock);
           activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
           activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
+          activateTitleTextButton(this, journeys, '#c9b07a', '#fff1c0', () => this.scene.start('Journey'));
           activateTitleTextButton(this, skyRewind, '#c9b07a', '#fff1c0', () => {
             window.location.assign('./skyrewind.html');
           });

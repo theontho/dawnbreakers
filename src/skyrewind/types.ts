@@ -22,13 +22,6 @@ export interface GeographicLocation {
   longitude: number;
 }
 
-export interface RenderStar {
-  id: number;
-  position: Vec3;
-  magnitude: number;
-  colorIndex?: number;
-}
-
 export interface SkyMoment {
   caption: string;
   date: Date;

@@ -1,19 +1,10 @@
 import * as THREE from 'three';
-import {
-  ARCSEC_TO_RAD,
-  DEG_TO_RAD,
-  J2000_JULIAN_DAY,
-  J2000_YEAR,
-  clamp,
-  decimalYear,
-  julianDay,
-  wrapRadians,
-} from './math';
+import { clamp } from './math';
+import { computeProjectionState, projectStar, type ProjectionState } from './projection';
 import type { GeographicLocation, Star, Vec3 } from './types';
 
 const SKY_RADIUS = 140;
 const MAX_STAR_COUNT = 120000;
-const HIPPARCOS_CATALOG_EPOCH_YEAR = 1991.25;
 const MOVING_SKY_UPDATE_INTERVAL_MS = 80;
 const SETTLED_SKY_UPDATE_INTERVAL_MS = 160;
 const HALF_PI = Math.PI / 2;
@@ -23,17 +14,6 @@ export interface SkyRenderState {
   location: GeographicLocation;
   cinematicStrength: number;
   nowMs?: number;
-}
-
-interface ProjectionState {
-  yearsSinceCatalog: number;
-  zeta: number;
-  z: number;
-  cosTheta: number;
-  sinTheta: number;
-  localSiderealTime: number;
-  sinLat: number;
-  cosLat: number;
 }
 
 export class SkyRewindRenderer {
@@ -185,7 +165,8 @@ export class SkyRewindRenderer {
     for (const star of this.catalog) {
       if (star.magnitude > 3.2) continue;
 
-      const position = projectStar(star, projection);
+      const direction = projectStar(star, projection);
+      const position = { x: direction.x * SKY_RADIUS, y: direction.y * SKY_RADIUS, z: direction.z * SKY_RADIUS };
       const previous = this.previousTrailPositions.get(star.id);
       nextTrailPositions.set(star.id, position);
       if (previous && trailStrength > 0 && star.magnitude <= maxTrailMagnitude) {
@@ -437,55 +418,6 @@ export class SkyRewindRenderer {
 
 }
 
-function computeProjectionState(date: Date, location: GeographicLocation): ProjectionState {
-  const year = decimalYear(date);
-  const yearsSinceCatalog = year - HIPPARCOS_CATALOG_EPOCH_YEAR;
-  const centuriesSinceJ2000 = (year - J2000_YEAR) / 100;
-  const zeta = (
-    2306.2181 * centuriesSinceJ2000 +
-    0.30188 * centuriesSinceJ2000 * centuriesSinceJ2000 +
-    0.017998 * centuriesSinceJ2000 * centuriesSinceJ2000 * centuriesSinceJ2000
-  ) * ARCSEC_TO_RAD;
-  const z = (
-    2306.2181 * centuriesSinceJ2000 +
-    1.09468 * centuriesSinceJ2000 * centuriesSinceJ2000 +
-    0.018203 * centuriesSinceJ2000 * centuriesSinceJ2000 * centuriesSinceJ2000
-  ) * ARCSEC_TO_RAD;
-  const theta = (
-    2004.3109 * centuriesSinceJ2000 -
-    0.42665 * centuriesSinceJ2000 * centuriesSinceJ2000 -
-    0.041833 * centuriesSinceJ2000 * centuriesSinceJ2000 * centuriesSinceJ2000
-  ) * ARCSEC_TO_RAD;
-
-  return {
-    yearsSinceCatalog,
-    zeta,
-    z,
-    cosTheta: Math.cos(theta),
-    sinTheta: Math.sin(theta),
-    localSiderealTime: greenwichMeanSiderealTime(date) + location.longitude,
-    sinLat: Math.sin(location.latitude),
-    cosLat: Math.cos(location.latitude),
-  };
-}
-
-function projectStar(star: Star, projection: ProjectionState): Vec3 {
-  const dec = clamp(star.dec + star.pmDec * projection.yearsSinceCatalog, -HALF_PI, HALF_PI);
-  const cosDec = Math.cos(dec);
-  const sinDec = Math.sin(dec);
-  const raZeta = wrapRadians(star.ra + star.pmRa * projection.yearsSinceCatalog + projection.zeta);
-  const a = cosDec * Math.sin(raZeta);
-  const b = projection.cosTheta * cosDec * Math.cos(raZeta) - projection.sinTheta * sinDec;
-  const c = clamp(projection.sinTheta * cosDec * Math.cos(raZeta) + projection.cosTheta * sinDec, -1, 1);
-  const precessedRa = wrapRadians(Math.atan2(a, b) + projection.z);
-  const precessedCosDec = Math.sqrt(Math.max(0, 1 - c * c));
-  const hourAngle = wrapRadians(projection.localSiderealTime - precessedRa);
-  const x = -precessedCosDec * Math.sin(hourAngle) * SKY_RADIUS;
-  const y = (c * projection.sinLat + precessedCosDec * projection.cosLat * Math.cos(hourAngle)) * SKY_RADIUS;
-  const north = c * projection.cosLat - precessedCosDec * projection.sinLat * Math.cos(hourAngle);
-  return { x, y, z: -north * SKY_RADIUS };
-}
-
 function starColor(colorIndex: number | undefined): { r: number; g: number; b: number } {
   if (colorIndex === undefined) return { r: 0.88, g: 0.93, b: 1.04 };
 
@@ -501,14 +433,4 @@ function maxMagnitudeForSpeed(cinematicStrength: number): number {
   const speed = clamp(cinematicStrength, 0, 1);
   const brightStarOnly = Math.pow(speed, 0.62);
   return 12.5 - brightStarOnly * 10.9;
-}
-
-function greenwichMeanSiderealTime(date: Date): number {
-  const jd = julianDay(date);
-  const t = (jd - J2000_JULIAN_DAY) / 36525;
-  const degrees = 280.46061837 +
-    360.98564736629 * (jd - J2000_JULIAN_DAY) +
-    0.000387933 * t * t -
-    (t * t * t) / 38710000;
-  return wrapRadians(degrees * DEG_TO_RAD);
 }

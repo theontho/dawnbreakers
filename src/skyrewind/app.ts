@@ -1,4 +1,4 @@
-import { locationFromDegrees } from './astronomy';
+import { locationFromDegrees } from './projection';
 import { loadStarCatalog } from './catalog';
 import { clamp, dateFromDecimalYear, decimalYear, formatSignedYear } from './math';
 import { SkyRewindRenderer } from './SkyRewindRenderer';

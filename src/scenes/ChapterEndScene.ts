@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { playMusic, playSfx } from '../audio';
 import { chapterById, nextChapter, type ChapterId } from '../data/chapters';
+import { journeyBetween } from '../data/journeys';
 import { localizedStyle, t } from '../i18n';
 import { buttonFont, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 
@@ -61,7 +62,11 @@ export class ChapterEndScene extends Phaser.Scene {
       const continueToNext = () => {
         if (continuing) return;
         continuing = true;
-        this.gotoScene(next.startScene, next.startSpawnX, next.startSpawnY);
+        // The road between the chapters plays first, when there is one.
+        const journey = journeyBetween(chapter.id, next.id);
+        const onward = { scene: next.startScene, spawnX: next.startSpawnX, spawnY: next.startSpawnY };
+        if (journey) this.gotoScene('Journey', { journeyId: journey.id, onward });
+        else this.gotoScene(next.startScene, { spawnX: onward.spawnX, spawnY: onward.spawnY });
       };
 
       this.makeButton(cx, buttonY,
@@ -85,10 +90,10 @@ export class ChapterEndScene extends Phaser.Scene {
       () => { this.scene.stop(); this.scene.resume(this.fromKey); });
   }
 
-  private gotoScene(key: string, spawnX?: number, spawnY?: number): void {
+  private gotoScene(key: string, data: object): void {
     this.scene.stop(this.fromKey);
     this.scene.stop();
-    this.scene.start(key, { spawnX, spawnY });
+    this.scene.start(key, data);
   }
 
   private openChapterSelect(): void {

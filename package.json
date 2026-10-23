@@ -28,6 +28,8 @@
     "render:music": "node scripts/render-music.mjs",
     "postinstall": "patch-package",
     "look": "node scripts/look.mjs",
+    "journeys": "node scripts/journeys.mjs",
+    "journeys:stars": "node scripts/generate-travel-stars.mjs",
     "i18n:glossary": "node scripts/i18n-glossary.mjs"
   },
   "keywords": [],

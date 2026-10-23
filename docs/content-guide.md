@@ -58,6 +58,31 @@ Flags carried forward:
 | Objectives and journal | `src/data/story/chapterNN.ts` |
 | Placeable objects and bespoke textures | `src/assets/chapters/chapterNN.ts` (`CHNN_OBJECTS`, `CHNN_TEXTURE_GENERATORS`) |
 
+## Journeys between chapters
+
+`src/data/journeys.ts` holds the road from each chapter to the next: a
+title, `subtitle` (where and when) and `description`, the place and local
+time of the first night, how many `days` the road takes at a caravan's
+pace, the bearing the view faces, the `terrain`
+(`desert`, `mountains`, `forest`, `snow`, `lakeside` or `sea`), and the
+`party` drawn walking (`walker`, `staff`, `lantern`, `mule`, `packMule`,
+`rider`, `standard`, `camel`, `litter`). The sky is the true one for that
+night: real Hipparcos stars, the moon in its phase, and twilight from the
+sun. When the player continues from the chapter-end card, `JourneyScene`
+plays the whole road without a cut: the first night watched, the days
+between rolling by faster the more of them there are (so the moon's phase
+shows the weeks going by), and the last night slowing into dawn. The
+title's **Journeys** menu plays
+each road the same way and goes on to the next, until the player takes the
+clock with the controls for the rate and direction of time, comet-tail or
+long-exposure star trails, and the facing.
+
+- The party is the chapter's witness and companions. Never draw the central
+  figures among them; speak of them in the `description`.
+- Face the view where the sky is worth seeing: north for trails circling
+  the pole, toward the moon when it is up (`npm run journeys` screenshots
+  every journey into `out/journeys/`).
+
 ## Maps (`MapDefinition`)
 
 - Size: aim for roughly 20 to 32 cells per side. Small maps feel like stages;

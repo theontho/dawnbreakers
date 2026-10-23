@@ -7,6 +7,8 @@ Utility scripts. All are ESM (`.mjs`) and runnable with `node`.
 | `lint-localization.mjs` | Validate i18n keys exist for every literal field across scenes/data, and that catalogs are in sync. | `npm run lint:localization` |
 | `lint-dialogues.mjs` | Validate every dialogue tree's `startId` and every `next:` reference resolves. | `npm run lint:dialogues` |
 | `generate-hipparcos-catalog.mjs` | Download/cache CDS `hip_main.dat` in `tmp/` and regenerate ignored `public/sky/hipparcos.csv` for Sky Rewind. Use `--refresh` to redownload the raw source. | `npm run skyrewind:catalog` |
+| `generate-travel-stars.mjs` | Pack the naked-eye Hipparcos stars (magnitude 6 and brighter) from `public/sky/hipparcos.csv` into `src/data/travelStars.ts` for the journey skies. Run `npm run skyrewind:catalog` first if the CSV is missing. | `npm run journeys:stars` |
+| `journeys.mjs` | Play every journey between chapters headlessly, screenshot each to `out/journeys/`, and check that a passage carries on into the next chapter. `--only`, `--rate`, `--trails`, `--viewport`, `--wait`. | `npm run journeys` |
 | `generate-book.mjs` | One-shot: regenerate `public/book-animation.svg` (the title screen book illustration). Run manually when the geometry/perspective math is tuned. | not wired |
 
 Run any of them directly:
