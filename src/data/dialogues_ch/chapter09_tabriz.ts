@@ -39,12 +39,12 @@ export const ch9WaterSeller: DialogueTree = {
     },
     why: {
       speaker: 'A Water-Seller',
-      text: 'The Siyyid they call the Báb. They brought Him down from the mountain prison at Chihríq, and this morning they led Him through the city to the houses of the mujtahids.',
+      text: 'The Siyyid they call the Báb. They brought Him down from the mountain prison at Chihríq, and yesterday they led Him through the city to the houses of the mujtahids.',
       choices: [{ text: '"Tell me of this morning."', next: 'streets' }],
     },
     streets: {
       speaker: 'A Water-Seller',
-      text: 'They took His green turban and His sash, so all would know Him for a man condemned. Bareheaded, under this sun. (He stares into his cup.) He walked as if the streets were His, and He was lending them to us.',
+      text: 'Yesterday they took His green turban and His sash, so all would know Him for a man condemned. Bareheaded, under this sun. (He stares into his cup.) He walked as if the streets were His, and He was lending them to us.',
       choices: [{ text: '(Wait.)', next: 'end' }],
     },
     end: {

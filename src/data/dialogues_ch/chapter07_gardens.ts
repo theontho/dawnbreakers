@@ -149,7 +149,7 @@ export const ch7Assembly: DialogueTree = {
     },
     quddus: {
       speaker: 'Narrator',
-      text: 'Quddús rises, his face hard, and answers her sharply, and they dispute before everyone. From the Host\'s tent comes word that a reciter should chant the Súrih of the Inevitable: when the Day that must come has come.',
+      text: 'Quddús stays seated, an unsheathed sword in his hand, his face hard, and answers her sharply, and they dispute before everyone. Word comes from the Host, who lies ill, that a reciter should chant the Súrih of the Inevitable: when the Day that must come has come.',
       choices: [{ text: '(Stand in the noise and the chanting.)', next: 'after' }],
     },
     after: {

@@ -243,7 +243,7 @@ export const muhitChallenge: DialogueTree = {
     leave: {
       speaker: 'Narrator',
       onEnter: { set: { ch3MuhitChallenge: true } },
-      text: 'He gathers his cloak and his students and goes out through the colonnade. You will learn later that he never came to Medina to give his answer, and soon left the Ḥijáz altogether. On the road between the two holy cities, an epistle was written for him all the same.',
+      text: 'He gathers his cloak and his students and goes out through the colonnade. You will learn later that he tarried a while in Medina and left for Karbilá, his pledge unkept. On the road between the two holy cities, an epistle was written for him all the same.',
     },
   },
 };

@@ -91,7 +91,7 @@ export const ch10WaterSeller: DialogueTree = {
     },
     road: {
       speaker: 'A Water-Seller',
-      text: 'They brought a nobleman down the Shimírán road from the royal camp. On foot, in the noon sun, bareheaded and barefoot, in chains. His coat was gone. The crowd threw what it had: stones, filth, curses.',
+      text: 'They brought a nobleman down the Shimírán road from the royal camp. On foot, in the noon sun, barefoot, in chains. A rider had snatched the hat from His head. The crowd threw what it had: stones, filth, curses.',
       choices: [
         { text: '"Who was He?"', next: 'who' },
         { text: '"Did no one stop them?"', next: 'woman' },

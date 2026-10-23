@@ -87,7 +87,7 @@ export const chapter08Story: ChapterStory = {
     {
       flag: 'ch8MullaHusaynFell',
       title: 'The Gate at Dawn',
-      body: 'Mullá Ḥusayn rode out before dawn in February 1849 and was carried back mortally wounded. Quddús buried him within the shrine, clothed in Quddús\'s own shirt. You kept the gate.',
+      body: 'Mullá Ḥusayn rode out before dawn in February 1849 and was carried back mortally wounded. Quddús buried him beside the shrine, clothed in Quddús\'s own shirt. You kept the gate.',
     },
     {
       flag: 'ch8HeardMullaHusayn',

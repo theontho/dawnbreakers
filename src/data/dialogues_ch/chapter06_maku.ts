@@ -266,7 +266,7 @@ export const ch6MullaHusaynVisit: DialogueTree = {
     meet: {
       speaker: 'Mullá Ḥusayn',
       onEnter: { set: { ch6MetMullaHusayn: true } },
-      text: 'They tell me the Khán himself rode out on the road to greet me, which no one can explain. I will keep Naw-Rúz up there, if they let me. Go up ahead of me. Read what is being written, and come back and tell me.',
+      text: 'They tell me the Khán himself came out on foot and walked behind me to the gate, which no one can explain. I will keep Naw-Rúz up there, if they let me. Go up ahead of me. Read what is being written, and come back and tell me.',
       choices: [
         { text: '(Promise to return.)' },
         { text: '"I have read it already. Where will you go now?"', next: 'charge', requires: f => !!f.ch6ReadBayan },

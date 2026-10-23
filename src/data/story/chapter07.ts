@@ -80,7 +80,7 @@ export const chapter07Story: ChapterStory = {
     {
       flag: 'ch7WitnessedUnveiling',
       title: 'The Day the Veil Fell',
-      body: 'Ṭáhirih entered the assembly unveiled and proclaimed that the fetters of the past were broken. Men cried out and fled; Quddús disputed with her before everyone; from the tent came word to chant the Súrih of the Inevitable.',
+      body: 'Ṭáhirih entered the assembly unveiled and proclaimed that the fetters of the past were broken. Men cried out and fled; Quddús, seated with a drawn sword, disputed with her before everyone; from the Host, who lay ill, came word to chant the Súrih of the Inevitable.',
     },
     {
       flag: 'badashtResponse',

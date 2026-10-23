@@ -15,7 +15,7 @@ export const hasan: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Siyyid Ḥasan',
-      text: 'Keep your voice low. Those fires to the south are the royal army\'s. (He points through the orange trees to a dark huddle of roofs.) That is Ḥujjat\'s quarter. They have held it since the spring.',
+      text: 'Keep your voice low. Those fires to the south are the royal army\'s. (He points through the orchard trees to a dark huddle of roofs.) That is Ḥujjat\'s quarter. They have held it since the spring.',
       choices: [
         { text: '"Who is Ḥujjat?"', next: 'who' },
         { text: '"How do we get in?"', next: 'in' },
@@ -220,7 +220,7 @@ export const zaynabPlace: DialogueTree = {
     after: {
       speaker: 'Narrator',
       onEnter: { set: { zjMournedZaynab: true } },
-      text: 'Only when she fell did the soldiers learn that Rustam-ʿAlí was a village girl. Afterwards, the dyer says, twenty women who had known her came to the Faith. Someone fills this lamp every night. He does not say who.',
+      text: 'Near the end the soldiers learned that Rustam-ʿAlí was a village girl, and feared her still. Afterwards, the dyer says, twenty women who had known her came to the Faith. Someone fills this lamp every night. He does not say who.',
     },
   },
 };

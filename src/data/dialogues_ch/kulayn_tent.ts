@@ -57,13 +57,13 @@ export const kulaynTentStruck: DialogueTree = {
     },
     ride: {
       speaker: 'Narrator',
-      text: 'The escort forms up on the road: Muḥammad Big at the head, the companions behind, and between the riders a space they keep around Someone you do not look at directly. They turn, not south toward Ṭihrán, half a day away, but north and west.',
+      text: 'The escort forms up on the road: Muḥammad Big at the head, the companions behind, and between the riders a space they keep around Someone you do not look at directly. They turn, not north toward Ṭihrán, half a day away, but away to the north-west.',
       choices: [{ text: '(Follow.)', next: 'end' }],
     },
     end: {
       speaker: 'Narrator',
       onEnter: { set: { kulaynComplete: true } },
-      text: 'Behind you the almond blossom is already falling into the stream. Ahead lie Qazvín, where friends will try to free Him by night and be sent home; Tabríz; and beyond Tabríz, the mountains of Ádhirbáyján and a fortress called Mákú, where the snow comes early.',
+      text: 'Behind you the almond blossom is already falling into the stream. Ahead lie Qazvín; a night on the Zanján road when friends will beg Him to flee, and be sent home; Tabríz; and beyond Tabríz, the mountains of Ádhirbáyján and a fortress called Mákú, where the snow comes early.',
     },
   },
 };

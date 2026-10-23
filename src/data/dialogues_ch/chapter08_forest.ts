@@ -64,7 +64,7 @@ export const mullaHusaynForest: DialogueTree = {
     },
     shrine: {
       speaker: 'Mullá Ḥusayn',
-      text: 'There is a shrine in this forest, the tomb of Shaykh Ṭabarsí. When I saw its dome through the trees I prayed: O Lord, bring me down to a blessed landing place. My heart tells me our road ends there.',
+      text: 'There is a shrine in this forest, the tomb of Shaykh Ṭabarsí. When I reached it I prayed: O my Lord, bless Thou my arrival at this place. My heart tells me our road ends there.',
       choices: [
         { text: '"Then I will go with you to the shrine."', next: 'go' },
         { text: '"Ends? You speak as if you know what is coming."', next: 'knows' },

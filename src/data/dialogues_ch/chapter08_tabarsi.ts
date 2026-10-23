@@ -41,12 +41,12 @@ export const mullaHusaynAwaiting: DialogueTree = {
     },
     release: {
       speaker: 'Mullá Ḥusayn',
-      text: 'He asked it, and so it will be. (He rises, shading his eyes.) Look. Do you see the horsemen between the trees?',
+      text: 'He asked it, and so it will be. (He rises.) Look. Do you see the lights between the trees?',
       choices: [{ text: '(Stand with him at the gate.)', next: 'arrival' }],
     },
     arrival: {
       speaker: 'Narrator',
-      text: 'Quddús rides in under the dripping branches, young and very still. Mullá Ḥusayn, who has led hundreds across Persia, walks beside the horse and holds the stirrup as he dismounts, as a servant would for his master.',
+      text: 'Quddús rides in out of the dark under the dripping branches, ringed by candles, young and very still. Mullá Ḥusayn, who has led hundreds across Persia, walks behind the horse on foot with the candle-bearers, as a servant would behind his master.',
       choices: [{ text: '(Follow them to the shrine.)', next: 'verse' }],
     },
     verse: {
@@ -113,7 +113,7 @@ export const mullaHusaynLast: DialogueTree = {
     burial: {
       speaker: 'Narrator',
       onEnter: { set: { ch8MullaHusaynFell: true } },
-      text: 'Quddús wraps him in his own shirt and lays him to rest within the shrine he chose for a landing place. The first to believe in Shíráz has given the last of what he had. You remember a lamp, put out at dawn because the sun had made it needless.',
+      text: 'Quddús wraps him in his own shirt and lays him to rest beside the shrine he chose for a landing place, and bids those who carried him tell no one where. The first to believe in Shíráz has given the last of what he had. You remember a lamp, put out at dawn because the sun had made it needless.',
     },
   },
 };

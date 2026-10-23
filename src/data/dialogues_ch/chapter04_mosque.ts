@@ -30,7 +30,7 @@ export const ch4VakilPulpit: DialogueTree = {
     },
     arrive: {
       speaker: 'Narrator',
-      text: 'A stir at the entrance. The Imám-Jumʿih, Shaykh Abú-Turáb, comes in, and with him a young Siyyid in a green turban, under guard. The crowd presses toward Him so hard that men are pushed against the pillars. He walks through them without haste.',
+      text: 'A stir at the entrance. The Imám-Jumʿih, Shaykh Abú-Turáb, has just gone up into the pulpit when a young Siyyid in a green turban comes in with His uncle. The crowd presses toward Him so hard that men are pushed against the pillars. He walks through them without haste.',
       choices: [{ text: '(Rise on your toes to see.)', next: 'steps' }],
     },
     steps: {

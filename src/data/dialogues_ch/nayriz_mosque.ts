@@ -48,7 +48,7 @@ export const vahidSermon: DialogueTree = {
     },
     days: {
       speaker: 'Narrator',
-      text: 'In the days that follow he preaches here every day, and every day more come. In Quṭrih, Zaynu\'l-ʿÁbidín Khán gathers horse and foot, a thousand of them, and comes back to his house in the Bázár quarter. He fortifies its roof.',
+      text: 'In the days that follow he preaches here every day, and every day more come. In Quṭrih, Zaynu\'l-ʿÁbidín Khán gathers horse and foot, a thousand of them, and comes back to the Bázár quarter. He turns a believer out of a house there and fortifies its roof.',
     },
   },
 };

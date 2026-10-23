@@ -142,7 +142,7 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('saidu-l-ulama', 'Saʿídu\'l-ʿUlamá', ['Saʿídu\'l-ʿUlamá'],
     'The leading cleric of Bárfurúsh, the fiercest enemy of Quddús.'),
   person('muhit', 'Mírzá Muḥíṭ', ['Mírzá Muḥíṭ-i-Kirmání', 'Mírzá Muḥíṭ'],
-    'Mírzá Muḥíṭ of Kirmán, a Shaykhí leader whom the Báb challenged at the Kaʿba in 1844 to accept or deny His claim. He gave no answer.'),
+    'Mírzá Muḥíṭ of Kirmán, a Shaykhí leader whom the Báb challenged at the Kaʿba in 1844 to accept or deny His claim. He put his questions, promised his answer at Medina, and broke his pledge.'),
   person('mamaqani', 'Mullá Muḥammad of Mamaqán', ['Mullá Muḥammad of Mamaqán'],
     'A Shaykhí leader of Tabríz, who wrote the Báb\'s death sentence.'),
   person('nizamu-l-ulama', 'Niẓámu\'l-ʿUlamá', ['Niẓámu\'l-ʿUlamá'],

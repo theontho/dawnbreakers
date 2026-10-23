@@ -45,7 +45,7 @@ export const grave: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'Beside the shrine the earth is freshly turned. A small lamp burns at its head, fed with the last of the oil. Someone has set a ring of white river stones around it.',
+      text: 'Beside the shrine the earth has been smoothed flat. Only those who carried him know the place, and they do not look at it.',
       choices: [
         { text: '(Kneel and pray.)', next: 'pray' },
         { text: '(Remember the first dawn in Shíráz.)', next: 'shiraz' },
@@ -108,7 +108,7 @@ export const quddusHunger: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Quddús',
-      text: 'He rests within the shrine now, and I speak with him in the evenings as before. (He is thin; his eyes are not.) We have eaten our horses and our saddles. Share what there is with the youngest, and keep listening at the gate.',
+      text: 'He rests beside the shrine now, and I speak with him in the evenings as before. (He is thin; his eyes are not.) We have eaten our horses and our saddles. Share what there is with the youngest, and keep listening at the gate.',
       choices: [{ text: '"How long can we hold?"', next: 'hold' }],
     },
     hold: {

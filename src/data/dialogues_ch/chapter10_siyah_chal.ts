@@ -275,7 +275,7 @@ export const ch10JailerRelease: DialogueTree = {
     },
     him: {
       speaker: 'The Jailer',
-      text: 'Gone up before you. The man who plotted the madness swore He had no part in it, and the Russian envoy would not let the matter rest. Four months He sat down here. Now He must leave Persia within the month, they say, for Baghdád.',
+      text: 'Gone up before you. The man who plotted the madness swore He had no part in it, and the Russian envoy would not let the matter rest. Four months He sat down here. Now He must leave Persia within the month. He has chosen Baghdád, they say.',
       choices: [{ text: '(Look back along the rows.)', next: 'rows' }],
     },
     rows: {

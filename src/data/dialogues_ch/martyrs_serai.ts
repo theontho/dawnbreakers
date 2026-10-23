@@ -112,7 +112,7 @@ export const martyrsYoungMan: DialogueTree = {
     },
     list: {
       speaker: 'A Young Man of Zarand',
-      text: 'A siyyid of Káshán who sat among us at our gatherings took a list of our names, and where we lodge, to one of the ʿulamá. About fifty names. The Kalántar\'s men took fourteen. I was not in my room that night. I was with my uncle and my brother, who had come up from Zarand.',
+      text: 'A siyyid who sat among us at our gatherings took a list of our names, and where we lodge, to one of the ʿulamá, a man of Káshán. About fifty names. The Kalántar\'s men took fourteen. I was not in my room that night. I was with my uncle and my brother, who had come up from Zarand.',
       choices: [{ text: '"What will you do now?"', next: 'home' }],
     },
     home: {

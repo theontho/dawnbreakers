@@ -1,6 +1,5 @@
-import { css, footprintBox, groundPoint, groundShadow, outlineBox, paintTexture, polygon, rng, shade, type Ctx, type IsoBox } from '../art/canvasKit';
-import { stone } from '../art/materials';
-import { flatTop, LIGHT, walls } from '../art/ornaments';
+import { css, footprintBox, groundPoint, groundShadow, paintTexture, polygon, rng, shade, type Ctx, type IsoBox } from '../art/canvasKit';
+import { LIGHT } from '../art/ornaments';
 import { standard } from '../art/banners';
 import { drawRoundTent } from '../art/roundTent';
 import { paintWatchtower } from '../art/watchtower';
@@ -145,40 +144,32 @@ export const CH08_FORT_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGe
     steam(ctx, 22, 18);
   }),
 
-  // A fresh grave ringed with stones, a plain marker and a small oil lamp.
+  // Mullá Ḥusayn's grave beside the shrine: Quddús had it kept secret, so it is
+  // no more than a patch of fresh earth smoothed flat, with no marker.
   'ch8-grave': (scene, def) => paintTexture(scene, def.texture, 56, 40, ctx => {
-    contactShadow(ctx, 29, 28, 24, 8, 0.2);
-    const mound = ctx.createLinearGradient(14, 16, 40, 34);
-    mound.addColorStop(0, '#8a6a44');
-    mound.addColorStop(0.5, '#6b4a2a');
-    mound.addColorStop(1, '#3f2a18');
-    ctx.fillStyle = mound;
+    contactShadow(ctx, 29, 28, 22, 7, 0.12);
+    const earth = ctx.createLinearGradient(14, 18, 40, 32);
+    earth.addColorStop(0, '#8a6a44');
+    earth.addColorStop(0.6, '#6b4a2a');
+    earth.addColorStop(1, '#4f3620');
+    ctx.fillStyle = earth;
     ctx.beginPath();
-    ctx.ellipse(28, 25, 19, 8.5, -0.42, 0, Math.PI * 2);
+    ctx.ellipse(28, 26, 19, 6.5, -0.42, 0, Math.PI * 2);
     ctx.fill();
+    // Raked smooth: faint parallel strokes, a few crumbs of turned soil.
+    ctx.strokeStyle = 'rgba(60, 40, 20, 0.35)';
+    ctx.lineWidth = 0.8;
+    for (let i = -3; i <= 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(17 + i * 3, 31 + i * 0.6);
+      ctx.lineTo(37 + i * 3, 21 + i * 0.6);
+      ctx.stroke();
+    }
     const rand = rng(77);
-    for (let i = 0; i < 40; i++) {
-      ctx.fillStyle = css(rand() < 0.5 ? 0x9a7a52 : 0x3a2616, 0.6);
-      ctx.fillRect(14 + rand() * 28, 19 + rand() * 12, 1, 1);
+    for (let i = 0; i < 24; i++) {
+      ctx.fillStyle = css(rand() < 0.5 ? 0x9a7a52 : 0x3a2616, 0.5);
+      ctx.fillRect(14 + rand() * 28, 21 + rand() * 9, 1, 1);
     }
-    const marker: IsoBox = { x: 40, y: 18, w: 3, d: 8, h: 12 };
-    walls(ctx, marker, (c, w, h, light) => stone(c, w, h, { base: 0x9a958a, light, seed: 4 }, 4));
-    flatTop(ctx, marker, 0x9a958a);
-    outlineBox(ctx, marker);
-    const tilt = -0.42;
-    for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
-      const ex = Math.cos(a) * 23;
-      const ey = Math.sin(a) * 10;
-      const x = 28 + ex * Math.cos(tilt) - ey * Math.sin(tilt);
-      const y = 25 + ex * Math.sin(tilt) + ey * Math.cos(tilt);
-      boulder(ctx, x, y + 2, 2.6, 2.2, 0xd8d2c0, Math.round(a * 10));
-    }
-    // Clay lamp at the foot of the grave.
-    ctx.fillStyle = css(0x9a5a30);
-    ctx.beginPath();
-    ctx.ellipse(16, 30, 3, 1.4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    flame(ctx, 16, 29, 1.2, 4);
   }),
 
   // The royal army's bank of rammed earth, chest high, stakes pointed at the fort.

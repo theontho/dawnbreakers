@@ -41,7 +41,7 @@ export const mutamidDialogue: DialogueTree = {
     },
     plan: {
       speaker: 'Manúchihr Khán, the Muʿtamid',
-      text: 'They have. Most would not even come and face Him. They signed in their own houses, where no answer could reach them. Now the Sháh orders Him sent to Ṭihrán. Very well. He shall leave by the gate in daylight, with five hundred horsemen, for the whole city to see.',
+      text: 'They have. Most would not even come and face Him. They signed it at a gathering of their own, where no answer could reach them. Now the Sháh orders Him sent to Ṭihrán. Very well. He shall leave by the gate at sunset, with five hundred horsemen, for the whole city to see.',
       choices: [{ text: '"And then?"', next: 'ruse' }],
     },
     ruse: {
@@ -158,7 +158,7 @@ export const seatDialogue: DialogueTree = {
     end: {
       speaker: 'Narrator',
       onEnter: { set: { heardDivines: true } },
-      text: 'Afterwards those who had stayed away wrote that the young Siyyid had been allowed to speak unchallenged, and signed their names to a sentence against Him, each in his own house. The seat holds the shape of no one. You find you cannot sit down near it.',
+      text: 'Afterwards those who had stayed away wrote that the young Siyyid had been allowed to speak unchallenged, and met by themselves to sign and seal a sentence against Him. The seat holds the shape of no one. You find you cannot sit down near it.',
     },
   },
 };

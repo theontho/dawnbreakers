@@ -26,12 +26,12 @@ export const ch6YahyaKhan: DialogueTree = {
     },
     full: {
       speaker: 'Yaḥyá Khán',
-      text: 'Full! Kurds who never prayed twice in a week stand at my gate. Learned men from Khuy. A dervish from India, God help me. I turned some away. They came back. How does one shut a door against the whole of Ádhirbáyján?',
+      text: 'Full! Kurds who never prayed twice in a week stand at my gate. Learned men from Khuy. A dervish from India, God help me. I tried to turn some away. I could not. How does one shut a door against the whole of Ádhirbáyján?',
       choices: [{ text: '"Perhaps one does not."', next: 'leave' }],
     },
     fair: {
       speaker: 'Yaḥyá Khán',
-      text: 'Fair. (He weighs the word.) My sister sits beside the Sháh. I was chosen because blood is meant to be harder than snow. But I have watched Him for weeks now, and I am not as hard as they hoped.',
+      text: 'Fair. (He weighs the word.) My sister sits beside the Sháh. I was chosen because blood is meant to be harder than snow. But I watched Him from the first day, and I was never as hard as they hoped.',
       choices: [{ text: '"Few are, near Him."', next: 'leave' }],
     },
     leave: {
@@ -89,7 +89,7 @@ export const ch6Dervish: DialogueTree = {
     },
     why: {
       speaker: 'A Dervish from India',
-      text: 'Something called me westward. In my country we say a true call does not explain itself; it only pulls. I did not know a name. I knew a direction. At the end of the direction was this mountain.',
+      text: 'Something called me westward. In my country we say a true call does not explain itself; it only pulls. In a dream He bade me walk to Ádhirbáyján. I did not know His name. I knew the name of this mountain.',
       choices: [{ text: '"And now that you are here?"', next: 'named' }],
     },
     named: {

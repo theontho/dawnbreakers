@@ -77,7 +77,7 @@ export const hadi: DialogueTree = {
     wait: {
       speaker: 'Narrator',
       onEnter: { set: { qzHadiReady: true } },
-      text: 'You wait under the orange trees. The town sleeps; a dog barks once and gives it up. Then two women in beggars\' wraps come through the postern, one leading and one following, and walk without hurrying to the horses.',
+      text: 'You wait under the orchard trees. The town sleeps; a dog barks once and gives it up. Then two women in beggars\' wraps come through the postern, one leading and one following, and walk without hurrying to the horses.',
     },
   },
 };

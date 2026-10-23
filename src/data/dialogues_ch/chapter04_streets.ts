@@ -267,11 +267,11 @@ export const ch4Khal: DialogueTree = {
     },
     say: {
       speaker: 'Ḥájí Mírzá Siyyid ʿAlí',
-      text: 'No one knows. His enemies hope He will recant and be laughed at. Some friends hope He will proclaim everything and be killed for it. I hope only to bring Him home. Go east along the street to the Vakíl Mosque, and be my eyes there.',
+      text: 'No one knows. His enemies hope He will recant and be laughed at. Some friends hope He will proclaim everything and be killed for it. I hope only to bring Him home. I will walk in beside Him. Go east along the street to the Vakíl Mosque, and be a second pair of eyes.',
     },
     word: {
       speaker: 'Ḥájí Mírzá Siyyid ʿAlí',
-      text: 'I am a merchant. All my life my word was the only coin I truly owned. When Quddús brought me His letter, I read it standing in my shop and sat down without knowing I had sat. I am glad to spend that coin now. Go east to the Vakíl Mosque, and be my eyes there.',
+      text: 'I am a merchant. All my life my word was the only coin I truly owned. When Quddús brought me His letter, I read it standing in my shop and sat down without knowing I had sat. I am glad to spend that coin now. I will walk in beside Him. Go east to the Vakíl Mosque, and be a second pair of eyes.',
     },
   },
 };

@@ -80,14 +80,6 @@ mentioned in passing:
 
 ## Art and polish
 
-- The old plane tree (`plane-tree-old`, 24 m) reads like a dense dome; give
-  it a lower fork and visible limbs.
-- Qazvín's mosque faces the tall town wall across a two-cell walk, so its
-  portal is mostly hidden; a mosque variant whose front faces the other way
-  would let it open onto the lane.
-- Orange trees remain in Zanján, Qazvín's lane and the Tabríz court, where
-  the climate is wrong, because dialogue names them; swapping them means
-  rewording lines that are already translated.
 - The low `writing-desk` table remains in four camp and outdoor scenes
   (Badasht camp, Chihríq, Qazvín, the Nayríz fort); the floor writing board
   (`floor-writing-board`) may suit them better.
@@ -96,11 +88,8 @@ mentioned in passing:
 - City's road north loses two of its four exit cells behind the wall and
   house on its east side (a smoke note, not a failure). Any tall thing just
   south-east of a north-edge exit hides it, so clearing it means reshaping
-  the north end of the city, not moving one piece.
-- Two more exits lose a minority of their cells (smoke notes): NurLane's
-  way back to the madrasa (2 of 5, behind the street house at 3,15) and the
-  Mu'tamid's palace's river road west (1 of 3, a cypress, a lamp and the
-  wall's corner).
+  the north end of the city, not moving one piece. A gateway over the road
+  (a sābāṭ, as in Ṭihrán's street) would also count it as marked.
 - Extend the visibility check to gameplay helpers (witness spots, door
   highlights) where they lack a sprite.
 
@@ -111,7 +100,7 @@ mentioned in passing:
   fine but worth knowing if the game ever cites them: the Súrih of the
   Inevitable at Badasht and the declaration at the Kaʿba (God Passes By),
   the condition on the Báb's release from Shíráz (A Traveller's Narrative),
-  and the gold buttons at the Síyáh-Chál. Dialogue lines and task text were
-  not part of that pass.
-- `src/scenes/MapScene.ts` is near the 500-line limit again; split further
-  if it grows.
+  and the gold buttons at the Síyáh-Chál. The dialogue and glossary have had
+  the same pass, except the Núr chapter, the first two chapters' rumours and
+  travellers, and the place and word glossaries (only skimmed; Ṭáhirih's
+  "two months" in Hamadán is unconfirmed).
