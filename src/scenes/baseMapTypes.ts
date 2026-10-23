@@ -83,4 +83,6 @@ export interface MapExit {
 export interface SceneSpawnData {
   spawnX?: number;
   spawnY?: number;
+  /** Play the chapter's opening narration even if this save has seen it (starting from chapter select). */
+  replayOpening?: boolean;
 }

@@ -54,12 +54,14 @@ export function openBaseMapChapterEnd(
 
 /**
  * Plays a chapter's opening narration once, on the first frame after the
- * player first arrives in its start scene (see `Chapter.opening`).
+ * player first arrives in its start scene (see `Chapter.opening`), and again
+ * whenever the chapter is started over from chapter select (`replay`).
  */
 export function scheduleChapterOpening(
   scene: Phaser.Scene,
   chapter: Chapter | undefined,
   launch: (tree: DialogueTree) => void,
+  replay = false,
 ): void {
   if (!chapter?.opening || scene.scene.key !== chapter.startScene) return;
   const tree = dialogues[chapter.opening];
@@ -68,7 +70,7 @@ export function scheduleChapterOpening(
     return;
   }
   const seen = `opened_${chapter.id}`;
-  if (getFlags()[seen]) return;
+  if (getFlags()[seen] && !replay) return;
   scene.events.once(Phaser.Scenes.Events.UPDATE, () => {
     if (scene.scene.isActive('Dialogue')) return;
     applyEffect({ set: { [seen]: true } });

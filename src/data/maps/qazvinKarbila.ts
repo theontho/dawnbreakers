@@ -1,5 +1,6 @@
 import type { FlagState } from '../../dialogue/types';
 import type { DecorSpec, MapAmbience, MapDefinition } from './types';
+import { HAMADAN_ROAD } from './qazvinLane';
 import { KARBILA_NEEDED, karbilaRounds } from './qazvinPhases';
 
 /**
@@ -93,7 +94,7 @@ export const qazvinKarbilaMap: MapDefinition = {
   ],
   exits: [
     { fromX: DOOR_X, fromY: H - 1, dx: 0, dy: 1,
-      targetScene: 'QazvinLane', targetSpawnX: 37, targetSpawnY: 15,
+      targetScene: 'QazvinLane', targetSpawnX: HAMADAN_ROAD.x, targetSpawnY: HAMADAN_ROAD.y,
       label: '↓ The long road to Qazvín',
       requires: left,
       lockedLabel: 'Outside, Karbilá mourns in black' },

@@ -75,8 +75,8 @@ const CAMP: DecorSpec[] = [
   ...blocking('lamp', [[30, 19], [33, 6], [27, 20], [32, 27]]),
   ...loose('rug', [[30, 14], [28, 16], [30, 16], [36, 20], [26, 27]]),
   ...blocking('ch7-rosebush', [[33, 3], [28, 7], [34, 14]]),
-  ...blocking('plane-tree', [[26, 2], [37, 3], [24, 30]]),
-  ...blocking('cypress', [[29, 1], [34, 1]]),
+  ...blocking('plane-tree', [[26, 2], [39, 1], [24, 30]]),
+  ...blocking('cypress', [[29, 1], [35, 2]]),
   ...blocking('apricot-tree', [[38, 16], [38, 30], [36, 33], [27, 33]]),
   ...blocking('mulberry', [[23, 1]]),
 ];

@@ -50,7 +50,9 @@ export function renderBaseMapWorld(
     const frontY = building.gridY + building.h - 1;
     const front = gridToIsoScreen(state.originX, state.originY, frontX, frontY);
     const whole = anchorAtFoot(scene.add.image(front.sx, front.sy + TILE_H / 2, building.texture, '__BASE'));
-    occludableSprites.push(...sliceBuilding(scene, whole, building, { x: state.originX, y: state.originY }));
+    const slices = sliceBuilding(scene, whole, building, { x: state.originX, y: state.originY });
+    slices.forEach(slice => slice.setName(placedName(building)));
+    occludableSprites.push(...slices);
   }
 
   for (const item of state.decor) {
@@ -59,11 +61,17 @@ export function renderBaseMapWorld(
     const sprite = anchorAtFoot(scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture))
       .setDepth((item.sortAt ? gridToIsoScreen(state.originX, state.originY, item.sortAt.x, item.sortAt.y).sy : pos.sy + nudge.y) + 1);
     if (item.swing) swingFromTop(scene, sprite, item.swing);
+    sprite.setName(placedName(item));
     occludableSprites.push(sprite);
     if (item.present) conditionalDecor.push({ item, sprite });
   }
 
   return { occludableSprites, conditionalDecor };
+}
+
+/** What a world sprite shows and where it stands, e.g. `plane-tree 26,2`, for checks and debugging. */
+function placedName(item: { texture: string; gridX: number; gridY: number }): string {
+  return `${item.texture.split('~')[0]} ${item.gridX},${item.gridY}`;
 }
 
 /** Hangs a sprite from its footprint's front corner: the bottom edge, less any foot margin painted below it. */

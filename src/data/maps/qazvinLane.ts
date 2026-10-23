@@ -10,8 +10,8 @@ import { wallRun } from './wallRuns';
  * south. West along the lane the bakers' row; south of it the old town
  * wall, with a small postern that is barred by day, and beyond it the
  * orchards outside the walls, where on the night of the rescue Muḥammad-
- * Hádí waits with three horses. The player comes in from the east, off the
- * Hamadán road.
+ * Hádí waits with three horses. The player comes in at the west end of the
+ * lane, off the Hamadán road, which reaches Qazvín from the south-west.
  *
  * Districts (x runs east, y runs south):
  * - The houses north of the lane, y 5..12; Mullá Ṣáliḥ's gateway at
@@ -26,6 +26,8 @@ import { wallRun } from './wallRuns';
 const W = 40;
 const H = 34;
 export const SALIH_GATE = { x: 22, y: 12 } as const;
+/** Where the Hamadán road comes into the lane, at its west end. */
+export const HAMADAN_ROAD = { x: 1, y: 15 } as const;
 const WALL_Y = 27;
 const POSTERN_X = 7;
 
@@ -89,7 +91,7 @@ export const qazvinLaneMap: MapDefinition = {
   title: 'Qazvín: the Lane of Mullá Ṣáliḥ',
   width: W,
   height: H,
-  spawn: { x: 37, y: 15 },
+  spawn: HAMADAN_ROAD,
   build: ({ paintRect }) => {
     paintRect(0, 0, W, H, 'sand');
     paintRect(0, 0, W, 6, 'grass');

@@ -169,6 +169,7 @@ export class ChapterSelectScene extends Phaser.Scene {
       this.scene.start(chapter.startScene, {
         spawnX: chapter.startSpawnX,
         spawnY: chapter.startSpawnY,
+        replayOpening: true,
       });
     });
   }

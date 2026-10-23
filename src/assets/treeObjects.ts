@@ -9,19 +9,25 @@ import type { MapObjectDefinition } from './mapAssetTypes';
  * `art/treeSpecies.ts`, `art/pollard.ts`; see docs/true-scale.md.
  */
 
-const SPECIES_LABEL: Record<ForestSpecies, string> = { oak: 'Oak', beech: 'Beech', ironwood: 'Ironwood', alder: 'Alder' };
+// Labels are written out whole (not built from "Young " + "Oak") so the
+// localization lint finds each one and asks for its translations.
+const FOREST_LABEL: Record<ForestSpecies, Record<TreeAge, { label: string }>> = {
+  oak: { young: { label: 'Young Oak' }, mature: { label: 'Oak' }, old: { label: 'Old Oak' } },
+  beech: { young: { label: 'Young Beech' }, mature: { label: 'Beech' }, old: { label: 'Old Beech' } },
+  ironwood: { young: { label: 'Young Ironwood' }, mature: { label: 'Ironwood' }, old: { label: 'Old Ironwood' } },
+  alder: { young: { label: 'Young Alder' }, mature: { label: 'Alder' }, old: { label: 'Old Alder' } },
+};
 const SPECIES_COLOR: Record<ForestSpecies, number> = { oak: 0x274322, beech: 0x8a6a24, ironwood: 0x9a4a24, alder: 0x6f8a3c };
-const AGE_LABEL: Record<TreeAge, string> = { young: 'Young ', mature: '', old: 'Old ' };
 
-const tree = (id: string, label: string, color: number): MapObjectDefinition =>
+const tree = ({ id, label, color }: { id: string; label: string; color: number }): MapObjectDefinition =>
   ({ id, label, texture: id, kind: 'prop', category: 'plants', color, blocks: true });
 
 export const TREE_OBJECTS: MapObjectDefinition[] = [
   ...(Object.keys(FOREST_SPECIES) as ForestSpecies[]).flatMap(species => TREE_AGES.map(age =>
-    tree(forestTreeId(species, age), `${AGE_LABEL[age]}${SPECIES_LABEL[species]}`, SPECIES_COLOR[species]))),
-  tree('walnut', 'Walnut', 0x6a7a2e),
-  tree('mulberry', 'Mulberry', 0x5f8a34),
-  tree('fruit-tree', 'Fruit Tree', 0x4c7a34),
-  tree('apricot-tree', 'Apricot Tree', 0x4c7c34),
-  tree('pollard', 'Pollard', 0x7a8a3a),
+    tree({ id: forestTreeId(species, age), label: FOREST_LABEL[species][age].label, color: SPECIES_COLOR[species] }))),
+  tree({ id: 'walnut', label: 'Walnut', color: 0x6a7a2e }),
+  tree({ id: 'mulberry', label: 'Mulberry', color: 0x5f8a34 }),
+  tree({ id: 'fruit-tree', label: 'Fruit Tree', color: 0x4c7a34 }),
+  tree({ id: 'apricot-tree', label: 'Apricot Tree', color: 0x4c7c34 }),
+  tree({ id: 'pollard', label: 'Pollard', color: 0x7a8a3a }),
 ];

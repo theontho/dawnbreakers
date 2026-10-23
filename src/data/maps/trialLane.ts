@@ -14,7 +14,7 @@ import { wallRun } from './wallRuns';
  * - The Shaykhu'l-Islám's house: x 12..19, y 0..6, its own street front,
  *   the gateway at (17, 6); garden walls run back from its corners at x 9
  *   and x 23. A paved step before the gate, y 7..9.
- * - Neighbouring houses north (x 1..6, x 25..29) and south (y 15..19),
+ * - Neighbouring houses north (x 1..6, x 25..29) and south (y 15..20),
  *   a garden wall between them on y = 16.
  */
 
@@ -29,7 +29,8 @@ const buildings: BuildingSpec[] = [
   { gridX: 1, gridY: 3, w: 6, h: 5, texture: 'town-house' },
   { gridX: 25, gridY: 4, w: 5, h: 4, texture: 'town-house-small' },
   // South of the lane the houses stand back, leaving the view of the door open.
-  { gridX: 1, gridY: 15, w: 6, h: 5, texture: 'town-house' },
+  // The west one a row further back still, so its roof clears the lane's way out.
+  { gridX: 1, gridY: 16, w: 6, h: 5, texture: 'town-house' },
   { gridX: 24, gridY: 15, w: 5, h: 4, texture: 'town-house-small' },
 ];
 

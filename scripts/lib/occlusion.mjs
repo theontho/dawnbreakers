@@ -107,10 +107,8 @@ export function measureOcclusion(key) {
 
   // Name each building and prop by its texture and cell, to find it in the map file.
   const where = new Map();
-  [...scene.buildings, ...scene.decor].forEach((item, i) => {
-    const o = scene.occludableSprites[i];
-    if (o) where.set(o, `${item.texture.split('~')[0]} ${item.gridX},${item.gridY}`);
-  });
+  // A building is drawn as several slices; each world sprite is named for what it shows.
+  for (const o of scene.occludableSprites) if (o.name) where.set(o, o.name);
 
   // Which sprite belongs to which conditional person or prop.
   const conditional = new Map();
