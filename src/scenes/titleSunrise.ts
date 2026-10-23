@@ -4,6 +4,7 @@ import { addTitleCity, addTitleCloud, type TitleCity } from './titleCity';
 import { calculateTitleDaylight } from './titleDaylight';
 import { SHIRAZ_EAST_STAR_CHART } from './titleStarChart';
 import type { SunriseClock } from './titleSunriseClock';
+import { glowTitleSun } from './titleSunGlow';
 import { drawTitleSunRays } from './titleSunRays';
 
 /**
@@ -225,6 +226,7 @@ export function playSunrise(
 
   clock.onChange(render);
   scene.events.on(Phaser.Scenes.Events.UPDATE, tick);
+  glowTitleSun(scene, sunrise);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, tick));
   render();
 }

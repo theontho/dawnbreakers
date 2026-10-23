@@ -49,6 +49,13 @@ export class Party {
     });
   }
 
+  /** The screen span the party walks in, from the road up past a rider's head. */
+  bounds(): { left: number; right: number; top: number } {
+    const f = this.ground.figure;
+    const xs = this.slots.map(slot => slot.x);
+    return { left: Math.min(...xs) - f, right: Math.max(...xs) + f, top: this.ground.roadY - f * 1.8 };
+  }
+
   /** `walked` is the distance covered in pixels at the road. */
   draw(walked: number, light: SkyLight, realMs: number): void {
     const g = this.graphics;

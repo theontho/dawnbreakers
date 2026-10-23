@@ -1766,6 +1766,8 @@ export const text: TranslationCatalog = {
   "Dayyán": "دیّان",
   "Debug": "اشکال‌زدایی",
   "Debug ✓": "اشکال‌زدایی ✓",
+  "HDR glow": "درخشش HDR",
+  "HDR glow ✓": "درخشش HDR ✓",
   "Decree Board": "تختهٔ فرمان",
   "Did he? (He is silent a long while.) Then the same door has been opened twice by the same unspoken question. I thought myself the first to be answered so. I find I am glad to be the second.": "چنین کرد؟ (دیرزمانی خاموش می‌ماند.) پس همان در دو بار با همان پرسش ناگفته گشوده شده است. گمان می‌کردم نخستین کسی هستم که چنین پاسخ گرفته. می‌بینم از دومین بودن شادمانم.",
   "Disturbed, Not Persuaded": "پریشان، نه قانع",

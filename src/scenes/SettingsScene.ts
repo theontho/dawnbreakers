@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { addAudioControls } from '../ui/audioControls';
 import { isDebugOverlayVisible, setDebugOverlayVisible } from '../ui/debugOverlay';
+import { hdrGlowSupported, isHdrGlowEnabled, setHdrGlowEnabled } from '../hdr/hdrSupport';
 import { resetStory } from '../dialogue/progress';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { addLanguageDropdown } from '../ui/languageDropdown';
@@ -128,6 +129,7 @@ export class SettingsScene extends Phaser.Scene {
     this.makeButton(buttonX, y, buttonW, t('Restart'), () => this.goToTitle(true), '#d7a15c');
 
     this.addDebugToggle(panelX + panelW - 14, panelY + 14, size);
+    this.addHdrToggle(panelX + 14, panelY + 14, size);
 
     this.input.keyboard?.once('keydown-ESC', () => this.close());
   }
@@ -144,6 +146,27 @@ export class SettingsScene extends Phaser.Scene {
     toggle.on('pointerdown', () => {
       setDebugOverlayVisible(!isDebugOverlayVisible());
       toggle.setText(label());
+    });
+  }
+
+  /**
+   * Corner toggle for the sun and moon shining past white, offered only on
+   * a screen and browser that can show it.
+   */
+  private addHdrToggle(left: number, top: number, size: { width: number; height: number }): void {
+    void hdrGlowSupported().then(supported => {
+      if (!supported || !this.scene.isActive()) return;
+      const label = (): string => (isHdrGlowEnabled() ? t('HDR glow ✓') : t('HDR glow'));
+      const toggle = this.add.text(left, top, label(), localizedStyle({
+        fontFamily: 'Georgia, serif',
+        fontSize: responsiveFont(12, size, 11),
+        color: '#9c8458',
+        padding: { x: 6, y: 6 },
+      })).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+      toggle.on('pointerdown', () => {
+        setHdrGlowEnabled(!isHdrGlowEnabled());
+        toggle.setText(label());
+      });
     });
   }
 

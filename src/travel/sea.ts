@@ -28,6 +28,13 @@ export class Sea {
     this.paintShip(light, realMs);
   }
 
+  /** Screen y of the top of the sea, or of the ship's sails, at column x. */
+  skylineAt(x: number): number {
+    const scale = this.ground.figure * 2.1;
+    const overShip = Math.abs(x - this.camera.width * 0.5) < scale * 0.8;
+    return overShip ? Math.min(this.ground.horizonY, this.ground.roadY - scale * 1.25) : this.ground.horizonY;
+  }
+
   private paintShip(light: SkyLight, realMs: number): void {
     const g = this.ship;
     g.clear();

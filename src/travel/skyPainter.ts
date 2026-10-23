@@ -6,10 +6,17 @@ import type { SkyCamera, ScreenPoint } from './skyCamera';
 import { starAlpha, starBrightness, starLimit, type SkyLight } from './skyLight';
 import type { StarField } from './travelStars';
 import { ensureGlowTexture, GLOW_TEXTURE } from './glowTexture';
-import { paintMoon } from './moonPainter';
+import { paintMoon, type MoonDisc } from './moonPainter';
 
 /** Radians of hour angle the sky turns through per millisecond of sky time. */
 export const SIDEREAL_RADIANS_PER_MS = (2 * Math.PI * 1.00273790935) / 86400000;
+
+/** The sun as last drawn: centre and radius in screen pixels. */
+export interface SunDisc {
+  x: number;
+  y: number;
+  radius: number;
+}
 
 export type TrailMode = 'off' | 'tail' | 'exposure';
 export const TRAIL_MODES: readonly TrailMode[] = ['off', 'tail', 'exposure'];
@@ -34,6 +41,8 @@ export interface SkyFrame {
   realMs: number;
 }
 
+/** The sun's disc, a warm white. */
+export const SUN_COLOR = 0xfff6dc;
 const TAIL_MAGNITUDE = 4.2;
 const MAX_TAIL_SWEEP = 1.6;
 const EXPOSURE_MAGNITUDE = 4.6;
@@ -60,6 +69,9 @@ export class SkyPainter {
   private previousX = new Float32Array(0);
   private previousY = new Float32Array(0);
   private hasPrevious = new Uint8Array(0);
+  /** The discs of the last frame, for the HDR glow; undefined when below the horizon or not drawn. */
+  moonDisc: MoonDisc | undefined;
+  sunDisc: SunDisc | undefined;
 
   constructor(scene: Phaser.Scene, camera: SkyCamera) {
     this.camera = camera;
@@ -95,8 +107,8 @@ export class SkyPainter {
     if (frame.trails === 'tail') this.paintTails(frame);
     this.paintStars(frame);
     this.bodies.clear();
-    paintMoon(this.bodies, this.moonHalo, this.camera, frame.bodies, frame.light, this.sizeScale);
-    this.paintSun(frame);
+    this.moonDisc = paintMoon(this.bodies, this.moonHalo, this.camera, frame.bodies, frame.light, this.sizeScale);
+    this.sunDisc = this.paintSun(frame);
     // A disc that leaps across the sky between frames would strobe, so it fades out instead.
     this.bodies.setAlpha(1 - frame.timeBlur);
     this.moonHalo.setAlpha(this.moonHalo.alpha * (1 - frame.timeBlur));
@@ -215,16 +227,17 @@ export class SkyPainter {
     if (drew) this.exposure.draw(brush);
   }
 
-  private paintSun(frame: SkyFrame): void {
+  private paintSun(frame: SkyFrame): SunDisc | undefined {
     const { light, bodies } = frame;
-    if (light.sunAltitude < -1.5) return;
+    if (light.sunAltitude < -1.5) return undefined;
     const p = this.point;
-    if (!this.camera.project(bodies.sun.x, bodies.sun.y, bodies.sun.z, p)) return;
+    if (!this.camera.project(bodies.sun.x, bodies.sun.y, bodies.sun.z, p)) return undefined;
     const radius = 14 * this.sizeScale;
     this.bodies.fillStyle(0xfff0c0, 0.25);
     this.bodies.fillCircle(p.x, p.y, radius * 2.2);
-    this.bodies.fillStyle(0xfff6dc, 1);
+    this.bodies.fillStyle(SUN_COLOR, 1);
     this.bodies.fillCircle(p.x, p.y, radius);
+    return { x: p.x, y: p.y, radius };
   }
 
   private lastAltitude = 0;

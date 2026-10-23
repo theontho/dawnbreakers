@@ -1764,6 +1764,8 @@ export const text: TranslationCatalog = {
   "Dayyán": "达扬",
   "Debug": "调试",
   "Debug ✓": "调试 ✓",
+  "HDR glow": "HDR 光辉",
+  "HDR glow ✓": "HDR 光辉 ✓",
   "Decree Board": "告示板",
   "Did he? (He is silent a long while.) Then the same door has been opened twice by the same unspoken question. I thought myself the first to be answered so. I find I am glad to be the second.": "他这么做了？（他沉默了很久。）那么，同一扇门已被同一个未曾说出的问题打开了两次。我原以为自己是第一个得到这样回答的人。我发现自己乐于做第二个。",
   "Disturbed, Not Persuaded": "心有所动，却未被说服",
