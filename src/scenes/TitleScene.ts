@@ -4,12 +4,14 @@ import { loadBookmark, resetStory } from '../dialogue/progress';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { logGameEvent } from '../logging/gameLogger';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
-import { activateTitleTextButton, addFastSunriseButton, addTitleLanguageButton } from './titleControls';
+import { activateTitleTextButton, addTitleLanguageButton } from './titleControls';
 import { playTitleBookOpening } from './titleBookOpening';
 import { addTitleCity, addTitleCloud, type TitleCity } from './titleCity';
 import { calculateTitleDaylight } from './titleDaylight';
 import { SHIRAZ_EAST_STAR_CHART } from './titleStarChart';
 import { drawTitleSunRays } from './titleSunRays';
+import { SunriseClock } from './titleSunriseClock';
+import { addSunriseTransport } from './titleTransport';
 
 type SunriseBackground = {
   width: number;
@@ -32,7 +34,7 @@ type SunriseBackground = {
 };
 
 const normalSunriseDurationMs = 210000;
-const acceleratedSunriseDurationMs = 10000;
+const cloudDriftMs = 160000;
 const fixedSunPeakingElapsedMs = 23675;
 const sunTargetYMultiplier = -1.45;
 
@@ -131,10 +133,9 @@ export class TitleScene extends Phaser.Scene {
         height,
         content: titleLayer,
         onComplete: () => {
-          let showRestartOpening = () => {};
-          const speedUpSunrise = this.startSunriseAnimation(sunrise, height, () => showRestartOpening());
+          const clock = this.startSunriseAnimation(sunrise, height);
           addTitleLanguageButton(this, size, () => this.scene.restart());
-          showRestartOpening = addFastSunriseButton(this, size, speedUpSunrise);
+          addSunriseTransport(this, size, clock);
           activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
           activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
           activateTitleTextButton(this, skyRewind, '#c9b07a', '#fff1c0', () => {
@@ -346,14 +347,16 @@ export class TitleScene extends Phaser.Scene {
     return { layer: sunrise, disk, effects: [backEffects], centerX: sunX, centerY: sunY, radius: sunRadius };
   }
 
-  private startSunriseAnimation(sunrise: SunriseBackground, height: number, onComplete: () => void): () => void {
-    const duration = normalSunriseDurationMs;
-    const acceleratedDuration = acceleratedSunriseDurationMs;
+  /**
+   * The sunrise is a pure function of the clock's position, so the transport
+   * can play, pause, scrub and change speed without the scene keeping any
+   * other timeline of its own.
+   */
+  private startSunriseAnimation(sunrise: SunriseBackground, height: number): SunriseClock {
+    const clock = new SunriseClock(normalSunriseDurationMs);
     const sunTargetY = height * sunTargetYMultiplier;
     const sunStartedAtMs = performance.now();
-    const normalSunPeakingMs = calculateSunPeakingElapsedMs(sunrise, sunTargetY, duration);
-    const normalTitlePeakingMs = sunStartedAtMs - this.titleStartedAtMs + normalSunPeakingMs;
-    let completed = false;
+    const normalSunPeakingMs = calculateSunPeakingElapsedMs(sunrise, sunTargetY, clock.durationMs);
     let loggedSunPeaking = false;
     const logSunPeaking = () => {
       if (loggedSunPeaking) return;
@@ -361,60 +364,30 @@ export class TitleScene extends Phaser.Scene {
       loggedSunPeaking = true;
       const now = performance.now();
       logGameEvent('sun peaking', {
-        sunriseElapsedMs: Math.round(now - sunStartedAtMs),
+        sunriseElapsedMs: Math.round(clock.position),
+        realSunriseElapsedMs: Math.round(now - sunStartedAtMs),
         titleElapsedMs: Math.round(now - this.titleStartedAtMs),
         normalSunriseElapsedMs: Math.round(normalSunPeakingMs),
-        normalTitleElapsedMs: Math.round(normalTitlePeakingMs),
         fixedSunriseElapsedMs: fixedSunPeakingElapsedMs,
       });
     };
-    const updateLight = () => {
+    const render = () => {
+      sunrise.sun.y = sunTargetY * sineInOut(clock.progress);
+      sunrise.dayClouds.x = cloudDriftX(sunrise.cloudDrift, clock.position);
       this.applySunriseLighting(sunrise);
 
       if (isSunPeakingOverHorizon(sunrise)) {
         logSunPeaking();
       }
     };
-    const completeSunrise = () => {
-      if (completed) return;
+    const tick = (_time: number, deltaMs: number) => clock.tick(deltaMs);
 
-      completed = true;
-      updateLight();
-      onComplete();
-    };
-    updateLight();
+    clock.onChange(render);
+    this.events.on(Phaser.Scenes.Events.UPDATE, tick);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.UPDATE, tick));
+    render();
 
-    const activeTweens = [
-      this.tweens.add({
-        targets: sunrise.sun,
-        y: sunTargetY,
-        duration,
-        ease: 'Sine.easeInOut',
-        onUpdate: updateLight,
-        onComplete: completeSunrise,
-      }),
-    ];
-    this.tweens.add({
-      targets: sunrise.dayClouds,
-      x: sunrise.cloudDrift.toX,
-      duration: 160000,
-      ease: 'Sine.easeInOut',
-      repeat: -1,
-    });
-
-    return () => {
-      if (completed) return;
-
-      activeTweens.forEach((tween) => tween.stop());
-      this.tweens.add({
-        targets: sunrise.sun,
-        y: sunTargetY,
-        duration: acceleratedDuration,
-        ease: 'Sine.easeInOut',
-        onUpdate: updateLight,
-        onComplete: completeSunrise,
-      });
-    };
+    return clock;
   }
 
   private applySunriseLighting(sunrise: SunriseBackground): void {
@@ -509,6 +482,18 @@ export class TitleScene extends Phaser.Scene {
   }
 }
 
+/** Phaser's `Sine.easeInOut`, which the sun's climb has always followed. */
+function sineInOut(progress: number): number {
+  return (1 - Math.cos(Phaser.Math.Clamp(progress, 0, 1) * Math.PI)) / 2;
+}
+
+/** The clouds drift across and back, easing at each turn. */
+function cloudDriftX(drift: { fromX: number; toX: number }, positionMs: number): number {
+  const phase = (positionMs / cloudDriftMs) % 2;
+  const leg = phase <= 1 ? phase : 2 - phase;
+  return drift.fromX + (drift.toX - drift.fromX) * sineInOut(leg);
+}
+
 function calculateInitialSunY(
   horizonY: number,
   sunRadius: number,
@@ -516,9 +501,7 @@ function calculateInitialSunY(
   fixedPeakingElapsedMs: number,
   durationMs: number,
 ): number {
-  const linearProgress = Phaser.Math.Clamp(fixedPeakingElapsedMs / durationMs, 0, 1);
-  const easedProgress = (1 - Math.cos(linearProgress * Math.PI)) / 2;
-  const peakingTweenY = sunTargetY * easedProgress;
+  const peakingTweenY = sunTargetY * sineInOut(fixedPeakingElapsedMs / durationMs);
 
   return horizonY + sunRadius - peakingTweenY;
 }
