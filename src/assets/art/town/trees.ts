@@ -96,6 +96,12 @@ export interface PlaneStyle {
   trunk: number;
   leaf: number;
   seed: number;
+  /**
+   * An old tree: the trunk forks low into great limbs that each carry their
+   * own mass of leaves, with sky and limbs showing between them, instead of
+   * one dome.
+   */
+  old?: boolean;
 }
 
 /** The chenar: a massive pale trunk forking into great limbs under a broad dome of leaves. */
@@ -107,6 +113,10 @@ export function paintPlaneTree(scene: Phaser.Scene, key: string, s: PlaneStyle):
     const ground = h - FOOT;
     const bark = 0x948a70;
     ellipseShadow(ctx, cx + s.spread * 0.2, ground + 2, s.spread * 0.85, s.spread * 0.32, 0.3);
+    if (s.old) {
+      paintOldPlane(ctx, cx, ground, s, bark);
+      return;
+    }
     // Root flare and trunk.
     const fork = ground - s.height * 0.3;
     ctx.fillStyle = css(shade(bark, 0.8));
@@ -123,6 +133,51 @@ export function paintPlaneTree(scene: Phaser.Scene, key: string, s: PlaneStyle):
     }
     crown(ctx, cx, crownY, s.spread, s.height * 0.36, { leaf: s.leaf, seed: s.seed });
   });
+}
+
+/**
+ * An old chenar: a short trunk 3 m through, a fork at a fifth of its height,
+ * and great limbs leaning out to four separate masses of leaf. The two high
+ * masses are drawn first, then the limbs over them, then the two low side
+ * masses, so the limbs show in the gap between the low masses and beneath
+ * the high ones.
+ */
+function paintOldPlane(ctx: Ctx, cx: number, ground: number, s: PlaneStyle, bark: number): void {
+  const H = s.height;
+  const rand = rng(s.seed + 5);
+  const jitter = (n: number) => (rand() - 0.5) * n;
+  const fork = ground - H * 0.2;
+  ctx.fillStyle = css(shade(bark, 0.8));
+  ctx.beginPath();
+  ctx.ellipse(cx, ground, s.trunk * 0.7, s.trunk * 0.24, 0, 0, Math.PI * 2);
+  ctx.fill();
+  limb(ctx, cx, ground + 2, cx + 3, fork, s.trunk * 1.05, s.trunk * 0.8, bark, -3);
+  planeBark(ctx, cx + 1, fork, s.trunk * 0.85, ground, s.seed);
+  const lobes = [
+    { t: -0.22, y: 0.76, rx: 0.44, ry: 0.19, high: true },
+    { t: 0.28, y: 0.72, rx: 0.4, ry: 0.18, high: true },
+    { t: -0.56, y: 0.52, rx: 0.4, ry: 0.17, high: false },
+    { t: 0.56, y: 0.55, rx: 0.38, ry: 0.16, high: false },
+  ].map((l, i) => ({
+    ...l,
+    x: cx + (l.t + jitter(0.08)) * s.spread,
+    cy: ground - (l.y + jitter(0.03)) * H,
+    seed: s.seed + i * 13,
+  }));
+  const leafy = (l: typeof lobes[number]) =>
+    crown(ctx, l.x, l.cy, l.rx * s.spread, l.ry * H, { leaf: s.leaf, seed: l.seed });
+  lobes.filter(l => l.high).forEach(leafy);
+  for (const l of lobes) {
+    // Each great limb leaves the fork, bows outward, and ends inside its mass of leaf.
+    const endY = l.cy + l.ry * H * (l.high ? 0.35 : 0.2);
+    // Pulled in at the middle, so the limbs rise steeply and then lean out, as a vase.
+    limb(ctx, cx + (l.x - cx) * 0.08, fork + 6, l.x, endY, s.trunk * 0.5, s.trunk * 0.14, bark, -(l.x - cx) * 0.16);
+    // A lesser branch off it, tapering away into the leaves toward the mass's outer edge.
+    const midX = cx + (l.x - cx) * 0.6;
+    const midY = fork + (endY - fork) * 0.6;
+    limb(ctx, midX, midY, l.x + (l.x - cx) * 0.35, l.cy + l.ry * H * 0.25, s.trunk * 0.08, 1.5, bark, -(l.x - cx) * 0.06);
+  }
+  lobes.filter(l => !l.high).forEach(leafy);
 }
 
 export interface OrangeStyle {
@@ -189,8 +244,8 @@ export const PLANE_VARIANTS: readonly PlaneStyle[] = [
 
 /** The old chenar of a village spring or a town square, 24 to 25 m, its trunk 3 m through. */
 export const OLD_PLANE_VARIANTS: readonly PlaneStyle[] = [
-  { height: 560, spread: 230, trunk: 66, leaf: 0x46703a, seed: 151 },
-  { height: 575, spread: 245, trunk: 72, leaf: 0x4f7a3a, seed: 163 },
+  { height: 560, spread: 230, trunk: 66, leaf: 0x46703a, seed: 151, old: true },
+  { height: 575, spread: 245, trunk: 72, leaf: 0x4f7a3a, seed: 163, old: true },
 ];
 
 /** Garden cypresses from a young one of 6.5 m to an old one of 16.5 m. */

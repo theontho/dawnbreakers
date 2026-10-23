@@ -107,7 +107,7 @@ const props: DecorSpec[] = [
   ...block('zanjan-rubble', [[14, 27], [22, 28], [27, 26], [30, 29], [39, 27], [44, 12], [45, 20], [6, 27]]),
   ...loose('crowd-shadow', [[25, 29]]),
   // The orchards, west and south-west.
-  ...block('orange-tree', [[2, 28], [6, 31], [3, 39], [9, 38], [14, 40], [19, 37], [23, 40]]),
+  ...block('fruit-tree', [[2, 28], [6, 31], [3, 39], [9, 38], [14, 40], [19, 37], [23, 40]]),
   ...block('plane-tree', [[1, 31], [13, 33], [25, 34]]),
   ...block('cypress', [[0, 40], [17, 33], [26, 38]]),
   // The royal lines: earthworks, guns along the bank, fires and stores behind.

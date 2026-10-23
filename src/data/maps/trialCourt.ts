@@ -8,7 +8,7 @@ import { wallRun } from './wallRuns';
  * the divines examine the Báb. The examination is never staged: the
  * player waits at the foot of the hall steps with a coffee tray, by the
  * slippers the divines left there, and hears it from those who come out.
- * A pool and orange trees in the middle, the coffee-maker's hearth in the
+ * A pool and apricot trees in the middle, the coffee-maker's hearth in the
  * east corner, the gate to the square in the south wall.
  *
  * Districts (x runs east, y runs south):
@@ -51,9 +51,10 @@ function walls(): DecorSpec[] {
 const tree = (gridX: number, gridY: number, texture: string): DecorSpec => ({ gridX, gridY, texture, blocks: true });
 
 const props: DecorSpec[] = [
-  // Cypresses either side of the hall, plane trees in the south corners, orange trees round the pool
+  // Cypresses either side of the hall, plane trees in the south corners, apricot trees round the pool
   tree(5, 4, 'cypress'), tree(24, 4, 'cypress'), tree(3, 21, 'plane-tree'), tree(26, 22, 'plane-tree'),
-  tree(10, 16, 'orange-tree'), tree(20, 16, 'orange-tree'), tree(10, 21, 'orange-tree'), tree(20, 21, 'orange-tree'),
+  // The low apricots (variant 2, 4 m), so they keep to the height of the court's people.
+  ...([[10, 16], [20, 16], [10, 21], [20, 21]] as const).map(([x, y]) => ({ ...tree(x, y, 'apricot-tree'), variant: 2 })),
   // The coffee hearth: a brazier, a water jar, a carpet for the cups
   { gridX: 26, gridY: 10, texture: 'ch6-brazier', blocks: true },
   { gridX: 27, gridY: 12, texture: 'ch9-water-jar', blocks: true },

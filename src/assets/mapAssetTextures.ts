@@ -19,6 +19,15 @@ export function ensureMapAssetTextures(scene: Phaser.Scene): void {
   for (const def of MAP_OBJECTS) ensureMapAssetTexture(scene, def);
 }
 
+/** A sprite whose texture was never painted draws Phaser's green box; say which, so smoke fails. */
+export function reportMissingTextures(scene: Phaser.Scene): void {
+  const missing = scene.children.list.filter((child): child is Phaser.GameObjects.Image =>
+    child instanceof Phaser.GameObjects.Image && child.texture.key === '__MISSING');
+  if (missing.length > 0) {
+    console.error(`${scene.scene.key}: ${missing.length} sprite(s) have no painted texture; name them where ensureTexturesNamedIn can see them`);
+  }
+}
+
 const DEFINITION_BY_TEXTURE = new Map(MAP_OBJECTS.map(def => [def.texture, def]));
 
 /**

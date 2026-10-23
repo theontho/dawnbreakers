@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { ensureTexturesNamedIn } from '../assets/mapAssetLibrary';
+import { ensureTexturesNamedIn, reportMissingTextures } from '../assets/mapAssetLibrary';
 import { applyMapAudio, playFootstep, playSfx } from '../audio';
 import { chapterByScene, type Chapter } from '../data/chapters';
 import { dialogues } from '../data/dialogues';
@@ -42,6 +42,7 @@ import { buildWorldData, refreshBlocking } from './mapWorldData';
 import { setupMapCameras, type MapCameras } from './mapCamera';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
 import { placeMapNpcs, resolveNpcDialogue, talkedFlag, type MapNpcs } from './mapNpcs';
+import { createMapKeys, pollMapKeys, type MapKeys } from './mapKeys';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
 import { findPath, screenToGrid, type GridPoint } from './mapPathing';
 import { streetFronts } from './streetFronts';
@@ -90,18 +91,7 @@ export class MapScene extends Phaser.Scene {
   private mobileControls?: Phaser.GameObjects.Container;
   private endingShown = false;
 
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private interactKey!: Phaser.Input.Keyboard.Key;
-  private journalKey!: Phaser.Input.Keyboard.Key;
-  private highlightKey!: Phaser.Input.Keyboard.Key;
-  private tabHighlightKey!: Phaser.Input.Keyboard.Key;
-  private settingsKey!: Phaser.Input.Keyboard.Key;
-  private wasdKeys!: {
-    W: Phaser.Input.Keyboard.Key;
-    A: Phaser.Input.Keyboard.Key;
-    S: Phaser.Input.Keyboard.Key;
-    D: Phaser.Input.Keyboard.Key;
-  };
+  private keys!: MapKeys;
   private moveCooldown = 0;
   private mobileMoveDirection?: { dx: number; dy: number };
   private mobileActionButton?: Phaser.GameObjects.Rectangle;
@@ -312,20 +302,7 @@ export class MapScene extends Phaser.Scene {
   // ---------- input & HUD ----------
 
   private setupInput(): void {
-    const keyboard = this.input.keyboard!;
-    const { KeyCodes } = Phaser.Input.Keyboard;
-    this.cursors = keyboard.createCursorKeys();
-    this.interactKey = keyboard.addKey(KeyCodes.E);
-    this.journalKey = keyboard.addKey(KeyCodes.J);
-    this.highlightKey = keyboard.addKey(KeyCodes.H);
-    this.tabHighlightKey = keyboard.addKey(KeyCodes.TAB, true);
-    this.settingsKey = keyboard.addKey(KeyCodes.ESC);
-    this.wasdKeys = {
-      W: keyboard.addKey(KeyCodes.W),
-      A: keyboard.addKey(KeyCodes.A),
-      S: keyboard.addKey(KeyCodes.S),
-      D: keyboard.addKey(KeyCodes.D),
-    };
+    this.keys = createMapKeys(this);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.handleWorldPointer, this);
   }
 
@@ -403,15 +380,15 @@ export class MapScene extends Phaser.Scene {
       exitPromptText: this.exitPromptText,
       mobileActionButton: this.mobileActionButton,
       mobileActionLabel: this.mobileActionLabel,
-      interactKey: this.interactKey,
+      interactKey: this.keys.interact,
       triggerInteraction: () => this.triggerInteraction(),
     });
-    const { JustDown, JustUp } = Phaser.Input.Keyboard;
-    if (JustDown(this.journalKey)) this.openOverlay('Journal', {});
-    if (JustDown(this.highlightKey)) this.toggleHighlights();
-    if (JustDown(this.tabHighlightKey)) this.holdHighlights(true);
-    if (JustUp(this.tabHighlightKey)) this.holdHighlights(false);
-    if (JustDown(this.settingsKey)) this.openOverlay('Settings', { spawnX: this.playerGrid.x, spawnY: this.playerGrid.y });
+    pollMapKeys(this.keys, {
+      openJournal: () => this.openOverlay('Journal', {}),
+      toggleHighlights: () => this.toggleHighlights(),
+      holdHighlights: held => this.holdHighlights(held),
+      openSettings: () => this.openOverlay('Settings', { spawnX: this.playerGrid.x, spawnY: this.playerGrid.y }),
+    });
   }
 
   private holdHighlights(held: boolean): void {
@@ -423,8 +400,8 @@ export class MapScene extends Phaser.Scene {
     const wasWalking = this.walkPath.length > 0;
     this.moveCooldown = handleBaseMapMovement(this, {
       moveCooldown: this.moveCooldown,
-      cursors: this.cursors,
-      wasdKeys: this.wasdKeys,
+      cursors: this.keys.cursors,
+      wasdKeys: this.keys.wasd,
       mobileMoveDirection: this.mobileMoveDirection,
       path: this.walkPath,
       playerGrid: this.playerGrid,
@@ -473,14 +450,5 @@ export class MapScene extends Phaser.Scene {
 
   private triggerInteraction(): void {
     nearestInteractable(this.npcs.interactables, this.playerGrid)?.action();
-  }
-}
-
-/** A sprite whose texture was never painted draws Phaser's green box; say which, so smoke fails. */
-function reportMissingTextures(scene: Phaser.Scene): void {
-  const missing = scene.children.list.filter((child): child is Phaser.GameObjects.Image =>
-    child instanceof Phaser.GameObjects.Image && child.texture.key === '__MISSING');
-  if (missing.length > 0) {
-    console.error(`${scene.scene.key}: ${missing.length} sprite(s) have no painted texture; name them where ensureTexturesNamedIn can see them`);
   }
 }

@@ -4,21 +4,21 @@ import { qzDay, qzNight } from './qazvinPhases';
 import { wallRun } from './wallRuns';
 
 /**
- * Qazvín, 1847 to 1848, at true scale: a lane of the old town between the
- * house of Ḥájí Mullá Ṣáliḥ, Qurratu'l-ʿAyn's father, on the north side,
- * and the mosque where her uncle Mullá Taqí led the dawn prayer, on the
- * south. West along the lane the bakers' row; south of it the old town
+ * Qazvín, 1847 to 1848, at true scale: a lane of the old town where the
+ * house of Ḥájí Mullá Ṣáliḥ, Qurratu'l-ʿAyn's father, and the mosque where
+ * her uncle Mullá Taqí led the dawn prayer both front the north side. West
+ * along the lane the bakers' row; south of it the old town
  * wall, with a small postern that is barred by day, and beyond it the
  * orchards outside the walls, where on the night of the rescue Muḥammad-
  * Hádí waits with three horses. The player comes in at the west end of the
  * lane, off the Hamadán road, which reaches Qazvín from the south-west.
  *
  * Districts (x runs east, y runs south):
- * - The houses north of the lane, y 5..12; Mullá Ṣáliḥ's gateway at
- *   (22, 12), opening on his court (`QazvinHouse`).
+ * - North of the lane, y 5..12: houses; Mullá Ṣáliḥ's gateway at (22, 12),
+ *   opening on his court (`QazvinHouse`); the mosque x 26..33, y 6..12, its
+ *   portal on the lane at (30, 12).
  * - The lane: y 13..16, the whole width.
- * - South of the lane: the bakers' row x 8..15, y 18..20; the mosque
- *   x 24..31, y 18..24, its portal on the walk inside the town wall.
+ * - South of the lane: the bakers' row x 8..15, y 18..20, and houses.
  * - The town wall on y = 27, its postern at (7, 27).
  * - The orchards outside the walls: y 28..33.
  */
@@ -38,12 +38,11 @@ const buildings: BuildingSpec[] = [
   { gridX: 2, gridY: 7, w: 6, h: 5, texture: 'town-house' },
   { gridX: 10, gridY: 8, w: 5, h: 4, texture: 'town-house-small' },
   { gridX: SALIH_GATE.x - 4, gridY: SALIH_GATE.y - 4, w: 6, h: 5, texture: 'zanjan-hujjat-house' },
-  { gridX: 26, gridY: 7, w: 6, h: 5, texture: 'town-house' },
-  { gridX: 33, gridY: 8, w: 5, h: 4, texture: 'town-house-small' },
-  // South of the lane: the bakers' row, and Mullá Taqí's mosque.
+  // Mullá Taqí's mosque: its portal is its own street front, on the lane.
+  { gridX: 26, gridY: 6, w: 8, h: 7, texture: 'mosque-local' },
+  // South of the lane: the bakers' row and two houses.
   { gridX: 8, gridY: 18, w: 8, h: 3, texture: 'bazaar-row' },
-  // Its portal is its own street front: two cells of walk between it and the town wall.
-  { gridX: 24, gridY: 18, w: 8, h: 7, texture: 'mosque-local' },
+  { gridX: 24, gridY: 19, w: 6, h: 5, texture: 'town-house' },
   { gridX: 34, gridY: 19, w: 5, h: 4, texture: 'town-house-small' },
 ];
 
@@ -68,16 +67,16 @@ const props: DecorSpec[] = [
   ...block('plane-tree', [[0, 3], [16, 4], [38, 4]]),
   ...block('cypress', [[9, 3], [24, 4], [32, 3]]),
   // The lane: lamps, a well, the bakers' oven and their wood.
-  ...block('lamp', [[17, 13], [30, 13], [5, 16], [21, 17]]),
+  ...block('lamp', [[17, 13], [28, 13], [32, 13], [5, 16], [21, 17]]),
   ...block('well', [[3, 18]]),
   ...block('zanjan-tanur', [[17, 18]]),
   ...block('crates', [[19, 19], [6, 19]]),
   ...block('ch9-water-jar', [[33, 16]]),
   ...loose('rug', [[18, 17]]),
   // By day, knots of townsmen talking low outside the mosque.
-  ...loose('crowd-shadow', [[23, 17], [32, 17], [29, 21]], qzDay),
+  ...loose('crowd-shadow', [[25, 14], [33, 15], [31, 16]], qzDay),
   // The orchards outside the wall.
-  ...block('orange-tree', [[2, 28], [12, 28], [15, 31], [11, 32], [1, 33]]),
+  ...block('fruit-tree', [[2, 28], [12, 28], [15, 31], [11, 32], [1, 33]]),
   ...block('plane-tree', [[18, 29], [24, 31], [32, 29]]),
   ...block('cypress', [[0, 30], [21, 28], [28, 32], [36, 30]]),
   // Three horses waiting under the trees on the night of the rescue.
@@ -110,12 +109,12 @@ export const qazvinLaneMap: MapDefinition = {
       prompt: 'Speak with the Baker  [E]',
       dialogue: 'qz-baker',
       present: qzDay },
-    { gridX: 27, gridY: 16, texture: 'qazvin-farrash',
+    { gridX: 29, gridY: 14, texture: 'qazvin-farrash',
       prompt: 'Speak with the Farrásh  [E]',
       dialogue: 'qz-farrash',
       present: qzDay },
     // The night of the rescue.
-    { gridX: 27, gridY: 16, texture: 'qazvin-farrash',
+    { gridX: 29, gridY: 14, texture: 'qazvin-farrash',
       prompt: 'Look at the Farrásh  [E]',
       dialogue: 'qz-farrash-night',
       present: qzNight },

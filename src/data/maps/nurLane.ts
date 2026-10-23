@@ -39,7 +39,8 @@ const buildings: BuildingSpec[] = [
   { gridX: 1, gridY: 3, w: 6, h: 5, texture: 'ch10-street-house' },
   { gridX: 25, gridY: 3, w: 5, h: 4, texture: 'town-house-small' },
   // South of the lane: the bakery's house and the neighbours.
-  { gridX: 3, gridY: 15, w: 6, h: 5, texture: 'ch10-street-house' },
+  // A row back from the lane, so its roof clears the lane's way west.
+  { gridX: 3, gridY: 16, w: 6, h: 5, texture: 'ch10-street-house' },
   { gridX: 13, gridY: 16, w: 5, h: 4, texture: 'town-house-small' },
   { gridX: 22, gridY: 15, w: 6, h: 5, texture: 'ch10-street-house' },
 ];

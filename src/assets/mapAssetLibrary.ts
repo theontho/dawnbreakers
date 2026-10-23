@@ -25,4 +25,5 @@ export {
   ensureMapAssetTextures,
   ensureTexturesNamedIn,
   ensureTileTextures,
+  reportMissingTextures,
 } from './mapAssetTextures';

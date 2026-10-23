@@ -80,7 +80,7 @@ function trees(): DecorSpec[] {
     // The gathering terrace
     tree(31, 11, 'cypress'), tree(41, 11, 'plane-tree'), tree(33, 19, 'orange-tree'),
     // The rose garden
-    tree(3, 26, 'cypress'), tree(14, 26, 'cypress'), tree(3, 36, 'cypress'), tree(14, 36, 'cypress'),
+    tree(2, 27, 'cypress'), tree(14, 26, 'cypress'), tree(3, 36, 'cypress'), tree(14, 36, 'cypress'),
     tree(6, 29, 'orange-tree'), tree(11, 29, 'orange-tree'), tree(6, 33, 'orange-tree'), tree(11, 33, 'orange-tree'),
     // Behind the inner apartments
     tree(30, 25, 'cypress'), tree(39, 25, 'cypress'),
