@@ -15,6 +15,7 @@ import { Party } from '../travel/party';
 import { Sea } from '../travel/sea';
 import { SkyCamera } from '../travel/skyCamera';
 import { blendSkyLights, skyLightFor, type SkyLight } from '../travel/skyLight';
+import { SkyGlows } from '../travel/skyGlows';
 import { SkyPainter, TRAIL_MODES, type TrailMode } from '../travel/skyPainter';
 import { starFieldFor, type StarField } from '../travel/travelStars';
 
@@ -86,6 +87,7 @@ export class JourneyScene extends Phaser.Scene {
   private land!: Landscape | Sea;
   private party?: Party;
   private hud!: JourneyHud;
+  private glows!: SkyGlows;
   private ground!: GroundLayout;
   private walked = 0;
   private lastMs: number | undefined;
@@ -125,6 +127,7 @@ export class JourneyScene extends Phaser.Scene {
     this.clock = new JourneyClock(departure);
     this.passage = new JourneyPassage(this.clock, journey);
     this.hud = new JourneyHud(this, journey);
+    this.glows = new SkyGlows(this, this.sky, this.land, this.party, this.hud);
     playMusic(journey.music);
     setSoundscape(journey.sound);
 
@@ -145,6 +148,7 @@ export class JourneyScene extends Phaser.Scene {
     const skyMs = date.getTime();
     // Between chapters the stars always draw comet tails; the viewer shows them as it is set.
     const trails = this.onward ? 'tail' : this.settings.trails;
+    const timeBlur = Math.min(1, Math.max(0, (paceHours - 6) / 18));
     this.sky.draw({
       field: this.field,
       siderealTime: localSiderealTime(date, this.location),
@@ -154,7 +158,7 @@ export class JourneyScene extends Phaser.Scene {
       light,
       bodies,
       motion: this.clock.motion,
-      timeBlur: Math.min(1, Math.max(0, (paceHours - 6) / 18)),
+      timeBlur,
       trails,
       tailStartMs: trails === 'exposure' ? this.clock.exposureStart() : this.clock.tailStart(),
       realMs: now,
@@ -163,6 +167,7 @@ export class JourneyScene extends Phaser.Scene {
     this.walked += (deltaMs / 1000) * this.ground.figure * 0.68;
     this.land.draw(this.walked, light, now);
     this.party?.draw(this.walked, light, now);
+    this.glows.update(light, timeBlur);
     this.hud.updateClockFor(date, this.journey.longitude, this.statusLine());
   }
 

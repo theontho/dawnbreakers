@@ -5,6 +5,8 @@ import type { DawnMode } from '../assets/art/dawnPass';
 
 export type TitleCity = {
   setLight: (amount: number) => void;
+  /** Screen y of the top of the city at column x, read from the baked silhouette the first time it is asked. */
+  skylineAt: (x: number) => number;
 };
 
 /**
@@ -38,7 +40,7 @@ export function addTitleCity(
     texture.refresh();
     return scene.add.image(0, layout.top, key).setOrigin(0);
   };
-  bake('night');
+  const night = bake('night');
   const day = bake('day');
   const rim = bake('rim').setBlendMode(Phaser.BlendModes.ADD);
   const lamps = bake('lamp').setBlendMode(Phaser.BlendModes.ADD);
@@ -52,7 +54,32 @@ export function addTitleCity(
   };
   setLight(0);
 
-  return { setLight };
+  let profile: Float32Array | undefined;
+  const skylineAt = (x: number) => {
+    profile ??= silhouetteProfile(night.texture.getSourceImage() as HTMLCanvasElement, layout.top);
+    const column = profile[Math.floor(x)];
+    return column ?? height;
+  };
+
+  return { setLight, skylineAt };
+}
+
+/** The first opaque row of each column of a baked layer, in screen pixels. */
+function silhouetteProfile(canvas: HTMLCanvasElement, top: number): Float32Array {
+  const { width, height } = canvas;
+  const profile = new Float32Array(width).fill(top + height);
+  const ctx = canvas.getContext('2d');
+  if (!ctx || width === 0 || height === 0) return profile;
+  const alpha = ctx.getImageData(0, 0, width, height).data;
+  for (let x = 0; x < width; x += 1) {
+    for (let y = 0; y < height; y += 1) {
+      if (alpha[(y * width + x) * 4 + 3]! > 96) {
+        profile[x] = top + y;
+        break;
+      }
+    }
+  }
+  return profile;
 }
 
 function smoothstep(edge0: number, edge1: number, value: number): number {

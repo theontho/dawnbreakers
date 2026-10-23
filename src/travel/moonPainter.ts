@@ -8,6 +8,18 @@ import type { SkyLight } from './skyLight';
 const MOON_ANGULAR_RADIUS = 0.0095;
 const LIMB_STEPS = 18;
 
+/** Where the moon was drawn, its phase, and how bright its lit part was. */
+export interface MoonDisc {
+  x: number;
+  y: number;
+  radius: number;
+  lit: number;
+  /** Screen bearing of the lit limb, in radians. */
+  sunward: number;
+  color: number;
+  alpha: number;
+}
+
 /**
  * The moon in its true phase: a dark disc with earthshine, the lit part
  * bounded by the limb on the sun's side and the terminator's half ellipse,
@@ -20,13 +32,13 @@ export function paintMoon(
   bodies: SkyBodies,
   light: SkyLight,
   sizeScale: number,
-): void {
+): MoonDisc | undefined {
   const centre = { x: 0, y: 0 };
   const toward = { x: 0, y: 0 };
   const { moon, sunFromMoon } = bodies;
   if (light.moonAltitude < -1 || !camera.project(moon.x, moon.y, moon.z, centre) || centre.y > camera.horizonY + 20) {
     halo.setVisible(false);
-    return;
+    return undefined;
   }
   const radius = Math.max(5 * sizeScale, camera.pixelsPerRadian * MOON_ANGULAR_RADIUS);
   const lit = bodies.moonIllumination;
@@ -43,7 +55,7 @@ export function paintMoon(
 
   graphics.fillStyle(mix(light.zenith, 0x3a4256, 0.5), 0.95);
   graphics.fillCircle(centre.x, centre.y, radius);
-  if (lit < 0.01) return;
+  if (lit < 0.01) return undefined;
 
   const cos = Math.cos(sunward);
   const sin = Math.sin(sunward);
@@ -57,6 +69,9 @@ export function paintMoon(
     const a = -Math.PI / 2 + (Math.PI * s) / LIMB_STEPS;
     place(-(2 * lit - 1) * radius * Math.cos(a), radius * Math.sin(a));
   }
-  graphics.fillStyle(mix(0xf6efd8, 0xffffff, light.daylight * 0.5), 1 - light.daylight * 0.45);
+  const color = mix(0xf6efd8, 0xffffff, light.daylight * 0.5);
+  const alpha = 1 - light.daylight * 0.45;
+  graphics.fillStyle(color, alpha);
   graphics.fillPoints(points, true);
+  return { x: centre.x, y: centre.y, radius, lit, sunward, color, alpha };
 }

@@ -47,6 +47,7 @@ export class Landscape {
   private readonly seed: number;
   private readonly flakes: { x: number; y: number; drift: number; size: number }[] = [];
   private lastMs: number | undefined;
+  private lastScroll = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -68,6 +69,7 @@ export class Landscape {
 
   /** `scroll` is how far the party has walked, in pixels at the road. */
   draw(scroll: number, light: SkyLight, realMs: number): void {
+    this.lastScroll = scroll;
     this.back.clear();
     this.front.clear();
     const lamp = 1 - light.daylight;
@@ -87,6 +89,15 @@ export class Landscape {
     this.paintRoad(scroll, light);
     this.paintVerge(scroll, light, lamp);
     this.paintSnow(realMs);
+  }
+
+  /** Screen y of the top of the land at column x, as last drawn; the trees and villages on it are left out. */
+  skylineAt(x: number): number {
+    let top = this.ground.horizonY + this.ground.groundHeight;
+    this.style.layers.forEach((layer, index) => {
+      if (!layer.water) top = Math.min(top, this.outlineY(layer, index, x, this.lastScroll));
+    });
+    return top;
   }
 
   private lit(night: number, day: number, light: SkyLight): number {

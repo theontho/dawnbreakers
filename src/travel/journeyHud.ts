@@ -6,6 +6,7 @@ import { buttonFont, isNarrowLayout, responsiveFont, safeLayout, type SafeLayout
 
 const DATE_LOCALES: Record<Locale, string> = { en: 'en-GB', fa: 'fa-IR-u-ca-gregory', zh: 'zh-CN' };
 const HUD_DEPTH = 100;
+const SHADE_ALPHA = 0.55;
 
 export interface HudButton {
   label: () => string;
@@ -26,6 +27,7 @@ export class JourneyHud {
   private readonly dateFormat: Intl.DateTimeFormat;
   private readonly timeFormat: Intl.DateTimeFormat;
   private lastClock = '';
+  private readonly shadeHeight: number;
 
   constructor(private readonly scene: Phaser.Scene, journey: Journey) {
     const size = scene.scale;
@@ -38,8 +40,9 @@ export class JourneyHud {
 
     // Shade under the words so they read against a bright dawn.
     const shade = scene.add.graphics();
-    shade.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.55, 0.55, 0, 0);
-    shade.fillRect(0, 0, size.width, Math.min(size.height * 0.36, 260));
+    this.shadeHeight = Math.min(size.height * 0.36, 260);
+    shade.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, SHADE_ALPHA, SHADE_ALPHA, 0, 0);
+    shade.fillRect(0, 0, size.width, this.shadeHeight);
     this.layer.add(shade);
 
     const start = rtl ? right : x;
@@ -108,6 +111,12 @@ export class JourneyHud {
       this.lastClock = clock;
     }
     if (this.status.text !== status) this.status.setText(status);
+  }
+
+  /** How dark the shade under the words is at screen line `y`, 0 where there is none. */
+  shadeAt(y: number): number {
+    if (!this.layer.visible) return 0;
+    return SHADE_ALPHA * Math.min(1, Math.max(0, 1 - y / this.shadeHeight));
   }
 
   setVisible(visible: boolean): void {
