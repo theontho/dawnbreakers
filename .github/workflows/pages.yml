@@ -1,0 +1,59 @@
+# Builds the game and publishes it to GitHub Pages when a release is published.
+#
+# Pages has to be available for the repo first (public, or a paid plan for a
+# private one) with Settings > Pages > Source set to "GitHub Actions". The site
+# is then served at https://theontho.github.io/dawnbreakers/.
+name: Deploy to GitHub Pages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer release supersedes a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Sky Rewind's star catalog is generated from the CDS Hipparcos source,
+      # not checked in. Cache the raw download so deploys don't refetch it.
+      - uses: actions/cache@v4
+        with:
+          path: tmp/hip_main.dat
+          key: hipparcos-hip-main-v1
+      - run: npm run skyrewind:catalog
+
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

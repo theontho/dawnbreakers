@@ -45,6 +45,14 @@ node scripts/i18n-sync.mjs --import out/i18n   # merge the translated JSON back
 node scripts/i18n-sync.mjs --prune             # drop keys no source string uses
 ```
 
+## Publishing
+
+`.github/workflows/pages.yml` builds the game (with the Sky Rewind star
+catalog) and deploys `dist/` to GitHub Pages whenever a GitHub release is
+published, or when run by hand from the Actions tab. The build uses relative
+paths, so it works under `/dawnbreakers/`. Pages must be enabled for the repo
+with its source set to "GitHub Actions" before the first deploy.
+
 ## Native Sky Rewind prototype
 
 The C++/OpenGL version renders the generated Hipparcos catalog in a native
