@@ -76,7 +76,7 @@ export const chapter05Story: ChapterStory = {
     {
       flag: 'heardDivines',
       title: 'The Empty Seat of Honour',
-      body: 'Most divines would not come to the gathering. Those who came fell silent. Those who stayed away signed a sentence against Him, each in his own house.',
+      body: 'Most divines would not come to the gathering. Of those who came, one argued until the Muʿtamid sent him home. Later the ʿulamá met and signed and sealed a sentence of death against Him.',
     },
     {
       flag: 'philosopherSpoke',
@@ -86,7 +86,7 @@ export const chapter05Story: ChapterStory = {
     {
       flag: 'mutamidDied',
       title: 'Three Months and Nine Days',
-      body: 'The Muʿtamid hid his Guest in the Palace of the Sun and offered Him armies and treasure, which He declined. As foretold, the old governor died, grateful.',
+      body: 'The Muʿtamid hid his Guest in the Palace of the Sun and offered Him his riches and his influence with the Sháh, which He declined. As foretold, the old governor died, grateful.',
     },
     {
       flag: 'mournedMutamid',
@@ -96,7 +96,7 @@ export const chapter05Story: ChapterStory = {
     {
       flag: 'gurginMet',
       title: 'Gurgín Khán',
-      body: 'The Muʿtamid\'s nephew wrote to the capital to reveal where the prisoner was hidden, and ordered Him taken north by night.',
+      body: 'The Muʿtamid\'s nephew wrote to the capital to reveal where the prisoner was hidden. The Sháh ordered Him brought north in secret, and He left after midnight.',
     },
     {
       flag: 'isfahanComplete',

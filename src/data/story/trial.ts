@@ -73,7 +73,7 @@ export const trialStory: ChapterStory = {
     {
       flag: 'trialMetMamaqani',
       title: 'Mullá Muḥammad of Mamaqán',
-      body: 'The Shaykhí divine warned that the people would drive the ʿulamá out of Tabríz, and wanted the Prisoner punished before the assembly. Two years later his would be the hand that wrote the Báb\'s death sentence.',
+      body: 'The Shaykhí divine warned that the people would drive the ʿulamá out of Tabríz, and wanted the Prisoner punished before the assembly. That same day he wrote the Báb\'s death sentence, and kept it two years until it was called for.',
     },
     {
       flag: 'trialToShaykh',

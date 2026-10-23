@@ -36,7 +36,7 @@ export const chapter10Story: ChapterStory = {
     {
       flag: 'ch10HeardProcession',
       title: 'The Road from Shimírán',
-      body: 'A water-seller watched Bahá\'u\'lláh driven on foot, in chains, under the August sun. When an old woman pressed forward with a stone, He asked the guards to let her be.',
+      body: 'A water-seller watched Bahá\'u\'lláh driven on foot, in chains, under the August sun. When an old woman pressed forward with a stone, He told the guards not to stop her, nor deny her the act she thought meritorious.',
     },
     {
       flag: 'ch10MetZahra',
@@ -106,7 +106,7 @@ export const chapter10Story: ChapterStory = {
     {
       flag: 'ch10Released',
       title: 'Your Name Is Called',
-      body: 'In December the jailer called your name, for release. Bahá\'u\'lláh had gone up before you, His innocence proved, ordered to leave Persia for Baghdád.',
+      body: 'In December the jailer called your name, for release. Bahá\'u\'lláh had gone up before you, His innocence proved, ordered to leave Persia. He chose Baghdád.',
     },
     {
       flag: 'ch10ShopkeeperAnswers',

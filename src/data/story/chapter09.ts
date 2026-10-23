@@ -25,7 +25,7 @@ export const chapter09Story: ChapterStory = {
     {
       flag: 'ch9HeardWaterSeller',
       title: 'Water for Nothing',
-      body: 'A water-seller poured for free in memory of the thirst of Karbilá. That morning the Báb had been led bareheaded through Tabríz, stripped of His green turban and sash.',
+      body: 'A water-seller poured for free in memory of the thirst of Karbilá. The day before, the Báb had been led through Tabríz stripped of His turban and sash.',
     },
     {
       flag: 'ch9HeardFarrash',

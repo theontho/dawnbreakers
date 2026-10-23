@@ -32,7 +32,7 @@ export const chapter04Story: ChapterStory = {
     {
       flag: 'quddusWitnessed',
       title: 'Quddús in the Square',
-      body: 'You found Quddús under guard, to be driven from Shíráz for the new words sounded in the call to prayer. They had pierced his nose to lead him by a cord through the streets. He told you not to look at the halter, but at the sky.',
+      body: 'You found Quddús under guard with Mullá Ṣádiq, to be driven from Shíráz for the new words Mullá Ṣádiq had sounded in the call to prayer. Their beards had been burned and their noses pierced, to lead them by a cord through the streets. Quddús told you not to look at the halter, but at the sky.',
     },
     {
       flag: 'ch4Response',
@@ -55,7 +55,7 @@ export const chapter04Story: ChapterStory = {
     {
       flag: 'sadiqWitnessed',
       title: 'Old Ṣádiq Laughing',
-      body: 'Mullá Ṣádiq, who sounded the new call from the minaret, sat bent from the lash with a bright face. He and his companions were the first in Persia to be struck for this Cause.',
+      body: 'Mullá Ṣádiq, who sounded the new call in the Masjid-i-Naw, sat bent from the lash with a bright face. He and his companions were the first in Persia to be struck for this Cause.',
     },
     {
       flag: 'officerWarningHeard',
@@ -65,7 +65,7 @@ export const chapter04Story: ChapterStory = {
     {
       flag: 'dyerHeardCall',
       title: 'Cloth Dark as Night',
-      body: 'A dyer whose vats face the minaret stopped stirring when he heard the new call, and ruined a batch of indigo. He means to make a coat of it, to remember.',
+      body: 'A dyer whose vats face the Masjid-i-Naw stopped stirring when he heard the new call, and ruined a batch of indigo. He means to make a coat of it, to remember.',
     },
     {
       flag: 'bakerSawArrival',

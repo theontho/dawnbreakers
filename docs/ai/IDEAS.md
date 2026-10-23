@@ -93,22 +93,25 @@ mentioned in passing:
   (`floor-writing-board`) may suit them better.
 - An officer by the Vakíl Mosque pulpit is 37% covered by the colonnade
   (a smoke note, under the 60% failure line); every nearby cell was worse.
+- City's road north loses two of its four exit cells behind the wall and
+  house on its east side (a smoke note, not a failure). Any tall thing just
+  south-east of a north-edge exit hides it, so clearing it means reshaping
+  the north end of the city, not moving one piece.
+- Two more exits lose a minority of their cells (smoke notes): NurLane's
+  way back to the madrasa (2 of 5, behind the street house at 3,15) and the
+  Mu'tamid's palace's river road west (1 of 3, a cypress, a lamp and the
+  wall's corner).
 - Extend the visibility check to gameplay helpers (witness spots, door
   highlights) where they lack a sprite.
 
 ## Robustness and translation
 
-- The new map-editor tree labels (Young Oak, Walnut, Pollard and others) are
-  built from templates, so the localization lint does not see them and they
-  have no fa/zh yet.
-- QazvinLane's east-edge arrival is described in the map's notes as the
-  Hamadán road, but Hamadán lies south-west of Qazvín; the exit check only
-  catches labels that name a direction.
-- A chapter's opening narration plays once per save
-  (`opened_<chapter>`), so replaying a chapter from chapter select does not
-  show it again.
-- A few historical details were checked from memory rather than against the
-  page (for example Quddús's halter in Shíráz); a pass against the full text
-  of Nabíl would confirm them.
+- The journal history (`src/data/story/`) has been checked against Nabíl's
+  text and corrected. A few details in it come from other sources, which is
+  fine but worth knowing if the game ever cites them: the Súrih of the
+  Inevitable at Badasht and the declaration at the Kaʿba (God Passes By),
+  the condition on the Báb's release from Shíráz (A Traveller's Narrative),
+  and the gold buttons at the Síyáh-Chál. Dialogue lines and task text were
+  not part of that pass.
 - `src/scenes/MapScene.ts` is near the 500-line limit again; split further
   if it grows.

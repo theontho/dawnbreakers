@@ -76,7 +76,7 @@ export const nayrizStory: ChapterStory = {
     {
       flag: 'nzCarryingLetter',
       title: 'Muskets on the Roofs',
-      body: 'The governor came back with a thousand men and fortified the roof of his house. Mullá ʿAbdu\'l-Ḥusayn was shot in the foot at his prayers on his own roof, and Vaḥíd gave you a letter for him.',
+      body: 'The governor came back with a thousand men and fortified the roof of a house he had seized. Mullá ʿAbdu\'l-Ḥusayn was shot in the foot at his prayers on his own roof, and Vaḥíd gave you a letter for him.',
     },
     {
       flag: 'nzLetterDelivered',

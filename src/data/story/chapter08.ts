@@ -27,7 +27,7 @@ export const chapter08Story: ChapterStory = {
     {
       flag: 'ch8JoinedColumn',
       title: 'The Column in the Forest',
-      body: 'You found Mullá Ḥusayn in the forests of Mázindarán, wearing the green turban the Báb had sent him. Turned away from Bárfurúsh, the companions marched for the shrine of Shaykh Ṭabarsí.',
+      body: 'You found Mullá Ḥusayn in the forests of Mázindarán, wearing the green turban the Báb had sent him. Driven out of Bárfurúsh after a few nights in its caravanserai, the companions marched for the shrine of Shaykh Ṭabarsí.',
     },
     {
       flag: 'ch8SawStandard',
@@ -72,7 +72,7 @@ export const chapter08Story: ChapterStory = {
     {
       flag: 'ch8QuddusArrived',
       title: 'Quddús Comes to Ṭabarsí',
-      body: 'At Bahá\'u\'lláh\'s counsel, Quddús was brought from Sárí. Mullá Ḥusayn held his stirrup, and Quddús, leaning on the shrine, recited the verse of the Remnant of God.',
+      body: 'At Bahá\'u\'lláh\'s counsel, Quddús was brought from Sárí. Mullá Ḥusayn went out to meet him with candle-bearers and walked behind him on foot, and Quddús, leaning on the shrine, recited the verse of the Remnant of God.',
     },
     {
       flag: 'ch8QuddusCounsel',
@@ -87,7 +87,7 @@ export const chapter08Story: ChapterStory = {
     {
       flag: 'ch8MullaHusaynFell',
       title: 'The Gate at Dawn',
-      body: 'Mullá Ḥusayn rode out before dawn in February 1849 and was carried back mortally wounded. Quddús buried him within the shrine, wrapped in his own shirt. You kept the gate.',
+      body: 'Mullá Ḥusayn rode out before dawn in February 1849 and was carried back mortally wounded. Quddús buried him within the shrine, clothed in Quddús\'s own shirt. You kept the gate.',
     },
     {
       flag: 'ch8HeardMullaHusayn',
