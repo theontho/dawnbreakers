@@ -11,6 +11,8 @@ const ignoreDirs = new Set(['node_modules', 'dist', 'dist-demo', '.git']);
 const literalFields = new Set([
   'body',
   'description',
+  'heading',
+  'hint',
   'label',
   'lockedLabel',
   'prompt',
@@ -21,7 +23,7 @@ const literalFields = new Set([
   'title',
 ]);
 const nameFields = new Set(['speaker']);
-const allowedUnwrappedText = new Set(['✓', '⌄']);
+const allowedUnwrappedText = new Set(['✓', '⌄', '−']);
 
 function read(path) {
   return readFileSync(path, 'utf8');

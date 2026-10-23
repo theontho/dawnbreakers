@@ -35,7 +35,10 @@ listening into play. Techniques worth borrowing, with how each could fit:
    *Here:* the pilgrim's search (asking for time, recognition) as a real
    track: doubt, fear for one's safety and longing as voices that argue in
    key moments and open or close what the player can say.
-4. **One signature verb per chapter.** *What Remains of Edith Finch* gives
+4. **One signature verb per chapter.** *(Built, October 2026: six of them,
+   see "Mini-games" in `docs/content-guide.md`. Zanján's share of the
+   rationing is still open.)*
+   *What Remains of Edith Finch* gives
    each story its own small mechanic; *1979 Revolution: Black Friday* (set
    in Iran) makes choosing what to photograph the gameplay. Ideas:
    - Ship: keep the lamp lit through the storm.

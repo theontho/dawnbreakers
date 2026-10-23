@@ -10,14 +10,16 @@ import type { TileKind } from '../scenes/baseMapTypes';
 
 export type SfxId =
   | 'uiClick' | 'uiHover' | 'dialogueOpen' | 'dialogueAdvance' | 'choice'
-  | 'objective' | 'journal' | 'exit' | 'locked' | 'chapterComplete';
+  | 'objective' | 'journal' | 'exit' | 'locked' | 'chapterComplete'
+  // The chapters' mini-games.
+  | 'gust' | 'clink' | 'scratch' | 'warm' | 'murmur' | 'call';
 
 const D4 = 293.66;
 const MAHUR = [0, 200, 400, 500, 700, 900, 1100];
 const pitch = (degree: number) => D4 * 2 ** ((MAHUR[((degree % 7) + 7) % 7]! + 1200 * Math.floor(degree / 7)) / 1200);
 
 /** Minimum gap between repeats of the same effect, so held keys do not machine-gun. */
-const MIN_GAP: Partial<Record<SfxId, number>> = { uiHover: 0.06, dialogueAdvance: 0.05 };
+const MIN_GAP: Partial<Record<SfxId, number>> = { uiHover: 0.06, dialogueAdvance: 0.05, scratch: 0.07, murmur: 0.5 };
 const lastPlayed = new Map<SfxId, number>();
 
 export function playSfx(id: SfxId): void {
@@ -78,6 +80,31 @@ const EFFECTS: Record<SfxId, (g: AudioGraph, t: number) => void> = {
   locked: (g, t) => {
     noiseBurst(g, g.sfx, t, 0.12, 260, 'lowpass', 0.4);
     note(g, 'tar', t, -7, 0.15, 0.5);
+  },
+  gust: (g, t) => {
+    // Wind across the deck: a long swell of low noise.
+    noiseBurst(g, g.sfx, t, 1.1, 520, 'bandpass', 0.2);
+    noiseBurst(g, g.sfx, t + 0.25, 0.8, 1300, 'bandpass', 0.08);
+  },
+  clink: (g, t) => {
+    // A glass coffee cup set on a brass tray.
+    note(g, 'bell', t, 11, 0.18, 0.28);
+    noiseBurst(g, g.sfx, t, 0.03, 5200, 'highpass', 0.08);
+  },
+  scratch: (g, t) => noiseBurst(g, g.sfx, t, 0.06, 3200 + Math.random() * 1600, 'bandpass', 0.05),
+  warm: (g, t) => {
+    // Coals stirred: a soft crackle.
+    for (let i = 0; i < 5; i++) noiseBurst(g, g.sfx, t + i * 0.07 + Math.random() * 0.04, 0.03, 2200, 'bandpass', 0.07);
+  },
+  murmur: (g, t) => {
+    // Voices in a room: a low, shapeless swell.
+    noiseBurst(g, g.sfx, t, 0.6, 380, 'lowpass', 0.07);
+    noiseBurst(g, g.sfx, t + 0.15, 0.45, 650, 'bandpass', 0.04);
+  },
+  call: (g, t) => {
+    // The night watch's call, far off.
+    note(g, 'ney', t, -2, 0.5, 0.32);
+    note(g, 'ney', t + 0.45, -4, 0.8, 0.28);
   },
   chapterComplete: (g, t) => {
     [0, 2, 4, 7, 9, 11, 14].forEach((d, i) => note(g, 'santur', t + i * 0.11, d, 0.5, 0.5 - i * 0.03));

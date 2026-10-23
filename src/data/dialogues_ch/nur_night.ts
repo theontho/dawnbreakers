@@ -87,13 +87,35 @@ export const nurHusaynNight: DialogueTree = {
       onEnter: { set: { nurScrollGiven: true } },
       text: 'Most assuredly. (He holds the bundle against his chest with both hands, as if it were warm.) At dawn, then. (To you:) The lanes are dark before the sun. Walk with me, if you will.',
       choices: [
-        { text: '"I will walk with you as far as the door."' },
+        { text: '"I will walk with you as far as the door."', next: 'lanes' },
         { text: '(Look to Mullá Ḥusayn.)', next: 'door' },
       ],
     },
     door: {
       speaker: 'Mullá Ḥusayn',
       text: 'Go with him as far as the door. Not through it. What is in the scroll is not mine to show, and it is not yours to carry. (He turns the wick down.) Sleep an hour if you can.',
+      choices: [{ text: '(Sleep an hour.)', next: 'lanes' }],
+    },
+    lanes: {
+      speaker: 'Narrator',
+      text: 'An hour before dawn you go out by the madrasa gate. The lanes of Ṭihrán are black, and the night watch is still going its rounds, a lantern held up to every shadow. The tutor walks a pace behind you with one hand flat on his cloak.',
+      choices: [{ text: '(Lead the way.)', next: 'through', play: 'LanesGame' }],
+    },
+    through: {
+      speaker: 'Narrator',
+      text: 'The sky is greying over the rooftops.',
+      choices: [
+        { text: '(Look back at the tutor.)', next: 'unseen', requires: f => f.nurLanesNoticed === 0 },
+        { text: '(Look back at the tutor.)', next: 'seen', requires: f => f.nurLanesNoticed !== 0 },
+      ],
+    },
+    unseen: {
+      speaker: 'Mullá Muḥammad-i-Muʿallim',
+      text: '(He lets out a breath he seems to have held since the gate.) Not one lantern found us. You have done this before. (He does not wait for an answer.) Go on to the lane. I will come behind you.',
+    },
+    seen: {
+      speaker: 'Mullá Muḥammad-i-Muʿallim',
+      text: '(He laughs, shakily.) Students, to the dawn prayer. I have not told so many half-truths in a year. It was the prayer that was true. Go on to the lane. I will come behind you.',
     },
   },
 };

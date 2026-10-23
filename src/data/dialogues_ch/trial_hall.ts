@@ -50,7 +50,32 @@ export const trialHallListen: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'Voices come through the doors, rising and falling, too muffled for words. The coffee on your tray has gone cold. Whoever comes out next will know more than you.',
+      text: 'Voices come through the doors, rising and falling, too muffled for words. Now and then a servant goes up with a tray, and for a moment the doors stand open.',
+      choices: [
+        { text: '(Fill your tray, and be on the top step when they open.)', next: 'after', play: 'CoffeeGame',
+          requires: f => f.trialOverheard === undefined },
+        { text: '(Wait at the foot of the steps.)', next: 'wait' },
+      ],
+    },
+    after: {
+      speaker: 'Narrator',
+      text: 'The doors are shut again, and the farrásh has his back to them.',
+      choices: [
+        { text: '(Go over what you heard.)', next: 'much', requires: f => Number(f.trialOverheard) >= 4 },
+        { text: '(Go over what you heard.)', next: 'some', requires: f => Number(f.trialOverheard) < 4 },
+      ],
+    },
+    much: {
+      speaker: 'Narrator',
+      text: 'You heard the questions, nearly all of them, one after another, like stones thrown at a door. You did not hear one answer. Out here the answers came only as a silence, each time a little longer.',
+    },
+    some: {
+      speaker: 'Narrator',
+      text: 'You caught a question here and there, and a name said in disbelief. The rest was voices through wood. Whoever comes out next will know more than you.',
+    },
+    wait: {
+      speaker: 'Narrator',
+      text: 'The coffee on your tray goes cold. Whoever comes out next will know more than you.',
     },
   },
 };

@@ -191,6 +191,37 @@ long-exposure star trails, and the facing.
 - Every NPC conversation should leave the player with something: a fact, a
   flag, a feeling, a direction.
 
+### Mini-games
+
+A choice with `play: 'LampGame'` (any `MiniGameId`) hides the dialogue and
+plays that chapter's mini-game over the map, then goes on to the choice's
+`next`. The games live in `src/scenes/minigames/`, one scene each on
+`MiniGameScene`. Each writes its result into the flags, and the node after it
+branches on that with `requires`, so the same moment reads differently
+depending on how it went.
+
+| Game | Chapter | Where | Result flag |
+| --- | --- | --- | --- |
+| `LampGame` | Mecca | the storm at the cabin door | `ch3LanternOuts` |
+| `InkGame` | Mountain prisons | Siyyid Ḥusayn's room at Mákú | `ch6CopiedLine` |
+| `CoffeeGame` | Trial at Tabríz | the foot of the hall steps | `trialOverheard` |
+| `RationGame` | Ṭabarsí | the young companion at the cauldron | `ch8RationFavoured` |
+| `CurtainGame` | Ṭáhirih | the curtain at Karbilá | `qzListened` |
+| `LanesGame` | Ṭihrán and Núr | after the scroll is given | `nurLanesNoticed` |
+
+Rules for them:
+- Nothing can be lost. However a game goes, the story goes on, and how it
+  went only changes what is said about it. Each one can be skipped (Skip, or
+  Escape), which records a middling result.
+- A game is one verb that belongs to its chapter: shielding a flame,
+  copying a line, listening at a door. No combat, no score on screen, and
+  the central figures are never seen or heard in one. At the trial, only
+  the questions carry through the doors, never the answers.
+- Play with the pointer and with the keyboard, and fit a phone's screen.
+  Keep time with `elapsed` and `dt`, which follow the wall clock.
+- `npm run minigames` plays each one start to finish with a bot and saves a
+  screenshot of each (`--quick` skips after the screenshot).
+
 ## Objectives and journal (`ChapterStory`)
 
 - `objectives` is an ordered list. The HUD shows the first one not yet
@@ -326,6 +357,7 @@ large catalogs, and regenerates it after importing.
 npm run typecheck
 npm run lint            # eslint, localization, dialogue references, content rules
 npm run smoke           # boots every map, opens every NPC dialogue
+npm run minigames       # plays every chapter's mini-game with a bot
 npm run smoke -- --scenes City,Road --shots out/shots   # screenshots to inspect
 npm run look -- City:8:13                                # one spot, up close
 ```

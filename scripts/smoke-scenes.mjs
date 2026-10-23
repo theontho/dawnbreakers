@@ -82,6 +82,12 @@ async function walkDialogues(k) {
       const ended = !node || !choice.next || !dialogue.tree.nodes[choice.next];
       dialogue.choose(choice);
       await new Promise((r) => setTimeout(r, 0));
+      // A choice that plays a mini-game: skip it, as a player may, and wait for the dialogue to come back.
+      const miniGame = game.scene.getScenes(true).find((s) => typeof s.skipMiniGame === 'function');
+      if (miniGame) {
+        miniGame.skipMiniGame();
+        await until(() => game.scene.isActive('Dialogue'), 5000);
+      }
       if (ended) return true;
     }
     return false;

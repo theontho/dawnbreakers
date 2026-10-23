@@ -30,7 +30,8 @@
     "look": "node scripts/look.mjs",
     "journeys": "node scripts/journeys.mjs",
     "journeys:stars": "node scripts/generate-travel-stars.mjs",
-    "i18n:glossary": "node scripts/i18n-glossary.mjs"
+    "i18n:glossary": "node scripts/i18n-glossary.mjs",
+    "minigames": "node scripts/minigames.mjs"
   },
   "keywords": [],
   "author": "",

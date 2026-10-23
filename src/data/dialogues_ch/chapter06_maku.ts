@@ -147,8 +147,29 @@ export const ch6Amanuensis: DialogueTree = {
     invite: {
       speaker: 'Siyyid Ḥusayn, the Amanuensis',
       onEnter: { set: { ch6MetAmanuensis: true } },
-      text: 'If the Khán has let you in, sit on my mat and read. The pages will go down the mountain soon enough, sewn into saddle-cloths. Better that a few should read them warm from the pen.',
-      choices: [{ text: '(Thank him, and kneel by the pages.)' }],
+      text: 'If the Khán has let you in, sit on my mat and read. The pages will go down the mountain soon enough, sewn into saddle-cloths. And if your hand is steady, copy me the line at the head of the page while I warm mine. Every copy is another road down the mountain.',
+      choices: [
+        { text: '(Take the pen.)', next: 'copied', play: 'InkGame' },
+        { text: '(Thank him, and kneel by the pages.)' },
+      ],
+    },
+    copied: {
+      speaker: 'Siyyid Ḥusayn, the Amanuensis',
+      text: '(He takes the sheet to the window.)',
+      choices: [
+        { text: '(Wait.)', next: 'whole', requires: f => f.ch6CopiedLine === 'whole' },
+        { text: '(Wait.)', next: 'part', requires: f => f.ch6CopiedLine !== 'whole' },
+      ],
+    },
+    whole: {
+      speaker: 'Siyyid Ḥusayn, the Amanuensis',
+      text: 'The whole line, and before the light went. Your hand shakes in the alifs, but so did mine the first winter. This one goes down the mountain with the others.',
+      choices: [{ text: '(Kneel by the pages.)' }],
+    },
+    part: {
+      speaker: 'Siyyid Ḥusayn, the Amanuensis',
+      text: 'Half a line, and the light gone. (He smiles.) That is a good day\'s work in Mákú. I will finish it in the morning, and it will go down the mountain with your half in it.',
+      choices: [{ text: '(Kneel by the pages.)' }],
     },
   },
 };

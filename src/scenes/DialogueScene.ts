@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { DialogueTree, DialogueChoice } from '../dialogue/types';
 import { applyEffect, getFlags } from '../dialogue/flags';
 import { playSfx } from '../audio';
+import type { MiniGameLaunch } from './minigames/MiniGameScene';
 import { attachGlossary } from '../ui/glossary/glossaryText';
 import { formatNumber, localizedStyle, rtl, t, tName } from '../i18n';
 import { buttonFont, clamp, MIN_TOUCH_TARGET, responsiveFont, safeLayout } from '../ui/responsive';
@@ -179,6 +180,27 @@ export class DialogueScene extends Phaser.Scene {
     playSfx((node?.choices?.length ?? 0) > 1 ? 'choice' : 'dialogueAdvance');
     if (choice.effect) applyEffect(choice.effect);
 
+    if (choice.play) {
+      this.playMiniGame(choice);
+      return;
+    }
+    this.goTo(choice);
+  }
+
+  /** Hides the dialogue while the mini-game plays over the map, then goes on. */
+  private playMiniGame(choice: DialogueChoice): void {
+    this.scene.setVisible(false);
+    this.scene.launch(choice.play!, {
+      onFinish: () => {
+        this.scene.resume();
+        this.scene.setVisible(true);
+        this.goTo(choice);
+      },
+    } as MiniGameLaunch);
+    this.scene.pause();
+  }
+
+  private goTo(choice: DialogueChoice): void {
     if (!choice.next) {
       this.finish();
       return;

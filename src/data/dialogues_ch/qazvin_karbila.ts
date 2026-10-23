@@ -40,6 +40,24 @@ export const curtain: DialogueTree = {
     g: {
       speaker: 'Narrator',
       text: 'You kneel in the empty place at the curtain\'s edge, half in its shadow, where a woman may sit and hear. Beyond the cloth a lamp burns, and a woman\'s shadow moves across it as she turns a page. The men on the near side go still. Then the voice begins, clear and unhurried, in Arabic first and then in Persian.',
+      choices: [{ text: '(Listen.)', next: 'heard', play: 'CurtainGame' }],
+    },
+    heard: {
+      speaker: 'Narrator',
+      text: 'The voice stops. A page turns behind the cloth.',
+      choices: [
+        { text: '(Keep what you heard.)', next: 'clear', requires: f => f.qzListened === 'clear' },
+        { text: '(Keep what you heard.)', next: 'part', requires: f => f.qzListened !== 'clear' },
+      ],
+    },
+    clear: {
+      speaker: 'Narrator',
+      text: 'You have it nearly word for word, the way your father keeps a verse. Later, in Qazvín, you will find you can still say it over, and that it has not grown smaller.',
+      choices: [{ text: '(Listen.)', next: 'voice' }],
+    },
+    part: {
+      speaker: 'Narrator',
+      text: 'You have pieces of it, and the drums have the rest. It does not matter as much as you feared. The pieces are the kind that grow back into the whole if you carry them long enough.',
       choices: [{ text: '(Listen.)', next: 'voice' }],
     },
     voice: {

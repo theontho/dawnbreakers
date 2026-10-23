@@ -73,10 +73,47 @@ export const youthHunger: DialogueTree = {
       speaker: 'A Young Companion',
       text: 'Do not look in the pot. (He smiles weakly.) It is a saddle. We boil the leather until it is soft enough to chew. Before the saddles it was the horses, and before the horses the rice ran out.',
       choices: [
+        { text: '"Quddús asked me to help share out what is left."', next: 'stores',
+          requires: f => !!f.ch8AskedToShare && f.ch8RationFavoured === undefined },
         { text: '"Eat my share. I am not hungry."', next: 'give' },
         { text: '(Sit and take your share in silence.)', next: 'share' },
         { text: '"Do you remember the village woman\'s rice?"', next: 'rice', requires: f => !!f.ch8GaveRice },
       ],
+    },
+    stores: {
+      speaker: 'A Young Companion',
+      text: 'Then God help you, because I could not do it. (He points with the ladle.) The wounded by the wall. The watch, when they come down. The boys from Mashhad, my own lot. Every week there is less, and every week they all look at you.',
+      choices: [{ text: '(Take the ladle.)', next: 'shared', play: 'RationGame' }],
+    },
+    shared: {
+      speaker: 'A Young Companion',
+      text: '(He takes the empty pot from you and turns it over.) Well. That is the stores.',
+      choices: [
+        { text: '"I gave most to the wounded."', next: 'toWounded', requires: f => f.ch8RationFavoured === 'wounded' },
+        { text: '"I kept the watch on its feet."', next: 'toWatch', requires: f => f.ch8RationFavoured === 'watch' },
+        { text: '"I fed the youngest first."', next: 'toYoung', requires: f => f.ch8RationFavoured === 'young' },
+        { text: '"I tried to give everyone the same."', next: 'toAll', requires: f => f.ch8RationFavoured === 'even' },
+      ],
+    },
+    toWounded: {
+      speaker: 'A Young Companion',
+      text: 'The men on the walls grumbled, and then they stopped grumbling. Every one of them has lain by that wall himself, or will. Nobody here will tell you it was wrong.',
+      choices: [{ text: '(Sit beside him.)', next: 'share' }],
+    },
+    toWatch: {
+      speaker: 'A Young Companion',
+      text: 'Someone has to be awake when they come at the gate. The wounded understood; they used to be the watch. Nobody here will tell you it was wrong.',
+      choices: [{ text: '(Sit beside him.)', next: 'share' }],
+    },
+    toYoung: {
+      speaker: 'A Young Companion',
+      text: 'Quddús said the youngest, and you listened. (He looks at his hands.) I ate it. I am ashamed, and I ate it. Nobody here will tell you it was wrong.',
+      choices: [{ text: '(Sit beside him.)', next: 'share' }],
+    },
+    toAll: {
+      speaker: 'A Young Companion',
+      text: 'The same, to the grain. It was not enough for anyone, and it was not more for anyone. That is the only fairness left in this fort. Nobody here will tell you it was wrong.',
+      choices: [{ text: '(Sit beside him.)', next: 'share' }],
     },
     give: {
       speaker: 'A Young Companion',
@@ -108,6 +145,7 @@ export const quddusHunger: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Quddús',
+      onEnter: { set: { ch8AskedToShare: true } },
       text: 'He rests beside the shrine now, and I speak with him in the evenings as before. (He is thin; his eyes are not.) We have eaten our horses and our saddles. Share what there is with the youngest, and keep listening at the gate.',
       choices: [{ text: '"How long can we hold?"', next: 'hold' }],
     },

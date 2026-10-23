@@ -119,13 +119,31 @@ export const cabinStorm: DialogueTree = {
       speaker: 'Narrator',
       text: 'Night. The wind the captain promised comes out of the south like a door flung open. The deck tilts until the stars swing through the rigging. Below, pilgrims cry out; a cask breaks loose and rolls toward the rail.',
       choices: [
-        { text: '(Brace yourself against the cabin wall.)', next: 'voice' },
         { text: '(Throw yourself on the loose cask with the sailors.)', next: 'help', effect: { set: { ch3HelpedSailors: true } } },
+        { text: '(Brace yourself against the cabin wall.)', next: 'voice' },
       ],
     },
     help: {
       speaker: 'Narrator',
-      text: 'You haul on wet rope beside a sailor whose name you never learn. When the cask is fast he slaps your shoulder and points with his chin toward the stern: the lamp behind the lattice still burns.',
+      text: 'A sailor whose name you never learn pushes the galley lantern into your hands and shouts over the wind: light, here, so they can see the knots. The flame is already bending.',
+      choices: [{ text: '(Shield the flame.)', next: 'lashed', play: 'LampGame' }],
+    },
+    lashed: {
+      speaker: 'Narrator',
+      text: 'The last knot is hauled tight, and the cask sits still against the rail. The sailor slaps your shoulder and points with his chin toward the stern.',
+      choices: [
+        { text: '(Look where he points.)', next: 'steady', requires: f => f.ch3LanternOuts === 0 },
+        { text: '(Look where he points.)', next: 'guttered', requires: f => f.ch3LanternOuts !== 0 },
+      ],
+    },
+    steady: {
+      speaker: 'Narrator',
+      text: 'Your flame never went out, though it lay down flat and stood up again a dozen times. At the stern, behind the lattice, the other lamp burns as it has burned since Búshihr, without a hand to shield it.',
+      choices: [{ text: '(Crawl back to the cabin door.)', next: 'voice' }],
+    },
+    guttered: {
+      speaker: 'Narrator',
+      text: 'Your flame drowned in the spray, and Mubárak lit it again from the galley coals without a word. At the stern, behind the lattice, the other lamp has not so much as flickered.',
       choices: [{ text: '(Crawl back to the cabin door.)', next: 'voice' }],
     },
     voice: {
