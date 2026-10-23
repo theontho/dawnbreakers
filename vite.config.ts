@@ -39,6 +39,11 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         skyrewind: fileURLToPath(new URL('./skyrewind.html', import.meta.url)),
       },
+      output: {
+        // Phaser is half the download and changes only with an upgrade; its
+        // own file stays in the browser's cache across releases of the game.
+        manualChunks: (id) => (id.includes('/node_modules/phaser/') ? 'phaser' : undefined),
+      },
     },
   },
 });

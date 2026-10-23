@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import { ensureMapAssetTextures, ensureTileTextures } from '../assets/mapAssetLibrary';
+import { ensureTileTextures } from '../assets/mapAssetLibrary';
 
 /**
- * Generates procedural placeholder textures so the game runs without external
- * art assets. Real sprite work can replace these later.
+ * Paints the ground tiles, which every map shares. Map objects are painted
+ * by each map as it opens (`ensureTexturesNamedIn`), so boot does not pay
+ * for every chapter's art before the title shows.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -12,7 +13,6 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     ensureTileTextures(this);
-    ensureMapAssetTextures(this);
     this.scene.start('Title');
   }
 }

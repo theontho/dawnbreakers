@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { ensureTexturesNamedIn } from '../assets/mapAssetLibrary';
 import { applyMapAudio, playFootstep, playSfx } from '../audio';
 import { chapterByScene, type Chapter } from '../data/chapters';
 import { dialogues } from '../data/dialogues';
@@ -78,6 +79,8 @@ export class MapScene extends Phaser.Scene {
   private mapCameras!: MapCameras;
   private restoreAudio: () => void = () => {};
   private revealMasks: RevealMaskHandle = { states: [], candidates: [] };
+  /** Started from chapter select: play the opening narration again. */
+  private replayOpening = false;
   private highlights: InteractableHighlightHandle = createInteractableHighlightHandle();
   private refreshExitGlows: () => void = () => {};
   private objectiveHud?: ObjectiveHud;
@@ -118,6 +121,7 @@ export class MapScene extends Phaser.Scene {
 
   init(data: SceneSpawnData): void {
     const spawn = this.definition.spawn;
+    this.replayOpening = data.replayOpening === true;
     this.playerGrid = { x: data.spawnX ?? spawn.x, y: data.spawnY ?? spawn.y };
     this.map = [];
     this.blocked = [];
@@ -148,6 +152,13 @@ export class MapScene extends Phaser.Scene {
     this.originY = responsiveMargin(size) + (isNarrowLayout(size) ? 62 : 58);
 
     this.buildWorldData();
+    ensureTexturesNamedIn(this, {
+      buildings: this.buildings,
+      decor: this.decor,
+      npcs: this.definition.npcs,
+      doors: this.definition.doors,
+      player: this.chapter?.player ?? 'player',
+    });
     this.cameras.main.setBackgroundColor(WORLD_BACKDROP_COLOR);
     const world = renderBaseMapWorld(this, this.worldState());
     this.occludableSprites = world.occludableSprites;
@@ -192,10 +203,12 @@ export class MapScene extends Phaser.Scene {
       destroyPlayerRevealMasks(this.revealMasks, this, this.occludableSprites);
     });
 
+    if (import.meta.env.DEV) reportMissingTextures(this);
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.bookmark();
     scheduleChapterOpening(this, this.chapter, tree =>
-      launchBaseMapDialogue(this, tree, visible => this.setMobileControlsVisible(visible), () => this.afterDialogue()));
+      launchBaseMapDialogue(this, tree, visible => this.setMobileControlsVisible(visible), () => this.afterDialogue()),
+    this.replayOpening);
   }
 
   private bookmark(): void {
@@ -460,5 +473,14 @@ export class MapScene extends Phaser.Scene {
 
   private triggerInteraction(): void {
     nearestInteractable(this.npcs.interactables, this.playerGrid)?.action();
+  }
+}
+
+/** A sprite whose texture was never painted draws Phaser's green box; say which, so smoke fails. */
+function reportMissingTextures(scene: Phaser.Scene): void {
+  const missing = scene.children.list.filter((child): child is Phaser.GameObjects.Image =>
+    child instanceof Phaser.GameObjects.Image && child.texture.key === '__MISSING');
+  if (missing.length > 0) {
+    console.error(`${scene.scene.key}: ${missing.length} sprite(s) have no painted texture; name them where ensureTexturesNamedIn can see them`);
   }
 }

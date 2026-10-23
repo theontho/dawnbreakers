@@ -19,6 +19,29 @@ export function ensureMapAssetTextures(scene: Phaser.Scene): void {
   for (const def of MAP_OBJECTS) ensureMapAssetTexture(scene, def);
 }
 
+const DEFINITION_BY_TEXTURE = new Map(MAP_OBJECTS.map(def => [def.texture, def]));
+
+/**
+ * Paints the map-object textures named anywhere in `data` (a laid-out map,
+ * its NPCs and doors), so a scene pays only for what it shows instead of the
+ * whole library at boot. Any string that is a texture key, or a variant of
+ * one (`texture~N`), counts.
+ */
+export function ensureTexturesNamedIn(scene: Phaser.Scene, data: unknown): void {
+  const seen = new Set<object>();
+  const visit = (value: unknown): void => {
+    if (typeof value === 'string') {
+      const def = DEFINITION_BY_TEXTURE.get(value.split('~')[0]!);
+      if (def) ensureMapAssetTexture(scene, def);
+      return;
+    }
+    if (typeof value !== 'object' || value === null || seen.has(value)) return;
+    seen.add(value);
+    for (const item of Array.isArray(value) ? value : Object.values(value)) visit(item);
+  };
+  visit(data);
+}
+
 export function ensureMapAssetTexture(scene: Phaser.Scene, def: MapObjectDefinition): void {
   if (scene.textures.exists(def.texture)) return;
   const custom = CUSTOM_TEXTURE_GENERATORS[def.id];

@@ -23,5 +23,6 @@ export {
 export {
   ensureMapAssetTexture,
   ensureMapAssetTextures,
+  ensureTexturesNamedIn,
   ensureTileTextures,
 } from './mapAssetTextures';

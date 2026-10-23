@@ -26,6 +26,9 @@ try {
   page.on('pageerror', (e) => console.error(`pageerror: ${e.message}`));
   await page.goto(url);
   await waitForBoot(page);
+  // Maps paint only their own art; the editor paints the whole library.
+  await page.evaluate(() => window.__game.scene.start('MapEditor', { from: 'Title' }));
+  await page.waitForFunction(() => window.__game.scene.isActive('MapEditor'), null, { timeout: 60000 });
   const sheets = await page.evaluate(({ filters, scale }) => {
     const textures = window.__game.textures;
     const keys = textures.getTextureKeys()
