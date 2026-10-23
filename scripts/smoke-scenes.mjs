@@ -12,8 +12,8 @@
  *   npm run smoke -- --shots out/shots  # also save a screenshot per scene
  *   npm run smoke -- --gpu              # real GPU, for meaningful frame rates
  *
- * Uses the system Chromium (override with CHROMIUM_PATH) through
- * `lib/gameBrowser.mjs`, which starts its own Vite server and always cleans up.
+ * Runs Chromium through `lib/gameBrowser.mjs` (which picks the browser and
+ * says how to install one), starting its own Vite server and always cleaning up.
  */
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -132,7 +132,8 @@ try {
       game.scene.getScenes(true).forEach((s) => s.scene.stop());
       game.scene.start(k);
     }, key);
-    await page.waitForFunction((k) => window.__game.scene.isActive(k), key, { timeout: 10000 });
+    // A map paints its art on its first visit, which takes a while in software rendering.
+    await page.waitForFunction((k) => window.__game.scene.isActive(k), key, { timeout: 30000 });
     await page.waitForTimeout(500);
     const fps = await page.evaluate(() => new Promise((done) => {
       let frames = 0;

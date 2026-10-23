@@ -21,9 +21,10 @@
  *   npm run reap -- --all              # also stop attached ones (yours to stop)
  *   npm run reap -- --keep-port 4173   # spare a server on that port even with --all
  *
- * Linux only (reads /proc). Never touches a browser you opened yourself on
- * an ordinary page.
+ * Reads /proc on Linux and asks `ps` and `lsof` on macOS. Never touches a
+ * browser you opened yourself on an ordinary page.
  */
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, readlinkSync } from 'node:fs';
 import { basename, dirname } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -38,6 +39,10 @@ const repoName = basename(root);
 
 /** Every process as { pid, ppid, argv, cwd }. */
 function processes() {
+  return process.platform === 'linux' ? linuxProcesses() : psProcesses();
+}
+
+function linuxProcesses() {
   const out = [];
   for (const entry of readdirSync('/proc')) {
     if (!/^\d+$/.test(entry)) continue;
@@ -51,6 +56,36 @@ function processes() {
       try { cwd = readlinkSync(`/proc/${pid}/cwd`); } catch { /* another user's process */ }
       out.push({ pid, ppid, argv, cwd });
     } catch { /* exited while we looked */ }
+  }
+  return out;
+}
+
+/**
+ * The same from `ps`, for systems without /proc. `ps` gives the command line
+ * as one string, so argv is split on spaces (paths with spaces in them, such
+ * as an app bundle, come back in pieces, which only ever makes them look less
+ * like ours). Working directories come from one `lsof` call, and only for
+ * the programs `why` can pick out by cwd.
+ */
+function psProcesses() {
+  const out = execFileSync('ps', ['-axww', '-o', 'pid=,ppid=,command='], { encoding: 'utf8' })
+    .split('\n')
+    .map((row) => row.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/))
+    .filter(Boolean)
+    .map(([, pid, ppid, command]) => ({ pid: Number(pid), ppid: Number(ppid), argv: command.split(/\s+/), cwd: '' }));
+  const needCwd = out.filter((p) => /^(node|npm|npx|vite)$/.test(basename(p.argv[0])));
+  if (needCwd.length === 0) return out;
+  let listing = '';
+  try {
+    listing = execFileSync('lsof', ['-a', '-d', 'cwd', '-Fpn', '-p', needCwd.map((p) => p.pid).join(',')], { encoding: 'utf8' });
+  } catch (error) {
+    listing = error.stdout ?? ''; // lsof exits 1 when some pid has already gone
+  }
+  const byPid = new Map(out.map((p) => [p.pid, p]));
+  let current;
+  for (const row of listing.split('\n')) {
+    if (row.startsWith('p')) current = byPid.get(Number(row.slice(1)));
+    else if (row.startsWith('n') && current) current.cwd = row.slice(1);
   }
   return out;
 }
@@ -89,6 +124,7 @@ function why(p) {
 }
 
 const byPid = new Map(all.map(p => [p.pid, p]));
+// pid 1 is init or systemd on Linux and launchd on macOS.
 const isSystem = (p) => !p || p.pid === 1 || /(^|\/)systemd$/.test(p.argv[0]) || p.argv[0] === 'systemd';
 
 /**

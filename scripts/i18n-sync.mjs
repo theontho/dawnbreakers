@@ -105,8 +105,9 @@ function parseEntries(source) {
   const entries = [];
   let section;
   source.split('\n').forEach((line, index) => {
-    if (line.startsWith('export const text')) section = 'text';
-    else if (line.startsWith('export const names')) section = 'names';
+    // Each catalog is declared once and extended by later `Object.assign` blocks.
+    if (/^(export const text|Object\.assign\(text\b)/.test(line)) section = 'text';
+    else if (/^(export const names|Object\.assign\(names\b)/.test(line)) section = 'names';
     if (!section) return;
     const match = line.match(/^\s+(?:'((?:\\.|[^'\\])*)'|"((?:\\.|[^"\\])*)"|([A-Za-z_$][\w$]*))\s*:/);
     if (!match) return;

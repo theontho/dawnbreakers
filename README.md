@@ -28,7 +28,9 @@ npm run look -- City:8:13  # screenshot with the player at a cell -> out/look-*.
 
 The headless scripts render in software by default and always close their
 browser; GPU runs leave memory in the graphics driver's page pool, so use
-`--gpu` only when measuring frame rate.
+`--gpu` only when measuring frame rate. They use `/usr/bin/chromium` on
+Linux (or `CHROMIUM_PATH`); elsewhere, install Playwright's build once with
+`npx playwright-core install chromium-headless-shell`.
 
 All art and sound are generated at runtime: textures are painted with the
 canvas API at boot, and the music is a generative Persian ensemble (santur,

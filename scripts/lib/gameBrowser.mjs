@@ -8,6 +8,7 @@
  * GPU-backed headless browser leaves its textures in the graphics driver's
  * page pool after it exits, and many runs in a day can pin gigabytes there.
  */
+import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -15,8 +16,20 @@ import { createServer } from 'vite';
 
 export const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 
-const GPU_ARGS = ['--enable-gpu', '--use-angle=gl', '--ignore-gpu-blocklist'];
+// ANGLE's OpenGL backend is deprecated on macOS and runs the game at a few
+// frames a second there; Metal is the native one.
+const GPU_ARGS = ['--enable-gpu', `--use-angle=${process.platform === 'darwin' ? 'metal' : 'gl'}`, '--ignore-gpu-blocklist'];
 const SOFTWARE_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+
+/**
+ * `CHROMIUM_PATH`, else the system Chromium on Linux, else Playwright's own
+ * download (`npx playwright-core install chromium-headless-shell`), which is
+ * how macOS runs these scripts.
+ */
+function browserPath() {
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+  return existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined;
+}
 
 /**
  * @param {{ gpu?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
@@ -25,8 +38,14 @@ export async function openGame(options = {}) {
   const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null, open: false } });
   await server.listen();
   const browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',
+    executablePath: browserPath(),
     args: [...(options.gpu ? GPU_ARGS : SOFTWARE_ARGS), ...(options.args ?? [])],
+  }).catch(async (error) => {
+    await server.close().catch(() => {});
+    if (/Executable doesn't exist/.test(error.message)) {
+      throw new Error(`${error.message}\nInstall Playwright's headless Chromium with: npx playwright-core install chromium-headless-shell`);
+    }
+    throw error;
   });
   let closed = false;
   const close = async () => {
