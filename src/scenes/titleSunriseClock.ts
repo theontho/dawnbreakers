@@ -6,7 +6,20 @@
 
 export const SUNRISE_SPEEDS = [0.5, 1, 2, 4, 8, 16] as const;
 
-type Listener = (clock: SunriseClock) => void;
+/**
+ * Why the clock changed: a frame went by (`tick`), the playhead jumped
+ * (`seek`), playback started or stopped (`play`), or the speed changed.
+ */
+export type SunriseChange = 'tick' | 'seek' | 'play' | 'speed';
+
+type Listener = (clock: SunriseClock, change: SunriseChange) => void;
+
+/** Where the playhead is, to carry the sunrise across a restart of the scene. */
+export interface SunriseClockState {
+  positionMs: number;
+  speed: number;
+  playing: boolean;
+}
 
 export class SunriseClock {
   private positionMs = 0;
@@ -14,7 +27,16 @@ export class SunriseClock {
   private playing = true;
   private readonly listeners = new Set<Listener>();
 
-  constructor(readonly durationMs: number) {}
+  constructor(readonly durationMs: number, from?: SunriseClockState) {
+    if (!from) return;
+    this.positionMs = Math.max(0, Math.min(durationMs, from.positionMs));
+    this.speedIndex = Math.max(0, SUNRISE_SPEEDS.indexOf(from.speed as typeof SUNRISE_SPEEDS[number]));
+    this.playing = from.playing;
+  }
+
+  get state(): SunriseClockState {
+    return { positionMs: this.positionMs, speed: this.speed, playing: this.playing };
+  }
 
   get position(): number {
     return this.positionMs;
@@ -45,13 +67,17 @@ export class SunriseClock {
   tick(deltaMs: number): void {
     if (!this.playing) return;
     this.positionMs = Math.min(this.durationMs, this.positionMs + deltaMs * this.speed);
-    if (this.atEnd) this.playing = false;
-    this.emit();
+    if (!this.atEnd) {
+      this.emit('tick');
+      return;
+    }
+    this.playing = false;
+    this.emit('play');
   }
 
   seek(positionMs: number): void {
     this.positionMs = Math.max(0, Math.min(this.durationMs, positionMs));
-    this.emit();
+    this.emit('seek');
   }
 
   seekBy(deltaMs: number): void {
@@ -62,22 +88,22 @@ export class SunriseClock {
   togglePlay(): void {
     if (!this.playing && this.atEnd) this.positionMs = 0;
     this.playing = !this.playing;
-    this.emit();
+    this.emit('play');
   }
 
   /** One speed slower or faster, holding at either end. */
   stepSpeed(direction: 1 | -1): void {
     this.speedIndex = Math.max(0, Math.min(SUNRISE_SPEEDS.length - 1, this.speedIndex + direction));
-    this.emit();
+    this.emit('speed');
   }
 
   /** One speed faster, wrapping from the fastest back to the slowest. */
   cycleSpeed(): void {
     this.speedIndex = (this.speedIndex + 1) % SUNRISE_SPEEDS.length;
-    this.emit();
+    this.emit('speed');
   }
 
-  private emit(): void {
-    this.listeners.forEach((listener) => listener(this));
+  private emit(change: SunriseChange): void {
+    this.listeners.forEach((listener) => listener(this, change));
   }
 }
