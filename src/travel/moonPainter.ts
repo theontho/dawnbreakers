@@ -21,7 +21,8 @@ export interface MoonDisc {
 }
 
 /**
- * The moon in its true phase: a dark disc with earthshine, the lit part
+ * The moon in its true phase: a dark disc with earthshine by night (lost in
+ * the daylight sky by day), the lit part
  * bounded by the limb on the sun's side and the terminator's half ellipse,
  * turned so the bright limb faces the sun.
  */
@@ -50,11 +51,16 @@ export function paintMoon(
     .setPosition(centre.x, centre.y)
     .setDisplaySize(radius * 16, radius * 16)
     .setTint(0xc8d4f0)
-    .setAlpha((0.08 + lit * 0.4) * (1 - light.daylight * 0.8))
+    .setAlpha(lit * 0.48 * (1 - light.daylight * 0.8))
     .setVisible(true);
 
-  graphics.fillStyle(mix(light.zenith, 0x3a4256, 0.5), 0.95);
-  graphics.fillCircle(centre.x, centre.y, radius);
+  // The dark side shows only by night, as earthshine and as the stars it
+  // hides; by day the sky's own light lies over it and it is not seen.
+  const darkSide = 0.95 * (1 - light.daylight);
+  if (darkSide > 0.01) {
+    graphics.fillStyle(mix(light.zenith, 0x3a4256, 0.5), darkSide);
+    graphics.fillCircle(centre.x, centre.y, radius);
+  }
   if (lit < 0.01) return undefined;
 
   const cos = Math.cos(sunward);
