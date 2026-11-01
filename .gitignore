@@ -6,6 +6,5 @@ dist-demo
 imgui.ini
 .vite
 native/**/build
-public/sky/hipparcos.csv
 tmp/
 out/
