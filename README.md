@@ -5,6 +5,9 @@ Phaser 3, TypeScript, and Vite. The current prototype is **non-combat** and
 focuses on isometric exploration, reflective dialogue, chapter progression,
 journals, and historical set pieces.
 
+Play it at **https://theontho.github.io/dawnbreakers/**. Publishing a GitHub
+release (or running the "Deploy to GitHub Pages" workflow by hand) redeploys it.
+
 ## Run it
 
 ```bash
@@ -13,6 +16,12 @@ npm run dev
 ```
 
 Then open the printed local URL.
+
+With [just](https://github.com/casey/just) installed (`brew install just`),
+`just` lists the shortcuts: `just run` starts the dev server, `just play`
+also opens the game in your browser, `just check` typechecks, lints and
+builds, and `just smoke`, `just look City:8:13` and the other headless
+scripts take the same arguments as their `npm run` forms.
 
 Useful checks:
 
@@ -35,8 +44,9 @@ Linux (or `CHROMIUM_PATH`); elsewhere, install Playwright's build once with
 All art and sound are generated at runtime: textures are painted with the
 canvas API at boot, and the music is a generative Persian ensemble (santur,
 tār, ney, kamāncheh, daf) synthesized with WebAudio, in modes that keep the
-dastgāhs' quarter tones. If `public/dawnbreakers.mp3` exists, the title screen
-plays that recording instead.
+dastgāhs' quarter tones. The title screen plays a recorded score,
+`public/dawnbreakers.mp3`, and falls back to the synthesized dawn theme if it
+cannot load.
 
 Writing chapters, maps, or dialogue? Read [`docs/content-guide.md`](docs/content-guide.md)
 first. To bring the translations up to date after changing English text:

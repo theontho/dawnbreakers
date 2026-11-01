@@ -7,6 +7,5 @@ imgui.ini
 .vite
 native/**/build
 public/sky/hipparcos.csv
-public/dawnbreakers.mp3
 tmp/
 out/

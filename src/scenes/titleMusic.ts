@@ -4,8 +4,8 @@ import { logGameMessage } from '../logging/gameLogger';
 import type { SunriseClock } from './titleSunriseClock';
 
 /**
- * The title screen's music: the recorded score when `dawnbreakers.mp3` is
- * present, otherwise the synthesized ensemble's dawn theme.
+ * The title screen's music: the recorded score `dawnbreakers.mp3`, or the
+ * synthesized ensemble's dawn theme if the recording cannot be loaded.
  */
 
 const MUSIC_KEY = 'title-background-music';
@@ -13,9 +13,9 @@ const MUSIC_PATH = 'dawnbreakers.mp3';
 const VOLUME = 0.45;
 
 /**
- * Streams the recording in after first paint. The file is not checked in
- * (see .gitignore), so probe for it first: decoding a dev server's HTML
- * fallback as audio throws an uncaught error.
+ * Streams the recording in after first paint. Probe for it first: if it is
+ * missing, decoding a dev server's HTML fallback as audio throws an uncaught
+ * error.
  */
 export async function loadTitleMusic(scene: Phaser.Scene): Promise<boolean> {
   if (scene.cache.audio.exists(MUSIC_KEY)) return true;
