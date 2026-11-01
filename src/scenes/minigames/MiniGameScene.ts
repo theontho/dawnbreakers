@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { applyEffect } from '../../dialogue/flags';
 import type { FlagState } from '../../dialogue/types';
-import { localizedStyle, rtl, t } from '../../i18n';
+import { localizedStyle, rtl, t, wrapsBetweenCharacters } from '../../i18n';
 import { buttonFont, responsiveFont, safeLayout } from '../../ui/responsive';
 
 /** What a dialogue choice (or the practice picker) hands a mini-game. */
@@ -167,8 +167,8 @@ export abstract class MiniGameScene extends Phaser.Scene {
   private placeFrame(): void {
     const { width, height } = this.scale;
     const safe = safeLayout({ width, height });
-    this.headingText.setPosition(safe.x + safe.width / 2, safe.y).setWordWrapWidth(safe.width - 160);
-    this.hintText.setPosition(safe.x + safe.width / 2, safe.bottom).setWordWrapWidth(safe.width);
+    this.headingText.setPosition(safe.x + safe.width / 2, safe.y).setWordWrapWidth(safe.width - 160, wrapsBetweenCharacters());
+    this.hintText.setPosition(safe.x + safe.width / 2, safe.bottom).setWordWrapWidth(safe.width, wrapsBetweenCharacters());
     this.skipText.setPosition(rtl ? safe.x : safe.right, safe.y);
     this.layout(this.area());
   }

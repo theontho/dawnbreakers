@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../../dialogue/types';
 import { playSfx } from '../../audio';
-import { localizedStyle, t } from '../../i18n';
+import { localizedStyle, t, wrapsBetweenCharacters } from '../../i18n';
 import { responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
 
@@ -78,7 +78,7 @@ export class LampGame extends MiniGameScene {
   }
 
   protected layout(area: PlayArea): void {
-    this.statusText.setPosition(area.cx, area.y + area.height * 0.84).setWordWrapWidth(area.width * 0.9);
+    this.statusText.setPosition(area.cx, area.y + area.height * 0.84).setWordWrapWidth(area.width * 0.9, wrapsBetweenCharacters());
     this.lashText.setPosition(area.cx, area.y + area.height * 0.08 - 6);
   }
 

@@ -52,13 +52,12 @@ export class ChapterSelectScene extends Phaser.Scene {
 
     const flags = getFlags();
     const cardW = Math.min(900, safe.width);
-    const cardH = narrow ? 132 : 100;
     const gap = narrow ? 10 : 14;
     const viewportY = safe.y + 132;
     const viewportH = Math.max(180, safe.bottom - viewportY - (this.returnToGameScene ? 132 : 104));
-    const contentH = chapters.length * (cardH + gap) - gap;
-    const maxScroll = Math.max(0, contentH - viewportH);
     let scrollY = 0;
+    // Set when a press turns into a drag, so lifting the finger does not open a chapter.
+    let dragged = false;
 
     const list = this.add.container(centerX - cardW / 2, viewportY);
     const maskShape = this.add.rectangle(safe.x, viewportY, safe.width, viewportH, 0xffffff, 0)
@@ -66,10 +65,12 @@ export class ChapterSelectScene extends Phaser.Scene {
     list.setMask(maskShape.createGeometryMask());
     maskShape.setVisible(false);
 
-    chapters.forEach((ch, i) => {
-      const y = i * (cardH + gap);
-      this.drawChapterCard(list, 0, y, cardW, cardH, ch, ch.isComplete(flags));
-    });
+    // Each card is as tall as its words, which run longer in some languages than others.
+    let contentH = -gap;
+    for (const ch of chapters) {
+      contentH += gap + this.drawChapterCard(list, 0, contentH + gap, cardW, ch, ch.isComplete(flags), () => !dragged);
+    }
+    const maxScroll = Math.max(0, contentH - viewportH);
 
     const track = this.add.rectangle(safe.right - Math.max(8, safe.margin * 0.4), viewportY, 6, viewportH, 0x2a1c10, 0.85)
       .setOrigin(0.5, 0);
@@ -95,6 +96,20 @@ export class ChapterSelectScene extends Phaser.Scene {
       _deltaX: number,
       deltaY: number,
     ) => setScroll(scrollY + deltaY * 0.6));
+
+    // A finger drags the list; a press that moves more than a few pixels is a drag, not a tap.
+    let dragFrom: { pointerY: number; scrollY: number } | undefined;
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      dragged = false;
+      dragFrom = { pointerY: pointer.y, scrollY };
+    });
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (!dragFrom || !pointer.isDown || maxScroll <= 0) return;
+      const moved = pointer.y - dragFrom.pointerY;
+      if (Math.abs(moved) > 8) dragged = true;
+      if (dragged) setScroll(dragFrom.scrollY - moved);
+    });
+    this.input.on('pointerup', () => { dragFrom = undefined; });
 
     this.input.keyboard?.on('keydown-UP', () => setScroll(scrollY - 70));
     this.input.keyboard?.on('keydown-DOWN', () => setScroll(scrollY + 70));
@@ -128,38 +143,58 @@ export class ChapterSelectScene extends Phaser.Scene {
     };
   }
 
+  /**
+   * One chapter's card at `y`, as tall as its label, title and description
+   * need at this width (wrapped titles and longer translations grow it).
+   * A tap opens the chapter unless `isTap` says the press was a drag.
+   * Returns the card's height.
+   */
   private drawChapterCard(
-    list: Phaser.GameObjects.Container, x: number, y: number, w: number, h: number,
-    chapter: Chapter, completed: boolean,
-  ): void {
+    list: Phaser.GameObjects.Container, x: number, y: number, w: number,
+    chapter: Chapter, completed: boolean, isTap: () => boolean,
+  ): number {
+    const pad = 14;
+    const narrowCard = w < 620;
+    // A wide card keeps a column on the far side for the completed mark.
+    const textW = w - 48 - (narrowCard ? 0 : 172);
+    const textX = rtl ? x + w - 24 : x + 24;
+    const originX = textOriginX(0);
+    const label = this.add.text(textX, y + pad, chapterLabel(chapter.number), localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, this.scale), color: '#9c8458', fontStyle: 'italic',
+    })).setOrigin(originX, 0);
+    const title = this.add.text(textX, label.y + label.height + 2, t(chapter.title), localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(24, this.scale, 17), color: '#f3e2b5',
+      wordWrap: { width: textW },
+    })).setOrigin(originX, 0);
+    const description = this.add.text(textX, title.y + title.height + 6, `${t(chapter.subtitle)}  ·  ${t(chapter.description)}`, localizedStyle({
+      fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, this.scale), color: '#c9b07a',
+      wordWrap: { width: textW },
+    })).setOrigin(originX, 0);
+    let bottom = description.y + description.height;
+
+    let mark: Phaser.GameObjects.Text | undefined;
+    if (completed) {
+      mark = this.add.text(rtl ? x + 24 : x + w - 24, 0, `✓ ${t('completed')}`, localizedStyle({
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, this.scale), color: '#c9a55c', fontStyle: 'italic',
+      }));
+      if (narrowCard) {
+        // No side column on a narrow card: the mark goes under the words.
+        mark.setPosition(textX, bottom + 6).setOrigin(originX, 0);
+        bottom = mark.y + mark.height;
+      }
+    }
+    const h = Math.ceil(bottom + pad - y);
+    if (mark && !narrowCard) mark.setPosition(mark.x, y + h / 2).setOrigin(textOriginX(1), 0.5);
+
     const card = this.add.rectangle(x, y, w, h, 0x1a120a, 0.95)
       .setOrigin(0)
       .setStrokeStyle(2, completed ? 0xc9a55c : 0x4a3a22, 1)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => card.setStrokeStyle(2, 0xf3d98a, 1))
       .on('pointerout',  () => card.setStrokeStyle(2, completed ? 0xc9a55c : 0x4a3a22, 1))
-      .on('pointerdown', () => this.startChapter(chapter));
-    list.add(card);
-
-    const textX = rtl ? x + w - 24 : x + 24;
-    const originX = textOriginX(0);
-    list.add(this.add.text(textX, y + 14, chapterLabel(chapter.number), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, this.scale), color: '#9c8458', fontStyle: 'italic',
-    })).setOrigin(originX, 0));
-    list.add(this.add.text(textX, y + 30, t(chapter.title), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: responsiveFont(24, this.scale, 17), color: '#f3e2b5',
-      wordWrap: { width: w - 48 },
-    })).setOrigin(originX, 0));
-    list.add(this.add.text(textX, y + 60, `${t(chapter.subtitle)}  ·  ${t(chapter.description)}`, localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: responsiveFont(13, this.scale), color: '#c9b07a',
-      wordWrap: { width: w - (w < 620 ? 48 : 220) },
-    })).setOrigin(originX, 0));
-
-    if (completed) {
-      list.add(this.add.text(rtl ? x + 24 : x + w - 24, y + h / 2, `✓ ${t('completed')}`, localizedStyle({
-        fontFamily: 'Georgia, serif', fontSize: responsiveFont(16, this.scale), color: '#c9a55c', fontStyle: 'italic',
-      })).setOrigin(textOriginX(1), 0.5));
-    }
+      .on('pointerup', () => { if (isTap()) this.startChapter(chapter); });
+    list.add([card, label, title, description, ...(mark ? [mark] : [])]);
+    return h;
   }
 
   private startChapter(chapter: Chapter): void {

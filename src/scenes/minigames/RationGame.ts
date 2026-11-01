@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { getFlags } from '../../dialogue/flags';
 import type { FlagState } from '../../dialogue/types';
 import { playSfx } from '../../audio';
-import { formatNumber, localizedStyle, rtl, t } from '../../i18n';
+import { formatNumber, localizedStyle, rtl, t, wrapsBetweenCharacters } from '../../i18n';
 import { buttonFont, responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
 
@@ -172,7 +172,7 @@ export class RationGame extends MiniGameScene {
   }
 
   protected layout(area: PlayArea): void {
-    this.potText.setPosition(area.cx, area.y + 6).setWordWrapWidth(area.width * 0.9);
+    this.potText.setPosition(area.cx, area.y + 6).setWordWrapWidth(area.width * 0.9, wrapsBetweenCharacters());
     this.leftText.setPosition(area.cx, area.y + area.height * 0.16);
     const n = this.groups.length;
     const cardW = Math.min(area.width / n - 12, 240);
@@ -182,7 +182,7 @@ export class RationGame extends MiniGameScene {
       // Read from the right in a right-to-left language, so table 1 comes first.
       const place = rtl ? n - 1 - i : i;
       const cx = area.cx + (place - (n - 1) / 2) * (cardW + 12);
-      group.label?.setPosition(cx, top + 10).setWordWrapWidth(cardW - 16);
+      group.label?.setPosition(cx, top + 10).setWordWrapWidth(cardW - 16, wrapsBetweenCharacters());
       group.minus?.setPosition(cx, top + cardH + 6);
       return new Phaser.Geom.Rectangle(cx - cardW / 2, top, cardW, cardH);
     });

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../../dialogue/types';
 import { playSfx } from '../../audio';
-import { localizedStyle, t } from '../../i18n';
+import { localizedStyle, t, wrapsBetweenCharacters } from '../../i18n';
 import { responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
 
@@ -107,7 +107,7 @@ export class CurtainGame extends MiniGameScene {
 
   protected layout(area: PlayArea): void {
     const r = this.curtain(area);
-    this.heardText.setPosition(area.cx, r.bottom + 34).setWordWrapWidth(r.width * 0.95);
+    this.heardText.setPosition(area.cx, r.bottom + 34).setWordWrapWidth(r.width * 0.95, wrapsBetweenCharacters());
     this.noiseText.setPosition(area.cx, r.y + 6);
   }
 

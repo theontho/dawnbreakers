@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../../dialogue/types';
 import { playSfx } from '../../audio';
-import { localizedStyle, t } from '../../i18n';
+import { localizedStyle, t, wrapsBetweenCharacters } from '../../i18n';
 import { responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
 
@@ -74,7 +74,7 @@ export class LanesGame extends MiniGameScene {
   }
 
   protected layout(area: PlayArea): void {
-    this.statusText.setPosition(area.cx, area.y + 8).setWordWrapWidth(area.width * 0.9);
+    this.statusText.setPosition(area.cx, area.y + 8).setWordWrapWidth(area.width * 0.9, wrapsBetweenCharacters());
   }
 
   private hidden(): boolean {

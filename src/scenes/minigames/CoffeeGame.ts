@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../../dialogue/types';
 import { playSfx } from '../../audio';
-import { localizedStyle, t } from '../../i18n';
+import { localizedStyle, t, wrapsBetweenCharacters } from '../../i18n';
 import { responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
 
@@ -98,8 +98,8 @@ export class CoffeeGame extends MiniGameScene {
   }
 
   protected layout(area: PlayArea): void {
-    this.lineText.setPosition(area.cx, area.y + 4).setWordWrapWidth(Math.min(area.width * 0.9, 760));
-    this.statusText.setPosition(area.cx, area.y + area.height - 28).setWordWrapWidth(area.width * 0.9);
+    this.lineText.setPosition(area.cx, area.y + 4).setWordWrapWidth(Math.min(area.width * 0.9, 760), wrapsBetweenCharacters());
+    this.statusText.setPosition(area.cx, area.y + area.height - 28).setWordWrapWidth(area.width * 0.9, wrapsBetweenCharacters());
   }
 
   private stationGap(area: PlayArea): number {

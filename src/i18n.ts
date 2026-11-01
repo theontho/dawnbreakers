@@ -178,7 +178,16 @@ function textResolution(): number {
   return Math.min(MAX_TEXT_RESOLUTION, Math.max(1, window.devicePixelRatio || 1));
 }
 
-export function localizedStyle<T extends { fontFamily?: string; align?: string; rtl?: boolean; resolution?: number }>(
+/**
+ * True for a script with no spaces between words (Chinese), where wrapped
+ * text must break between characters: pass it as `setWordWrapWidth`'s
+ * second argument, which otherwise turns that off.
+ */
+export function wrapsBetweenCharacters(): boolean {
+  return activeLocale === 'zh';
+}
+
+export function localizedStyle<T extends { fontFamily?: string; align?: string; rtl?: boolean; resolution?: number; wordWrap?: { width?: number; useAdvancedWrap?: boolean } }>(
   style: T,
   align: 'left' | 'center' | 'right' = 'right',
 ): T {
@@ -188,6 +197,9 @@ export function localizedStyle<T extends { fontFamily?: string; align?: string; 
     align: rtl ? align : style.align,
     rtl,
     resolution: style.resolution ?? textResolution(),
+    // Chinese has no spaces to break at: Phaser's advanced wrap breaks a
+    // line between characters once it runs out of spaces.
+    ...(style.wordWrap && wrapsBetweenCharacters() ? { wordWrap: { ...style.wordWrap, useAdvancedWrap: true } } : {}),
   };
 }
 

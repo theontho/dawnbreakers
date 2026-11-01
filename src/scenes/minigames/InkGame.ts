@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { FlagState } from '../../dialogue/types';
 import { playSfx } from '../../audio';
-import { localizedStyle, t } from '../../i18n';
+import { localizedStyle, t, wrapsBetweenCharacters } from '../../i18n';
 import { responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
 
@@ -75,8 +75,8 @@ export class InkGame extends MiniGameScene {
     for (const text of [this.guide, this.ink]) {
       text.setFontSize(fontPx).setPosition(area.cx, area.y + area.height * 0.38);
     }
-    this.meaning.setPosition(area.cx, this.guide.y + this.guide.height / 2 + 8).setWordWrapWidth(paperW * 0.9);
-    this.statusText.setPosition(area.cx, area.y + area.height * 0.9).setWordWrapWidth(area.width * 0.9);
+    this.meaning.setPosition(area.cx, this.guide.y + this.guide.height / 2 + 8).setWordWrapWidth(paperW * 0.9, wrapsBetweenCharacters());
+    this.statusText.setPosition(area.cx, area.y + area.height * 0.9).setWordWrapWidth(area.width * 0.9, wrapsBetweenCharacters());
     this.updateCrop();
   }
 
