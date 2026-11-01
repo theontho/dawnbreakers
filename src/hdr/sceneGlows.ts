@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 import { HdrGlowLayer } from './hdrGlowLayer';
-import { coreBounds, glowBounds, occlusionFade, overlapFraction, pickHoles, type GlowSpec, type Occluder } from './glowMath';
+import { glowBounds, overlapFraction, type GlowSpec, type Occluder } from './glowMath';
 import { watchHdrGlow } from './hdrSupport';
 
 /** A glow before the words and panels in front of it are taken into account. */
-export type GlowBody = Omit<GlowSpec, 'fade' | 'coreFade' | 'holes'> & { fade?: number };
+export type GlowBody = Omit<GlowSpec, 'fade' | 'occluders'> & { fade?: number };
 
 /**
  * A scene's HDR sun and moon. Does nothing at all until the screen and the
@@ -54,11 +54,11 @@ export class SceneGlows {
     if (!this.layer || this.suspended) return;
     const visible = 1 - fadeCover(this.scene.cameras.main.fadeEffect);
     this.layer.update(bodies.map(body => {
+      const box = glowBounds(body);
       return {
         ...body,
         fade: (body.fade ?? 1) * visible,
-        coreFade: occlusionFade(coreBounds(body), occluders),
-        holes: pickHoles(glowBounds(body), occluders),
+        occluders: occluders.filter(occluder => overlapFraction(box, occluder) > 0),
       };
     }));
   }
@@ -66,9 +66,10 @@ export class SceneGlows {
 
 /**
  * The words, buttons and filled panels of a scene that lie over `area`, as
- * occluders: text is opaque (solid when it has a box behind it), a
- * rectangle as opaque as its fill. Objects that cover most of the screen are
- * washes over the whole scene, not in front of the sky, and are left out.
+ * occluders: text by its own drawing (letters, and the box behind them if
+ * it has one), a rectangle as opaque as its fill. Objects that cover most
+ * of the screen are washes over the whole scene, not in front of the sky,
+ * and are left out.
  */
 export function sceneOccluders(scene: Phaser.Scene, area: { x: number; y: number; width: number; height: number }): Occluder[] {
   const found: Occluder[] = [];
@@ -79,13 +80,15 @@ export function sceneOccluders(scene: Phaser.Scene, area: { x: number; y: number
         if (object.visible && object.alpha > 0) visit(object.list, parentAlpha * object.alpha);
         continue;
       }
-      const kind = occluderKind(object);
-      const opacity = kind.opacity * parentAlpha;
+      const opacity = occluderOpacity(object) * parentAlpha;
       if (opacity < 0.02) continue;
       const bounds = (object as Phaser.GameObjects.Text).getBounds();
       if (bounds.width * bounds.height > screen * 0.5) continue;
       const rect = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
-      if (overlapFraction(area, rect) > 0) found.push({ ...rect, opacity, solid: kind.solid });
+      if (overlapFraction(area, rect) <= 0) continue;
+      found.push(object instanceof Phaser.GameObjects.Text
+        ? { ...rect, opacity, image: object.canvas, version: `${object.text}|${object.style.color}|${object.canvas.width}x${object.canvas.height}` }
+        : { ...rect, opacity });
     }
   };
   visit(scene.children.list, 1);
@@ -98,13 +101,8 @@ function fadeCover(fade: Phaser.Cameras.Scene2D.Effects.Fade): number {
   return fade.isComplete && fade.direction ? 1 : 0;
 }
 
-function occluderKind(object: Phaser.GameObjects.GameObject): { opacity: number; solid: boolean } {
-  if (object instanceof Phaser.GameObjects.Text) {
-    const boxed = Boolean(object.style.backgroundColor);
-    return { opacity: object.visible ? object.alpha : 0, solid: boxed };
-  }
-  if (object instanceof Phaser.GameObjects.Rectangle) {
-    return { opacity: object.visible && object.isFilled ? object.alpha * object.fillAlpha : 0, solid: true };
-  }
-  return { opacity: 0, solid: false };
+function occluderOpacity(object: Phaser.GameObjects.GameObject): number {
+  if (object instanceof Phaser.GameObjects.Text) return object.visible ? object.alpha : 0;
+  if (object instanceof Phaser.GameObjects.Rectangle) return object.visible && object.isFilled ? object.alpha * object.fillAlpha : 0;
+  return 0;
 }

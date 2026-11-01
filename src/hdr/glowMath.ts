@@ -24,10 +24,8 @@ export interface GlowSpec {
   skyline: (x: number) => number;
   /** How much of the whole glow shows, 0 to 1: a camera fade, a fading disc, a shade over the sky. */
   fade: number;
-  /** How much of the core still shows while a word or button passes over it, 0 to 1. */
-  coreFade: number;
-  /** The buttons and panels over the glow, which it is cut out of (at most `MAX_HOLES`). */
-  holes: readonly Occluder[];
+  /** The words, buttons and panels in front of the glow, which it is cut out of where they are drawn. */
+  occluders: readonly Occluder[];
 }
 
 export interface Rect {
@@ -38,14 +36,18 @@ export interface Rect {
 }
 
 /**
- * Something drawn over the sky: a button or panel, opaque or translucent,
- * that the glow is cut out of, or bare words, which the bloom may wash over
- * as glare does but which the core lets go of.
+ * Something drawn over the sky, in game pixels: a filled panel, or words
+ * (with or without a box behind them) given as the canvas they were drawn
+ * on, so the glow is cut out of each letter and not of the box round them.
+ * The sun stays as bright as ever round the letters, as the real sun does
+ * round a branch held up in front of it.
  */
 export interface Occluder extends Rect {
   opacity: number;
-  /** True for a filled shape, false for bare words with no box behind them. */
-  solid: boolean;
+  /** The words' own drawing, stretched over the rectangle; a filled rectangle when absent. */
+  image?: CanvasImageSource;
+  /** Changes when the drawing does (the words themselves). */
+  version?: string;
 }
 
 /** The bright core fades out between these fractions of the radius, leaving the drawn limb in SDR. */
@@ -53,20 +55,12 @@ export const CORE_INNER = 0.55;
 export const CORE_OUTER = 0.96;
 /** The bloom reaches this many radii from the centre. */
 export const BLOOM_REACH = 2.6;
-/** At most this many words and panels are cut out of one glow; the largest over it win. */
-export const MAX_HOLES = 8;
-/** Floats in one glow's uniform block: four vec4s, a rectangle per hole, and the holes' opacities. */
-export const GLOW_UNIFORM_FLOATS = 16 + MAX_HOLES * 4 + MAX_HOLES;
+/** Floats in one glow's uniform block: four vec4s. */
+export const GLOW_UNIFORM_FLOATS = 16;
 
 /** The square the glow's canvas covers, in game pixels. */
 export function glowBounds(spec: Pick<GlowSpec, 'x' | 'y' | 'radius'>): Rect {
   const half = spec.radius * BLOOM_REACH + 2;
-  return { x: spec.x - half, y: spec.y - half, width: half * 2, height: half * 2 };
-}
-
-/** The square round the bright core alone. */
-export function coreBounds(spec: Pick<GlowSpec, 'x' | 'y' | 'radius'>): Rect {
-  const half = spec.radius * CORE_OUTER;
   return { x: spec.x - half, y: spec.y - half, width: half * 2, height: half * 2 };
 }
 
@@ -76,33 +70,6 @@ export function overlapFraction(area: Rect, rect: Rect): number {
   const h = Math.min(area.y + area.height, rect.y + rect.height) - Math.max(area.y, rect.y);
   if (w <= 0 || h <= 0) return 0;
   return (w * h) / Math.max(1e-6, area.width * area.height);
-}
-
-/**
- * How much of the core still shows with these things in front of it. The
- * glow is cut out of buttons and panels as well, but a core cut into
- * rectangles would read as a window in the sun, so as anything comes over
- * the core its light goes altogether, and a translucent panel dims it as
- * much as it dims the disc underneath.
- */
-export function occlusionFade(area: Rect, occluders: readonly Occluder[]): number {
-  let fade = 1;
-  for (const occluder of occluders) {
-    const covered = smoothstep(0, 0.25, overlapFraction(area, occluder));
-    fade *= 1 - clamp01(occluder.opacity) * covered;
-  }
-  return fade;
-}
-
-/** The solid occluders over `area` that matter most to it, largest overlap first. */
-export function pickHoles(area: Rect, occluders: readonly Occluder[]): Occluder[] {
-  return occluders
-    .filter(occluder => occluder.solid)
-    .map(occluder => ({ occluder, weight: overlapFraction(area, occluder) * occluder.opacity }))
-    .filter(entry => entry.weight > 0)
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, MAX_HOLES)
-    .map(entry => entry.occluder);
 }
 
 /** sRGB colour, linear light times `gain`, encoded back with the extended sRGB curve that HDR canvases read. */
@@ -127,7 +94,7 @@ export function encodeExtendedSrgb(linear: number): number {
 
 /** True when the glow would add nothing to what the scene already draws. */
 export function glowIsDark(spec: GlowSpec): boolean {
-  const core = (spec.gain - 1) * spec.fade * spec.coreFade;
+  const core = (spec.gain - 1) * spec.fade;
   const bloom = (spec.gain - 1) * spec.fade * spec.bloom;
   if (spec.radius <= 0 || (core < 0.01 && bloom < 0.01)) return true;
   // Hidden only when the land is above the glow's top in every column; sampled across its width.
@@ -156,34 +123,21 @@ export function sampleSkyline(spec: Pick<GlowSpec, 'skyline'>, origin: { x: numb
  *   disc:   centre x, centre y, radius, feather of the phase edge
  *   phase:  lit fraction, cos and sin of the lit limb's bearing, unused
  *   bloom:  additive bloom colour, unused
- *   holes:  MAX_HOLES rectangles as left, top, right, bottom
- *   cover:  their opacities, four to a vec4 (0 for an unused slot)
  */
 export function packGlowUniforms(spec: GlowSpec, origin: { x: number; y: number }, pixelRatio: number, out: Float32Array<ArrayBuffer> = new Float32Array(GLOW_UNIFORM_FLOATS)): Float32Array<ArrayBuffer> {
   const fade = clamp01(spec.fade);
   const [r, g, b] = hdrColor(spec.color, spec.gain);
-  // The bloom adds light over the sky, so it carries only what lies past SDR white;
-  // it eases off as words cross the disc, so they keep the contrast they have in SDR.
-  const coreFade = clamp01(spec.coreFade);
-  const extra = Math.max(0, spec.gain - 1) * 0.22 * clamp01(spec.bloom) * fade * (0.3 + 0.7 * coreFade);
+  // The bloom adds light over the sky, so it carries only what lies past SDR white.
+  const extra = Math.max(0, spec.gain - 1) * 0.22 * clamp01(spec.bloom) * fade;
   const [br, bg, bb] = hdrColor(spec.color, extra);
   const radius = spec.radius * pixelRatio;
   out.fill(0);
   out.set([
-    r, g, b, fade * coreFade,
+    r, g, b, fade,
     (spec.x - origin.x) * pixelRatio, (spec.y - origin.y) * pixelRatio, radius, Math.max(1, radius * 0.06),
     clamp01(spec.lit), Math.cos(spec.sunward), Math.sin(spec.sunward), 0,
     br, bg, bb, 0,
   ]);
-  spec.holes.slice(0, MAX_HOLES).forEach((hole, i) => {
-    out.set([
-      (hole.x - origin.x) * pixelRatio,
-      (hole.y - origin.y) * pixelRatio,
-      (hole.x + hole.width - origin.x) * pixelRatio,
-      (hole.y + hole.height - origin.y) * pixelRatio,
-    ], 16 + i * 4);
-    out[16 + MAX_HOLES * 4 + i] = clamp01(hole.opacity);
-  });
   return out;
 }
 

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { playSfx } from '../audio';
 import { logGameEvent } from '../logging/gameLogger';
 import { paintBookArt } from './titleBookArt';
+import { BookMesh } from './titleBookMesh';
 import { drawBook, type BookPose } from './titleBookRender';
 
 /**
@@ -10,8 +11,9 @@ import { drawBook, type BookPose } from './titleBookRender';
  * the illuminated page while the dawn title rises through it. A click or key
  * skips to the end.
  *
- * The book is drawn on a 2D canvas each frame (see `titleBookRender.ts`)
- * for the few seconds it plays, then the texture is freed.
+ * The book is a WebGL mesh rebuilt each frame from its pose (see
+ * `titleBookRender.ts` and `titleBookMesh.ts`) for the few seconds it
+ * plays, then freed. Without WebGL the title simply fades in.
  */
 
 type TitleBookOpeningOptions = {
@@ -21,7 +23,6 @@ type TitleBookOpeningOptions = {
   onComplete: () => void;
 };
 
-const TEXTURE = 'title-book';
 /** Timeline in milliseconds. */
 const COVER = { start: 350, end: 1500 };
 const LEAVES = [1250, 1650, 2050] as const;
@@ -36,10 +37,7 @@ export function playTitleBookOpening(
   logGameEvent('book start', { width, height });
   const dimmer = scene.add.rectangle(0, 0, width, height, 0x05030a, 0.86).setOrigin(0).setDepth(998);
   const blocker = scene.add.rectangle(0, 0, width, height, 0x000000, 0).setOrigin(0).setDepth(1001).setInteractive();
-  if (scene.textures.exists(TEXTURE)) scene.textures.remove(TEXTURE);
-  const texture = scene.textures.createCanvas(TEXTURE, width, height)!;
-  const image = scene.add.image(0, 0, TEXTURE).setOrigin(0).setDepth(999);
-  const art = paintBookArt();
+  const book = scene.game.renderer.type === Phaser.WEBGL ? new BookMesh(scene, paintBookArt(), 999) : undefined;
   const pageH = Math.min(height * 0.62, 600, width * 0.5);
   const frame = { width, height, pageW: pageH * 0.72, pageH };
   content.setAlpha(0);
@@ -62,10 +60,12 @@ export function playTitleBookOpening(
       cover: ease(span(elapsed, COVER.start, COVER.end)),
       leaves: LEAVES.map(start => ease(span(elapsed, start, start + LEAF_MS))),
       zoom: 1 + 2.2 * easeIn(span(elapsed, PUSH.start, PUSH.end)),
-      alpha: span(elapsed, 0, 300) * (1 - span(elapsed, PUSH.start + 500, PUSH.end)),
     };
-    drawBook(texture.context, art, frame, pose);
-    texture.refresh();
+    if (book) {
+      book.begin(span(elapsed, 0, 300) * (1 - span(elapsed, PUSH.start + 500, PUSH.end)));
+      drawBook(book, frame, pose);
+      book.end();
+    }
     const reveal = span(elapsed, PUSH.start + 250, PUSH.end);
     content.setAlpha(reveal);
     dimmer.setAlpha(0.86 * (1 - reveal));
@@ -79,10 +79,9 @@ export function playTitleBookOpening(
     scene.events.off(Phaser.Scenes.Events.UPDATE, tick);
     scene.input.keyboard?.off('keydown', skip);
     content.setAlpha(1);
-    image.destroy();
+    book?.destroy();
     dimmer.destroy();
     blocker.destroy();
-    scene.textures.remove(TEXTURE);
     logGameEvent('book end', { width, height });
     onComplete();
   };
@@ -105,7 +104,7 @@ export function playTitleBookOpening(
   scene.input.keyboard?.on('keydown', skip);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
     scene.events.off(Phaser.Scenes.Events.UPDATE, tick);
-    if (scene.textures.exists(TEXTURE)) scene.textures.remove(TEXTURE);
+    if (!finished) book?.destroy();
   });
 
   render();

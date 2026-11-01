@@ -10,7 +10,7 @@ import { activateTitleTextButton, addTitleLanguageButton } from './titleControls
 import { playTitleBookOpening } from './titleBookOpening';
 import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS } from './titleSunrise';
 import { SunriseClock, type SunriseClockState } from './titleSunriseClock';
-import { addGitHubLink, addMenuButton, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
+import { addGitHubLink, addMenuButton, foldMenu, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
 import { addSunriseTransport } from './titleTransport';
 
 /**
@@ -21,6 +21,8 @@ import { addSunriseTransport } from './titleTransport';
 type TitleResume = { clock: SunriseClockState; musicLeadSeconds: number };
 
 const REPO_URL = 'https://github.com/theontho/dawnbreakers';
+/** A screen shorter than this (a phone held sideways) folds the menu as a narrow one does. */
+const FOLD_BELOW_HEIGHT = 520;
 
 /** A soft dark halo that keeps the title legible over night and noon sky alike. */
 const TITLE_SHADOW = { offsetX: 0, offsetY: 2, color: '#120b05', blur: 10, fill: true, stroke: false };
@@ -87,7 +89,10 @@ export class TitleScene extends Phaser.Scene {
     const editor = addMenuButton(this, size, t('Map Editor'), 'secondary');
     const reset = addMenuButton(this, size, t('Reset story'), 'quiet');
     const source = addGitHubLink(this, REPO_URL);
-    layoutMenu([[startButton], [chapters, journeys, miniGames, editor, reset, source]], safe);
+    const choices = [chapters, journeys, miniGames, editor, reset, source];
+    // A phone keeps the sky clear with Start and More; the rest open under them.
+    const folded = narrow || height < FOLD_BELOW_HEIGHT ? foldMenu(this, size, startButton, choices, safe) : undefined;
+    if (!folded) layoutMenu([[startButton], choices], safe);
 
     const start = () => {
       if (bookmark && this.scene.get(bookmark.scene)) {
@@ -97,7 +102,8 @@ export class TitleScene extends Phaser.Scene {
       }
     };
 
-    titleLayer.add([title, subtitle, startButton, chapters, journeys, miniGames, editor, reset, source]);
+    titleLayer.add([title, subtitle, startButton, ...choices]);
+    if (folded) titleLayer.add(folded.toggle);
 
     const showMenu = (clock: SunriseClock) => {
       this.clock = clock;
@@ -108,6 +114,7 @@ export class TitleScene extends Phaser.Scene {
       const activate = (button: Phaser.GameObjects.Text, tone: MenuTone, onClick: () => void) =>
         activateTitleTextButton(this, button, MENU_COLORS[tone].normal, MENU_COLORS[tone].hover, onClick);
       activate(startButton, 'primary', start);
+      if (folded) activate(folded.toggle, 'secondary', folded.flip);
       activate(chapters, 'secondary', () => this.scene.start('ChapterSelect'));
       activate(journeys, 'secondary', () => this.scene.start('Journey'));
       activate(miniGames, 'secondary', () => this.scene.start('MiniGamePicker'));

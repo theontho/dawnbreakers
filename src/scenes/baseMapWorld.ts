@@ -4,6 +4,7 @@ import { sliceBuilding } from './buildingSlices';
 import { gridToIsoScreen } from './isoGeometry';
 import { renderMapGround } from './mapGround';
 import { exitIsOpen } from './baseMapMovement';
+import { placeExitMarks } from './exitMarks';
 import {
   TILE_H,
   TILE_W,
@@ -111,8 +112,9 @@ function naturalOffset(texture: string, gx: number, gy: number): { x: number; y:
 }
 
 /**
- * Pulsing ground glow on each exit tile; dimmed and still while the exit is
- * closed, and hidden while its cell cannot be reached (a passage not yet open).
+ * Pulsing ground glow on each exit tile and a mark floating over each road
+ * out; dimmed and still while the exit is closed, and hidden while its cell
+ * cannot be reached (a passage not yet open).
  */
 export function renderExitGlows(scene: Phaser.Scene, state: Pick<BaseMapWorldState, 'originX' | 'originY' | 'exits' | 'blocked'>): () => void {
   const glows = state.exits.map(exit => {
@@ -121,7 +123,12 @@ export function renderExitGlows(scene: Phaser.Scene, state: Pick<BaseMapWorldSta
     const tween = scene.tweens.add({ targets: glow, alpha: 0.7, duration: 900, yoyo: true, repeat: -1 });
     return { exit, glow, tween };
   });
+  const marks = placeExitMarks(scene, state.originX, state.originY, state.exits);
   const refresh = (): void => {
+    for (const { exits, mark } of marks) {
+      mark.setAlpha(exits.some(exitIsOpen) ? 1 : 0.35);
+      mark.setVisible(exits.some(exit => !state.blocked[exit.fromY]![exit.fromX]));
+    }
     for (const { exit, glow, tween } of glows) {
       const open = exitIsOpen(exit);
       glow.setFillStyle(open ? 0xc9a55c : 0x6b6258, open ? 0.35 : 0.2);

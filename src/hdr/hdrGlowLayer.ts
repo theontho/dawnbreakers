@@ -1,3 +1,4 @@
+import { GlowCover } from './glowCover';
 import { GLOW_SHADER } from './glowShader';
 import { GLOW_UNIFORM_FLOATS, glowBounds, glowIsDark, packGlowUniforms, sampleSkyline, type GlowSpec } from './glowMath';
 import type { HdrGpu } from './hdrSupport';
@@ -11,6 +12,8 @@ interface GlowCanvas {
   uniforms: GPUBuffer;
   /** The skyline under the canvas, one texel per column, and the bind group that holds it with the uniforms. */
   skyline: GPUTexture | undefined;
+  /** The words and panels in front, by their alpha. */
+  cover: GlowCover | undefined;
   bindGroup: GPUBindGroup | undefined;
   packed: Float32Array<ArrayBuffer>;
   columns: Float32Array<ArrayBuffer>;
@@ -70,6 +73,7 @@ export class HdrGlowLayer {
       glow.context.unconfigure();
       glow.uniforms.destroy();
       glow.skyline?.destroy();
+      glow.cover?.destroy();
       glow.canvas.remove();
     }
     this.glows.length = 0;
@@ -96,6 +100,7 @@ export class HdrGlowLayer {
     const glow: GlowCanvas = {
       canvas, context, uniforms,
       skyline: undefined,
+      cover: undefined,
       bindGroup: undefined,
       packed: new Float32Array(GLOW_UNIFORM_FLOATS),
       columns: new Float32Array(0),
@@ -133,6 +138,7 @@ export class HdrGlowLayer {
     }
     packGlowUniforms(spec, { x: left, y: top }, pixels / size, glow.packed);
     sampleSkyline(spec, { x: left, y: top }, pixels / size, glow.columns);
+    if (glow.cover?.update(spec.occluders, { x: left, y: top }, pixels / size)) dirty = true;
     if (!dirty && sameValues(glow.packed, glow.last) && sameValues(glow.columns, glow.lastColumns)) return;
     if (!glow.shown) {
       style.display = 'block';
@@ -146,6 +152,8 @@ export class HdrGlowLayer {
   private resizeSkyline(glow: GlowCanvas, columns: number): void {
     const { device } = this.gpu;
     glow.skyline?.destroy();
+    glow.cover?.destroy();
+    glow.cover = new GlowCover(device, columns);
     glow.skyline = device.createTexture({ size: [columns, 1], format: 'r32float', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
     glow.columns = new Float32Array(columns);
     glow.lastColumns = new Float32Array(columns);
@@ -154,6 +162,7 @@ export class HdrGlowLayer {
       entries: [
         { binding: 0, resource: { buffer: glow.uniforms } },
         { binding: 1, resource: glow.skyline.createView() },
+        { binding: 2, resource: glow.cover.texture.createView() },
       ],
     });
   }

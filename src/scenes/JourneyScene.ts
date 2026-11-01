@@ -5,12 +5,13 @@ import { rtl, t } from '../i18n';
 import { localSiderealTime, locationFromDegrees } from '../sky/projection';
 import { skyBodies, type SkyBodies } from '../sky/skyBodies';
 import type { GeographicLocation } from '../sky/types';
+import { capFrameRate } from '../ui/frameCap';
 import { restartSceneOnResize } from '../ui/responsive';
 import { firstSunEvent, type SunEvent } from '../travel/firstSunEvent';
 import { JourneyClock } from '../travel/journeyClock';
 import { JourneyHud, type HudButton } from '../travel/journeyHud';
 import { JourneyPassage, dayOfJourney } from '../travel/journeyPassage';
-import { SECONDS_PER_DAY_STEPS, VIEWER_SECONDS_PER_DAY } from '../travel/roadCurve';
+import { SECONDS_PER_DAY_STEPS, SECONDS_PER_DAY } from '../travel/roadCurve';
 import { Landscape, groundLayout, type GroundLayout } from '../travel/landscape';
 import { Party } from '../travel/party';
 import { Sea } from '../travel/sea';
@@ -72,7 +73,7 @@ const TRAIL_LABELS: Record<TrailMode, { label: string }> = {
   tail: { label: 'Trails: comet tails' },
   exposure: { label: 'Trails: long exposure' },
 };
-const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, centerSun: false, autoplay: true, secondsPerDay: VIEWER_SECONDS_PER_DAY, maxHz: 120 };
+const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, centerSun: true, autoplay: true, secondsPerDay: SECONDS_PER_DAY, maxHz: 120 };
 
 /**
  * A journey between chapters: the party on the road under the true sky of
@@ -147,13 +148,13 @@ export class JourneyScene extends Phaser.Scene {
     if (this.onward) this.startPassage();
     else this.startViewer();
     this.cameras.main.fadeIn(500, 0, 0, 0);
+    // The cap holds while the sky is up; the rest of the game runs as the screen does.
+    capFrameRate(this.game, this.settings.maxHz);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => capFrameRate(this.game, undefined));
   }
 
   update(): void {
     const now = performance.now();
-    // Held under the cap, the frame keeps what was drawn last; a little slack
-    // keeps a 60 Hz cap from dropping frames that land a hair early.
-    if (this.lastMs !== undefined && now - this.lastMs < 1000 / this.settings.maxHz - 2) return;
     const deltaMs = Math.min(100, now - (this.lastMs ?? now));
     this.lastMs = now;
     this.clock.update(now);
@@ -221,7 +222,7 @@ export class JourneyScene extends Phaser.Scene {
   /** Between chapters: the nights of the road going by, then on into the next chapter. */
   private startPassage(): void {
     this.clock.setRate(0);
-    this.passage.start(() => this.time.delayedCall(PASSAGE_HOLD_MS, () => this.goOnward()));
+    this.passage.start(() => this.time.delayedCall(PASSAGE_HOLD_MS, () => this.goOnward()), this.settings.secondsPerDay);
     this.hud.setButtons([{ label: () => t('Continue ›'), onClick: () => this.goOnward() }]);
     for (const key of ['ENTER', 'SPACE', 'ESC']) this.input.keyboard?.once(`keydown-${key}`, () => this.goOnward());
   }
@@ -349,6 +350,7 @@ export class JourneyScene extends Phaser.Scene {
 
   private toggleFrameRate(): void {
     this.settings.maxHz = this.settings.maxHz === 120 ? 60 : 120;
+    capFrameRate(this.game, this.settings.maxHz);
     this.shownFrameRate = this.frameRateLabel();
   }
 
@@ -401,7 +403,7 @@ export class JourneyScene extends Phaser.Scene {
   private changeDayPace(step: number): void {
     const steps = SECONDS_PER_DAY_STEPS;
     const at = steps.indexOf(this.settings.secondsPerDay);
-    const next = Math.max(0, Math.min(steps.length - 1, (at < 0 ? steps.indexOf(VIEWER_SECONDS_PER_DAY) : at) + step));
+    const next = Math.max(0, Math.min(steps.length - 1, (at < 0 ? steps.indexOf(SECONDS_PER_DAY) : at) + step));
     this.settings.secondsPerDay = steps[next]!;
     this.passTheJourney();
   }

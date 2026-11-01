@@ -1,18 +1,21 @@
-import { PAGE_H, PAGE_W, type BookArt } from './titleBookArt';
+import type { BookArt } from './titleBookArt';
 
 /**
- * Draws the title book in perspective onto a 2D canvas: the book lies on a
- * table, its front half (cover and half the pages) swings over on the spine,
- * then single leaves turn with a curl. Every surface is texture-mapped by
- * splitting it into small triangles and drawing each with an affine
- * transform; faces are lit from the upper left and back faces are culled.
+ * The title book in perspective: the book lies on a table, its front half
+ * (cover and half the pages) swings over on the spine, then single leaves
+ * turn with a curl. Every surface is split into small quads for the sink to
+ * texture-map (see `titleBookMesh.ts`, which hands them to the GPU), faces
+ * are lit from the upper left, and back faces are culled.
  *
  * World units are pixels: x to the right, y up off the table, z toward the
  * viewer; the spine lies along z at x = 0.
  */
 
 type V3 = { x: number; y: number; z: number };
-type V2 = { x: number; y: number };
+export type V2 = { x: number; y: number };
+
+/** One of the book's painted surfaces. */
+export type BookPage = keyof BookArt;
 
 export interface BookPose {
   /** Front half's swing, 0 (closed) to 1 (open flat on the left). */
@@ -21,8 +24,6 @@ export interface BookPose {
   leaves: readonly number[];
   /** Camera push toward the right page, 1 = resting view. */
   zoom: number;
-  /** Overall opacity of the book. */
-  alpha: number;
 }
 
 export interface BookFrame {
@@ -33,16 +34,24 @@ export interface BookFrame {
   pageH: number;
 }
 
+/** Where the book's surfaces go, back to front, in screen pixels. */
+export interface BookSink {
+  /** The soft shadow on the table. */
+  shadow(x: number, y: number, radius: number): void;
+  /** A page, split into cols x rows quads, `at(u, v)` on screen; `uRange` is the strip of the page it shows. */
+  surface(page: BookPage, at: (u: number, v: number) => V2, cols: number, rows: number, shade: number, uRange: readonly [number, number]): void;
+  /** A flat convex face of one colour (0xRRGGBB), dimmed to `shade`. */
+  polygon(points: readonly V2[], colour: number, shade: number): void;
+}
+
 const HALF = 10;   // Thickness of each half: pages plus cover.
 const COVER = 4;
 const PITCH = 0.98; // Camera elevation above the table, radians.
 const DISTANCE = 1500;
 const LIGHT = norm({ x: -0.45, y: 0.8, z: 0.4 });
 
-export function drawBook(ctx: CanvasRenderingContext2D, art: BookArt, frame: BookFrame, pose: BookPose): void {
+export function drawBook(sink: BookSink, frame: BookFrame, pose: BookPose): void {
   const { width, height, pageW: PW, pageH: PH } = frame;
-  ctx.clearRect(0, 0, width, height);
-  ctx.globalAlpha = pose.alpha;
   const sin = Math.sin(PITCH);
   const cos = Math.cos(PITCH);
   const camera = { x: 0, y: DISTANCE * sin, z: DISTANCE * cos };
@@ -60,59 +69,46 @@ export function drawBook(ctx: CanvasRenderingContext2D, art: BookArt, frame: Boo
 
   // Soft shadow on the table.
   const shadowCentre = project({ x: PW * (pose.cover > 0.5 ? 0 : 0.5), y: 0, z: 0 });
-  const radius = PW * 1.3 * pose.zoom;
-  const g = ctx.createRadialGradient(shadowCentre.x, shadowCentre.y, radius * 0.2, shadowCentre.x, shadowCentre.y, radius);
-  g.addColorStop(0, 'rgba(0,0,0,0.45)');
-  g.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, width, height);
+  sink.shadow(shadowCentre.x, shadowCentre.y, PW * 1.3 * pose.zoom);
 
-  const face = (corner: (u: number, v: number) => V3, normal: V3, image: CanvasImageSource, mirror: boolean, cols = 6, rows = 8) => {
+  const face = (corner: (u: number, v: number) => V3, normal: V3, page: BookPage, mirror: boolean, cols = 6, rows = 8) => {
     if (!facing(corner(0.5, 0.5), normal)) return;
-    texturedSurface(ctx, image, (u, v) => project(corner(mirror ? 1 - u : u, v)), cols, rows, light(normal));
+    sink.surface(page, (u, v) => project(corner(mirror ? 1 - u : u, v)), cols, rows, light(normal), [0, 1]);
   };
-  const solid = (pts: V3[], normal: V3, colour: string) => {
+  const solid = (pts: V3[], normal: V3, colour: number) => {
     if (!facing(pts[0]!, normal)) return;
-    const s = pts.map(project);
-    ctx.beginPath();
-    s.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-    ctx.closePath();
-    ctx.fillStyle = colour;
-    ctx.fill();
-    ctx.fillStyle = `rgba(0,0,0,${1 - light(normal)})`;
-    ctx.fill();
+    sink.polygon(pts.map(project), colour, light(normal));
   };
 
   // The right half: back cover and pages, lying still.
   const zTop = -PH / 2;
   const zBot = PH / 2;
-  rightHalf(solid, face, art, PW, zTop, zBot);
+  rightHalf(solid, face, PW, zTop, zBot);
   // The front half, swung by `cover` about the hinge at the top of the spine.
-  frontHalf(solid, face, art, PW, zTop, zBot, pose.cover * Math.PI);
+  frontHalf(solid, face, PW, zTop, zBot, pose.cover * Math.PI);
   // The turning leaves, earliest landed first.
   const order = pose.leaves.map((s, i) => ({ s, i })).sort((a, b) => b.s - a.s);
   for (const { s, i } of order) {
     if (s <= 0) continue;
-    leaf(ctx, art, project, facing, light, PW, zTop, zBot, s, i === pose.leaves.length - 1);
+    leaf(sink, project, facing, light, PW, zTop, zBot, s, i === pose.leaves.length - 1);
   }
-  ctx.globalAlpha = 1;
 }
 
-type Solid = (pts: V3[], normal: V3, colour: string) => void;
-type Face = (corner: (u: number, v: number) => V3, normal: V3, image: CanvasImageSource, mirror: boolean, cols?: number, rows?: number) => void;
+type Solid = (pts: V3[], normal: V3, colour: number) => void;
+type Face = (corner: (u: number, v: number) => V3, normal: V3, page: BookPage, mirror: boolean, cols?: number, rows?: number) => void;
 
-const GILT = '#c9a24e';
-const LEATHER = '#4a1810';
+const GILT = 0xc9a24e;
+const LEATHER = 0x4a1810;
 
-function rightHalf(solid: Solid, face: Face, art: BookArt, PW: number, z0: number, z1: number): void {
+function rightHalf(solid: Solid, face: Face, PW: number, z0: number, z1: number): void {
   const top = HALF;
   solid([{ x: PW, y: 0, z: z0 }, { x: PW, y: 0, z: z1 }, { x: PW, y: top, z: z1 }, { x: PW, y: top, z: z0 }], { x: 1, y: 0, z: 0 }, GILT);
   solid([{ x: 0, y: 0, z: z1 }, { x: PW, y: 0, z: z1 }, { x: PW, y: top, z: z1 }, { x: 0, y: top, z: z1 }], { x: 0, y: 0, z: 1 }, GILT);
   solid([{ x: 0, y: 0, z: z1 }, { x: PW, y: 0, z: z1 }, { x: PW, y: COVER * 0.6, z: z1 }, { x: 0, y: COVER * 0.6, z: z1 }], { x: 0, y: 0, z: 1 }, LEATHER);
-  face((u, v) => ({ x: u * PW, y: top, z: z0 + v * (z1 - z0) }), { x: 0, y: 1, z: 0 }, art.rightPage, false);
+  face((u, v) => ({ x: u * PW, y: top, z: z0 + v * (z1 - z0) }), { x: 0, y: 1, z: 0 }, 'rightPage', false);
 }
 
-function frontHalf(solid: Solid, face: Face, art: BookArt, PW: number, z0: number, z1: number, angle: number): void {
+function frontHalf(solid: Solid, face: Face, PW: number, z0: number, z1: number, angle: number): void {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   // Local (u across, d up from the hinge) to world.
@@ -123,14 +119,13 @@ function frontHalf(solid: Solid, face: Face, art: BookArt, PW: number, z0: numbe
   solid([at(PW, 0, z0), at(PW, 0, z1), at(PW, HALF, z1), at(PW, HALF, z0)], fore, GILT);
   solid([at(0, 0, z1), at(PW, 0, z1), at(PW, HALF, z1), at(0, HALF, z1)], { x: 0, y: 0, z: 1 }, GILT);
   solid([at(0, HALF - COVER, z1), at(PW, HALF - COVER, z1), at(PW, HALF, z1), at(0, HALF, z1)], { x: 0, y: 0, z: 1 }, LEATHER);
-  face((u, v) => at(u * PW, HALF, z0 + v * (z1 - z0)), out, art.cover, false);
-  face((u, v) => at(u * PW, 0, z0 + v * (z1 - z0)), inn, art.endpaper, true);
+  face((u, v) => at(u * PW, HALF, z0 + v * (z1 - z0)), out, 'cover', false);
+  face((u, v) => at(u * PW, 0, z0 + v * (z1 - z0)), inn, 'endpaper', true);
 }
 
 /** One leaf turning with a curl: its free edge lags behind the spine. */
 function leaf(
-  ctx: CanvasRenderingContext2D,
-  art: BookArt,
+  sink: BookSink,
   project: (p: V3) => V2,
   facing: (p: V3, n: V3) => boolean,
   light: (n: V3) => number,
@@ -160,111 +155,15 @@ function leaf(
     const front = { x: -ty / len, y: tx / len, z: 0 };
     const showFront = facing({ x: p0.x, y: p0.y, z: 0 }, front);
     const normal = showFront ? front : { x: -front.x, y: -front.y, z: 0 };
-    const image = showFront ? art.leaf : last ? art.leftPage : art.leaf;
+    const page: BookPage = showFront || !last ? 'leaf' : 'leftPage';
     // The back is read mirrored: its texture runs from the fore-edge.
     const u0 = showFront ? k / strips : 1 - k / strips;
     const u1 = showFront ? (k + 1) / strips : 1 - (k + 1) / strips;
-    texturedSurface(ctx, image, (u, v) => {
+    sink.surface(page, (u, v) => {
       const p = u === 0 ? p0 : p1;
       return project({ x: p.x, y: p.y, z: z0 + v * (z1 - z0) });
     }, 1, 6, light(normal), [u0, u1]);
   }
-}
-
-/**
- * Draws `image` over a surface given by `at(u, v)` in screen space, split
- * into cols x rows quads of two affine-mapped triangles each.
- */
-function texturedSurface(
-  ctx: CanvasRenderingContext2D,
-  image: CanvasImageSource,
-  at: (u: number, v: number) => V2,
-  cols: number,
-  rows: number,
-  shade: number,
-  uRange: [number, number] = [0, 1],
-): void {
-  // Outline of the whole surface, for a base fill under the triangles (so
-  // hairline gaps between them show page, not night) and one shade overlay.
-  const outline: V2[] = [];
-  for (let c = 0; c <= cols; c++) outline.push(at(c / cols, 0));
-  for (let r = 1; r <= rows; r++) outline.push(at(1, r / rows));
-  for (let c = cols - 1; c >= 0; c--) outline.push(at(c / cols, 1));
-  for (let r = rows - 1; r > 0; r--) outline.push(at(0, r / rows));
-  const path = () => {
-    ctx.beginPath();
-    outline.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-    ctx.closePath();
-  };
-  path();
-  ctx.fillStyle = baseColour(image);
-  ctx.fill();
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const u0 = c / cols;
-      const u1 = (c + 1) / cols;
-      const v0 = r / rows;
-      const v1 = (r + 1) / rows;
-      const a = at(u0, v0);
-      const b = at(u1, v0);
-      const d = at(u0, v1);
-      const e = at(u1, v1);
-      const tu = (u: number) => (uRange[0] + (uRange[1] - uRange[0]) * u) * PAGE_W;
-      const tv = (v: number) => v * PAGE_H;
-      triangle(ctx, image, a, b, e, { x: tu(u0), y: tv(v0) }, { x: tu(u1), y: tv(v0) }, { x: tu(u1), y: tv(v1) });
-      triangle(ctx, image, a, e, d, { x: tu(u0), y: tv(v0) }, { x: tu(u1), y: tv(v1) }, { x: tu(u0), y: tv(v1) });
-    }
-  }
-  if (shade < 0.999) {
-    path();
-    ctx.fillStyle = `rgba(20,10,0,${(1 - shade) * 0.9})`;
-    ctx.fill();
-  }
-}
-
-const baseColours = new WeakMap<object, string>();
-
-/** The average colour of a texture, sampled once. */
-function baseColour(image: CanvasImageSource): string {
-  const known = baseColours.get(image as object);
-  if (known) return known;
-  const c = document.createElement('canvas');
-  c.width = 1;
-  c.height = 1;
-  const ctx = c.getContext('2d')!;
-  ctx.drawImage(image, 0, 0, 1, 1);
-  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-  const colour = `rgb(${r},${g},${b})`;
-  baseColours.set(image as object, colour);
-  return colour;
-}
-
-/** One texture-mapped triangle: solve the affine map from texture to screen, clip, draw. */
-function triangle(ctx: CanvasRenderingContext2D, image: CanvasImageSource, s0: V2, s1: V2, s2: V2, t0: V2, t1: V2, t2: V2): void {
-  const det = (t1.x - t0.x) * (t2.y - t0.y) - (t2.x - t0.x) * (t1.y - t0.y);
-  if (Math.abs(det) < 1e-6) return;
-  const a = ((s1.x - s0.x) * (t2.y - t0.y) - (s2.x - s0.x) * (t1.y - t0.y)) / det;
-  const b = ((s1.y - s0.y) * (t2.y - t0.y) - (s2.y - s0.y) * (t1.y - t0.y)) / det;
-  const c = ((s2.x - s0.x) * (t1.x - t0.x) - (s1.x - s0.x) * (t2.x - t0.x)) / det;
-  const d = ((s2.y - s0.y) * (t1.x - t0.x) - (s1.y - s0.y) * (t2.x - t0.x)) / det;
-  const e = s0.x - a * t0.x - c * t0.y;
-  const f = s0.y - b * t0.x - d * t0.y;
-  ctx.save();
-  ctx.beginPath();
-  // Grow the clip a hair so neighbouring triangles leave no seam.
-  const cx = (s0.x + s1.x + s2.x) / 3;
-  const cy = (s0.y + s1.y + s2.y) / 3;
-  for (const [i, p] of [s0, s1, s2].entries()) {
-    const gx = p.x + Math.sign(p.x - cx) * 1.1;
-    const gy = p.y + Math.sign(p.y - cy) * 1.1;
-    if (i === 0) ctx.moveTo(gx, gy);
-    else ctx.lineTo(gx, gy);
-  }
-  ctx.closePath();
-  ctx.clip();
-  ctx.transform(a, b, c, d, e, f);
-  ctx.drawImage(image, 0, 0);
-  ctx.restore();
 }
 
 function sub(a: V3, b: V3): V3 {

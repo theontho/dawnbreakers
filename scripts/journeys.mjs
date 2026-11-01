@@ -70,13 +70,14 @@ try {
   }
 
   if (!only) {
-    // A passage between chapters must carry on into the next chapter by itself.
+    // A passage between chapters must carry on into the next chapter by itself:
+    // 18 days at 3 s a day, with its first and last nights, is about a minute.
     await page.evaluate(() => {
       const game = window.__game;
       game.scene.getScenes(true).filter((s) => s.scene.key !== 'Journey').forEach((s) => s.scene.stop());
       game.scene.start('Journey', { journeyId: 'shiraz-to-road', onward: { scene: 'Road' } });
     });
-    await page.waitForFunction(() => window.__game.scene.isActive('Road'), null, { timeout: 40000 });
+    await page.waitForFunction(() => window.__game.scene.isActive('Road'), null, { timeout: 150000 });
     console.log('passage: shiraz-to-road went on into Road');
   }
 } catch (error) {

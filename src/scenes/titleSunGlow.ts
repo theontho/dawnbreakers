@@ -10,8 +10,8 @@ const SUN_GAIN = 3.2;
 /**
  * On an HDR screen, the title sun burns past paper white as it clears the
  * haze: nothing while it is red on the skyline, full strength once its rays
- * are out. Cut along the roofs and minarets it rises behind, and let go
- * while the title and the buttons pass in front of it.
+ * are out. Cut along the roofs and minarets it rises behind, and round
+ * each letter of the title and the buttons that pass in front of it.
  */
 export function glowTitleSun(scene: Phaser.Scene, sunrise: SunriseBackground): void {
   const glows = new SceneGlows(scene);

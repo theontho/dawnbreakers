@@ -20,7 +20,7 @@ interface Skyline {
  * sun reddened and dim on the horizon and full once it is up, the moon by
  * its phase and only by night. Each is cut along the hills, the ship or the
  * party it sinks behind, dimmed under the shade of the words at the top,
- * and let go while a button passes over it.
+ * and cut round the buttons and words that pass over it.
  */
 export class SkyGlows {
   private readonly glows: SceneGlows;

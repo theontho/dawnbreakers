@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { localizedStyle, rtl } from '../i18n';
+import { localizedStyle, rtl, t } from '../i18n';
 import { buttonFont, MIN_TOUCH_TARGET, type SafeLayout } from '../ui/responsive';
 
 /**
@@ -101,6 +101,37 @@ export function layoutMenu(rows: MenuItem[][], safe: SafeLayout): number {
     bottom -= lineHeight + MENU_GAP;
   }
   return bottom + MENU_GAP;
+}
+
+/** A phone's menu: the start button and More, which opens the rest of the choices under them. */
+export interface FoldedMenu {
+  toggle: Phaser.GameObjects.Text;
+  /** Opens or closes the rest of the menu. */
+  flip(): void;
+}
+
+/**
+ * Lays the menu out folded, as a phone shows it: `start` and a More button
+ * side by side, and the other choices hidden until More is pressed, when
+ * they open beneath (and the button reads Less). The buttons keep one size
+ * either way, so nothing jumps but the rows.
+ */
+export function foldMenu(scene: Phaser.Scene, size: Size, start: Phaser.GameObjects.Text, rest: MenuItem[], safe: SafeLayout): FoldedMenu {
+  const toggle = addMenuButton(scene, size, t('Less'), 'secondary');
+  const lessWidth = toggle.width;
+  toggle.setText(t('More'));
+  toggle.setFixedSize(Math.max(lessWidth, toggle.width), 0);
+  // Sized once with everything in, so open and closed share their widths.
+  layoutMenu([[start, toggle], rest], safe);
+  let open = true;
+  const flip = () => {
+    open = !open;
+    for (const item of rest) item.setVisible(open);
+    toggle.setText(t(open ? 'Less' : 'More'));
+    layoutMenu(open ? [[start, toggle], rest] : [[start, toggle]], safe);
+  };
+  flip();
+  return { toggle, flip };
 }
 
 function wrapRow(row: MenuItem[], maxWidth: number): MenuItem[][] {
