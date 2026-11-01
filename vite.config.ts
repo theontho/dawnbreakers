@@ -37,7 +37,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
-        skyrewind: fileURLToPath(new URL('./skyrewind.html', import.meta.url)),
       },
       output: {
         // Phaser is half the download and changes only with an upgrade; its

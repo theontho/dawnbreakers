@@ -68,8 +68,6 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
 
   const city = addTitleCity(scene, width, height, cityBaseY);
   const nightWash = scene.add.rectangle(0, 0, width, height, 0x030611, 0.12).setOrigin(0);
-  scene.add.rectangle(width / 2, height * 0.36, Math.min(width - 24, 940), height * 0.26, 0x07040a, 0.28)
-    .setOrigin(0.5);
 
   const background = {
     width,

@@ -66,6 +66,10 @@ gallery *args:
 music *args:
     npm run render:music -- "$@"
 
+# Re-render the link preview image (public/social-preview.png) from the title screen
+social-preview *args:
+    npm run social-preview -- "$@"
+
 # Native C++/OpenGL Sky Rewind prototype
 starfield:
     npm run dev:starfield

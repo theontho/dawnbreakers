@@ -1,7 +1,7 @@
 import { PACKED_TRAVEL_STARS, PACKED_TRAVEL_STAR_WIDTH } from '../data/travelStars';
-import { DEG_TO_RAD, clamp } from '../skyrewind/math';
-import { computeProjectionState, precess } from '../skyrewind/projection';
-import type { GeographicLocation } from '../skyrewind/types';
+import { DEG_TO_RAD, clamp } from '../sky/math';
+import { computeProjectionState, precess } from '../sky/projection';
+import type { GeographicLocation } from '../sky/types';
 
 /**
  * The naked-eye stars, precessed to one date and ready to be turned by

@@ -1,4 +1,4 @@
-import { clamp } from '../skyrewind/math';
+import { clamp } from '../sky/math';
 import type { PassageCurve } from './roadCurve';
 
 /** How fast the sky's time runs against the player's, as in the native Sky Rewind's time player. */

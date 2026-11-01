@@ -1,6 +1,6 @@
 import { mix } from '../assets/art/canvasKit';
-import { clamp } from '../skyrewind/math';
-import type { SkyBodies } from '../skyrewind/skyBodies';
+import { clamp } from '../sky/math';
+import type { SkyBodies } from '../sky/skyBodies';
 import { altitudeAzimuth } from './skyCamera';
 
 /** The colour and brightness of the sky and land at one moment, from the sun and moon. */

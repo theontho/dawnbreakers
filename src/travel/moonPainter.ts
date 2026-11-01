@@ -1,6 +1,6 @@
 import type Phaser from 'phaser';
 import { mix } from '../assets/art/canvasKit';
-import type { SkyBodies } from '../skyrewind/skyBodies';
+import type { SkyBodies } from '../sky/skyBodies';
 import type { SkyCamera } from './skyCamera';
 import type { SkyLight } from './skyLight';
 

@@ -1,5 +1,5 @@
-import { DEG_TO_RAD, clamp } from '../skyrewind/math';
-import type { Vec3 } from '../skyrewind/types';
+import { DEG_TO_RAD, clamp } from '../sky/math';
+import type { Vec3 } from '../sky/types';
 
 export interface ScreenPoint {
   x: number;

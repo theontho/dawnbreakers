@@ -103,7 +103,7 @@ std::filesystem::path findCatalogPath(const char* overridePath) {
 
   std::filesystem::path current = std::filesystem::current_path();
   for (int depth = 0; depth < 8; ++depth) {
-    const auto candidate = current / "public" / "sky" / "hipparcos.csv";
+    const auto candidate = current / "data" / "sky" / "hipparcos.csv";
     if (std::filesystem::exists(candidate)) {
       return candidate;
     }
@@ -113,7 +113,7 @@ std::filesystem::path findCatalogPath(const char* overridePath) {
     current = current.parent_path();
   }
 
-  return std::filesystem::path("public") / "sky" / "hipparcos.csv";
+  return std::filesystem::path("data") / "sky" / "hipparcos.csv";
 }
 
 std::vector<StarVertex> loadHipparcosCatalog(const std::filesystem::path& path) {

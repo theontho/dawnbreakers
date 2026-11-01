@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /**
  * Packs the naked-eye Hipparcos stars (magnitude 6.0 and brighter) into
- * `src/data/travelStars.ts` for the journey skies. Reads the ignored
- * `public/sky/hipparcos.csv`; run `npm run skyrewind:catalog` first if it is
- * missing.
+ * `src/data/travelStars.ts` for the journey skies. Reads the checked-in
+ * `data/sky/hipparcos.csv` (`npm run skyrewind:catalog` regenerates it).
  *
  *   node scripts/generate-travel-stars.mjs
  *
@@ -22,7 +21,7 @@ const MAGNITUDE_LIMIT = 6.0;
 const ROW_WIDTH = 10;
 const ROWS_PER_LINE = 120;
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE = path.join(REPO_ROOT, 'public', 'sky', 'hipparcos.csv');
+const SOURCE = path.join(REPO_ROOT, 'data', 'sky', 'hipparcos.csv');
 const OUTPUT = path.join(REPO_ROOT, 'src', 'data', 'travelStars.ts');
 
 const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/).filter(line => line && !line.startsWith('#'));

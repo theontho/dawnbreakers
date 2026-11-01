@@ -526,7 +526,6 @@ export const text: TranslationCatalog = {
   "Word comes that the Prisoner of Chihríq is being brought down to Tabríz to be examined. You take the road around the salt lake of Urúmíyyih.": "خبر می‌رسد که زندانی چهریق را برای بازجویی به تبریز می‌آورند. تو راه پیرامون دریاچهٔ شور ارومیه را در پیش می‌گیری.",
   "You ride east by night with the news of Tabríz toward Zanján, where the quarter of Ḥujjat has held out since the spring.": "شبانه با خبر تبریز به سوی شرق، به زنجان، می‌تازی، جایی که محلهٔ حجت از بهار تاکنون پایداری کرده است.",
   'Map Editor': 'ویرایشگر نقشه',
-  'Sky Rewind': 'بازپیچی آسمان',
   'Reset story': 'بازنشانی داستان',
   'Reset ✓': 'بازنشانی شد ✓',
   'Chapters': 'فصل‌ها',

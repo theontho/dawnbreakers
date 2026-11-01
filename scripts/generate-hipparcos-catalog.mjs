@@ -10,7 +10,7 @@ const HIPPARCOS_URL = 'https://cdsarc.cds.unistra.fr/ftp/I/239/hip_main.dat';
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 const RAW_PATH = path.join(REPO_ROOT, 'tmp', 'hip_main.dat');
-const OUTPUT_PATH = path.join(REPO_ROOT, 'public', 'sky', 'hipparcos.csv');
+const OUTPUT_PATH = path.join(REPO_ROOT, 'data', 'sky', 'hipparcos.csv');
 const args = new Set(process.argv.slice(2));
 
 await main();

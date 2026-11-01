@@ -22,6 +22,18 @@ export interface SafeLayout extends LayoutSize {
 }
 
 export const MIN_TOUCH_TARGET = 44;
+/** The canvas never gets smaller than this (also `#game`'s min-height in index.html). */
+export const MIN_GAME_WIDTH = 320;
+export const MIN_GAME_HEIGHT = 480;
+
+/**
+ * How much of the canvas is on screen. On a screen shorter than the canvas's
+ * minimum height (a phone held sideways) its foot is cut off by the page.
+ */
+export function visibleGameHeight(gameHeight: number): number {
+  const viewport = typeof window === 'undefined' ? gameHeight : window.visualViewport?.height ?? window.innerHeight;
+  return gameHeight <= MIN_GAME_HEIGHT && viewport < gameHeight ? Math.round(viewport) : gameHeight;
+}
 export const MIN_BODY_FONT_SIZE = 14;
 export const MIN_BUTTON_FONT_SIZE = 16;
 

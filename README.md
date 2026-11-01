@@ -62,9 +62,9 @@ node scripts/i18n-sync.mjs --prune             # drop keys no source string uses
 `.github/workflows/pages.yml` builds the game and deploys `dist/` to
 <https://theontho.github.io/dawnbreakers/> whenever a GitHub release is
 published, or when run by hand (`gh workflow run pages.yml`). The build uses
-relative paths, so it works under `/dawnbreakers/`. The Sky Rewind star
-catalog and the title recording are checked in, so deploys never wait on the
-CDS server.
+relative paths, so it works under `/dawnbreakers/`. The title recording and
+the packed journey stars are checked in, so deploys never wait on the CDS
+server.
 
 ## Native Sky Rewind prototype
 
@@ -78,7 +78,7 @@ root:
 npm run dev:starfield
 ```
 
-It regenerates the checked-in `public/sky/hipparcos.csv` from the
+It regenerates the checked-in `data/sky/hipparcos.csv` from the
 cached/downloaded CDS source data. Use `npm run skyrewind:cpp:check` to build, load the catalog,
 and compile the OpenGL shaders without opening the visible app window. In the
 native app, F1 toggles the old cinematic controls and F2 toggles the new time

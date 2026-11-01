@@ -1,13 +1,16 @@
 import Phaser from 'phaser';
 import { followSunrise, loadTitleMusic, startTitleMusic, type TitleMusic } from './titleMusic';
 import { loadBookmark, resetStory } from '../dialogue/progress';
-import { localizedStyle, rtl, t, textOriginX } from '../i18n';
+import { localizedStyle, t } from '../i18n';
 import { logGameEvent } from '../logging/gameLogger';
-import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
+import {
+  buttonFont, isNarrowLayout, MIN_TOUCH_TARGET, responsiveFont, restartSceneOnResize, safeLayout, visibleGameHeight,
+} from '../ui/responsive';
 import { activateTitleTextButton, addTitleLanguageButton } from './titleControls';
 import { playTitleBookOpening } from './titleBookOpening';
 import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS } from './titleSunrise';
 import { SunriseClock, type SunriseClockState } from './titleSunriseClock';
+import { addMenuButton, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
 import { addSunriseTransport } from './titleTransport';
 
 /**
@@ -17,8 +20,8 @@ import { addSunriseTransport } from './titleTransport';
  */
 type TitleResume = { clock: SunriseClockState; musicLeadSeconds: number };
 
-/** The space between the two buttons of a pair in the menu. */
-const PAIR_GAP = 12;
+/** A soft dark halo that keeps the title legible over night and noon sky alike. */
+const TITLE_SHADOW = { offsetX: 0, offsetY: 2, color: '#120b05', blur: 10, fill: true, stroke: false };
 
 export class TitleScene extends Phaser.Scene {
   private titleStartedAtMs = 0;
@@ -37,7 +40,10 @@ export class TitleScene extends Phaser.Scene {
     this.musicLeadSeconds = resume?.musicLeadSeconds;
     restartSceneOnResize(this, () => this.resumeData());
 
-    const { width, height } = this.scale;
+    // On a phone held sideways the canvas's foot runs off the screen, and the
+    // menu lives at the foot: lay the title out on what shows.
+    const { width } = this.scale;
+    const height = visibleGameHeight(this.scale.height);
 
     const size = { width, height };
     const safe = safeLayout(size);
@@ -49,33 +55,36 @@ export class TitleScene extends Phaser.Scene {
 
     const titleLayer = this.add.container(0, 0);
 
-    const title = this.add.text(centerX, safe.y + safe.height * 0.32, t('The Dawn-Breakers'), localizedStyle({
+    // The title keeps to the band under the transport and language buttons,
+    // and the menu to the fields below the city, so the sun has the sky.
+    const titleTop = safe.y + MIN_TOUCH_TARGET + (narrow ? 16 : 28);
+    const title = this.add.text(centerX, titleTop, t('The Dawn-Breakers'), localizedStyle({
       fontFamily: 'Georgia, serif',
-      fontSize: responsiveFont(narrow ? 58 : 72, size, 34),
+      fontSize: responsiveFont(narrow ? 52 : 68, size, 32),
       color: '#f3e2b5',
       align: 'center',
       wordWrap: { width: Math.min(safe.width, 900) },
-    }, 'center')).setOrigin(0.5);
+      shadow: TITLE_SHADOW,
+    }, 'center')).setOrigin(0.5, 0);
 
-    const subtitle = this.add.text(centerX, safe.y + safe.height * 0.42, t('Shíráz, the eve of 23 May 1844'), localizedStyle({
+    const subtitle = this.add.text(centerX, title.y + title.height + 4, t('Shíráz, the eve of 23 May 1844'), localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: responsiveFont(22, size, 15),
-      color: '#c9b07a',
+      color: '#e2c98f',
       fontStyle: 'italic',
       align: 'center',
       wordWrap: { width: Math.min(safe.width, 720) },
-    }, 'center')).setOrigin(0.5);
+      shadow: TITLE_SHADOW,
+    }, 'center')).setOrigin(0.5, 0);
 
     let bookmark = loadBookmark();
-    const startButton = this.add.text(centerX, safe.y + safe.height * 0.6, t(bookmark ? 'Continue' : 'Start'), localizedStyle({
-      fontFamily: 'Georgia, serif',
-      fontSize: buttonFont(22, size),
-      color: '#e8d9b0',
-      backgroundColor: '#1a120acc',
-      padding: { x: 24, y: 16 },
-      align: 'center',
-      wordWrap: { width: safe.width },
-    }, 'center')).setOrigin(0.5);
+    const startButton = addMenuButton(this, size, t(bookmark ? 'Continue' : 'Start'), 'primary');
+    const chapters = addMenuButton(this, size, t('Chapters ›'), 'secondary');
+    const journeys = addMenuButton(this, size, t('Journeys'), 'secondary');
+    const miniGames = addMenuButton(this, size, t('Mini-games'), 'secondary');
+    const editor = addMenuButton(this, size, t('Map Editor'), 'secondary');
+    const reset = addMenuButton(this, size, t('Reset story'), 'quiet');
+    layoutMenu([[startButton], [chapters, journeys, miniGames, editor, reset]], safe);
 
     const start = () => {
       if (bookmark && this.scene.get(bookmark.scene)) {
@@ -85,39 +94,7 @@ export class TitleScene extends Phaser.Scene {
       }
     };
 
-    // The menu's pairs read from the right in a right-to-left language.
-    const pairOffset = (rtl ? -PAIR_GAP : PAIR_GAP) / 2;
-    const chapters = this.add.text(centerX, safe.y + safe.height * 0.68, t('Chapters ›'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
-      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(0.5);
-
-    const journeys = this.add.text(centerX - pairOffset, safe.y + safe.height * 0.76, t('Journeys'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
-      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(textOriginX(1), 0.5);
-
-    const miniGames = this.add.text(centerX + pairOffset, safe.y + safe.height * 0.76, t('Mini-games'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
-      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(textOriginX(0), 0.5);
-
-    const skyRewind = this.add.text(centerX - pairOffset, safe.y + safe.height * 0.84, t('Sky Rewind'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
-      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(textOriginX(1), 0.5);
-
-    const editor = this.add.text(centerX + pairOffset, safe.y + safe.height * 0.84, t('Map Editor'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(18, size), color: '#c9b07a',
-      backgroundColor: '#1a120acc', padding: { x: 16, y: 14 },
-    }, 'center')).setOrigin(textOriginX(0), 0.5);
-
-    const reset = this.add.text(rtl ? safe.x : safe.right, safe.bottom, t('Reset story'), localizedStyle({
-      fontFamily: 'Georgia, serif', fontSize: buttonFont(14, size), color: '#9c8458',
-      backgroundColor: '#1a120acc', padding: { x: 12, y: 14 },
-    })).setOrigin(textOriginX(1), 1);
-
-    titleLayer.add([title, subtitle, startButton, chapters, journeys, miniGames, skyRewind, editor, reset]);
+    titleLayer.add([title, subtitle, startButton, chapters, journeys, miniGames, editor, reset]);
 
     const showMenu = (clock: SunriseClock) => {
       this.clock = clock;
@@ -125,15 +102,14 @@ export class TitleScene extends Phaser.Scene {
       addTitleLanguageButton(this, size, () => this.scene.restart(this.resumeData()));
       addSunriseTransport(this, size, clock);
       this.followMusic();
-      activateTitleTextButton(this, startButton, '#e8d9b0', '#fff1c0', start);
-      activateTitleTextButton(this, chapters, '#c9b07a', '#fff1c0', () => this.scene.start('ChapterSelect'));
-      activateTitleTextButton(this, journeys, '#c9b07a', '#fff1c0', () => this.scene.start('Journey'));
-      activateTitleTextButton(this, miniGames, '#c9b07a', '#fff1c0', () => this.scene.start('MiniGamePicker'));
-      activateTitleTextButton(this, skyRewind, '#c9b07a', '#fff1c0', () => {
-        window.location.assign('./skyrewind.html');
-      });
-      activateTitleTextButton(this, editor, '#c9b07a', '#fff1c0', () => this.scene.start('MapEditor', { from: 'Title' }));
-      activateTitleTextButton(this, reset, '#9c8458', '#f3d98a', () => {
+      const activate = (button: Phaser.GameObjects.Text, tone: MenuTone, onClick: () => void) =>
+        activateTitleTextButton(this, button, MENU_COLORS[tone].normal, MENU_COLORS[tone].hover, onClick);
+      activate(startButton, 'primary', start);
+      activate(chapters, 'secondary', () => this.scene.start('ChapterSelect'));
+      activate(journeys, 'secondary', () => this.scene.start('Journey'));
+      activate(miniGames, 'secondary', () => this.scene.start('MiniGamePicker'));
+      activate(editor, 'secondary', () => this.scene.start('MapEditor', { from: 'Title' }));
+      activate(reset, 'quiet', () => {
         resetStory();
         bookmark = undefined;
         reset.setText(t('Reset ✓'));
@@ -158,7 +134,7 @@ export class TitleScene extends Phaser.Scene {
     }
 
     titleLayer.setAlpha(0);
-    this.waitForTitleStart(size, () => {
+    this.waitForTitleStart(size, startButton.y, () => {
       this.titleStartedAtMs = performance.now();
       logGameEvent('title start', { width, height });
       startMusic(0);
@@ -185,10 +161,11 @@ export class TitleScene extends Phaser.Scene {
     return { resume: { clock: this.clock.state, musicLeadSeconds: this.musicLeadSeconds ?? 0 } };
   }
 
-  private waitForTitleStart(size: { width: number; height: number }, onStart: () => void): void {
+  /** The "press to begin" prompt, where the start button will appear. */
+  private waitForTitleStart(size: { width: number; height: number }, promptY: number, onStart: () => void): void {
     const safe = safeLayout(size);
     const centerX = safe.x + safe.width / 2;
-    const centerY = safe.y + safe.height * 0.58;
+    const centerY = promptY;
     const gate = this.add.container(0, 0).setDepth(2000);
     const hitArea = this.add.rectangle(0, 0, size.width, size.height, 0x05030a, 0.38)
       .setOrigin(0)

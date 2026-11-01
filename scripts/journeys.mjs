@@ -74,7 +74,8 @@ try {
     await page.evaluate(() => {
       const game = window.__game;
       game.scene.getScenes(true).filter((s) => s.scene.key !== 'Journey').forEach((s) => s.scene.stop());
-      game.scene.start('Journey', { journeyId: 'shiraz-to-road', onward: { scene: 'Road' } });
+      // Quick days: this checks the hand-off, and an 18-day road at the default pace takes a minute.
+      game.scene.start('Journey', { journeyId: 'shiraz-to-road', onward: { scene: 'Road' }, settings: { secondsPerDay: 0.2 } });
     });
     await page.waitForFunction(() => window.__game.scene.isActive('Road'), null, { timeout: 40000 });
     console.log('passage: shiraz-to-road went on into Road');

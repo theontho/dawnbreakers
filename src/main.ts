@@ -14,7 +14,7 @@ import { miniGameScenes } from './scenes/minigames';
 import { MiniGamePickerScene } from './scenes/MiniGamePickerScene';
 import { activeLocale, applyLocaleDocument, loadLocale } from './i18n';
 import { attachConsolePanel } from './ui/consolePanel';
-import { measuredSafeAreaInsets } from './ui/responsive';
+import { measuredSafeAreaInsets, MIN_GAME_HEIGHT, MIN_GAME_WIDTH } from './ui/responsive';
 import { attachFpsLabel, installDebugOverlayHotkey } from './ui/debugOverlay';
 import { installAudioUnlock, playSfx } from './audio';
 
@@ -47,8 +47,8 @@ const config: Phaser.Types.Core.GameConfig = {
     width: initialWidth,
     height: initialHeight,
     min: {
-      width: 320,
-      height: 480,
+      width: MIN_GAME_WIDTH,
+      height: MIN_GAME_HEIGHT,
     },
   },
   pixelArt: false,

@@ -525,7 +525,6 @@ export const text: TranslationCatalog = {
   "Word comes that the Prisoner of Chihríq is being brought down to Tabríz to be examined. You take the road around the salt lake of Urúmíyyih.": "消息传来，奇赫里格的囚徒正被押往大不里士受审。你取道绕过乌尔米耶盐湖的那条路。",
   "You ride east by night with the news of Tabríz toward Zanján, where the quarter of Ḥujjat has held out since the spring.": "你带着大不里士的消息，夜里策马向东奔赴赞詹，胡贾特所在的街区自春天以来一直在坚守。",
   'Map Editor': '地图编辑器',
-  'Sky Rewind': '天空回溯',
   'Reset story': '重置故事',
   'Reset ✓': '已重置 ✓',
   Chapters: '章节',

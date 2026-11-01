@@ -31,19 +31,18 @@
     "journeys": "node scripts/journeys.mjs",
     "journeys:stars": "node scripts/generate-travel-stars.mjs",
     "i18n:glossary": "node scripts/i18n-glossary.mjs",
-    "minigames": "node scripts/minigames.mjs"
+    "minigames": "node scripts/minigames.mjs",
+    "social-preview": "node scripts/social-preview.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "phaser": "^3.90.0",
-    "three": "^0.184.0"
+    "phaser": "^3.90.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/three": "^0.184.1",
     "@webgpu/types": "^0.1.74",
     "eslint": "^10.4.1",
     "jscpd": "^4.2.4",

@@ -1,5 +1,5 @@
-import { clamp } from '../skyrewind/math';
-import { cinematicInertiaEase, type TimeCurveSettings } from '../skyrewind/timeController';
+import { clamp } from '../sky/math';
+import { cinematicInertiaEase, type TimeCurveSettings } from '../sky/inertiaEase';
 
 const HOUR_MS = 3600000;
 /** Each night runs from the evening it is entered toward dawn. */
@@ -11,7 +11,7 @@ const NIGHT_CURVE: TimeCurveSettings = { inertiaPortion: 0.26, driftProgress: 0.
 /** Sky hours per real second while a night is watched. */
 const NIGHT_PACE = 1.6;
 /** Real seconds each day takes while the days between roll by, and the choices the viewer's dial offers. */
-export const DEFAULT_SECONDS_PER_DAY = 0.4;
+export const DEFAULT_SECONDS_PER_DAY = 3;
 export const SECONDS_PER_DAY_STEPS: readonly number[] = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3];
 /** Real seconds for each stretch of the road. */
 const HOLD_S = 1.5;

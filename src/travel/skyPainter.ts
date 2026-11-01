@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { mix } from '../assets/art/canvasKit';
-import { clamp } from '../skyrewind/math';
-import type { SkyBodies } from '../skyrewind/skyBodies';
+import { clamp } from '../sky/math';
+import type { SkyBodies } from '../sky/skyBodies';
 import type { SkyCamera, ScreenPoint } from './skyCamera';
 import { starAlpha, starBrightness, starLimit, type SkyLight } from './skyLight';
 import type { StarField } from './travelStars';
