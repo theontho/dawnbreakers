@@ -1,3 +1,4 @@
+import { carpet } from '../../assets/carpetObjects';
 import type { DecorSpec, MapDefinition } from './types';
 
 /**
@@ -36,18 +37,9 @@ const FURNISHED: ReadonlyArray<DecorSpec> = [
   { gridX: 5, gridY: 5, texture: 'ch5-ewer', blocks: true },
 ];
 
-/** Carpets on every open cell, alternating, so the floor reads as overlapping rugs. */
+/** Two carpets over the whole floor, the furnishings set on them. */
 function carpets(): DecorSpec[] {
-  const taken = new Set(FURNISHED.map(d => `${d.gridX},${d.gridY}`));
-  [DESK, KEEPER].forEach(c => taken.add(`${c.x},${c.y}`));
-  const out: DecorSpec[] = [];
-  for (let y = 1; y < H; y++) {
-    for (let x = 1; x < W; x++) {
-      if (taken.has(`${x},${y}`)) continue;
-      out.push({ gridX: x, gridY: y, texture: (x + y) % 2 ? 'ch7-carpet-indigo' : 'ch7-carpet-madder' });
-    }
-  }
-  return out;
+  return [carpet(1, 1, 3, 5, 'indigo'), carpet(4, 1, 3, 5, 'madder')];
 }
 
 export const ch7QuddusTentMap: MapDefinition = {

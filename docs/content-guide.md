@@ -95,7 +95,13 @@ long-exposure star trails, and the facing.
   that runs along a river's length (still for a pond). `water: { flow }`
   sets the current; `water: { openSea: true, roll: true }` draws open sea
   under the whole view, out past the map's edges, with the deck rolling
-  (the pilgrim ship). Plants outdoors sway in the wind on their own.
+  (the pilgrim ship). Plants outdoors sway in the wind on their own, and a
+  fountain's jet plays. Scenery of a map's own that moves (the ship's wake)
+  goes in `animate` on its definition.
+- A floor laid with a few big carpets reads better than a chequer of small
+  rugs: `carpet(x, y, w, h, 'crimson' | 'indigo' | 'madder')` from
+  `src/assets/carpetObjects.ts` covers several cells and lies under everyone
+  standing on it (single prayer rugs in rows stay `rug`).
 - `buildings` occupy footprints and block by default. `decor` is one cell,
   blocking only with `blocks: true`, and can take `present: f => ...` to
   come and go with the story (a crowd that disperses, a flag that is struck).

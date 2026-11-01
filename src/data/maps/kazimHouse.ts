@@ -1,3 +1,4 @@
+import { carpet } from '../../assets/carpetObjects';
 import type { FlagState } from '../../dialogue/types';
 import { frMourning, frTeaching } from './forerunnersPhases';
 import { KAZIM_GATE } from './karbilaQuarter';
@@ -27,12 +28,9 @@ function roomWalls(): DecorSpec[] {
   return out;
 }
 
+/** Three long carpets laid side by side where the students sit. */
 function carpets(): DecorSpec[] {
-  const out: DecorSpec[] = [];
-  for (let y = 5; y <= 10; y++) {
-    for (let x = 3; x <= 14; x++) out.push({ gridX: x, gridY: y, texture: (x + y) % 2 ? 'ch7-carpet-madder' : 'ch7-carpet-indigo' });
-  }
-  return out;
+  return [carpet(3, 5, 4, 6, 'madder'), carpet(7, 5, 4, 6, 'indigo'), carpet(11, 5, 4, 6, 'madder')];
 }
 
 const block = (texture: string, cells: ReadonlyArray<readonly [number, number]>, present?: (f: FlagState) => boolean): DecorSpec[] =>

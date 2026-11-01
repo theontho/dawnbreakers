@@ -20,6 +20,7 @@ import { ZANJAN_OBJECTS, ZANJAN_TEXTURE_GENERATORS } from './zanjan';
 import { KARBILA_OBJECTS, KARBILA_TEXTURE_GENERATORS } from './karbila';
 import { CH10_OBJECTS, CH10_TEXTURE_GENERATORS } from './chapter10';
 import { SHARED_TEXTURE_GENERATORS } from './shared';
+import { CARPET_OBJECTS, CARPET_TEXTURE_GENERATORS } from '../carpetObjects';
 import { BASE_ART_GENERATORS } from '../art';
 import { TOWN_ART_GENERATORS } from '../art/town';
 import { TREE_ART_GENERATORS } from '../art/treeArt';
@@ -36,6 +37,7 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
   ...TOWN_ART_GENERATORS,
   ...TREE_ART_GENERATORS,
   ...SHARED_TEXTURE_GENERATORS,
+  ...CARPET_TEXTURE_GENERATORS,
   ...FORERUNNERS_TEXTURE_GENERATORS,
   ...CH01_TEXTURE_GENERATORS,
   ...CH02_TEXTURE_GENERATORS,
@@ -59,6 +61,7 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
 
 /** Chapter-owned placeable objects, in chapter order. */
 export const CHAPTER_OBJECTS: MapObjectDefinition[] = [
+  ...CARPET_OBJECTS,
   ...FORERUNNERS_OBJECTS,
   ...CH01_OBJECTS,
   ...CH02_OBJECTS,

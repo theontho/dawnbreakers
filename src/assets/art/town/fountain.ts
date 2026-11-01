@@ -82,43 +82,33 @@ function moulding(c: Ctx, w: number, l: number): void {
   c.fillRect(0, 2, w, 1);
 }
 
-/** A jet rising from a small stone basin at the pool's centre, falling back in arcs. */
-function jet(ctx: Ctx, pool: IsoBox): void {
+/** The small stone basin at the pool's centre that the jet rises from; returns where the water leaves it. */
+function basin(ctx: Ctx, pool: IsoBox): { x: number; y: number } {
   const at = roofPoint(pool, pool.w / 2, pool.d / 2);
   cylinder(ctx, at.x, at.y + 2, 6, 10, RIM, true);
   ctx.fillStyle = css(0x5a8cab);
   ctx.beginPath();
   ctx.ellipse(at.x, at.y - 8, 4.5, 2, 0, 0, Math.PI * 2);
   ctx.fill();
-  const top = at.y - 34;
-  ctx.strokeStyle = 'rgba(230,242,250,0.85)';
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(at.x, at.y - 9);
-  ctx.lineTo(at.x, top);
-  ctx.stroke();
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(230,242,250,0.6)';
-  for (const dx of [-12, -7, 7, 12]) {
-    ctx.beginPath();
-    ctx.moveTo(at.x, top + 1);
-    ctx.quadraticCurveTo(at.x + dx * 0.7, top - 4, at.x + dx, at.y - 4 + Math.abs(dx) * 0.2);
-    ctx.stroke();
-  }
-  // Rings where the drops fall.
-  ctx.strokeStyle = 'rgba(235,245,250,0.5)';
-  for (const r of [10, 15]) {
-    ctx.beginPath();
-    ctx.ellipse(at.x, at.y - 1, r, r * 0.45, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  return at;
 }
 
-/** The square's pool: 3 x 3 cells, a broad rim to sit on, a jet at its heart. */
+/** Where a fountain's jet stands in its texture: kept on the texture for the live jet (`fountainJets.ts`). */
+export interface FountainJet {
+  x: number;
+  y: number;
+}
+
+/**
+ * The square's pool: 3 x 3 cells, a broad rim to sit on, a basin at its
+ * heart. Its jet moves, so it is drawn live; the texture keeps where it stands.
+ */
 export function paintFountainPool(scene: Phaser.Scene, key: string, cellsW: number, cellsD: number): void {
   const { box, texW, texH } = footprintBox(cellsW, cellsD, 14, 30);
+  let jet: FountainJet | undefined;
   paintTexture(scene, key, texW, texH, ctx => {
     const pool = hawz(ctx, box, 4, box.w - 4, 4, box.d - 4, 13, 10, 611);
-    jet(ctx, pool);
+    jet = basin(ctx, pool);
   });
+  if (jet && scene.textures.exists(key)) (scene.textures.get(key).customData as { jet?: FountainJet }).jet = jet;
 }

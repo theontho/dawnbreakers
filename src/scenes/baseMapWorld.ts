@@ -7,6 +7,8 @@ import { exitIsOpen } from './baseMapMovement';
 import { placeExitMarks } from './exitMarks';
 import { addWater, riverFlow, rollWithTheSea } from './waterLayer';
 import { swayInTheWind } from './windSway';
+import { animateFountainJet } from './fountainJets';
+import type { FountainJet } from '../assets/art/town/fountain';
 import type { WaterSpec } from '../data/maps/types';
 import {
   TILE_H,
@@ -62,6 +64,13 @@ export function renderBaseMapWorld(
     const frontY = building.gridY + building.h - 1;
     const front = gridToIsoScreen(state.originX, state.originY, frontX, frontY);
     const whole = anchorAtFoot(scene.add.image(front.sx, front.sy + TILE_H / 2, building.texture, '__BASE'));
+    const jet = (whole.texture.customData as { jet?: FountainJet }).jet;
+    if (jet) {
+      // Over the pool, under whoever stands in front of it.
+      const left = whole.x - whole.width * whole.originX;
+      const top = whole.y - whole.height * whole.originY;
+      animateFountainJet(scene, left + jet.x, top + jet.y, front.sy + TILE_H / 2);
+    }
     const slices = sliceBuilding(scene, whole, building, { x: state.originX, y: state.originY });
     slices.forEach(slice => slice.setName(placedName(building)));
     occludableSprites.push(...slices);
