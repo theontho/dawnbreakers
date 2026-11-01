@@ -64,7 +64,7 @@ function findRise(): number {
 }
 
 /** The time that morning when the sun stood at `altitude` degrees. */
-function timeForAltitude(altitude: number): Date {
+export function timeForAltitude(altitude: number): Date {
   const { altitudes, startMs } = dawnOverShiraz();
   if (altitude <= altitudes[0]!) return new Date(startMs);
   for (let i = 1; i < altitudes.length; i += 1) {
@@ -74,6 +74,28 @@ function timeForAltitude(altitude: number): Date {
     }
   }
   return new Date(startMs + (altitudes.length - 1) * 60000);
+}
+
+/** The deepest the drawn dawn's sun goes (where the title's light holds still), in degrees. */
+const DRAWN_NIGHT = -18;
+/** However slowly the drawn dawn begins, the night sky turns at least this many times real time. */
+const MIN_NIGHT_RATE = 90;
+
+/**
+ * The real time that morning for each moment (ms) of the title's dawn, whose
+ * sun is drawn at `elevationAt(ms)` degrees. Once the drawn sun climbs past
+ * the deep night, the time is when the real sun stood as high. Before that,
+ * while the drawn sky holds still, the night runs on toward that moment at
+ * the pace it then keeps, so the stars turn from the very first frame and
+ * the sunrise falls where it always did.
+ */
+export function titleSkyClock(elevationAt: (ms: number) => number, durationMs: number): (ms: number) => Date {
+  let liftMs = 0;
+  while (liftMs < durationMs && elevationAt(liftMs) <= DRAWN_NIGHT + 0.01) liftMs += 50;
+  const liftTime = timeForAltitude(DRAWN_NIGHT).getTime();
+  const step = 1000;
+  const rate = Math.max(MIN_NIGHT_RATE, (timeForAltitude(elevationAt(liftMs + step)).getTime() - liftTime) / step);
+  return ms => (ms >= liftMs ? timeForAltitude(elevationAt(ms)) : new Date(liftTime - (liftMs - ms) * rate));
 }
 
 export class TitleNightSky {
@@ -100,12 +122,8 @@ export class TitleNightSky {
     this.moon = scene.add.graphics();
   }
 
-  /**
-   * Shows the sky as it was when the sun stood at `sunAltitude` degrees,
-   * under the title's own dawn, which veils it by `veil` (1 clear, 0 gone).
-   */
-  draw(sunAltitude: number, veil: number): void {
-    const date = timeForAltitude(sunAltitude);
+  /** Shows the sky as it was at `date`, under the title's own dawn, which veils it by `veil` (1 clear, 0 gone). */
+  draw(date: Date, veil: number): void {
     const siderealTime = localSiderealTime(date, SHIRAZ);
     const moved = Math.abs(siderealTime - this.drawnSidereal) * this.camera.pixelsPerRadian;
     if (moved < REDRAW_PIXELS && Math.abs(veil - this.drawnVeil) < 0.01) return;

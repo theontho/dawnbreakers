@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { logGameEvent } from '../logging/gameLogger';
 import { addTitleCity, addTitleCloud, type TitleCity } from './titleCity';
 import { calculateTitleDaylight } from './titleDaylight';
-import { TitleNightSky } from './titleNightSky';
+import { TitleNightSky, timeForAltitude, titleSkyClock } from './titleNightSky';
 import type { SunriseClock } from './titleSunriseClock';
 import { glowTitleSun } from './titleSunGlow';
 import { drawTitleSunRays } from './titleSunRays';
@@ -25,6 +25,8 @@ export type SunriseBackground = {
   sunRadius: number;
   horizonY: number;
   nightSky: TitleNightSky;
+  /** The real time that morning for each moment of the dawn, once it plays. */
+  skyTime?: (ms: number) => Date;
   daySky: Phaser.GameObjects.Image;
   dawnGlow: Phaser.GameObjects.Image;
   dayClouds: Phaser.GameObjects.Container;
@@ -183,10 +185,14 @@ export function playSunrise(
       fixedSunriseElapsedMs: fixedSunPeakingElapsedMs,
     });
   };
+  sunrise.skyTime = titleSkyClock(
+    ms => calculateTitleDaylight(sunrise.sunCenterY + sunTargetY * sineInOut(ms / clock.durationMs), sunrise.horizonY).solarElevationDeg,
+    clock.durationMs,
+  );
   const render = () => {
     sunrise.sun.y = sunTargetY * sineInOut(clock.progress);
     sunrise.dayClouds.x = cloudDriftX(sunrise.cloudDrift, clock.position);
-    applySunriseLighting(sunrise);
+    applySunriseLighting(sunrise, clock.position);
 
     if (isSunPeakingOverHorizon(sunrise)) {
       logSunPeaking();
@@ -201,7 +207,7 @@ export function playSunrise(
   render();
 }
 
-function applySunriseLighting(sunrise: SunriseBackground): void {
+function applySunriseLighting(sunrise: SunriseBackground, positionMs = 0): void {
   const sunCenterX = sunrise.sunCenterX + sunrise.sun.x;
   const sunCenterY = sunrise.sunCenterY + sunrise.sun.y;
   const daylight = calculateTitleDaylight(sunCenterY, sunrise.horizonY);
@@ -220,7 +226,7 @@ function applySunriseLighting(sunrise: SunriseBackground): void {
   sunrise.dawnGlow.setAlpha(daylight.dawnGlowAlpha);
   sunrise.sunEffects.forEach((effect) => effect.setAlpha(daylight.sunEffectsAlpha));
   sunrise.sunDisk.setFillStyle(daylight.sunTint, 1);
-  sunrise.nightSky.draw(daylight.solarElevationDeg, daylight.starAlpha);
+  sunrise.nightSky.draw(sunrise.skyTime?.(positionMs) ?? timeForAltitude(daylight.solarElevationDeg), daylight.starAlpha);
   sunrise.city.setLight(daylight.cityLightAmount);
   sunrise.dayClouds.setAlpha(daylight.cloudAlpha);
   sunrise.nightWash.setAlpha(daylight.nightWashAlpha);
