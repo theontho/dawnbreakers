@@ -70,6 +70,23 @@ try {
   }
 
   if (!only) {
+    // The viewer's ‹ › buttons restart the scene for the next road: step
+    // through every one and back, as a player does, and keep the HUD up.
+    await page.evaluate(() => {
+      const game = window.__game;
+      game.scene.getScenes(true).forEach((s) => s.scene.stop());
+      // Stopping and starting one scene in the same tick leaves it shut down.
+      setTimeout(() => game.scene.start('Journey', { journeyId: 'kufih-to-shiraz' }), 200);
+    });
+    await page.waitForTimeout(1200);
+    for (const key of [...ids.map(() => 'ArrowRight'), 'ArrowLeft', 'ArrowLeft']) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(400);
+    }
+    const viewerUp = await page.evaluate(() => window.__game.scene.isActive('Journey') && window.__game.scene.getScene('Journey').hud.layer.visible);
+    if (!viewerUp) throw new Error('the viewer did not survive stepping through the journeys');
+    console.log(`viewer: stepped through ${ids.length} journeys and back`);
+
     // A passage between chapters must carry on into the next chapter by itself:
     // 18 days at 3 s a day, with its first and last nights, is about a minute.
     await page.evaluate(() => {
