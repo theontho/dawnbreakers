@@ -6,8 +6,8 @@
  * Over painted water it is a thin overlay, read through the mask in
  * `iChannel0` (red: water, green: nearness to the bank): glints on the
  * crests, a little shade in the troughs, and foam that laps at the bank.
- * As open sea (`uOpenSea`) it paints the whole sea, deep blue with long
- * swells, whitecaps and glints.
+ * As open sea (`uOpenSea`) it paints the whole sea in the style the ground
+ * painter gives water (deep blue, mottled, thin pale wave lines), drifting.
  *
  * Output is premultiplied, as Phaser blends.
  */
@@ -61,13 +61,13 @@ void main() {
   float trough = smoothstep(-0.25, -0.85, h);
 
   if (uOpenSea > 0.5) {
-    vec3 deep = vec3(0.09, 0.19, 0.30);
-    vec3 shallow = vec3(0.18, 0.33, 0.43);
-    vec3 colour = mix(deep, shallow, clamp(h * 0.45 + 0.45, 0.0, 1.0));
-    colour = mix(colour, vec3(0.05, 0.11, 0.19), trough * 0.5);
-    float cap = smoothstep(0.9, 1.15, h) * smoothstep(0.55, 0.8, noise(g * 3.0 - uFlow * t * 1.2));
-    colour = mix(colour, vec3(0.85, 0.9, 0.92), cap * 0.6);
-    colour += vec3(0.55, 0.65, 0.7) * glint * 0.35;
+    // The painted sea's own look (deep blue, mottled, thin pale wave lines,
+    // as groundPainter drew it), drifting slowly past and shimmering a little.
+    vec2 p = g - uFlow * t * 0.3;
+    float mottle = noise(p * 3.0) * 0.57 + noise(p * 6.3) * 0.29 + noise(p * 12.9) * 0.14;
+    float wave = sin(p.x * 7.0 + p.y * 3.0 + mottle * 5.0 + sin(t * 0.5 + p.y) * 0.6);
+    vec3 colour = vec3(26.0, 52.0, 82.0) / 255.0;
+    colour = mix(colour, vec3(150.0, 190.0, 210.0) / 255.0, 0.35 * step(0.93, wave));
     gl_FragColor = vec4(colour, 1.0);
     return;
   }
