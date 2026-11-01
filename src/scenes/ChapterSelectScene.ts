@@ -56,7 +56,9 @@ export class ChapterSelectScene extends Phaser.Scene {
     const viewportY = safe.y + 132;
     const viewportH = Math.max(180, safe.bottom - viewportY - (this.returnToGameScene ? 132 : 104));
     let scrollY = 0;
-    // Set when a press turns into a drag, so lifting the finger does not open a chapter.
+    // A card opens on release, and only for a press that began on this screen
+    // (not the title's tap that opened it) and did not turn into a drag.
+    let pressedHere = false;
     let dragged = false;
 
     const list = this.add.container(centerX - cardW / 2, viewportY);
@@ -68,7 +70,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     // Each card is as tall as its words, which run longer in some languages than others.
     let contentH = -gap;
     for (const ch of chapters) {
-      contentH += gap + this.drawChapterCard(list, 0, contentH + gap, cardW, ch, ch.isComplete(flags), () => !dragged);
+      contentH += gap + this.drawChapterCard(list, 0, contentH + gap, cardW, ch, ch.isComplete(flags), () => pressedHere && !dragged);
     }
     const maxScroll = Math.max(0, contentH - viewportH);
 
@@ -100,6 +102,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     // A finger drags the list; a press that moves more than a few pixels is a drag, not a tap.
     let dragFrom: { pointerY: number; scrollY: number } | undefined;
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pressedHere = true;
       dragged = false;
       dragFrom = { pointerY: pointer.y, scrollY };
     });
@@ -109,7 +112,11 @@ export class ChapterSelectScene extends Phaser.Scene {
       if (Math.abs(moved) > 8) dragged = true;
       if (dragged) setScroll(dragFrom.scrollY - moved);
     });
-    this.input.on('pointerup', () => { dragFrom = undefined; });
+    // Cards hear the release first, then this clears the press.
+    this.input.on('pointerup', () => {
+      dragFrom = undefined;
+      pressedHere = false;
+    });
 
     this.input.keyboard?.on('keydown-UP', () => setScroll(scrollY - 70));
     this.input.keyboard?.on('keydown-DOWN', () => setScroll(scrollY + 70));
