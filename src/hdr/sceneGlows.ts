@@ -4,6 +4,8 @@ import { glowBounds, overlapFraction, smoothstep, type GlowSpec, type Occluder }
 
 /** The glow eases in over this long when it first shows. */
 const FADE_IN_MS = 1000;
+const COMFORT_EVERY_MS = 5000;
+import { hdrComfort } from './hdrComfort';
 import { watchHdrGlow } from './hdrSupport';
 
 /** A glow before the words and panels in front of it are taken into account. */
@@ -12,7 +14,8 @@ export type GlowBody = Omit<GlowSpec, 'fade' | 'occluders'> & { fade?: number };
 /**
  * A scene's HDR sun and moon. Does nothing at all until the screen and the
  * browser are known to show HDR and the player has it on; follows the
- * scene's camera fades, and hides while the scene is paused, asleep or gone.
+ * scene's camera fades, hides while the scene is paused, asleep or gone, and
+ * holds back its brightness in a dark room (`hdrComfort.ts`).
  */
 export class SceneGlows {
   private layer: HdrGlowLayer | undefined;
@@ -20,6 +23,9 @@ export class SceneGlows {
   private suspended = false;
   /** When the HDR layer appeared, so the glow fades in rather than switching on in a frame. */
   private shownAt = 0;
+  /** The room's darkness, as `hdrComfort` judges it, checked every few seconds. */
+  private comfort = 1;
+  private comfortAt = -Infinity;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.unwatch = watchHdrGlow(gpu => {
@@ -58,12 +64,19 @@ export class SceneGlows {
   /** Shows these bodies this frame, dimmed by what stands in front of them. */
   update(bodies: readonly GlowBody[], occluders: readonly Occluder[]): void {
     if (!this.layer || this.suspended) return;
-    const fadingIn = smoothstep(0, FADE_IN_MS, performance.now() - this.shownAt);
+    const now = performance.now();
+    if (now - this.comfortAt > COMFORT_EVERY_MS) {
+      this.comfort = hdrComfort();
+      this.comfortAt = now;
+    }
+    const fadingIn = smoothstep(0, FADE_IN_MS, now - this.shownAt);
     const visible = (1 - fadeCover(this.scene.cameras.main.fadeEffect)) * fadingIn;
     this.layer.update(bodies.map(body => {
       const box = glowBounds(body);
       return {
         ...body,
+        // Past paper white only as far as the room's darkness allows.
+        gain: 1 + (body.gain - 1) * this.comfort,
         fade: (body.fade ?? 1) * visible,
         occluders: occluders.filter(occluder => overlapFraction(box, occluder) > 0),
       };
