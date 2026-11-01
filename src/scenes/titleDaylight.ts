@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 
 export type TitleDaylightState = {
+  /** How high the drawn sun stands, in degrees, as the light is worked out from it. */
+  solarElevationDeg: number;
   colorTemperatureK: number;
   daySkyAlpha: number;
   dawnGlowAlpha: number;
@@ -27,6 +29,7 @@ export function calculateTitleDaylight(sunCenterY: number, horizonY: number): Ti
   const colorShift = smoothstep(-6, 16, solarElevationDeg);
 
   return {
+    solarElevationDeg,
     colorTemperatureK,
     daySkyAlpha: Phaser.Math.Clamp(lightIntensity * 1.12, 0, 1),
     dawnGlowAlpha: Phaser.Math.Clamp(twilightIntensity * (1 - smoothstep(8, 34, solarElevationDeg)), 0, 1),

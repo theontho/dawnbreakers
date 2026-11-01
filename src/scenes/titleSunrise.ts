@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { logGameEvent } from '../logging/gameLogger';
 import { addTitleCity, addTitleCloud, type TitleCity } from './titleCity';
 import { calculateTitleDaylight } from './titleDaylight';
-import { SHIRAZ_EAST_STAR_CHART } from './titleStarChart';
+import { TitleNightSky } from './titleNightSky';
 import type { SunriseClock } from './titleSunriseClock';
 import { glowTitleSun } from './titleSunGlow';
 import { drawTitleSunRays } from './titleSunRays';
@@ -24,7 +24,7 @@ export type SunriseBackground = {
   sunCenterY: number;
   sunRadius: number;
   horizonY: number;
-  stars: Phaser.GameObjects.Image;
+  nightSky: TitleNightSky;
   daySky: Phaser.GameObjects.Image;
   dawnGlow: Phaser.GameObjects.Image;
   dayClouds: Phaser.GameObjects.Container;
@@ -57,7 +57,7 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
   const sunRays = scene.add.graphics();
   const sunrise = addSunrise(scene, width, height, cityBaseY);
   const dawnGlow = addHorizonGlow(scene, width, height, horizonY).setAlpha(0);
-  const stars = addStars(scene, width, height, cityBaseY);
+  const nightSky = new TitleNightSky(scene, width, height, cityBaseY);
   const cloudDrift = { fromX: -width * 0.28, toX: width * 0.28 };
   const dayClouds = scene.add.container(cloudDrift.fromX, 0)
     .add(addTitleCloud(scene, -width * 0.18, height * 0.24, 0.9, 0.14))
@@ -80,7 +80,7 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
     sunCenterY: sunrise.centerY,
     sunRadius: sunrise.radius,
     horizonY: cityBaseY,
-    stars,
+    nightSky,
     daySky,
     dawnGlow,
     dayClouds,
@@ -116,34 +116,6 @@ function addSkyGradient(
   texture.refresh();
 
   return scene.add.image(0, 0, key).setOrigin(0).setDisplaySize(width, height);
-}
-
-/**
- * The dawn star chart, painted once into a canvas texture. As 863
- * individual Arc shapes it dominated the title screen's frame time.
- */
-function addStars(scene: Phaser.Scene, width: number, height: number, horizonY: number): Phaser.GameObjects.Image {
-  const widescreenAspect = 16 / 9;
-  const horizontalView = Phaser.Math.Clamp((width / height) / widescreenAspect, 0.45, 1);
-  const viewLeft = 0.5 - horizontalView / 2;
-  const viewRight = 0.5 + horizontalView / 2;
-  const scale = Phaser.Math.Clamp(width / 1000, 0.75, 1.35);
-  const textureWidth = Math.ceil(width);
-  const textureHeight = Math.max(1, Math.ceil(horizonY));
-  const key = `title-stars-${textureWidth}x${textureHeight}`;
-  const texture = createSizedCanvas(scene, key, textureWidth, textureHeight);
-  if (!texture) throw new Error(`Unable to create star chart texture: ${key}`);
-
-  const ctx = texture.context;
-  for (const [x, y, radius, alpha] of SHIRAZ_EAST_STAR_CHART) {
-    if (x < viewLeft || x > viewRight) continue;
-    ctx.fillStyle = `rgba(255, 243, 200, ${alpha})`;
-    ctx.beginPath();
-    ctx.arc(((x - viewLeft) / horizontalView) * width, (y / 0.98) * horizonY, radius * scale, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  texture.refresh();
-  return scene.add.image(0, 0, key).setOrigin(0);
 }
 
 function addSunrise(
@@ -248,7 +220,7 @@ function applySunriseLighting(sunrise: SunriseBackground): void {
   sunrise.dawnGlow.setAlpha(daylight.dawnGlowAlpha);
   sunrise.sunEffects.forEach((effect) => effect.setAlpha(daylight.sunEffectsAlpha));
   sunrise.sunDisk.setFillStyle(daylight.sunTint, 1);
-  sunrise.stars.setAlpha(daylight.starAlpha);
+  sunrise.nightSky.draw(daylight.solarElevationDeg, daylight.starAlpha);
   sunrise.city.setLight(daylight.cityLightAmount);
   sunrise.dayClouds.setAlpha(daylight.cloudAlpha);
   sunrise.nightWash.setAlpha(daylight.nightWashAlpha);

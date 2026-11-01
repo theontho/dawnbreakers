@@ -7,6 +7,7 @@ import { starAlpha, starBrightness, starLimit, type SkyLight } from './skyLight'
 import type { StarField } from './travelStars';
 import { ensureGlowTexture, GLOW_TEXTURE } from './glowTexture';
 import { MilkyWay } from './milkyWay';
+import { drawPlanets, drawStars, projectStar } from './starDrawing';
 import { paintMoon, type MoonDisc } from './moonPainter';
 
 /** Radians of hour angle the sky turns through per millisecond of sky time. */
@@ -163,29 +164,17 @@ export class SkyPainter {
   }
 
   private paintStars(frame: SkyFrame): void {
-    const { field, light } = frame;
-    const limit = this.limitFor(frame);
-    const gain = this.gainFor(frame);
-    const twinkle = 1 - frame.motion;
-    const p = this.point;
-    for (let i = 0; i < field.count; i += 1) {
-      const magnitude = field.magnitude[i]!;
-      if (magnitude > limit) break;
-      if (!this.starPoint(frame, i, frame.siderealTime, p)) continue;
-      const b = starBrightness(magnitude);
-      const extinction = clamp(this.lastAltitude / 0.2, 0.1, 1);
-      const flicker = 1 - twinkle * (0.12 + (1 - extinction) * 0.3) * (0.5 + 0.5 * Math.sin(frame.realMs * 0.004 * (1 + (i % 7) * 0.37) + i));
-      const alpha = clamp(starAlpha(magnitude, limit, light) * extinction * flicker * gain, 0, 1);
-      const radius = (0.85 + 2 * Math.pow(b, 1.4)) * this.sizeScale;
-      const color = field.color[i]!;
-      if (b > 0.62) {
-        this.stars.fillStyle(color, alpha * 0.12);
-        this.stars.fillCircle(p.x, p.y, radius * 3);
-      }
-      this.stars.fillStyle(color, alpha);
-      if (radius < 1.2) this.stars.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
-      else this.stars.fillCircle(p.x, p.y, radius);
-    }
+    const style = {
+      limit: this.limitFor(frame),
+      light: frame.light,
+      gain: this.gainFor(frame),
+      twinkle: 1 - frame.motion,
+      realMs: frame.realMs,
+      sizeScale: this.sizeScale,
+    };
+    drawStars(this.stars, this.camera, frame, style);
+    // A planet leaping between frames would strobe, like the sun and moon.
+    if (frame.timeBlur < 0.99) drawPlanets(this.stars, this.camera, frame, frame.bodies.planets, { ...style, gain: style.gain * (1 - frame.timeBlur) });
   }
 
   private paintTails(frame: SkyFrame): void {
@@ -270,17 +259,9 @@ export class SkyPainter {
 
   /** Projects star `i` at a sidereal time; leaves its altitude (radians, roughly) in `lastAltitude`. */
   private starPoint(frame: SkyFrame, i: number, siderealTime: number, out: ScreenPoint): boolean {
-    const { field, sinLat, cosLat } = frame;
-    const hourAngle = siderealTime - field.ra[i]!;
-    const sinDec = field.sinDec[i]!;
-    const cosDec = field.cosDec[i]!;
-    const cosHour = Math.cos(hourAngle);
-    const up = sinDec * sinLat + cosDec * cosLat * cosHour;
-    this.lastAltitude = up;
-    if (up < -0.06) return false;
-    const east = -cosDec * Math.sin(hourAngle);
-    const south = -(sinDec * cosLat - cosDec * sinLat * cosHour);
-    if (!this.camera.project(east, up, south, out)) return false;
-    return out.x > -40 && out.x < this.camera.width + 40 && out.y > -40 && out.y < this.camera.horizonY + 40;
+    const altitude = projectStar(this.camera, frame, i, siderealTime, out);
+    if (Number.isNaN(altitude)) return false;
+    this.lastAltitude = altitude;
+    return true;
   }
 }

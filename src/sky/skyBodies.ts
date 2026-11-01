@@ -1,4 +1,5 @@
 import { DEG_TO_RAD, clamp, julianDay, wrapRadians } from './math';
+import { planetPositions, type PlanetPosition } from './planets';
 import { localDirection, localSiderealTime } from './projection';
 import type { GeographicLocation, Vec3 } from './types';
 
@@ -17,10 +18,12 @@ export interface SkyBodies {
    * turn the crescent toward the sun.
    */
   sunFromMoon: Vec3;
+  /** The five naked-eye planets, by right ascension and declination of date. */
+  planets: PlanetPosition[];
 }
 
 /**
- * The moon and sun for a date and place, from Schlyter's low-precision
+ * The moon, sun and planets for a date and place, from Schlyter's low-precision
  * elements with the main lunar perturbations: good to a fraction of a degree,
  * plenty for a sky seen from a caravan road. Ported from the native Sky
  * Rewind's `moonState`.
@@ -71,6 +74,7 @@ export function skyBodies(date: Date, location: GeographicLocation): SkyBodies {
   const moonLatitude = Math.asin(Math.sin(latitudeArgument) * Math.sin(inclination)) + latitudeCorrection * DEG_TO_RAD;
   const sunLongitude = wrapRadians(sunMeanLongitude + (1.915 * Math.sin(sunAnomaly) + 0.02 * Math.sin(2 * sunAnomaly)) * DEG_TO_RAD);
   const obliquity = (23.4393 - 0.0000003563 * d) * DEG_TO_RAD;
+  const sunDistance = 1.00014 - 0.01671 * Math.cos(sunAnomaly) - 0.00014 * Math.cos(2 * sunAnomaly);
 
   const moonEquatorial = eclipticToEquatorial(moonLongitude, moonLatitude, obliquity);
   const sunEquatorial = eclipticToEquatorial(sunLongitude, 0, obliquity);
@@ -87,6 +91,7 @@ export function skyBodies(date: Date, location: GeographicLocation): SkyBodies {
     sun,
     moonIllumination: (1 - cosElongation) / 2,
     sunFromMoon: { x: sun.x - moon.x * cosElongation, y: sun.y - moon.y * cosElongation, z: sun.z - moon.z * cosElongation },
+    planets: planetPositions(d, sunLongitude, sunDistance, obliquity),
   };
 }
 
