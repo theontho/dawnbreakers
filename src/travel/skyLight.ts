@@ -142,9 +142,8 @@ export function blendSkyLights(lights: readonly SkyLight[]): SkyLight {
     glowStrength: mean(l => l.glowStrength),
     daylight: mean(l => l.daylight),
     moonlight: mean(l => l.moonlight),
-    // The stars fade with the share of the time that was light, but keep the
-    // dark hours' number: a faint star the night showed stays, only dimmer.
     starVisibility: mean(l => l.starVisibility),
-    limitingMagnitude: Math.max(...lights.map(l => l.limitingMagnitude)) - (1 - mean(l => l.starVisibility)) * 0.4,
+    // The stars of the dark hours still mark the frame, fainter the less of it was dark.
+    limitingMagnitude: Math.max(...lights.map(l => l.limitingMagnitude)) - (1 - mean(l => l.starVisibility)) * 2,
   };
 }
