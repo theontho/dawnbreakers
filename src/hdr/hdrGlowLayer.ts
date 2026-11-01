@@ -55,8 +55,31 @@ export class HdrGlowLayer {
     this.pipeline = glowPipeline(gpu);
   }
 
+  /** Where the game canvas shows on the page: offset within its parent and CSS pixels per game pixel. */
+  private placement = { x: 0, y: 0, scaleX: 1, scaleY: 1 };
+
+  /**
+   * Measures where the game canvas actually is, rather than assuming one
+   * game pixel per CSS pixel at its offset: on a phone's home-screen app the
+   * page can show the canvas shifted or scaled, and a glow placed by the
+   * assumption lands off the sun, its cut along the skyline showing as a
+   * ghost of the city.
+   */
+  private measure(): void {
+    const canvas = this.gameCanvas;
+    const rect = canvas.getBoundingClientRect();
+    const parent = (canvas.parentElement ?? document.body).getBoundingClientRect();
+    this.placement = {
+      x: rect.left - parent.left,
+      y: rect.top - parent.top,
+      scaleX: canvas.width > 0 ? rect.width / canvas.width : 1,
+      scaleY: canvas.height > 0 ? rect.height / canvas.height : 1,
+    };
+  }
+
   /** Shows these glows, in game pixels, and hides any others. */
   update(specs: readonly GlowSpec[]): void {
+    this.measure();
     const live = specs.filter(spec => !glowIsDark(spec) && this.onScreen(spec));
     live.forEach((spec, i) => this.draw(this.glows[i] ?? this.addGlow(), spec));
     for (let i = live.length; i < this.glows.length; i += 1) this.hide(this.glows[i]!);
@@ -64,8 +87,8 @@ export class HdrGlowLayer {
 
   private onScreen(spec: GlowSpec): boolean {
     const box = glowBounds(spec);
-    const { clientWidth, clientHeight } = this.gameCanvas;
-    return box.x < clientWidth && box.y < clientHeight && box.x + box.width > 0 && box.y + box.height > 0;
+    const { width, height } = this.gameCanvas;
+    return box.x < width && box.y < height && box.x + box.width > 0 && box.y + box.height > 0;
   }
 
   destroy(): void {
@@ -125,7 +148,8 @@ export class HdrGlowLayer {
     const style = canvas.style;
     // A fresh or resized canvas starts out empty, so it must be drawn whatever the uniforms say.
     let dirty = !glow.shown;
-    const key = `${left},${top},${size},${pixels},${this.gameCanvas.offsetLeft},${this.gameCanvas.offsetTop}`;
+    const at = this.placement;
+    const key = `${left},${top},${size},${pixels},${at.x},${at.y},${at.scaleX},${at.scaleY}`;
     if (key !== glow.key) {
       glow.key = key;
       if (canvas.width !== pixels || !glow.bindGroup) {
@@ -133,8 +157,9 @@ export class HdrGlowLayer {
         this.resizeSkyline(glow, pixels);
         dirty = true;
       }
-      style.width = style.height = `${size}px`;
-      style.transform = `translate(${left + this.gameCanvas.offsetLeft}px, ${top + this.gameCanvas.offsetTop}px)`;
+      style.width = `${size * at.scaleX}px`;
+      style.height = `${size * at.scaleY}px`;
+      style.transform = `translate(${at.x + left * at.scaleX}px, ${at.y + top * at.scaleY}px)`;
     }
     packGlowUniforms(spec, { x: left, y: top }, pixels / size, glow.packed);
     sampleSkyline(spec, { x: left, y: top }, pixels / size, glow.columns);
