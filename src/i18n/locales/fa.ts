@@ -474,6 +474,8 @@ export const text: TranslationCatalog = {
   "Facing east": "رو به شرق",
   "Center sun: on": "خورشید در میانه: روشن",
   "Center sun: off": "خورشید در میانه: خاموش",
+  "Stars: as usual": "ستارگان: معمول",
+  "Stars: full dark, as in the 1840s": "ستارگان: تاریکی کامل، چون دههٔ ۱۸۴۰",
   "Facing the sunrise": "رو به طلوع",
   "Facing the sunset": "رو به غروب",
   "Facing north": "رو به شمال",

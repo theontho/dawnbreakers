@@ -20,7 +20,7 @@ export interface SkyLight {
   moonlight: number;
   /** How much of the starlight shows through twilight and moonlight, 0 to 1. */
   starVisibility: number;
-  /** Faintest magnitude that can be seen, before the motion of the sky dims it. */
+  /** Faintest magnitude that can be seen. */
   limitingMagnitude: number;
 }
 
@@ -36,13 +36,46 @@ const SKY_STOPS: readonly { altitude: number; zenith: number; horizon: number }[
   { altitude: 90, zenith: 0x3f7cc6, horizon: 0xb6d0e8 },
 ];
 
+/** The two sky stops either side of a sun altitude, and how far between them it lies. */
+function skyStopsAt(altitude: number): { lo: typeof SKY_STOPS[number]; hi: typeof SKY_STOPS[number]; t: number } {
+  const upper = SKY_STOPS.findIndex(stop => stop.altitude >= altitude);
+  const hi = SKY_STOPS[Math.max(1, upper < 0 ? SKY_STOPS.length - 1 : upper)]!;
+  const lo = SKY_STOPS[SKY_STOPS.indexOf(hi) - 1]!;
+  return { lo, hi, t: clamp((altitude - lo.altitude) / Math.max(0.001, hi.altitude - lo.altitude), 0, 1) };
+}
+
+/** How bright the sun alone makes the zenith look at this altitude, 0 to 1. */
+function zenithBrightness(altitude: number): number {
+  const { lo, hi, t } = skyStopsAt(altitude);
+  const c = mix(lo.zenith, hi.zenith, t);
+  return (0.2126 * ((c >> 16) & 0xff) + 0.7152 * ((c >> 8) & 0xff) + 0.0722 * (c & 0xff)) / 255;
+}
+
+/** Sun altitudes from deep night to full day, with the zenith's brightness at each, to find an altitude by its sky. */
+const BRIGHTNESS_SCALE: readonly { altitude: number; brightness: number }[] = Array.from({ length: 121 }, (_, i) => {
+  const altitude = -18 + i * 0.25;
+  return { altitude, brightness: zenithBrightness(altitude) };
+});
+
+/** The sun altitude whose sky is this bright: the dusk a blended sky looks like. */
+function altitudeForBrightness(brightness: number): number {
+  for (const step of BRIGHTNESS_SCALE) if (step.brightness >= brightness) return step.altitude;
+  return BRIGHTNESS_SCALE[BRIGHTNESS_SCALE.length - 1]!.altitude;
+}
+
+/** Stars lost to the moon's light: a full moon high up costs most of a magnitude. */
+function moonCost(moonlight: number): number {
+  return (moonlight / 0.4) * 0.7;
+}
+
+function starVisibilityAt(sunAltitude: number): number {
+  return clamp((-sunAltitude - 2) / 10, 0, 1);
+}
+
 export function skyLightFor(bodies: SkyBodies): SkyLight {
   const sun = altitudeAzimuth(bodies.sun);
   const moon = altitudeAzimuth(bodies.moon);
-  const upper = SKY_STOPS.findIndex(stop => stop.altitude >= sun.altitude);
-  const hi = SKY_STOPS[Math.max(1, upper < 0 ? SKY_STOPS.length - 1 : upper)]!;
-  const lo = SKY_STOPS[SKY_STOPS.indexOf(hi) - 1]!;
-  const t = clamp((sun.altitude - lo.altitude) / Math.max(0.001, hi.altitude - lo.altitude), 0, 1);
+  const { lo, hi, t } = skyStopsAt(sun.altitude);
 
   const moonUp = clamp((moon.altitude + 1) / 12, 0, 1);
   const moonlight = moonUp * Math.pow(bodies.moonIllumination, 1.5) * 0.4 * clamp(1 - (sun.altitude + 12) / 10, 0, 1);
@@ -52,7 +85,7 @@ export function skyLightFor(bodies: SkyBodies): SkyLight {
 
   const twilight = clamp(1 - Math.abs(sun.altitude + 3) / 13, 0, 1);
   const daylight = clamp((sun.altitude + 8) / 16, 0, 1);
-  const starVisibility = clamp((-sun.altitude - 2) / 10, 0, 1);
+  const starVisibility = starVisibilityAt(sun.altitude);
 
   return {
     zenith,
@@ -66,8 +99,8 @@ export function skyLightFor(bodies: SkyBodies): SkyLight {
     daylight,
     moonlight,
     starVisibility,
-    // The eye has the moon to contend with as well as the dusk: a full moon high up costs most of a magnitude.
-    limitingMagnitude: twilightLimit(sun.altitude) - (moonlight / 0.4) * 0.7,
+    // The eye has the moon to contend with as well as the dusk.
+    limitingMagnitude: twilightLimit(sun.altitude) - moonCost(moonlight),
   };
 }
 
@@ -106,12 +139,12 @@ export function starBrightness(magnitude: number): number {
 
 /**
  * How strongly a star shows tonight: its own brightness, faded in over
- * the last half magnitude above the limit, and a little paler while the dusk is light.
+ * the last half magnitude above the limit, and paler as the dusk grows light.
  */
 export function starAlpha(magnitude: number, limit: number, light: SkyLight): number {
   const fade = clamp((limit - magnitude) / 0.6, 0, 1);
   if (fade <= 0) return 0;
-  return (0.5 + 0.5 * starBrightness(magnitude)) * fade * (0.55 + 0.45 * light.starVisibility);
+  return (0.5 + 0.5 * starBrightness(magnitude)) * fade * (0.25 + 0.75 * light.starVisibility);
 }
 
 /**
@@ -134,6 +167,9 @@ export function blendSkyLights(lights: readonly SkyLight[]): SkyLight {
     const n = lights.length;
     return (Math.round(r / n) << 16) | (Math.round(g / n) << 8) | Math.round(b / n);
   };
+  // The dusk the blended sky looks like, from the sun's share of its brightness.
+  const seenAltitude = altitudeForBrightness(mean(l => zenithBrightness(l.sunAltitude)));
+  const moonlight = mean(l => l.moonlight);
   return {
     ...last,
     zenith: meanColor(l => l.zenith),
@@ -141,9 +177,11 @@ export function blendSkyLights(lights: readonly SkyLight[]): SkyLight {
     glow: meanColor(l => l.glow),
     glowStrength: mean(l => l.glowStrength),
     daylight: mean(l => l.daylight),
-    moonlight: mean(l => l.moonlight),
-    starVisibility: mean(l => l.starVisibility),
-    // The stars of the dark hours still mark the frame, fainter the less of it was dark.
-    limitingMagnitude: Math.max(...lights.map(l => l.limitingMagnitude)) - (1 - mean(l => l.starVisibility)) * 2,
+    moonlight,
+    // The stars show as they would against a real sky as bright as the
+    // blended one looks: they go as the sky you see grows light, however the
+    // hours in the frame were mixed.
+    starVisibility: starVisibilityAt(seenAltitude),
+    limitingMagnitude: twilightLimit(seenAltitude) - moonCost(moonlight),
   };
 }

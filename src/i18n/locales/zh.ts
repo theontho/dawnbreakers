@@ -473,6 +473,8 @@ export const text: TranslationCatalog = {
   "Facing east": "面向东方",
   "Center sun: on": "太阳居中：开启",
   "Center sun: off": "太阳居中：关闭",
+  "Stars: as usual": "星空：寻常",
+  "Stars: full dark, as in the 1840s": "星空：全暗，如1840年代",
   "Facing the sunrise": "面向日出",
   "Facing the sunset": "面向日落",
   "Facing north": "面向北方",

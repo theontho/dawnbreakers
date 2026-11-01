@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Packs the naked-eye Hipparcos stars (magnitude 6.0 and brighter) into
+ * Packs the naked-eye Hipparcos stars (magnitude 7.0 and brighter, the most a
+ * pristine sky shows) into
  * `src/data/travelStars.ts` for the journey skies. Reads the checked-in
  * `data/sky/hipparcos.csv` (`npm run skyrewind:catalog` regenerates it).
  *
@@ -17,7 +18,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const MAGNITUDE_LIMIT = 6.0;
+const MAGNITUDE_LIMIT = 7.0;
 const ROW_WIDTH = 10;
 const ROWS_PER_LINE = 120;
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

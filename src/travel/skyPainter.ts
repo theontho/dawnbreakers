@@ -6,6 +6,7 @@ import type { SkyCamera, ScreenPoint } from './skyCamera';
 import { starAlpha, starBrightness, starLimit, type SkyLight } from './skyLight';
 import type { StarField } from './travelStars';
 import { ensureGlowTexture, GLOW_TEXTURE } from './glowTexture';
+import { MilkyWay } from './milkyWay';
 import { paintMoon, type MoonDisc } from './moonPainter';
 
 /** Radians of hour angle the sky turns through per millisecond of sky time. */
@@ -39,6 +40,11 @@ export interface SkyFrame {
   /** Sky time a comet tail starts from, and the long exposure's shutter. */
   tailStartMs: number;
   realMs: number;
+  /**
+   * The full dark of the 1840s, with no light but the stars': stars down to
+   * seventh magnitude, brighter, and the Milky Way.
+   */
+  fullDark: boolean;
 }
 
 /** The sun's disc, a warm white. */
@@ -46,6 +52,10 @@ export const SUN_COLOR = 0xfff6dc;
 const TAIL_MAGNITUDE = 4.8;
 const MAX_TAIL_SWEEP = 1.6;
 const EXPOSURE_MAGNITUDE = 5.2;
+/** How much fainter the full-dark sky reaches at the darkest of night, in magnitudes. */
+const FULL_DARK_REACH = 0.8;
+/** How much brighter it draws each star. */
+const FULL_DARK_GAIN = 1.4;
 
 /**
  * Paints the night sky behind the land: a gradient lit by the sun and moon,
@@ -61,6 +71,7 @@ export class SkyPainter {
   private readonly sunGlow: Phaser.GameObjects.Image;
   private readonly exposure: Phaser.GameObjects.RenderTexture;
   private readonly exposureBrush: Phaser.GameObjects.Graphics;
+  private readonly milkyWay: MilkyWay;
   private readonly stars: Phaser.GameObjects.Graphics;
   private readonly moonHalo: Phaser.GameObjects.Image;
   private readonly bodies: Phaser.GameObjects.Graphics;
@@ -81,6 +92,7 @@ export class SkyPainter {
     this.sunGlow = scene.add.image(0, camera.horizonY, GLOW_TEXTURE).setBlendMode(Phaser.BlendModes.ADD);
     this.exposure = scene.add.renderTexture(0, 0, camera.width, camera.height).setOrigin(0);
     this.exposureBrush = scene.make.graphics({}, false);
+    this.milkyWay = new MilkyWay(scene, camera);
     this.stars = scene.add.graphics();
     this.moonHalo = scene.add.image(0, 0, GLOW_TEXTURE).setBlendMode(Phaser.BlendModes.ADD);
     this.bodies = scene.add.graphics();
@@ -104,6 +116,9 @@ export class SkyPainter {
     if (frame.trails === 'exposure') this.accumulateExposure(frame);
     else this.hasPrevious.fill(0);
     this.exposure.setVisible(frame.trails === 'exposure').setAlpha(frame.light.starVisibility);
+    // The band needs a dark night and no moon to speak of.
+    const night = frame.light.starVisibility ** 2 * clamp(1 - frame.light.moonlight * 2, 0, 1);
+    this.milkyWay.draw(frame.siderealTime, frame.sinLat, frame.cosLat, frame.fullDark ? night : 0);
     if (frame.trails === 'tail') this.paintTails(frame);
     this.paintStars(frame);
     this.bodies.clear();
@@ -138,9 +153,19 @@ export class SkyPainter {
       .setVisible(strength > 0.01);
   }
 
+  /** The faintest star shown: deeper in the full dark, by as much as the night is dark. */
+  private limitFor(frame: SkyFrame): number {
+    return starLimit(frame.light) + (frame.fullDark ? FULL_DARK_REACH * frame.light.starVisibility : 0);
+  }
+
+  private gainFor(frame: SkyFrame): number {
+    return frame.fullDark ? FULL_DARK_GAIN : 1;
+  }
+
   private paintStars(frame: SkyFrame): void {
     const { field, light } = frame;
-    const limit = starLimit(light);
+    const limit = this.limitFor(frame);
+    const gain = this.gainFor(frame);
     const twinkle = 1 - frame.motion;
     const p = this.point;
     for (let i = 0; i < field.count; i += 1) {
@@ -150,7 +175,7 @@ export class SkyPainter {
       const b = starBrightness(magnitude);
       const extinction = clamp(this.lastAltitude / 0.2, 0.1, 1);
       const flicker = 1 - twinkle * (0.12 + (1 - extinction) * 0.3) * (0.5 + 0.5 * Math.sin(frame.realMs * 0.004 * (1 + (i % 7) * 0.37) + i));
-      const alpha = clamp(starAlpha(magnitude, limit, light) * extinction * flicker, 0, 1);
+      const alpha = clamp(starAlpha(magnitude, limit, light) * extinction * flicker * gain, 0, 1);
       const radius = (0.85 + 2 * Math.pow(b, 1.4)) * this.sizeScale;
       const color = field.color[i]!;
       if (b > 0.62) {
@@ -169,14 +194,15 @@ export class SkyPainter {
     const sweep = clamp((frame.skyMs - frame.tailStartMs) * SIDEREAL_RADIANS_PER_MS, -MAX_TAIL_SWEEP, MAX_TAIL_SWEEP);
     if (Math.abs(sweep) * this.camera.pixelsPerRadian < 2) return;
     const segments = clamp(Math.ceil(Math.abs(sweep) / 0.025), 3, 28);
-    const limit = Math.min(TAIL_MAGNITUDE, starLimit(light));
+    const limit = Math.min(TAIL_MAGNITUDE + (frame.fullDark ? FULL_DARK_REACH : 0), this.limitFor(frame));
+    const gain = this.gainFor(frame);
     const from = { x: 0, y: 0 };
     const to = this.point;
     for (let i = 0; i < field.count; i += 1) {
       const magnitude = field.magnitude[i]!;
       if (magnitude > limit) break;
       const b = starBrightness(magnitude);
-      const strength = starAlpha(magnitude, limit, light);
+      const strength = Math.min(1, starAlpha(magnitude, limit, light) * gain);
       const width = (0.5 + 1.8 * b) * this.sizeScale;
       let have = this.starPoint(frame, i, frame.siderealTime - sweep, from);
       for (let s = 1; s <= segments; s += 1) {
@@ -196,7 +222,7 @@ export class SkyPainter {
   private accumulateExposure(frame: SkyFrame): void {
     const { field } = frame;
     const brush = this.exposureBrush;
-    const limit = Math.min(EXPOSURE_MAGNITUDE, starLimit(frame.light) + 0.6);
+    const limit = Math.min(EXPOSURE_MAGNITUDE + (frame.fullDark ? FULL_DARK_REACH : 0), this.limitFor(frame) + 0.6);
     const p = this.point;
     brush.clear();
     let drew = false;

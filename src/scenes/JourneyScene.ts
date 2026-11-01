@@ -44,6 +44,8 @@ interface ViewerSettings {
   secondsPerDay: number;
   /** The most frames a second the sky is drawn: 120 for fast stars on a screen that can show them, 60 to save power. */
   maxHz: FrameRate;
+  /** The full dark of the 1840s: every star the naked eye could find, and the Milky Way. */
+  fullDark: boolean;
 }
 
 type FrameRate = 60 | 120;
@@ -62,6 +64,8 @@ const SKY_SHARE = 0.7;
 /** Real seconds of sky the light is blended over when time runs fast, and how many moments are taken. */
 const BLUR_SECONDS = 0.4;
 const BLUR_SAMPLES = 7;
+/** Sky hours a second (2 s a day) above which day and night would strobe and the light is blended. */
+const BLUR_FROM_PACE_HOURS = 12;
 const FACINGS: readonly { label: string }[] = [
   { label: 'Facing north' },
   { label: 'Facing east' },
@@ -73,7 +77,7 @@ const TRAIL_LABELS: Record<TrailMode, { label: string }> = {
   tail: { label: 'Trails: comet tails' },
   exposure: { label: 'Trails: long exposure' },
 };
-const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, centerSun: true, autoplay: true, secondsPerDay: SECONDS_PER_DAY, maxHz: 120 };
+const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, centerSun: true, autoplay: true, secondsPerDay: SECONDS_PER_DAY, maxHz: 120, fullDark: false };
 
 /**
  * A journey between chapters: the party on the road under the true sky of
@@ -179,6 +183,7 @@ export class JourneyScene extends Phaser.Scene {
       trails,
       tailStartMs: trails === 'exposure' ? this.clock.exposureStart() : this.clock.tailStart(),
       realMs: now,
+      fullDark: this.settings.fullDark,
     });
     // An easy walking pace, about four kilometres an hour against a person's height.
     this.walked += (deltaMs / 1000) * this.ground.figure * 0.68;
@@ -189,16 +194,21 @@ export class JourneyScene extends Phaser.Scene {
   }
 
   /**
-   * The light of the moment, or when the days roll by, the light of the last
-   * part of a day taken together, so day and night blend instead of flicker.
+   * The light of the moment, or when the days roll by faster than a frame can
+   * follow, the light of the hours around it taken together, so day and night
+   * blend instead of strobing.
    */
   private blurredLight(date: Date, bodies: SkyBodies, paceHours: number): SkyLight {
-    const windowMs = Math.min(24, paceHours * BLUR_SECONDS) * 3600000;
     const now = skyLightFor(bodies);
-    if (windowMs < 3600000) return now;
+    // Slower than this, each frame moves the sky a few minutes: no strobe to smooth.
+    if (paceHours <= BLUR_FROM_PACE_HOURS) return now;
+    const windowMs = Math.min(24, paceHours * BLUR_SECONDS) * 3600000;
+    // The hours either side of the moment, so the sky's colour does not lag
+    // behind the stars and the sun; the moment itself goes last.
     const lights: SkyLight[] = [];
-    for (let i = BLUR_SAMPLES - 1; i > 0; i -= 1) {
-      lights.push(skyLightFor(skyBodies(new Date(date.getTime() - (windowMs * i) / (BLUR_SAMPLES - 1)), this.location)));
+    for (let i = 0; i < BLUR_SAMPLES; i += 1) {
+      const offset = (i / (BLUR_SAMPLES - 1) - 0.5) * windowMs;
+      if (offset !== 0) lights.push(skyLightFor(skyBodies(new Date(date.getTime() + offset), this.location)));
     }
     lights.push(now);
     return blendSkyLights(lights);
@@ -255,6 +265,7 @@ export class JourneyScene extends Phaser.Scene {
       { label: () => t(TRAIL_LABELS[s.trails].label), onClick: () => this.cycleTrails() },
       { label: () => t(this.facingLabel()), onClick: () => this.turn() },
       { label: () => t(s.centerSun ? 'Center sun: on' : 'Center sun: off'), onClick: () => this.toggleCenterSun() },
+      { label: () => t(s.fullDark ? 'Stars: full dark, as in the 1840s' : 'Stars: as usual'), onClick: () => this.toggleFullDark() },
       { label: () => t('Pass the journey'), onClick: () => this.passTheJourney() },
       { label: () => '−', onClick: () => this.changeDayPace(-1), keepWithNext: true },
       { label: () => t('{seconds} s a day', { seconds: s.secondsPerDay }), onClick: () => this.changeDayPace(1), keepWithNext: true },
@@ -288,6 +299,7 @@ export class JourneyScene extends Phaser.Scene {
       KeyT: () => this.cycleTrails(),
       KeyF: () => this.turn(),
       KeyC: () => this.toggleCenterSun(),
+      KeyB: () => this.toggleFullDark(),
       KeyZ: () => this.toggleFrameRate(),
       KeyN: () => this.passTheJourney(),
       BracketLeft: () => this.changeDayPace(-1),
@@ -370,6 +382,11 @@ export class JourneyScene extends Phaser.Scene {
   private toggleCenterSun(): void {
     this.settings.centerSun = !this.settings.centerSun;
     this.camera3.face(this.viewBearing());
+    this.restartExposure();
+  }
+
+  private toggleFullDark(): void {
+    this.settings.fullDark = !this.settings.fullDark;
     this.restartExposure();
   }
 
