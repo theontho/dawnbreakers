@@ -47,6 +47,8 @@ export const ch3ShipMap: MapDefinition = {
   width: WIDTH,
   height: HEIGHT,
   spawn: { x: 13, y: 8 },
+  // Open sea out to the horizon, streaming past from the bow (east) to the stern.
+  water: { openSea: true, flow: [-0.9, 0.05], roll: true },
   build: ({ width, height, paintRect, block }) => {
     paintRect(0, 0, width, height, 'water');
     for (let y = 0; y < height; y++) {

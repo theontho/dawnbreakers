@@ -44,6 +44,20 @@ export interface MapDefinition {
    * edge exit back outside.
    */
   interior?: boolean;
+  /** How the map's water moves; rivers otherwise run along their length on their own. */
+  water?: WaterSpec;
+}
+
+export interface WaterSpec {
+  /**
+   * Open sea all round: the moving sea is drawn under the whole view, out
+   * past the map to the screen's edges, instead of painted on the ground.
+   */
+  openSea?: boolean;
+  /** Grid cells a second the water moves past (x, y); [0, 0] for still water. */
+  flow?: readonly [number, number];
+  /** The view rolls and heaves gently, as from a ship's deck. */
+  roll?: boolean;
 }
 
 /**

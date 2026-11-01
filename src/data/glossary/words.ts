@@ -107,6 +107,10 @@ export const WORDS: readonly GlossaryEntry[] = [
     'A minister of state. Bahá\'u\'lláh\'s father, Mírzá Buzurg, was known as the Vazír.'),
   term('shikastih', 'Shikastih-nastaʿlíq', ['shikastih-nastaʿlíq'],
     'A flowing, "broken" form of the Persian hanging script, much prized by calligraphers.'),
+  term('turbah', 'Turbah', ['Turbah', 'turbah'],
+    'A small tablet of clay from the ground of Karbilá, on which Shíʿih Muslims rest the forehead in prayer.'),
+  term('arafih', 'ʿArafih', ['ʿArafih'],
+    'The day of ʿArafih, the ninth of the month of pilgrimage, when the pilgrims stand on the plain of ʿArafát near Mecca. At home and at the shrines it is a day of prayer, and at Karbilá a day of great pilgrimage.'),
   // The new Faith.
   term('babi', 'Bábí', ['Bábí', 'Bábís'],
     'A follower of the Báb.'),

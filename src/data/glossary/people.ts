@@ -103,7 +103,17 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('majdu-d-dawlih', 'Majdu\'d-Dawlih', ['Majdu\'d-Dawlih'],
     'The governor of Zanján in 1850, maternal uncle of Náṣiri\'d-Dín Sháh, who at the mullás\' urging moved against Ḥujjat and his companions.'),
 
+  // Karbilá, 1851 to 1852.
+  person('shaykh-hasan-zunuzi', 'Shaykh Ḥasan-i-Zunúzí', ['Shaykh Ḥasan-i-Zunúzí', 'Shaykh Ḥasan'],
+    'A believer of Zunúz in Ádhirbáyján who copied the Báb\'s verses at Mákú. The Báb told him to go to Karbilá, where he would behold the promised Ḥusayn. In 1851, by the gate of the shrine of the Imám Ḥusayn, he met Bahá\'u\'lláh and recognised Him, and was asked to keep it secret. He told the story to Nabíl.'),
+  person('mirza-aqa-jan', 'Mírzá Áqá Ján', ['Mírzá Áqá Ján', 'Áqá Ján'],
+    'A youth of Káshán who came to Karbilá in 1851 after a dream and gave himself to Bahá\'u\'lláh\'s service there. He became His amanuensis, writing down His words for some forty years.'),
+  person('siyyid-uluv', 'Siyyid ʿUlúv', ['Siyyid ʿUlúv'],
+    'A Siyyid in Karbilá who, after the Báb\'s martyrdom, made extravagant claims for himself and drew a following among the leaderless believers. Bahá\'u\'lláh met him there in 1851, and he gave up his claims.'),
+
   // Teachers.
+  person('shaykh-ahmad', 'Shaykh Aḥmad', ['Shaykh Aḥmad', 'Shaykh Aḥmad-i-Aḥsá\'í'],
+    'Shaykh Aḥmad of Aḥsá in Arabia (died 1826), who taught in Karbilá and travelled through Persia proclaiming that the Promised One was near. Siyyid Káẓim was his successor.'),
   person('siyyid-kazim', 'Siyyid Káẓim', ['Siyyid Káẓim'],
     'Siyyid Káẓim of Rasht (died 1843), the leader of the Shaykhí school in Karbilá. He told his students that the Promised One was near, and sent them out to seek Him.'),
 

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { gridToIsoScreen } from './isoGeometry';
 import { paintGround } from './groundPainter';
+import type { WaterRegion } from './waterLayer';
 import { TILE_H, TILE_W, type TileKind } from './baseMapTypes';
 
 /**
@@ -21,9 +22,11 @@ interface GroundState {
   originY: number;
   map: TileKind[][];
   interior?: boolean;
+  openSea?: boolean;
 }
 
-export function renderMapGround(scene: Phaser.Scene, state: GroundState): void {
+/** Paints the ground and returns where its water lies, for the moving water over it. */
+export function renderMapGround(scene: Phaser.Scene, state: GroundState): WaterRegion[] {
   const bounds = groundBounds(state);
   const spec = {
     width: state.mapWidth,
@@ -35,21 +38,34 @@ export function renderMapGround(scene: Phaser.Scene, state: GroundState): void {
     imageH: bounds.height,
     slab: SLAB_DEPTH,
     interior: state.interior,
+    openSea: state.openSea,
   };
   const keys: string[] = [];
+  const water: WaterRegion[] = [];
   for (let y = 0; y < bounds.height; y += CHUNK) {
     for (let x = 0; x < bounds.width; x += CHUNK) {
       const region = { x, y, w: Math.min(CHUNK, bounds.width - x), h: Math.min(CHUNK, bounds.height - y) };
       const key = `ground-${scene.scene.key}-${keys.length}`;
       if (scene.textures.exists(key)) scene.textures.remove(key);
+      const painted = paintGround(spec, region);
       const texture = scene.textures.createCanvas(key, region.w, region.h)!;
-      texture.context.putImageData(paintGround(spec, region), 0, 0);
+      texture.context.putImageData(painted.image, 0, 0);
       texture.refresh();
       scene.add.image(bounds.x + x, bounds.y + y, key).setOrigin(0).setDepth(-1000);
       keys.push(key);
+      if (painted.water && painted.waterBox) {
+        const maskKey = `${key}-water`;
+        if (scene.textures.exists(maskKey)) scene.textures.remove(maskKey);
+        const mask = scene.textures.createCanvas(maskKey, region.w, region.h)!;
+        mask.context.putImageData(painted.water, 0, 0);
+        mask.refresh();
+        keys.push(maskKey);
+        water.push({ maskKey, x: bounds.x + x, y: bounds.y + y, box: painted.waterBox });
+      }
     }
   }
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => keys.forEach(key => scene.textures.remove(key)));
+  return water;
 }
 
 function groundBounds(state: GroundState): Phaser.Geom.Rectangle {

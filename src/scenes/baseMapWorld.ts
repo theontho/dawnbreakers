@@ -5,6 +5,9 @@ import { gridToIsoScreen } from './isoGeometry';
 import { renderMapGround } from './mapGround';
 import { exitIsOpen } from './baseMapMovement';
 import { placeExitMarks } from './exitMarks';
+import { addWater, riverFlow, rollWithTheSea } from './waterLayer';
+import { swayInTheWind } from './windSway';
+import type { WaterSpec } from '../data/maps/types';
 import {
   TILE_H,
   TILE_W,
@@ -24,6 +27,7 @@ interface BaseMapWorldState {
   originY: number;
   map: TileKind[][];
   interior?: boolean;
+  water?: WaterSpec;
   blocked: boolean[][];
   buildings: Building[];
   decor: Decor[];
@@ -44,7 +48,14 @@ export function renderBaseMapWorld(
   drawWorldBackdrop(scene, state);
   const occludableSprites: Phaser.GameObjects.Image[] = [];
 
-  renderMapGround(scene, state);
+  const water = renderMapGround(scene, { ...state, openSea: state.water?.openSea });
+  addWater(scene, water, {
+    originX: state.originX,
+    originY: state.originY,
+    flow: state.water?.flow ?? riverFlow(state.map),
+    openSea: state.water?.openSea,
+  });
+  if (state.water?.roll) rollWithTheSea(scene);
 
   for (const building of state.buildings) {
     const frontX = building.gridX + building.w - 1;
@@ -56,17 +67,20 @@ export function renderBaseMapWorld(
     occludableSprites.push(...slices);
   }
 
+  const plants: Phaser.GameObjects.Image[] = [];
   for (const item of state.decor) {
     const pos = gridToIsoScreen(state.originX, state.originY, item.gridX, item.gridY);
     const nudge = naturalOffset(item.texture, item.gridX, item.gridY);
     const sprite = anchorAtFoot(scene.add.image(pos.sx + nudge.x, pos.sy + TILE_H / 2 + nudge.y, item.texture))
       .setDepth((item.sortAt ? gridToIsoScreen(state.originX, state.originY, item.sortAt.x, item.sortAt.y).sy : pos.sy + nudge.y) + 1);
     if (item.swing) swingFromTop(scene, sprite, item.swing);
+    else if (PLANTS.has(item.texture.split('~')[0]!)) plants.push(sprite);
     sprite.setName(placedName(item));
     occludableSprites.push(sprite);
     if (item.present) conditionalDecor.push({ item, sprite });
   }
 
+  if (!state.interior) swayInTheWind(scene, plants);
   return { occludableSprites, conditionalDecor };
 }
 
@@ -94,6 +108,13 @@ function swingFromTop(scene: Phaser.Scene, sprite: Phaser.GameObjects.Image, deg
     ease: 'Sine.easeInOut',
   });
 }
+
+/** Things that grow, which bend in the wind (not rocks or stumps). */
+const PLANTS = new Set(
+  MAP_OBJECTS.filter(def => def.category === 'plants' || /fern|reeds|shrub|tamarisk|palm/.test(def.id))
+    .filter(def => !/rock|stump|boulder|log/.test(def.id))
+    .map(def => def.texture),
+);
 
 const NATURAL = new Set(
   MAP_OBJECTS.filter(def => def.category === 'plants' || /rock|stump|boulder|fern|reeds|shrub|tamarisk/.test(def.id))

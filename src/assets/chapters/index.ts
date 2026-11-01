@@ -1,8 +1,10 @@
 import type { MapObjectDefinition, MapObjectId, TextureGenerator } from '../mapAssetTypes';
+import { FORERUNNERS_OBJECTS, FORERUNNERS_TEXTURE_GENERATORS } from './forerunners';
 import { CH01_OBJECTS, CH01_TEXTURE_GENERATORS } from './chapter01';
 import { CH02_OBJECTS, CH02_TEXTURE_GENERATORS } from './chapter02';
 import { NUR_OBJECTS, NUR_TEXTURE_GENERATORS } from './nur';
 import { CH03_OBJECTS, CH03_TEXTURE_GENERATORS } from './chapter03';
+import { BAGHDAD_OBJECTS, BAGHDAD_TEXTURE_GENERATORS } from './baghdad';
 import { CH04_OBJECTS, CH04_TEXTURE_GENERATORS } from './chapter04';
 import { CH05_OBJECTS, CH05_TEXTURE_GENERATORS } from './chapter05';
 import { KULAYN_OBJECTS, KULAYN_TEXTURE_GENERATORS } from './kulayn';
@@ -15,6 +17,7 @@ import { MARTYRS_OBJECTS, MARTYRS_TEXTURE_GENERATORS } from './martyrs';
 import { NAYRIZ_OBJECTS, NAYRIZ_TEXTURE_GENERATORS } from './nayriz';
 import { CH09_OBJECTS, CH09_TEXTURE_GENERATORS } from './chapter09';
 import { ZANJAN_OBJECTS, ZANJAN_TEXTURE_GENERATORS } from './zanjan';
+import { KARBILA_OBJECTS, KARBILA_TEXTURE_GENERATORS } from './karbila';
 import { CH10_OBJECTS, CH10_TEXTURE_GENERATORS } from './chapter10';
 import { SHARED_TEXTURE_GENERATORS } from './shared';
 import { BASE_ART_GENERATORS } from '../art';
@@ -33,10 +36,12 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
   ...TOWN_ART_GENERATORS,
   ...TREE_ART_GENERATORS,
   ...SHARED_TEXTURE_GENERATORS,
+  ...FORERUNNERS_TEXTURE_GENERATORS,
   ...CH01_TEXTURE_GENERATORS,
   ...CH02_TEXTURE_GENERATORS,
   ...NUR_TEXTURE_GENERATORS,
   ...CH03_TEXTURE_GENERATORS,
+  ...BAGHDAD_TEXTURE_GENERATORS,
   ...CH04_TEXTURE_GENERATORS,
   ...CH05_TEXTURE_GENERATORS,
   ...KULAYN_TEXTURE_GENERATORS,
@@ -48,15 +53,18 @@ export const CUSTOM_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGener
   ...NAYRIZ_TEXTURE_GENERATORS,
   ...CH09_TEXTURE_GENERATORS,
   ...ZANJAN_TEXTURE_GENERATORS,
+  ...KARBILA_TEXTURE_GENERATORS,
   ...CH10_TEXTURE_GENERATORS,
 };
 
 /** Chapter-owned placeable objects, in chapter order. */
 export const CHAPTER_OBJECTS: MapObjectDefinition[] = [
+  ...FORERUNNERS_OBJECTS,
   ...CH01_OBJECTS,
   ...CH02_OBJECTS,
   ...NUR_OBJECTS,
   ...CH03_OBJECTS,
+  ...BAGHDAD_OBJECTS,
   ...CH04_OBJECTS,
   ...CH05_OBJECTS,
   ...KULAYN_OBJECTS,
@@ -69,5 +77,6 @@ export const CHAPTER_OBJECTS: MapObjectDefinition[] = [
   ...NAYRIZ_OBJECTS,
   ...CH09_OBJECTS,
   ...ZANJAN_OBJECTS,
+  ...KARBILA_OBJECTS,
   ...CH10_OBJECTS,
 ];

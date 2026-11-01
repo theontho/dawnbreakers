@@ -3,10 +3,12 @@ import { CHAPTER_STORIES } from './story';
 import type { ChapterStory } from './story/types';
 
 export type ChapterId =
+  | 'forerunners'
   | 'shiraz'
   | 'road'
   | 'tehran-nur'
   | 'mecca'
+  | 'baghdad'
   | 'shiraz-return'
   | 'isfahan'
   | 'kashan-kulayn'
@@ -19,6 +21,7 @@ export type ChapterId =
   | 'nayriz'
   | 'tabriz'
   | 'zanjan'
+  | 'karbila'
   | 'siyah-chal';
 
 /**
@@ -28,10 +31,12 @@ export type ChapterId =
  * script will check that some `effect.set` actually produces it.
  */
 export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
+  forerunners: 'forerunnersComplete',
   shiraz: 'shirazComplete',
   road: 'roadComplete',
   'tehran-nur': 'nurComplete',
   mecca: 'meccaComplete',
+  baghdad: 'baghdadComplete',
   'shiraz-return': 'houseArrestComplete',
   isfahan: 'isfahanComplete',
   'kashan-kulayn': 'kulaynComplete',
@@ -44,6 +49,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   nayriz: 'nayrizComplete',
   tabriz: 'martyrdomComplete',
   zanjan: 'zanjanComplete',
+  karbila: 'karbilaComplete',
   'siyah-chal': 'dawnComplete',
 };
 
@@ -82,6 +88,16 @@ type ChapterSpec = Omit<Chapter, 'isComplete' | 'number'>;
 
 const SPECS: ChapterSpec[] = [
   {
+    id: 'forerunners',
+    story: CHAPTER_STORIES['forerunners'],
+    title: 'The Forerunners',
+    subtitle: 'Karbilá, winter 1843 to 1844',
+    description: 'You are a student of Siyyid Káẓim in Karbilá, where for forty years he and his master Shaykh Aḥmad have taught that the Promised One is near. You hear his last lessons, ride with him to the Masjid of Baráthá where a shepherd foretells his death, mourn him through a black winter, and keep forty days of prayer and fasting at Kúfih with Mullá Ḥusayn before setting out to seek.',
+    startScene: 'KarbilaQuarter',
+    opening: 'fr-opening',
+    scenes: ['KarbilaQuarter', 'KazimHouse', 'BarathaRoad', 'KufihMosque'],
+  },
+  {
     id: 'shiraz',
     story: CHAPTER_STORIES['shiraz'],
     title: 'The Cup of Recognition',
@@ -118,6 +134,17 @@ const SPECS: ChapterSpec[] = [
     description: 'A storm-tossed voyage from Búshihr with Quddús and Mubárak, a lamp that never goes out, and a proclamation by the door of the Kaʿba that almost no one hears.',
     startScene: 'Ch3Ship',
     scenes: ['Ch3Ship', 'Ch3ShipCabin', 'Ch3Mecca'],
+  },
+  {
+    id: 'baghdad',
+    story: CHAPTER_STORIES['baghdad'],
+    title: 'The Trial at Baghdád',
+    subtitle: 'Baghdád, January 1845',
+    description: 'In this chapter you are someone else: a boatman\'s son of Baghdád, apprenticed to the scribes of the governor\'s serai. Mullá ʿAlíy-i-Basṭámí, a Letter of the Living, has been brought up from Najaf in chains for announcing that the Promised One has come. You grind the ink at the tribunal of the Sunni and Shíʿí divines, carry bread down to the prison, and stand on the quay the morning he is led away.',
+    startScene: 'BaghdadQuay',
+    opening: 'bg-opening',
+    player: 'bg-witness',
+    scenes: ['BaghdadQuay', 'BaghdadSerai', 'BaghdadPrison'],
   },
   {
     id: 'shiraz-return',
@@ -230,6 +257,15 @@ const SPECS: ChapterSpec[] = [
     description: 'You carry the news of Tabríz by night into the barricaded quarter of Ḥujjat, where some three thousand believers have held out since the spring. You bake with the women, keep watch with a girl in a man\'s coat, see children sent out with a sealed Qur\'án, and stay through the winter to the end.',
     startScene: 'ZanjanQuarter',
     scenes: ['ZanjanQuarter', 'ZanjanFort', 'ZanjanHouse'],
+  },
+  {
+    id: 'karbila',
+    story: CHAPTER_STORIES['karbila'],
+    title: 'The Promised Ḥusayn',
+    subtitle: 'Karbilá, 1851 to 1852',
+    description: 'You come home to Karbilá from Zanján, to your old teacher\'s grave and a square of pilgrims and pigeons. By the gate of the shrine a copyist from Mákú waits, as the Báb told him, to behold the promised Ḥusayn. A lamp burns late in a house in the lane, the scattered come to its door uncalled, and a secret is kept until its hour.',
+    startScene: 'KarbilaGroves',
+    scenes: ['KarbilaGroves', 'KarbilaShrineCourt', 'KarbilaLane'],
   },
   {
     id: 'siyah-chal',

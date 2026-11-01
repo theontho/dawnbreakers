@@ -203,7 +203,7 @@ export const brotherAtIlkhani: DialogueTree = {
     why: {
       speaker: 'Mullá Ḥusayn\'s Brother',
       onEnter: { set: { metBrother: true } },
-      text: 'When Siyyid Káẓim died last winter, he told his students to scatter and search for the Promised One, who was already among us. My brother fasted forty days in the mosque at Kúfih before he set out. A man who fasts like that does not walk alone, not while I live.',
+      text: 'You were there last winter, when Siyyid Káẓim died and left us all to scatter and search. You saw my brother come out of his cell at Kúfih after forty days. A man who fasts like that does not walk alone, not while I live.',
       choices: [{ text: '"Then we are three seekers, and the night is young."' }],
     },
   },

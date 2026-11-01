@@ -1,4 +1,5 @@
 import { CARAVANSERAI_FRONT } from './caravanserai';
+import { KARBILA_SHRINE_FRONT } from './karbilaShrine';
 import { PALACE_PORTICO_FRONT } from './isfahanPalace';
 import { RESIDENCE_GATE_FRONT } from './tabrizResidence';
 import { SERAI_GATE_FRONT } from './tehranSerai';
@@ -30,6 +31,7 @@ export const BUILDING_FRONTS: Readonly<Record<string, BuildingFront>> = {
   'ch5-palace-portico': PALACE_PORTICO_FRONT,
   'trial-residence-gate': RESIDENCE_GATE_FRONT,
   'martyrs-serai-gate': SERAI_GATE_FRONT,
+  'karbila-shrine': KARBILA_SHRINE_FRONT,
   // Painted as the court-glimpse town house: a street wall and its gateway.
   'zanjan-hujjat-house': TOWN_HOUSES[2]!.front!,
 };

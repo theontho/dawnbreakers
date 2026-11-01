@@ -17,7 +17,10 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('karbila', 'Karbilá', [44.03, 32.62], 'A shrine city in Ottoman Iraq, where Siyyid Káẓim taught and Mullá Ḥusayn studied under him.'),
   place('najaf', 'Najaf', [44.33, 32.0], 'A shrine city in Ottoman Iraq, around the tomb of the Imám ʿAlí.'),
   place('kufih', 'Kúfih', [44.4, 32.03], 'An old town near Najaf, where Mullá Ḥusayn spent forty days in prayer before seeking the Promised One.'),
+  place('kazimayn', 'Kázimayn', [44.34, 33.38], 'A shrine town beside Baghdád, around the tombs of the seventh and ninth Imáms.'),
+  place('baratha', 'Baráthá', [44.36, 33.35], 'An old masjid on the road to Kázimayn near Baghdád, where in 1843 an Arab shepherd told Siyyid Káẓim of a dream foretelling his death within thirty days.', ['Masjid of Baráthá']),
   place('baghdad', 'Baghdád', [44.36, 33.31], 'The great city of Ottoman Iraq, where Bahá\'u\'lláh and His family were exiled in 1853.'),
+  place('karkh', 'Karkh', [44.37, 33.33], 'The old quarter of Baghdád on the west bank of the Tigris, joined to the east bank by a bridge of boats.'),
   place('mecca', 'Mecca', [39.83, 21.42], 'The holiest city of Islam, in the Ḥijáz of Arabia, goal of the pilgrimage.'),
   place('medina', 'Medina', [39.61, 24.47], 'The city of the Prophet in the Ḥijáz, where he is buried.'),
   place('jidda', 'Jidda', [39.19, 21.49], 'The Red Sea port where pilgrims landed for Mecca.'),
@@ -57,6 +60,7 @@ export const PLACES: readonly GlossaryEntry[] = [
   place('muna', 'Muná', [39.89, 21.41], 'A valley just east of Mecca where pilgrims offer their sacrifice.'),
   place('hijaz', 'Ḥijáz', [39.8, 23.0], 'The western coast of Arabia along the Red Sea, with the holy cities of Mecca and Medina.'),
   place('iraq', 'ʿIráq', [44.4, 32.6], 'Ottoman Iraq: the land of the Tigris and Euphrates, with Baghdád and the Shíʿih shrine cities.'),
+  place('husayniyyih', 'The Ḥusayniyyih', [44.05, 32.64], 'The canal that brings the water of the Euphrates to Karbilá and its palm groves.', ['Ḥusayniyyih']),
 
   // Provinces.
   region('mazindaran', 'Mázindarán', 'The forested province along the Caspian Sea\'s southern shore, between the mountains and the sea.'),

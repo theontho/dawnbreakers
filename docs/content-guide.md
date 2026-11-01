@@ -25,13 +25,14 @@ How to write chapters, maps, and dialogue for *The Dawn-Breakers*. Read
 ## The player
 
 The player is a fictional seeker, a fellow student of Siyyid Káẓim who
-travelled to Shíráz with Mullá Ḥusayn. In chapter 1 they keep vigil outside
-the Báb's door on the night of 22 May 1844 and hear Mullá Ḥusayn's testimony
-at dawn. Across later chapters they are a witness and messenger moving
+travelled to Shíráz with Mullá Ḥusayn. In the first chapter they sit in
+Siyyid Káẓim's circle at Karbilá in his last winter and keep the forty days
+at Kúfih; in the second they keep vigil outside the Báb's door on the night
+of 22 May 1844 and hear Mullá Ḥusayn's testimony at dawn. Across later chapters they are a witness and messenger moving
 through the events Nabíl records; they are never a famous historical figure.
 
 Where the pilgrim cannot have been present (Ṭihrán and Núr while they sail
-for Mecca; Karbilá and Qazvín while they are in Shíráz, Iṣfahán and the
+for Mecca; Baghdád while they are at Mecca; Karbilá and Qazvín while they are in Shíráz, Iṣfahán and the
 mountain prisons; Nayríz days before Tabríz), the chapter has its own
 witness: a student of the Ṭihrán madrasa, a young woman of Qazvín, a youth
 of Chinár-Súkhtih. Such a chapter says so in its `description`, in an
@@ -89,7 +90,12 @@ long-exposure star trails, and the facing.
   very large ones feel empty. Fill space with purpose: paths that lead
   somewhere, clusters of props that tell a story, quiet corners.
 - `build(canvas)` paints tiles (`grass`, `path`, `stone`, `water`, `sand`)
-  and can `block` cells (water is not blocked automatically).
+  and can `block` cells (water is not blocked automatically). Water moves
+  by itself: ripples, glints and foam at the banks drift with a current
+  that runs along a river's length (still for a pond). `water: { flow }`
+  sets the current; `water: { openSea: true, roll: true }` draws open sea
+  under the whole view, out past the map's edges, with the deck rolling
+  (the pilgrim ship). Plants outdoors sway in the wind on their own.
 - `buildings` occupy footprints and block by default. `decor` is one cell,
   blocking only with `blocks: true`, and can take `present: f => ...` to
   come and go with the story (a crowd that disperses, a flag that is struck).

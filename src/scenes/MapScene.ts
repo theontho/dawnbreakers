@@ -241,6 +241,7 @@ export class MapScene extends Phaser.Scene {
       originY: this.originY,
       map: this.map,
       interior: this.definition.interior,
+      water: this.definition.water,
       blocked: this.blocked,
       buildings: this.buildings,
       decor: this.decor,

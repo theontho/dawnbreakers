@@ -1,4 +1,8 @@
 import type { MapDefinition } from './types';
+import { karbilaQuarterMap } from './karbilaQuarter';
+import { kazimHouseMap } from './kazimHouse';
+import { barathaRoadMap } from './barathaRoad';
+import { kufihMosqueMap } from './kufihMosque';
 import { cityMap } from './city';
 import { ch1IlkhaniMosqueMap } from './ch1IlkhaniMosque';
 import { houseQuarterMap } from './houseQuarter';
@@ -10,6 +14,9 @@ import { nurTakurMap } from './nurTakur';
 import { ch3ShipMap } from './ch3Ship';
 import { ch3ShipCabinMap } from './ch3ShipCabin';
 import { ch3MeccaMap } from './ch3Mecca';
+import { baghdadQuayMap } from './baghdadQuay';
+import { baghdadSeraiMap } from './baghdadSerai';
+import { baghdadPrisonMap } from './baghdadPrison';
 import { ch4ShirazReturnMap } from './ch4ShirazReturn';
 import { ch4VakilMosqueMap } from './ch4VakilMosque';
 import { ch5IsfahanBridgeMap } from './ch5IsfahanBridge';
@@ -44,6 +51,9 @@ import { ch9BarrackRoofMap } from './ch9BarrackRoof';
 import { zanjanQuarterMap } from './zanjanQuarter';
 import { zanjanFortMap } from './zanjanFort';
 import { zanjanHouseMap } from './zanjanHouse';
+import { karbilaShrineCourtMap } from './karbilaShrineCourt';
+import { karbilaLaneMap } from './karbilaLane';
+import { karbilaGrovesMap } from './karbilaGroves';
 import { ch10TehranStreetMap } from './ch10TehranStreet';
 import { ch10SiyahChalMap } from './ch10SiyahChal';
 import { ch10ExileRoadMap } from './ch10ExileRoad';
@@ -56,6 +66,10 @@ export type { MapDefinition } from './types';
  * map: create a `MapDefinition` file in this directory and append it here.
  */
 export const MAP_DEFINITIONS: readonly MapDefinition[] = [
+  karbilaQuarterMap,
+  kazimHouseMap,
+  barathaRoadMap,
+  kufihMosqueMap,
   cityMap,
   ch1IlkhaniMosqueMap,
   houseQuarterMap,
@@ -67,6 +81,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch3ShipMap,
   ch3ShipCabinMap,
   ch3MeccaMap,
+  baghdadQuayMap,
+  baghdadSeraiMap,
+  baghdadPrisonMap,
   ch4ShirazReturnMap,
   ch4VakilMosqueMap,
   ch5IsfahanBridgeMap,
@@ -101,6 +118,9 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   zanjanQuarterMap,
   zanjanFortMap,
   zanjanHouseMap,
+  karbilaShrineCourtMap,
+  karbilaLaneMap,
+  karbilaGrovesMap,
   ch10TehranStreetMap,
   ch10SiyahChalMap,
   ch10ExileRoadMap,

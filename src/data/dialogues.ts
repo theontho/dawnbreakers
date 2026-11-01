@@ -1,8 +1,10 @@
 import type { DialogueTree } from '../dialogue/types';
+import { forerunnersDialogues } from './dialogues_ch/forerunners';
 import { chapter01Dialogues } from './dialogues_ch/chapter01_shiraz';
 import { chapter02Dialogues } from './dialogues_ch/chapter02_road';
 import { nurDialogues } from './dialogues_ch/nur';
 import { chapter03Dialogues } from './dialogues_ch/chapter03_mecca';
+import { baghdadDialogues } from './dialogues_ch/baghdad';
 import { chapter04Dialogues } from './dialogues_ch/chapter04_shiraz_return';
 import { chapter05Dialogues } from './dialogues_ch/chapter05_isfahan';
 import { kulaynDialogues } from './dialogues_ch/kulayn_dialogues';
@@ -15,6 +17,7 @@ import { martyrsDialogues } from './dialogues_ch/martyrs';
 import { nayrizDialogues } from './dialogues_ch/nayriz';
 import { chapter09Dialogues } from './dialogues_ch/chapter09_tabriz';
 import { zanjanDialogues } from './dialogues_ch/zanjan';
+import { karbilaDialogues } from './dialogues_ch/karbila';
 import { chapter10Dialogues } from './dialogues_ch/chapter10_siyah_chal';
 
 /**
@@ -29,10 +32,12 @@ import { chapter10Dialogues } from './dialogues_ch/chapter10_siyah_chal';
  * implementation detail of each chapter file.
  */
 export const dialogues: Record<string, DialogueTree> = {
+  ...forerunnersDialogues,
   ...chapter01Dialogues,
   ...chapter02Dialogues,
   ...nurDialogues,
   ...chapter03Dialogues,
+  ...baghdadDialogues,
   ...chapter04Dialogues,
   ...chapter05Dialogues,
   ...kulaynDialogues,
@@ -45,5 +50,6 @@ export const dialogues: Record<string, DialogueTree> = {
   ...nayrizDialogues,
   ...chapter09Dialogues,
   ...zanjanDialogues,
+  ...karbilaDialogues,
   ...chapter10Dialogues,
 };

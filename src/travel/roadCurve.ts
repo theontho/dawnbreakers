@@ -15,7 +15,7 @@ const NIGHT_PACE = 1.6;
  * to watch the sky turn, and the choices the Journeys viewer's dial offers.
  */
 export const SECONDS_PER_DAY = 3;
-export const SECONDS_PER_DAY_STEPS: readonly number[] = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3];
+export const SECONDS_PER_DAY_STEPS: readonly number[] = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 5, 7.5, 10, 15, 20, 30];
 /** Real seconds for each stretch of the road. */
 const HOLD_S = 1.5;
 const FIRST_NIGHT_S = 3.5;

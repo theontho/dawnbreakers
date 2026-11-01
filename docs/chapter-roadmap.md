@@ -7,24 +7,28 @@ This plan is the implementation contract for a dialogue-first, 2.5D isometric we
 The original ten chapters are built out: 20 maps of roughly 20 to 32 cells a
 side with per-map ambience, several new people per chapter, objectives and
 journal entries for every chapter, and an epilogue map (`Ch10ExileRoad`).
-Seven chapters were added after the plan, so there are now seventeen, in
+Ten chapters were added after the plan, so there are now twenty, in
 story order:
 
 | # | Chapter (`id`) | Maps |
 |---|---|---|
-| 3 | Ṭihrán and Núr (`tehran-nur`), 1844 | `NurMadrasa`, `NurLane`, `NurTakur` |
-| 7 | Káshán and Kulayn (`kashan-kulayn`), spring 1847 | `KulaynKashan`, `KulaynHouse`, `KulaynCamp` |
-| 9 | The Solace of the Eyes (`tahirih`), 1845 to 1848 | `QazvinKarbila`, `QazvinLane`, `QazvinHouse` |
-| 11 | The Trial at Tabríz (`tabriz-trial`), summer 1848 | `TrialStreet`, `TrialCourt`, `TrialLane` |
-| 13 | The Seven Martyrs of Ṭihrán (`seven-martyrs`), February 1850 | `MartyrsCity`, `MartyrsHouse`, `MartyrsSerai` |
-| 14 | Nayríz (`nayriz`), May and June 1850 | `NayrizQuarter`, `NayrizMosque`, `NayrizFort` |
-| 16 | Zanján (`zanjan`), 1850 to 1851 | `ZanjanQuarter`, `ZanjanFort`, `ZanjanHouse` |
+| 1 | The Forerunners (`forerunners`), Karbilá and Kúfih, winter 1843 to 1844 | `KarbilaQuarter`, `KazimHouse`, `BarathaRoad`, `KufihMosque` |
+| 4 | Ṭihrán and Núr (`tehran-nur`), 1844 | `NurMadrasa`, `NurLane`, `NurTakur` |
+| 6 | The Trial at Baghdád (`baghdad`), January 1845 | `BaghdadQuay`, `BaghdadSerai`, `BaghdadPrison` |
+| 9 | Káshán and Kulayn (`kashan-kulayn`), spring 1847 | `KulaynKashan`, `KulaynHouse`, `KulaynCamp` |
+| 11 | The Solace of the Eyes (`tahirih`), 1845 to 1848 | `QazvinKarbila`, `QazvinLane`, `QazvinHouse` |
+| 13 | The Trial at Tabríz (`tabriz-trial`), summer 1848 | `TrialStreet`, `TrialCourt`, `TrialLane` |
+| 15 | The Seven Martyrs of Ṭihrán (`seven-martyrs`), February 1850 | `MartyrsCity`, `MartyrsHouse`, `MartyrsSerai` |
+| 16 | Nayríz (`nayriz`), May and June 1850 | `NayrizQuarter`, `NayrizMosque`, `NayrizFort` |
+| 18 | Zanján (`zanjan`), 1850 to 1851 | `ZanjanQuarter`, `ZanjanFort`, `ZanjanHouse` |
+| 19 | The Promised Ḥusayn (`karbila`), Karbilá, 1851 to 1852 | `KarbilaGroves`, `KarbilaShrineCourt`, `KarbilaLane` |
 
 Chapter numbers come from the order of `SPECS` in `src/data/chapters.ts`, so
-the "Chapter N" headings below are the original plan's numbering. The book's
-main episodes are now all covered; smaller ones not yet given a chapter
-include Bahá'u'lláh's journey to Karbilá in 1851 and Mullá ʿAlí-i-Basṭámí's
-trial in Baghdád (both currently only mentioned).
+the "Chapter N" headings below are the original plan's numbering. Every
+chapter of Nabíl's narrative now has a place in the game: the forerunners
+(his first two chapters) open it, Mullá ʿAlí-i-Basṭámí's trial at Baghdád
+follows the pilgrimage, and Bahá'u'lláh's sojourn in Karbilá (his chapter
+25) comes between Zanján and the Síyáh-Chál.
 
 The per-chapter build goals below are kept as the original brief. For how to
 add or change content now, see `docs/content-guide.md`.

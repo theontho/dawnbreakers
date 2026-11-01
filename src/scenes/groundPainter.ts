@@ -21,6 +21,30 @@ export interface GroundSpec {
   slab: number;
   /** Indoors: the slab's cut edge is masonry, not earth. */
   interior?: boolean;
+  /**
+   * Open sea all round: water is left clear (the animated sea under the
+   * ground draws it, out to the screen's edges) and there is no slab.
+   */
+  openSea?: boolean;
+}
+
+/** A painted region, and where its water lies for the animated water over it. */
+export interface PaintedGround {
+  image: ImageData;
+  /**
+   * Per pixel: red, how much is water (softened at the banks); green, how
+   * near the bank (0 in open water, 1 at the edge). Undefined when the
+   * region has no water.
+   */
+  water?: ImageData;
+  /** The smallest rectangle (region pixels) holding all the water. */
+  waterBox?: { x: number; y: number; w: number; h: number };
+}
+
+/** What `groundColour` found under a pixel: how much water, and how near the bank. */
+interface WaterSample {
+  amount: number;
+  shore: number;
 }
 
 /** A rectangle of the full ground image, painted on its own (large maps are chunked). */
@@ -104,9 +128,16 @@ interface Fields {
   mottle: CoarseField;
 }
 
-export function paintGround(spec: GroundSpec, region: GroundRegion = { x: 0, y: 0, w: spec.imageW, h: spec.imageH }): ImageData {
+export function paintGround(spec: GroundSpec, region: GroundRegion = { x: 0, y: 0, w: spec.imageW, h: spec.imageH }): PaintedGround {
   const { width: W, height: H, map } = spec;
   const img = new ImageData(region.w, region.h);
+  const hasWater = map.some(row => row.includes('water'));
+  const water = hasWater ? new ImageData(region.w, region.h) : undefined;
+  const sample: WaterSample = { amount: 0, shore: 0 };
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
   const kindAt = (x: number, y: number): TileKind | undefined =>
     x >= 0 && y >= 0 && x < W && y < H ? map[y]![x] : undefined;
   const fields: Fields = {
@@ -134,7 +165,7 @@ export function paintGround(spec: GroundSpec, region: GroundRegion = { x: 0, y: 
         // the rest of the bounding box stays transparent.
         const above = (dy - spec.slab / 16 - dx) / 2 + 0.5;
         const aboveX = (dx + dy - spec.slab / 16) / 2 + 0.5;
-        if ((fy < H && fx < W) || aboveX >= W + 0.01 || above >= H + 0.01) continue;
+        if (spec.openSea || (fy < H && fx < W) || aboveX >= W + 0.01 || above >= H + 0.01) continue;
         const side = slabSide(W, H, spec, px, py, kindAt);
         if (side) {
           data[o] = side[0];
@@ -144,14 +175,27 @@ export function paintGround(spec: GroundSpec, region: GroundRegion = { x: 0, y: 
         }
         continue;
       }
-      const c = groundColour(fx, fy, kindAt, fields, rx, ry);
+      sample.amount = 0;
+      const c = groundColour(fx, fy, kindAt, fields, rx, ry, sample);
+      if (water && sample.amount > 0) {
+        water.data[o] = Math.round(sample.amount * 255);
+        water.data[o + 1] = Math.round(sample.shore * 255);
+        water.data[o + 3] = 255;
+        if (rx < minX) minX = rx;
+        if (rx > maxX) maxX = rx;
+        if (ry < minY) minY = ry;
+        if (ry > maxY) maxY = ry;
+      }
+      // Open sea: the sea below shows through the water, fading in over the seam.
+      const alpha = spec.openSea ? 1 - sample.amount : 1;
       data[o] = c[0];
       data[o + 1] = c[1];
       data[o + 2] = c[2];
-      data[o + 3] = 255;
+      data[o + 3] = Math.round(alpha * 255);
     }
   }
-  return img;
+  if (!water || maxX < minX) return { image: img };
+  return { image: img, water, waterBox: { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 } };
 }
 
 type KindAt = (x: number, y: number) => TileKind | undefined;
@@ -174,13 +218,20 @@ function uniformCells(W: number, H: number, kindAt: KindAt): Uint8Array {
   return out;
 }
 
-function groundColour(fx: number, fy: number, kindAt: KindAt, fields: Fields, px: number, py: number): Rgb {
+function groundColour(fx: number, fy: number, kindAt: KindAt, fields: Fields, px: number, py: number, water: WaterSample): Rgb {
   const cx = Math.floor(fx);
   const cy = Math.floor(fy);
   const broad = fields.broad.at(px, py);
   const mottle = fields.mottle.at(px, py);
   // Deep inside one terrain the warp cannot reach a seam: skip the sampling.
-  if (fields.uniform[cy * fields.width + cx]) return surface(kindAt(cx, cy) ?? 'grass', fx, fy, kindAt, broad, mottle);
+  if (fields.uniform[cy * fields.width + cx]) {
+    const kind = kindAt(cx, cy) ?? 'grass';
+    if (kind === 'water') {
+      water.amount = 1;
+      water.shore = 0;
+    }
+    return surface(kind, fx, fy, kindAt, broad, mottle);
+  }
   // Wandering boundaries: sample the terrain through a smooth warp.
   const built = BUILT.has(kindAt(cx, cy) ?? 'grass');
   const wx = built ? 0 : fields.wx.at(px, py);
@@ -189,10 +240,19 @@ function groundColour(fx: number, fy: number, kindAt: KindAt, fields: Fields, px
     kindAt(Math.floor(fx + wx + ox), Math.floor(fy + wy + oy)) ?? kindAt(Math.floor(fx), Math.floor(fy)) ?? 'grass';
   const kind = sample(0, 0);
   let colour = surface(kind, fx, fy, kindAt, broad, mottle);
+  if (kind === 'water') {
+    water.amount = 1;
+    water.shore = shoreFactor(fx, fy, kindAt);
+  }
   // Soften the seam where two terrains meet.
   const k1 = sample(0.06, 0.03);
   const k2 = sample(-0.03, 0.06);
   if (k1 !== kind || k2 !== kind) {
+    if (kind === 'water') water.amount = 0.65;
+    else if (k1 === 'water' || k2 === 'water') {
+      water.amount = 0.35;
+      water.shore = 1;
+    }
     const other = k1 !== kind ? k1 : k2;
     colour = mix(colour, surface(other, fx, fy, kindAt, broad, mottle), 0.35);
     // A darker lip where grass overhangs a path or a bank drops to water.
@@ -260,9 +320,9 @@ function surface(kind: TileKind, fx: number, fy: number, kindAt: KindAt, broad: 
     }
     case 'water': {
       const near = shoreFactor(fx, fy, kindAt);
+      // The ripples, glints and foam move over this (see `waterLayer.ts`); here only the depth.
       let c = mix(WATER_DEEP, WATER_SHALLOW, near);
-      const wave = Math.sin(fx * 7 + fy * 3 + mottle * 5);
-      if (wave > 0.93) c = mix(c, [150, 190, 210], 0.35);
+      c = scale(c, 0.94 + mottle * 0.12);
       if (near > 0.85) c = mix(c, [200, 214, 210], (near - 0.85) * 2.5);
       return c;
     }
