@@ -3,11 +3,10 @@
  * for Phaser's `Shader` object. Works in grid space, so ripples lie flat on
  * the isometric ground and drift with the current (`uFlow`, cells a second).
  *
- * Over painted water it is a thin overlay, read through the mask in
- * `iChannel0` (red: water, green: nearness to the bank): glints on the
- * crests, a little shade in the troughs, and foam that laps at the bank.
- * As open sea (`uOpenSea`) it paints the whole sea in the style the ground
- * painter gives water (deep blue, mottled, thin pale wave lines), drifting.
+ * Both draw water in the style the ground painter always gave it: thin pale
+ * wave lines over mottled blue, here drifting with the current. Over painted
+ * water (rivers, canals, pools) only the lines are drawn, through the mask in
+ * `iChannel0` (red: water); as open sea (`uOpenSea`) the whole sea is.
  *
  * Output is premultiplied, as Phaser blends.
  */
@@ -43,48 +42,26 @@ vec2 toGrid(vec2 world) {
   return vec2((d.x + d.y) * 0.5 + 0.5, (d.y - d.x) * 0.5 + 0.5);
 }
 
-/** The water's surface, about -1 to 1: long swells and smaller wind ripples, carried by the current. */
-float surface(vec2 g, float t) {
-  vec2 p = g - uFlow * t;
-  float swell = sin(dot(p, vec2(0.9, 0.5)) * 2.2 + t * 0.9) * 0.45
-              + sin(dot(p, vec2(-0.4, 1.0)) * 1.7 - t * 0.7) * 0.3;
-  float ripple = noise(p * 2.6 + vec2(t * 0.35, -t * 0.25)) + noise(p * 5.3 - vec2(t * 0.5, t * 0.2)) * 0.5;
-  return swell + (ripple - 0.75) * 0.9;
-}
-
 void main() {
   vec2 local = vec2(fragCoord.x, resolution.y - fragCoord.y);
   vec2 g = toGrid(uCorner + local);
   float t = time;
-  float h = surface(g, t);
-  float glint = smoothstep(0.62, 0.95, h) * (0.5 + 0.5 * noise(g * 9.0 + t * 1.3));
-  float trough = smoothstep(-0.25, -0.85, h);
+  // The painted water's look (thin pale wave lines over mottled blue, as
+  // groundPainter drew it), carried along by the current and shimmering a little.
+  vec2 p = g - uFlow * t * 0.3;
+  float mottle = noise(p * 3.0) * 0.57 + noise(p * 6.3) * 0.29 + noise(p * 12.9) * 0.14;
+  float wave = sin(p.x * 7.0 + p.y * 3.0 + mottle * 5.0 + sin(t * 0.5 + p.y) * 0.6);
+  float line = step(0.93, wave);
+  vec3 crest = vec3(150.0, 190.0, 210.0) / 255.0;
 
   if (uOpenSea > 0.5) {
-    // The painted sea's own look (deep blue, mottled, thin pale wave lines,
-    // as groundPainter drew it), drifting slowly past and shimmering a little.
-    vec2 p = g - uFlow * t * 0.3;
-    float mottle = noise(p * 3.0) * 0.57 + noise(p * 6.3) * 0.29 + noise(p * 12.9) * 0.14;
-    float wave = sin(p.x * 7.0 + p.y * 3.0 + mottle * 5.0 + sin(t * 0.5 + p.y) * 0.6);
-    vec3 colour = vec3(26.0, 52.0, 82.0) / 255.0;
-    colour = mix(colour, vec3(150.0, 190.0, 210.0) / 255.0, 0.35 * step(0.93, wave));
-    gl_FragColor = vec4(colour, 1.0);
+    gl_FragColor = vec4(mix(vec3(26.0, 52.0, 82.0) / 255.0, crest, 0.35 * line), 1.0);
     return;
   }
 
-  vec4 mask = texture2D(iChannel0, (uMaskOffset + local) / uMaskSize);
-  float water = mask.r;
-  if (water < 0.01) {
-    gl_FragColor = vec4(0.0);
-    return;
-  }
-  float shore = mask.g;
-  // Foam that runs up the bank and back, unevenly along it.
-  float lap = 0.5 + 0.5 * sin(t * 1.4 + noise(g * 1.7) * 6.0);
-  float foam = smoothstep(0.55 + 0.3 * lap, 1.0, shore) * (0.55 + 0.45 * noise(g * 6.0 + t * 0.4));
-  float light = clamp(glint * 0.3 + foam * 0.45, 0.0, 1.0) * water;
-  float shade = trough * 0.14 * water * (1.0 - foam);
-  vec3 lit = mix(vec3(0.75, 0.86, 0.92), vec3(0.93, 0.95, 0.94), foam);
-  gl_FragColor = vec4(lit * light, light + shade * (1.0 - light));
+  // Over painted water: only the lines, as the mask says where the water is.
+  float water = texture2D(iChannel0, (uMaskOffset + local) / uMaskSize).r;
+  float alpha = 0.35 * line * water;
+  gl_FragColor = vec4(crest * alpha, alpha);
 }
 `;
