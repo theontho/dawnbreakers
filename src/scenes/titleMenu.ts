@@ -16,6 +16,14 @@ type Size = { width: number; height: number };
 export const MENU_GAP = 12;
 
 const BUTTON_FILL = '#1a120acc';
+const BUTTON_FILL_COLOR = 0x1a120a;
+const BUTTON_FILL_ALPHA = 0.8;
+const GITHUB_TEXTURE = 'title-github-mark';
+/** GitHub's mark (octicon `mark-github`), on a 16-unit square. */
+const GITHUB_MARK = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z';
+
+/** A button in the menu: a text button, or a square icon button. */
+export type MenuItem = Phaser.GameObjects.Text | Phaser.GameObjects.Container;
 
 export type MenuTone = 'primary' | 'secondary' | 'quiet';
 
@@ -38,17 +46,45 @@ export function addMenuButton(scene: Phaser.Scene, size: Size, label: string, to
 }
 
 /**
- * Lays out `rows` of buttons from the bottom of `safe` upward, each row
- * wrapped to the safe width and centred. Every button in the secondary rows
- * takes the widest one's width, so a wrapped row lines up as a grid. Returns
- * the top of the menu.
+ * A square icon button that opens `href` in a new tab: GitHub's mark, tinted
+ * like the menu's text. It opens on release, which every browser counts as
+ * the tap that allows a new tab.
  */
-export function layoutMenu(rows: Phaser.GameObjects.Text[][], safe: SafeLayout): number {
-  const secondary = rows.slice(1).flat();
+export function addGitHubLink(scene: Phaser.Scene, href: string): Phaser.GameObjects.Container {
+  if (!scene.textures.exists(GITHUB_TEXTURE)) {
+    const px = 64;
+    const texture = scene.textures.createCanvas(GITHUB_TEXTURE, px, px)!;
+    texture.context.scale(px / 16, px / 16);
+    texture.context.fillStyle = '#ffffff';
+    texture.context.fill(new Path2D(GITHUB_MARK));
+    texture.refresh();
+  }
+  const side = MIN_TOUCH_TARGET;
+  const tint = (color: string) => Phaser.Display.Color.HexStringToColor(color).color;
+  const icon = scene.add.image(0, 0, GITHUB_TEXTURE).setDisplaySize(22, 22).setTint(tint(MENU_COLORS.secondary.normal));
+  const button = scene.add.container(0, 0, [
+    scene.add.rectangle(0, 0, side, side, BUTTON_FILL_COLOR, BUTTON_FILL_ALPHA),
+    icon,
+  ]).setSize(side, side);
+  button.setInteractive({ useHandCursor: true })
+    .on('pointerover', () => icon.setTint(tint(MENU_COLORS.secondary.hover)))
+    .on('pointerout', () => icon.setTint(tint(MENU_COLORS.secondary.normal)))
+    .on('pointerup', () => window.open(href, '_blank', 'noopener'));
+  return button;
+}
+
+/**
+ * Lays out `rows` of buttons from the bottom of `safe` upward, each row
+ * wrapped to the safe width and centred. Every text button in the secondary
+ * rows takes the widest one's width, so a wrapped row lines up as a grid.
+ * Returns the top of the menu.
+ */
+export function layoutMenu(rows: MenuItem[][], safe: SafeLayout): number {
+  const secondary = rows.slice(1).flat().filter((item): item is Phaser.GameObjects.Text => item instanceof Phaser.GameObjects.Text);
   const cellWidth = Math.max(0, ...secondary.map(button => button.width));
   for (const button of secondary) button.setFixedSize(cellWidth, 0);
   for (const button of rows[0] ?? []) {
-    button.setFixedSize(Math.max(button.width, cellWidth), Math.max(button.height, MIN_TOUCH_TARGET));
+    if (button instanceof Phaser.GameObjects.Text) button.setFixedSize(Math.max(button.width, cellWidth), Math.max(button.height, MIN_TOUCH_TARGET));
   }
 
   const lines = rows.flatMap(row => wrapRow(row, safe.width));
@@ -67,9 +103,9 @@ export function layoutMenu(rows: Phaser.GameObjects.Text[][], safe: SafeLayout):
   return bottom + MENU_GAP;
 }
 
-function wrapRow(row: Phaser.GameObjects.Text[], maxWidth: number): Phaser.GameObjects.Text[][] {
-  const lines: Phaser.GameObjects.Text[][] = [];
-  let line: Phaser.GameObjects.Text[] = [];
+function wrapRow(row: MenuItem[], maxWidth: number): MenuItem[][] {
+  const lines: MenuItem[][] = [];
+  let line: MenuItem[] = [];
   let width = 0;
   for (const button of row) {
     const next = line.length === 0 ? button.width : width + MENU_GAP + button.width;
@@ -87,11 +123,11 @@ function wrapRow(row: Phaser.GameObjects.Text[], maxWidth: number): Phaser.GameO
 }
 
 /** Evens out a wrapped row so the last line is not left with a single orphan. */
-function balance(lines: Phaser.GameObjects.Text[][]): Phaser.GameObjects.Text[][] {
+function balance(lines: MenuItem[][]): MenuItem[][] {
   if (lines.length < 2) return lines;
   const all = lines.flat();
   const perLine = Math.ceil(all.length / lines.length);
-  const balanced: Phaser.GameObjects.Text[][] = [];
+  const balanced: MenuItem[][] = [];
   for (let i = 0; i < all.length; i += perLine) balanced.push(all.slice(i, i + perLine));
   return balanced;
 }

@@ -10,7 +10,7 @@ import { activateTitleTextButton, addTitleLanguageButton } from './titleControls
 import { playTitleBookOpening } from './titleBookOpening';
 import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS } from './titleSunrise';
 import { SunriseClock, type SunriseClockState } from './titleSunriseClock';
-import { addMenuButton, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
+import { addGitHubLink, addMenuButton, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
 import { addSunriseTransport } from './titleTransport';
 
 /**
@@ -19,6 +19,8 @@ import { addSunriseTransport } from './titleTransport';
  * music where it was, instead of at the "press to begin" gate.
  */
 type TitleResume = { clock: SunriseClockState; musicLeadSeconds: number };
+
+const REPO_URL = 'https://github.com/theontho/dawnbreakers';
 
 /** A soft dark halo that keeps the title legible over night and noon sky alike. */
 const TITLE_SHADOW = { offsetX: 0, offsetY: 2, color: '#120b05', blur: 10, fill: true, stroke: false };
@@ -84,7 +86,8 @@ export class TitleScene extends Phaser.Scene {
     const miniGames = addMenuButton(this, size, t('Mini-games'), 'secondary');
     const editor = addMenuButton(this, size, t('Map Editor'), 'secondary');
     const reset = addMenuButton(this, size, t('Reset story'), 'quiet');
-    layoutMenu([[startButton], [chapters, journeys, miniGames, editor, reset]], safe);
+    const source = addGitHubLink(this, REPO_URL);
+    layoutMenu([[startButton], [chapters, journeys, miniGames, editor, reset, source]], safe);
 
     const start = () => {
       if (bookmark && this.scene.get(bookmark.scene)) {
@@ -94,7 +97,7 @@ export class TitleScene extends Phaser.Scene {
       }
     };
 
-    titleLayer.add([title, subtitle, startButton, chapters, journeys, miniGames, editor, reset]);
+    titleLayer.add([title, subtitle, startButton, chapters, journeys, miniGames, editor, reset, source]);
 
     const showMenu = (clock: SunriseClock) => {
       this.clock = clock;

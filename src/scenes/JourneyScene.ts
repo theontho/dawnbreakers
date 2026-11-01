@@ -5,11 +5,12 @@ import { rtl, t } from '../i18n';
 import { localSiderealTime, locationFromDegrees } from '../sky/projection';
 import { skyBodies, type SkyBodies } from '../sky/skyBodies';
 import type { GeographicLocation } from '../sky/types';
-import { isPortraitLayout, restartSceneOnResize } from '../ui/responsive';
+import { restartSceneOnResize } from '../ui/responsive';
+import { firstSunEvent, type SunEvent } from '../travel/firstSunEvent';
 import { JourneyClock } from '../travel/journeyClock';
 import { JourneyHud, type HudButton } from '../travel/journeyHud';
 import { JourneyPassage, dayOfJourney } from '../travel/journeyPassage';
-import { DEFAULT_SECONDS_PER_DAY, SECONDS_PER_DAY_STEPS } from '../travel/roadCurve';
+import { SECONDS_PER_DAY_STEPS, VIEWER_SECONDS_PER_DAY } from '../travel/roadCurve';
 import { Landscape, groundLayout, type GroundLayout } from '../travel/landscape';
 import { Party } from '../travel/party';
 import { Sea } from '../travel/sea';
@@ -34,11 +35,17 @@ interface ViewerSettings {
   trails: TrailMode;
   /** Quarter turns away from the journey's own facing. */
   turn: number;
+  /** Facing where the sun first rises or sets after the road sets out, instead of the road's facing. */
+  centerSun: boolean;
   /** Playing each road as the game does between chapters, and going on to the next. */
   autoplay: boolean;
   /** Real seconds each day takes while the days between roll by. */
   secondsPerDay: number;
+  /** The most frames a second the sky is drawn: 120 for fast stars on a screen that can show them, 60 to save power. */
+  maxHz: FrameRate;
 }
+
+type FrameRate = 60 | 120;
 
 export interface JourneyLaunch {
   [key: string]: unknown;
@@ -49,6 +56,8 @@ export interface JourneyLaunch {
 }
 
 const PASSAGE_HOLD_MS = 1600;
+/** How much of the screen's height is sky, above the horizon. */
+const SKY_SHARE = 0.7;
 /** Real seconds of sky the light is blended over when time runs fast, and how many moments are taken. */
 const BLUR_SECONDS = 0.4;
 const BLUR_SAMPLES = 7;
@@ -63,7 +72,7 @@ const TRAIL_LABELS: Record<TrailMode, { label: string }> = {
   tail: { label: 'Trails: comet tails' },
   exposure: { label: 'Trails: long exposure' },
 };
-const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, autoplay: true, secondsPerDay: DEFAULT_SECONDS_PER_DAY };
+const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, centerSun: false, autoplay: true, secondsPerDay: VIEWER_SECONDS_PER_DAY, maxHz: 120 };
 
 /**
  * A journey between chapters: the party on the road under the true sky of
@@ -79,6 +88,7 @@ export class JourneyScene extends Phaser.Scene {
   private onward?: JourneyOnward;
   private settings!: ViewerSettings;
   private location!: GeographicLocation;
+  private firstSun?: SunEvent;
   private field!: StarField;
   private clock!: JourneyClock;
   private passage!: JourneyPassage;
@@ -91,6 +101,7 @@ export class JourneyScene extends Phaser.Scene {
   private ground!: GroundLayout;
   private walked = 0;
   private lastMs: number | undefined;
+  private shownFrameRate = '';
   private leaving = false;
 
   constructor() { super('Journey'); }
@@ -111,10 +122,12 @@ export class JourneyScene extends Phaser.Scene {
     this.location = locationFromDegrees(journey.subtitle, journey.latitude, journey.longitude);
     const departure = journeyDeparture(journey);
     this.field = starFieldFor(departure, this.location);
+    this.firstSun = firstSunEvent(departure, this.location);
 
-    const horizonY = Math.round(height * (isPortraitLayout(this.scale) ? 0.5 : 0.7));
+    // The sky takes the same share of the screen at every size and shape.
+    const horizonY = Math.round(height * SKY_SHARE);
     this.camera3 = new SkyCamera(width, height, horizonY);
-    this.camera3.face(journey.facing + this.settings.turn * 90);
+    this.camera3.face(this.viewBearing());
     this.ground = groundLayout(width, height, horizonY);
     this.sky = new SkyPainter(this, this.camera3);
     if (journey.terrain === 'sea') {
@@ -138,6 +151,9 @@ export class JourneyScene extends Phaser.Scene {
 
   update(): void {
     const now = performance.now();
+    // Held under the cap, the frame keeps what was drawn last; a little slack
+    // keeps a 60 Hz cap from dropping frames that land a hair early.
+    if (this.lastMs !== undefined && now - this.lastMs < 1000 / this.settings.maxHz - 2) return;
     const deltaMs = Math.min(100, now - (this.lastMs ?? now));
     this.lastMs = now;
     this.clock.update(now);
@@ -228,24 +244,38 @@ export class JourneyScene extends Phaser.Scene {
     const index = JOURNEYS.indexOf(this.journey);
     const buttons: HudButton[] = [
       // Arrows point the way the row reads, so they turn around right to left.
-      { label: () => (rtl ? '›' : '‹'), onClick: () => this.showJourney(index - 1) },
-      { label: () => t('{n} of {total}', { n: index + 1, total: JOURNEYS.length }), onClick: () => this.showJourney(index + 1) },
-      { label: () => (rtl ? '‹' : '›'), onClick: () => this.showJourney(index + 1) },
-      { label: () => (this.clock.playing ? t('Pause') : t('Play')), onClick: () => this.togglePlaying() },
+      { label: () => (rtl ? '›' : '‹'), onClick: () => this.showJourney(index - 1), essential: true },
+      { label: () => t('{n} of {total}', { n: index + 1, total: JOURNEYS.length }), onClick: () => this.showJourney(index + 1), essential: true },
+      { label: () => (rtl ? '‹' : '›'), onClick: () => this.showJourney(index + 1), essential: true },
+      { label: () => (this.clock.playing ? t('Pause') : t('Play')), onClick: () => this.togglePlaying(), essential: true },
       { label: () => t('Slower'), onClick: () => this.changeRate(-1) },
       { label: () => t('Faster'), onClick: () => this.changeRate(1) },
       { label: () => t('Reverse'), onClick: () => this.reverse() },
       { label: () => t(TRAIL_LABELS[s.trails].label), onClick: () => this.cycleTrails() },
-      { label: () => t(FACINGS[facingIndex(this.camera3.facing)]!.label), onClick: () => this.turn() },
+      { label: () => t(this.facingLabel()), onClick: () => this.turn() },
+      { label: () => t(s.centerSun ? 'Center sun: on' : 'Center sun: off'), onClick: () => this.toggleCenterSun() },
       { label: () => t('Pass the journey'), onClick: () => this.passTheJourney() },
-      { label: () => '−', onClick: () => this.changeDayPace(-1) },
-      { label: () => t('{seconds} s a day', { seconds: s.secondsPerDay }), onClick: () => this.changeDayPace(1) },
+      { label: () => '−', onClick: () => this.changeDayPace(-1), keepWithNext: true },
+      { label: () => t('{seconds} s a day', { seconds: s.secondsPerDay }), onClick: () => this.changeDayPace(1), keepWithNext: true },
       { label: () => '+', onClick: () => this.changeDayPace(1) },
+      { label: () => this.frameRateLabel(), onClick: () => this.toggleFrameRate() },
       { label: () => t('Hide controls'), onClick: () => this.hud.setVisible(false) },
       { label: () => t('Back'), onClick: () => this.scene.start('Title') },
     ];
     this.hud.setButtons(buttons);
     this.input.on('pointerdown', () => this.hud.setVisible(true));
+    // The frame-rate button reports the rate really reached once it has been measured.
+    this.shownFrameRate = this.frameRateLabel();
+    this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => {
+        const label = this.frameRateLabel();
+        if (label === this.shownFrameRate) return;
+        this.shownFrameRate = label;
+        this.hud.refreshButtons();
+      },
+    });
 
     const keys: Record<string, () => void> = {
       ArrowLeft: () => this.showJourney(index - 1),
@@ -256,6 +286,8 @@ export class JourneyScene extends Phaser.Scene {
       KeyR: () => this.reverse(),
       KeyT: () => this.cycleTrails(),
       KeyF: () => this.turn(),
+      KeyC: () => this.toggleCenterSun(),
+      KeyZ: () => this.toggleFrameRate(),
       KeyN: () => this.passTheJourney(),
       BracketLeft: () => this.changeDayPace(-1),
       BracketRight: () => this.changeDayPace(1),
@@ -307,10 +339,50 @@ export class JourneyScene extends Phaser.Scene {
     this.restartExposure();
   }
 
+  /** Turns a quarter from the road's facing; turning away from the sun lets it go. */
   private turn(): void {
-    this.settings.turn = (this.settings.turn + 1) % 4;
-    this.camera3.face(this.journey.facing + this.settings.turn * 90);
+    if (this.settings.centerSun) this.settings.centerSun = false;
+    else this.settings.turn = (this.settings.turn + 1) % 4;
+    this.camera3.face(this.viewBearing());
     this.restartExposure();
+  }
+
+  private toggleFrameRate(): void {
+    this.settings.maxHz = this.settings.maxHz === 120 ? 60 : 120;
+    this.shownFrameRate = this.frameRateLabel();
+  }
+
+  /**
+   * The cap, and when fewer frames than that are coming, how many are: the
+   * page cannot go faster than the screen and browser allow (Safari holds
+   * pages to 60 Hz unless told otherwise), nor than the machine can draw.
+   */
+  private frameRateLabel(): string {
+    const hz = this.settings.maxHz;
+    const actual = Math.round(this.game.loop.actualFps / 10) * 10;
+    return actual > 0 && actual < hz * 0.9
+      ? t('{hz} Hz (getting {actual})', { hz, actual })
+      : t('{hz} Hz', { hz });
+  }
+
+  private toggleCenterSun(): void {
+    this.settings.centerSun = !this.settings.centerSun;
+    this.camera3.face(this.viewBearing());
+    this.restartExposure();
+  }
+
+  private facingLabel(): string {
+    if (this.settings.centerSun && this.firstSun) {
+      return this.firstSun.kind === 'sunrise' ? 'Facing the sunrise' : 'Facing the sunset';
+    }
+    return FACINGS[facingIndex(this.camera3.facing)]!.label;
+  }
+
+  /** Where the view looks: at the first sunrise or sunset of the road, or the road's facing turned by quarters. */
+  private viewBearing(): number {
+    const { centerSun, turn } = this.settings;
+    if (centerSun && this.firstSun) return this.firstSun.azimuth;
+    return this.journey.facing + turn * 90;
   }
 
   /** Plays the whole road as the game does between chapters, then goes on to the next journey. */
@@ -329,7 +401,7 @@ export class JourneyScene extends Phaser.Scene {
   private changeDayPace(step: number): void {
     const steps = SECONDS_PER_DAY_STEPS;
     const at = steps.indexOf(this.settings.secondsPerDay);
-    const next = Math.max(0, Math.min(steps.length - 1, (at < 0 ? steps.indexOf(DEFAULT_SECONDS_PER_DAY) : at) + step));
+    const next = Math.max(0, Math.min(steps.length - 1, (at < 0 ? steps.indexOf(VIEWER_SECONDS_PER_DAY) : at) + step));
     this.settings.secondsPerDay = steps[next]!;
     this.passTheJourney();
   }

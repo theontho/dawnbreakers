@@ -11,12 +11,18 @@ const SHADE_ALPHA = 0.55;
 export interface HudButton {
   label: () => string;
   onClick: () => void;
+  /** Kept in view on a narrow screen, where the rest wait behind "More". */
+  essential?: boolean;
+  /** Kept on the same line as the next button when the row wraps, as a dial's − and +. */
+  keepWithNext?: boolean;
 }
 
 /**
  * The words over a journey: which chapters it joins, its title, route and
  * description at the top, the local time on the road at the top corner, and a
- * row of controls along the bottom that wraps on a narrow screen.
+ * row of controls along the bottom that wraps on a narrow screen. There the
+ * ground is a short strip, so only the essential controls show until "More"
+ * opens the rest, and the party stays in sight.
  */
 export class JourneyHud {
   readonly layer: Phaser.GameObjects.Container;
@@ -28,11 +34,16 @@ export class JourneyHud {
   private readonly timeFormat: Intl.DateTimeFormat;
   private lastClock = '';
   private readonly shadeHeight: number;
+  private readonly narrow: boolean;
+  private expanded = false;
+  /** Whether the controls fold behind "More": a narrow screen with optional controls. */
+  private folds = false;
 
   constructor(private readonly scene: Phaser.Scene, journey: Journey) {
     const size = scene.scale;
     this.safe = safeLayout(size);
     const narrow = isNarrowLayout(size);
+    this.narrow = narrow;
     const { x, y, right, width } = this.safe;
     this.layer = scene.add.container(0, 0).setDepth(HUD_DEPTH);
     this.dateFormat = new Intl.DateTimeFormat(DATE_LOCALES[activeLocale], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -77,7 +88,12 @@ export class JourneyHud {
   setButtons(specs: readonly HudButton[]): void {
     for (const { text } of this.buttons) text.destroy();
     this.buttons.length = 0;
-    for (const spec of specs) {
+    // Only a row with both kinds folds; a lone "Continue" always shows.
+    this.folds = this.narrow && specs.some(spec => spec.essential) && specs.some(spec => !spec.essential);
+    const all: readonly HudButton[] = this.folds
+      ? [...specs, { label: () => t(this.expanded ? 'Less' : 'More'), onClick: () => { this.expanded = !this.expanded; }, essential: true }]
+      : specs;
+    for (const spec of all) {
       const text = this.scene.add.text(0, 0, spec.label(), localizedStyle({
         fontFamily: 'Georgia, serif', fontSize: buttonFont(15, this.scene.scale), color: '#c9b07a',
         backgroundColor: '#1a120acc', padding: { x: 12, y: 12 },
@@ -126,15 +142,27 @@ export class JourneyHud {
   private layoutButtons(): void {
     const gap = 8;
     const { x, width, bottom } = this.safe;
-    const rows: { text: Phaser.GameObjects.Text; width: number }[][] = [[]];
+    // Buttons that keep with the next wrap as one group.
+    type Placed = { text: Phaser.GameObjects.Text; width: number };
+    const groups: Placed[][] = [];
+    let joinNext = false;
+    for (const { text, spec } of this.buttons) {
+      const shown = !this.folds || this.expanded || spec.essential === true;
+      text.setVisible(shown);
+      if (!shown) continue;
+      if (joinNext && groups.length > 0) groups[groups.length - 1]!.push({ text, width: text.width });
+      else groups.push([{ text, width: text.width }]);
+      joinNext = spec.keepWithNext === true;
+    }
+    const rows: Placed[][] = [[]];
     let used = 0;
-    for (const { text } of this.buttons) {
-      const w = text.width;
+    for (const group of groups) {
+      const w = group.reduce((sum, b) => sum + b.width, 0) + gap * (group.length - 1);
       if (used > 0 && used + gap + w > width) {
         rows.push([]);
         used = 0;
       }
-      rows[rows.length - 1]!.push({ text, width: w });
+      rows[rows.length - 1]!.push(...group);
       used += (used > 0 ? gap : 0) + w;
     }
     const rowHeight = (this.buttons[0]?.text.height ?? 40) + gap;

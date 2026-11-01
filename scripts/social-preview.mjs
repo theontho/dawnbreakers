@@ -40,16 +40,13 @@ try {
     clock.seek(ms);
   }, atSeconds * 1000);
   await page.waitForTimeout(500);
-  // Keep the painting and the title; hide every button and the transport.
+  // Keep the painting and the title; hide everything tappable and the
+  // overlays above it (the transport and the language menu).
   await page.evaluate(() => {
     const scene = window.__game.scene.getScene('Title');
-    const keep = new Set(['The Dawn-Breakers', 'Shíráz, the eve of 23 May 1844']);
     const hide = (object) => {
-      if (object.type === 'Text' && !keep.has(object.text)) object.setVisible(false);
-      if (object.type === 'Container') {
-        if (object.depth >= 1000) object.setVisible(false);
-        else object.list.forEach(hide);
-      }
+      if (object.input?.enabled || object.depth >= 1000) object.setVisible(false);
+      else if (object.type === 'Container') object.list.forEach(hide);
     };
     scene.children.list.forEach(hide);
   });

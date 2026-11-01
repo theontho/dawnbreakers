@@ -10,8 +10,13 @@ const NIGHT_CURVE: TimeCurveSettings = { inertiaPortion: 0.26, driftProgress: 0.
 
 /** Sky hours per real second while a night is watched. */
 const NIGHT_PACE = 1.6;
-/** Real seconds each day takes while the days between roll by, and the choices the viewer's dial offers. */
-export const DEFAULT_SECONDS_PER_DAY = 3;
+/**
+ * Real seconds each day takes while the days between roll by: briskly on a
+ * passage between chapters, so the story moves on, and slowly enough in the
+ * Journeys viewer to watch the sky; and the choices the viewer's dial offers.
+ */
+export const PASSAGE_SECONDS_PER_DAY = 0.4;
+export const VIEWER_SECONDS_PER_DAY = 3;
 export const SECONDS_PER_DAY_STEPS: readonly number[] = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3];
 /** Real seconds for each stretch of the road. */
 const HOLD_S = 1.5;
@@ -41,7 +46,7 @@ interface Stretch {
  * last night slowing into dawn. A one-night road plays as a single night on
  * the cinematic curve.
  */
-export function roadCurve(days: number, secondsPerDay = DEFAULT_SECONDS_PER_DAY): PassageCurve {
+export function roadCurve(days: number, secondsPerDay = PASSAGE_SECONDS_PER_DAY): PassageCurve {
   const spanHours = (Math.max(1, days) - 1) * 24 + NIGHT_HOURS;
   if (days <= 1) {
     return {
