@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { prepareGlowPipeline } from './hdr/hdrGlowLayer';
+import { hdrGlowSupported, hdrGpu } from './hdr/hdrSupport';
 import { BootScene } from './scenes/BootScene';
 import { MapScene } from './scenes/MapScene';
 import { MAP_DEFINITIONS } from './data/maps';
@@ -59,6 +61,12 @@ const config: Phaser.Types.Core.GameConfig = {
   ],
 };
 
+// Find out now, while the loading screen shows, whether the sun can glow in
+// HDR: the GPU takes a moment to set up, and doing it as the title opens stutters.
+void hdrGlowSupported().then(async supported => {
+  const gpu = supported ? await hdrGpu() : undefined;
+  if (gpu) await prepareGlowPipeline(gpu);
+});
 const game = new Phaser.Game(config);
 attachFpsLabel(game);
 installAudioUnlock();
@@ -68,8 +76,6 @@ if (import.meta.env.DEV) {
   (window as unknown as { __game: Phaser.Game }).__game = game;
 }
 let resizeFrame: number | undefined;
-let lastGameWidth = initialWidth;
-let lastGameHeight = initialHeight;
 
 const resizeGameNow = (): void => {
   resizeFrame = undefined;
@@ -77,10 +83,10 @@ const resizeGameNow = (): void => {
   if (!gameElement) return;
   const width = Math.round(gameElement.clientWidth);
   const height = Math.round(gameElement.clientHeight);
-  if (width === lastGameWidth && height === lastGameHeight) return;
-
-  lastGameWidth = width;
-  lastGameHeight = height;
+  // Against the game's own size, not the last one set here: Phaser resizes
+  // too on a window resize, from the page as it stood before the height
+  // above was applied, and a rotation would otherwise leave it there.
+  if (width === game.scale.width && height === game.scale.height) return;
   game.scale.resize(width, height);
 };
 
@@ -104,7 +110,11 @@ function syncGameViewportHeight(element: HTMLElement | null): void {
   if (!element) return;
 
   const insets = measuredSafeAreaInsets();
-  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  // The layout viewport, not the visual one: if the page has been left zoomed
+  // (iOS can after a rotation) the visual viewport shrinks, and sizing the
+  // game to it would keep it zoomed in for good.
+  const visual = window.visualViewport;
+  const viewportHeight = visual ? visual.height * visual.scale : window.innerHeight;
   let height = viewportHeight + insets.bottom;
   let extraBottomInset = 0;
 

@@ -31,7 +31,9 @@ export const MIN_GAME_HEIGHT = 480;
  * minimum height (a phone held sideways) its foot is cut off by the page.
  */
 export function visibleGameHeight(gameHeight: number): number {
-  const viewport = typeof window === 'undefined' ? gameHeight : window.visualViewport?.height ?? window.innerHeight;
+  const visual = typeof window === 'undefined' ? undefined : window.visualViewport;
+  // The layout viewport's height: unchanged by a page left zoomed in.
+  const viewport = typeof window === 'undefined' ? gameHeight : visual ? visual.height * visual.scale : window.innerHeight;
   return gameHeight <= MIN_GAME_HEIGHT && viewport < gameHeight ? Math.round(viewport) : gameHeight;
 }
 export const MIN_BODY_FONT_SIZE = 14;

@@ -42,6 +42,22 @@ function glowPipeline(gpu: HdrGpu): GPURenderPipeline {
 }
 
 /**
+ * Compiles the glow's pipeline off the main thread ahead of time (while the
+ * loading screen shows), so the first glow does not stall a frame to build it.
+ */
+export async function prepareGlowPipeline(gpu: HdrGpu): Promise<void> {
+  if (pipelines.has(gpu.device)) return;
+  const module = gpu.device.createShaderModule({ code: GLOW_SHADER });
+  const pipeline = await gpu.device.createRenderPipelineAsync({
+    layout: 'auto',
+    vertex: { module, entryPoint: 'vertexMain' },
+    fragment: { module, entryPoint: 'fragmentMain', targets: [{ format: gpu.format }] },
+    primitive: { topology: 'triangle-list' },
+  });
+  if (!pipelines.has(gpu.device)) pipelines.set(gpu.device, pipeline);
+}
+
+/**
  * Small HDR canvases laid over the game, one per sun or moon, each just
  * big enough for its glow and moved with a CSS transform as the body
  * crosses the sky. They take no pointer input and are only redrawn when

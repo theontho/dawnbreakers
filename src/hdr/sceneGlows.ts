@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { HdrGlowLayer } from './hdrGlowLayer';
-import { glowBounds, overlapFraction, type GlowSpec, type Occluder } from './glowMath';
+import { glowBounds, overlapFraction, smoothstep, type GlowSpec, type Occluder } from './glowMath';
+
+/** The glow eases in over this long when it first shows. */
+const FADE_IN_MS = 1000;
 import { watchHdrGlow } from './hdrSupport';
 
 /** A glow before the words and panels in front of it are taken into account. */
@@ -15,11 +18,14 @@ export class SceneGlows {
   private layer: HdrGlowLayer | undefined;
   private readonly unwatch: () => void;
   private suspended = false;
+  /** When the HDR layer appeared, so the glow fades in rather than switching on in a frame. */
+  private shownAt = 0;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.unwatch = watchHdrGlow(gpu => {
       this.layer?.destroy();
       this.layer = gpu && scene.game.canvas ? new HdrGlowLayer(gpu, scene.game.canvas) : undefined;
+      this.shownAt = performance.now();
     });
     const hide = () => {
       this.suspended = true;
@@ -52,7 +58,8 @@ export class SceneGlows {
   /** Shows these bodies this frame, dimmed by what stands in front of them. */
   update(bodies: readonly GlowBody[], occluders: readonly Occluder[]): void {
     if (!this.layer || this.suspended) return;
-    const visible = 1 - fadeCover(this.scene.cameras.main.fadeEffect);
+    const fadingIn = smoothstep(0, FADE_IN_MS, performance.now() - this.shownAt);
+    const visible = (1 - fadeCover(this.scene.cameras.main.fadeEffect)) * fadingIn;
     this.layer.update(bodies.map(body => {
       const box = glowBounds(body);
       return {

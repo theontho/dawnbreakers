@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#1a120a" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#1a120a" />
@@ -64,11 +64,66 @@
         overflow: hidden;
       }
       #game canvas { display: block; width: 100%; height: 100%; }
+      /* Shown with the page itself, before any script, until the title is drawn. */
+      #splash {
+        position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; gap: 10px; text-align: center; pointer-events: none;
+        background: linear-gradient(180deg, #030716 0%, #071329 40%, #1a1831 72%, #0a090c 100%);
+        transition: opacity 0.6s ease;
+      }
+      #splash.gone { opacity: 0; }
+      #splash h1 { margin: 0 16px; font-weight: normal; font-size: clamp(34px, 8vw, 68px); color: #f3e2b5; text-shadow: 0 2px 10px #120b05; }
+      #splash p { margin: 0 16px; font-style: italic; color: #e2c98f; font-size: clamp(15px, 2.4vw, 22px); }
+      #splash .loading { margin-top: 18px; font-size: 14px; color: #9c8458; animation: breathe 1.8s ease-in-out infinite; }
+      #splash .stars { position: absolute; inset: 0; z-index: -1; }
+      #splash .stars i {
+        position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff3c8;
+        animation: twinkle 3s ease-in-out infinite;
+      }
+      @keyframes breathe { 50% { opacity: 0.35; } }
+      @keyframes twinkle { 50% { opacity: 0.25; } }
+      #splash[dir="rtl"] h1, #splash[dir="rtl"] p { font-family: Tahoma, Arial, "Noto Naskh Arabic", sans-serif; }
+      #splash[lang="zh"] h1, #splash[lang="zh"] p { font-family: Arial, "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
       canvas { image-rendering: pixelated; }
     </style>
   </head>
   <body bgcolor="#0a0806">
     <div id="game"></div>
+    <div id="splash" aria-live="polite">
+      <div class="stars"></div>
+      <h1>The Dawn-Breakers</h1>
+      <p>Shíráz, the eve of 23 May 1844</p>
+      <div class="loading">Loading…</div>
+    </div>
+    <script>
+      // The first screen, before the game's scripts arrive: in the player's language, under a few stars.
+      (function () {
+        var splash = document.getElementById('splash');
+        var words = {
+          fa: ['مطالع‌الانوار', 'شیراز، شب ۲۳ مه ۱۸۴۴', 'در حال بارگذاری…'],
+          zh: ['破晓者', '设拉子，1844年5月22日夜', '正在加载…'],
+        };
+        var locale;
+        try { locale = localStorage.getItem('dawnbreakers.locale'); } catch (e) { locale = null; }
+        var text = locale && words[locale];
+        if (text) {
+          splash.setAttribute('lang', locale);
+          if (locale === 'fa') splash.setAttribute('dir', 'rtl');
+          splash.querySelector('h1').textContent = text[0];
+          splash.querySelector('p').textContent = text[1];
+          splash.querySelector('.loading').textContent = text[2];
+        }
+        var stars = splash.querySelector('.stars');
+        for (var i = 0; i < 90; i++) {
+          var star = document.createElement('i');
+          star.style.left = (Math.random() * 100) + '%';
+          star.style.top = (Math.random() * 68) + '%';
+          star.style.opacity = String(0.3 + Math.random() * 0.7);
+          star.style.animationDelay = (Math.random() * 3) + 's';
+          stars.appendChild(star);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
