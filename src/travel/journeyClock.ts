@@ -69,8 +69,8 @@ export class JourneyClock {
   }
 
   /**
-   * 0 when the sky is still or at real time, 1 when it whirls: drives the
-   * trails and the dimming of faint stars as in the cinematic sky.
+   * 0 when the sky is still or at real time, 1 when it whirls: drives
+   * the comet tails.
    */
   get motion(): number {
     const speed = Math.abs(this.speed);

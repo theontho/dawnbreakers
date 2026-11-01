@@ -43,9 +43,9 @@ export interface SkyFrame {
 
 /** The sun's disc, a warm white. */
 export const SUN_COLOR = 0xfff6dc;
-const TAIL_MAGNITUDE = 4.2;
+const TAIL_MAGNITUDE = 4.8;
 const MAX_TAIL_SWEEP = 1.6;
-const EXPOSURE_MAGNITUDE = 4.6;
+const EXPOSURE_MAGNITUDE = 5.2;
 
 /**
  * Paints the night sky behind the land: a gradient lit by the sun and moon,
@@ -140,7 +140,7 @@ export class SkyPainter {
 
   private paintStars(frame: SkyFrame): void {
     const { field, light } = frame;
-    const limit = starLimit(light, frame.motion);
+    const limit = starLimit(light);
     const twinkle = 1 - frame.motion;
     const p = this.point;
     for (let i = 0; i < field.count; i += 1) {
@@ -169,7 +169,7 @@ export class SkyPainter {
     const sweep = clamp((frame.skyMs - frame.tailStartMs) * SIDEREAL_RADIANS_PER_MS, -MAX_TAIL_SWEEP, MAX_TAIL_SWEEP);
     if (Math.abs(sweep) * this.camera.pixelsPerRadian < 2) return;
     const segments = clamp(Math.ceil(Math.abs(sweep) / 0.025), 3, 28);
-    const limit = Math.min(TAIL_MAGNITUDE, starLimit(light, frame.motion));
+    const limit = Math.min(TAIL_MAGNITUDE, starLimit(light));
     const from = { x: 0, y: 0 };
     const to = this.point;
     for (let i = 0; i < field.count; i += 1) {
@@ -196,7 +196,7 @@ export class SkyPainter {
   private accumulateExposure(frame: SkyFrame): void {
     const { field } = frame;
     const brush = this.exposureBrush;
-    const limit = Math.min(EXPOSURE_MAGNITUDE, starLimit(frame.light, frame.motion) + 0.6);
+    const limit = Math.min(EXPOSURE_MAGNITUDE, starLimit(frame.light) + 0.6);
     const p = this.point;
     brush.clear();
     let drew = false;

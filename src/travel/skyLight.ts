@@ -94,9 +94,9 @@ function twilightLimit(sunAltitude: number): number {
   return stops[stops.length - 1]!.limit - (sunAltitude - stops[stops.length - 1]!.altitude) * 0.5;
 }
 
-/** Faintest magnitude shown while the sky turns at `motion` (0 still, 1 whirling), as a fast sky leaves only the bright stars. */
-export function starLimit(light: SkyLight, motion: number): number {
-  return light.limitingMagnitude - motion * 0.6;
+/** The faintest star that shows: the same while time runs as when it stands still, so a fast sky keeps all its stars. */
+export function starLimit(light: SkyLight): number {
+  return light.limitingMagnitude;
 }
 
 /** A star's own brightness from 0 to 1, from sixth magnitude up to Sirius; sets its size. */
@@ -142,8 +142,10 @@ export function blendSkyLights(lights: readonly SkyLight[]): SkyLight {
     glowStrength: mean(l => l.glowStrength),
     daylight: mean(l => l.daylight),
     moonlight: mean(l => l.moonlight),
-    starVisibility: mean(l => l.starVisibility),
-    // The stars of the dark hours still mark the frame, fainter the less of it was dark.
-    limitingMagnitude: Math.max(...lights.map(l => l.limitingMagnitude)) - (1 - mean(l => l.starVisibility)) * 2,
+    // The stars keep the dark hours' brightness and number, as frames stacked
+    // from a whole night keep every star they caught, while the sky's colour
+    // blends; they thin only a little the less of the time was dark.
+    starVisibility: Math.max(...lights.map(l => l.starVisibility)),
+    limitingMagnitude: Math.max(...lights.map(l => l.limitingMagnitude)) - (1 - mean(l => l.starVisibility)) * 0.4,
   };
 }
