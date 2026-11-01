@@ -151,6 +151,7 @@ export class MapScene extends Phaser.Scene {
     });
     this.cameras.main.setBackgroundColor(WORLD_BACKDROP_COLOR);
     const world = renderBaseMapWorld(this, this.worldState());
+    this.definition.animate?.(this, { x: this.originX, y: this.originY });
     this.occludableSprites = world.occludableSprites;
     this.conditionalDecor = world.conditionalDecor;
     this.refreshDecor(getFlags());

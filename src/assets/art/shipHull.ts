@@ -6,7 +6,7 @@ import { LADDER, SHIP, sheer, toScreen, type Pt } from './shipHullPlan';
 
 /**
  * The lower layer of the baghla, sorted under everything aboard: the sea
- * around her (shadow, wake, the curl of foam at the waterline), the rudder,
+ * around her (her shadow, the curl of foam at the waterline), the rudder,
  * the curved topsides of teak above a white chunam bottom, the deck of
  * fore-and-aft planks inside its covering board, and the far bulwarks seen
  * from inboard. The near bulwark, which people pass behind, is in
@@ -31,7 +31,7 @@ export function drawHullLayer(ctx: Ctx): void {
 
 const nearRuns = (): number[][] => runs(p => p.near);
 
-/** The hull's shadow on the water, the wake astern, and the swell slapping along her. */
+/** The hull's shadow on the water. The wake and the bow wave move, so they are drawn live (`shipWake.ts`). */
 function seaAround(ctx: Ctx): void {
   const water = Array.from({ length: RING_LEN }, (_, i) => hullAt(i, -D));
   ctx.save();
@@ -42,21 +42,6 @@ function seaAround(ctx: Ctx): void {
   ctx.closePath();
   ctx.fill();
   ctx.restore();
-  // The wake: pale streaks fanning out astern.
-  const rand = rng(31);
-  for (let k = 0; k < 14; k++) {
-    const side = k % 2 ? 1 : -1;
-    const spread = 0.4 + rand() * 2.6;
-    const from = toScreen(SHIP.sternWater - 0.3, SHIP.axis + side * spread * 0.4, -D);
-    const to = toScreen(SHIP.sternWater - 2.6 - rand() * 2, SHIP.axis + side * spread, -D);
-    ctx.strokeStyle = `rgba(200,215,225,${0.12 + rand() * 0.14})`;
-    ctx.lineWidth = 0.8 + rand() * 1.4;
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.quadraticCurveTo((from.x + to.x) / 2 + (rand() - 0.5) * 10, (from.y + to.y) / 2, to.x, to.y);
-    ctx.stroke();
-  }
-  bowWave(ctx);
 }
 
 /** The great rudder hung on the sternpost, its head and tiller above the transom. */
@@ -187,32 +172,6 @@ function foam(ctx: Ctx, run: readonly number[]): void {
   polyline(ctx, wavy(-D - 1, 1.2), 'rgba(225,235,240,0.7)', 2.6);
   polyline(ctx, wavy(-D - 5, 1.8).map(p => ({ x: p.x - 3, y: p.y + 2 })), 'rgba(210,225,235,0.35)', 1.6);
   polyline(ctx, wavy(-D - 10, 2.4).map(p => ({ x: p.x - 6, y: p.y + 4 })), 'rgba(210,225,235,0.16)', 1.2);
-}
-
-/**
- * White water piling under the forefoot and peeling away down the near side.
- * The far side's wave is hidden by the hull: streaks drawn there would only
- * show as pale sticks rising from behind the bow, like a loose rope's end.
- */
-function bowWave(ctx: Ctx): void {
-  const fore = toScreen(SHIP.stemWater, SHIP.axis, -D);
-  const rand = rng(77);
-  for (let k = 0; k < 6; k++) {
-    const back = 2.5 + rand() * 3.5;
-    const out = 1.4 + rand() * 2.2;
-    const end = toScreen(SHIP.stemWater - back, SHIP.axis + out + 1.6, -D);
-    const mid = toScreen(SHIP.stemWater - back * 0.4, SHIP.axis + 1.4, -D);
-    ctx.strokeStyle = `rgba(225,235,240,${0.18 + rand() * 0.25})`;
-    ctx.lineWidth = 1 + rand() * 2;
-    ctx.beginPath();
-    ctx.moveTo(fore.x + 2, fore.y);
-    ctx.quadraticCurveTo(mid.x, mid.y + 2, end.x, end.y);
-    ctx.stroke();
-  }
-  ctx.fillStyle = 'rgba(230,238,242,0.6)';
-  ctx.beginPath();
-  ctx.ellipse(fore.x + 3, fore.y + 1, 9, 3.2, 0, 0, Math.PI * 2);
-  ctx.fill();
 }
 
 /** The deck inside the bulwarks: fore-and-aft planks, a covering board following the curve, a wet sheen. */

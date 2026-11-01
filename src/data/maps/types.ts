@@ -1,3 +1,4 @@
+import type Phaser from 'phaser';
 import type { FlagState } from '../../dialogue/types';
 import type { MusicMood, SoundLayer } from '../../audio';
 import type { Building, Decor, MapExit, TileKind } from '../../scenes/baseMapTypes';
@@ -46,6 +47,11 @@ export interface MapDefinition {
   interior?: boolean;
   /** How the map's water moves; rivers otherwise run along their length on their own. */
   water?: WaterSpec;
+  /**
+   * Scenery that moves, drawn live in the scene (a ship's wake): called once
+   * the world is built, with the world position of grid cell (0, 0)'s centre.
+   */
+  animate?: (scene: Phaser.Scene, origin: { x: number; y: number }) => void;
 }
 
 export interface WaterSpec {

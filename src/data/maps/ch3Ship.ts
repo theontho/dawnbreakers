@@ -1,4 +1,5 @@
 import { isDeckCell, LADDER_SPRITE, LADDER_X, SHIP_SPRITES } from '../../assets/art/shipHullPlan';
+import { animateShipWake } from '../../assets/art/shipWake';
 import type { FlagState } from '../../dialogue/types';
 import type { DecorSpec, MapDefinition } from './types';
 
@@ -49,6 +50,8 @@ export const ch3ShipMap: MapDefinition = {
   spawn: { x: 13, y: 8 },
   // Open sea out to the horizon, streaming past from the bow (east) to the stern.
   water: { openSea: true, flow: [-0.9, 0.05], roll: true },
+  // The wake streaming astern and the bow wave, moving with her way.
+  animate: animateShipWake,
   build: ({ width, height, paintRect, block }) => {
     paintRect(0, 0, width, height, 'water');
     for (let y = 0; y < height; y++) {
