@@ -108,6 +108,7 @@ export function safeAreaInsets(): SafeAreaInsets {
   const rootStyle = getComputedStyle(document.documentElement);
   return {
     ...insets,
+    top: insets.top + cssPx(rootStyle.getPropertyValue('--game-extra-safe-area-top')),
     bottom: insets.bottom + cssPx(rootStyle.getPropertyValue('--game-extra-safe-area-bottom')),
   };
 }

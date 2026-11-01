@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { followSunrise, loadTitleMusic, startTitleMusic, type TitleMusic } from './titleMusic';
+import { chapters as storyChapters } from '../data/chapters';
 import { loadBookmark, resetStory } from '../dialogue/progress';
 import { localizedStyle, t } from '../i18n';
 import { logGameEvent } from '../logging/gameLogger';
@@ -98,7 +99,8 @@ export class TitleScene extends Phaser.Scene {
       if (bookmark && this.scene.get(bookmark.scene)) {
         this.scene.start(bookmark.scene, { spawnX: bookmark.x, spawnY: bookmark.y });
       } else {
-        this.scene.start('City');
+        // A new story begins with the first chapter in the book's order.
+        this.scene.start(storyChapters[0]!.startScene);
       }
     };
 

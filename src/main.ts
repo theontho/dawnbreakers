@@ -97,6 +97,9 @@ document.addEventListener('visibilitychange', () => {
 });
 scheduleViewportSync([50, 150, 300, 500, 800, 1200]);
 
+/** How far past the reported top inset the status bar's blur reaches, as a share of that inset. */
+const STATUS_BAR_BLUR_REACH = 0.45;
+
 function syncGameViewportHeight(element: HTMLElement | null): void {
   if (!element) return;
 
@@ -113,6 +116,11 @@ function syncGameViewportHeight(element: HTMLElement | null): void {
     }
   }
 
+  // Added to the home screen, iOS draws the page under a translucent status
+  // bar and blurs a band a little deeper than the safe area it reports; keep
+  // the first line of the interface clear of that band.
+  const extraTopInset = isStandaloneDisplay() && insets.top > 0 ? Math.round(insets.top * STATUS_BAR_BLUR_REACH) : 0;
+  document.documentElement.style.setProperty('--game-extra-safe-area-top', `${extraTopInset}px`);
   document.documentElement.style.setProperty('--game-viewport-height', `${Math.ceil(height)}px`);
   document.documentElement.style.setProperty('--game-extra-safe-area-bottom', `${Math.ceil(extraBottomInset)}px`);
 }
