@@ -41,6 +41,7 @@ Do not perform actions that could cause irreversible data loss.
 
 - No MEGAFILES.  If you start making sections in the code, or the code is longer than 500loc, then you can probably refactor and split them.
 - Interaction points must be visible: smoke fails anything more than 60% hidden behind trees, walls or buildings. Place people, story objects and doors on the camera side of tall things.
+- Interaction points must be tappable: each is a tap zone at least 44 points across on a phone, and smoke fails two zones that overlap. Keep people, story objects and doors two cells apart across the screen or four down it (see `docs/content-guide.md`).
 - NO BACKWARDS COMPATABILITY, LEGACY ALIASES, ETC. The project is greenfield and we are developing on our own so there is no other people to break for anything. So instead of leaving legacy aliases, backwards compilability, and so on, actually migrate all the code to the new system when we make them.
     - This is a game, not a library, engine or something other people rely on as code to import into their own projects so we don't have to worry about other consumers as much.
 - Doors and gates in walls are wall pieces (`wallRun(..., { doors })`); the seam check fails a map that pastes a block into a wall.

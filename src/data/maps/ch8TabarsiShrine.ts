@@ -81,7 +81,7 @@ export const ch8TabarsiShrineMap: MapDefinition = {
     // The keeper, through every season.
     ...([['ch8-keeper-autumn', building], ['ch8-keeper-winter', winter], ['ch8-keeper-hunger', hunger]] as const)
       .map(([dialogue, present]) => ({
-        gridX: 5, gridY: 6, texture: 'ch8-shrine-keeper',
+        gridX: 6, gridY: 6, texture: 'ch8-shrine-keeper',
         prompt: 'Speak with the Keeper of the Shrine  [E]',
         dialogue, present,
       })),

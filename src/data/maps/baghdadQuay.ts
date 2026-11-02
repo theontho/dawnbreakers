@@ -97,7 +97,7 @@ export const baghdadQuayMap: MapDefinition = {
     // The morning of the tribunal.
     { gridX: 18, gridY: 20, texture: 'bg-boatman', prompt: 'Speak with your Father  [E]', dialogue: 'bg-father', present: bgMorning },
     { gridX: 13, gridY: 18, texture: 'bg-bookseller', prompt: 'Speak with the Bookseller  [E]', dialogue: 'bg-bookseller', present: bgMorning },
-    { gridX: 4, gridY: 17, texture: 'bg-shirazi-merchant', prompt: 'Speak with the Merchant of Shíráz  [E]', dialogue: 'bg-merchant', present: bgMorning },
+    { gridX: 5, gridY: 17, texture: 'bg-shirazi-merchant', prompt: 'Speak with the Merchant of Shíráz  [E]', dialogue: 'bg-merchant', present: bgMorning },
     { gridX: 2, gridY: 16, texture: 'bg-coffee-keeper', prompt: 'Speak with the Coffee-Seller  [E]', dialogue: 'bg-coffee', present: bgMorning },
 
     // The evening after.

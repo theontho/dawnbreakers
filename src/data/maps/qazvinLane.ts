@@ -135,7 +135,7 @@ export const qazvinLaneMap: MapDefinition = {
       prompt: 'Speak with the Veiled Woman  [E]',
       dialogue: 'qz-flight',
       present: ready },
-    { gridX: 8, gridY: 32, texture: 'qazvin-khatun-jan',
+    { gridX: 9, gridY: 32, texture: 'qazvin-khatun-jan',
       prompt: 'Speak with Khátún-Ján  [E]',
       dialogue: 'qz-khatun-jan-after',
       present: ready },

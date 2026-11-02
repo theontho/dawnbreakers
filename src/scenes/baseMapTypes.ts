@@ -60,6 +60,10 @@ export interface Interactable {
   texture?: string;
   action: () => void;
   sprite?: Phaser.GameObjects.Image;
+  /** What the player sees of it, in world pixels: its sprite, or the doorway. Taps reach it here (`tapZones.ts`). */
+  area: Phaser.Geom.Rectangle;
+  /** When provided, it is only on the map while this returns true. */
+  present?: (flags: ExitFlags) => boolean;
 }
 
 /** Story flags, as read by exit and NPC conditions. */

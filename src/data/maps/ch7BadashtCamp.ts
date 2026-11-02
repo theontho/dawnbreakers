@@ -172,7 +172,7 @@ export const ch7BadashtCampMap: MapDefinition = {
       prompt: 'Speak with Ṭáhirih  [E]',
       dialogue: 'ch7-unveiling',
       present: f => !!f.ch7WitnessedUnveiling },
-    { gridX: 31, gridY: 9, texture: 'ch7-npc-messenger',
+    { gridX: 32, gridY: 9, texture: 'ch7-npc-messenger',
       prompt: 'Speak with the Messenger at the Tent  [E]',
       dialogue: 'ch7-bahaullah-reconcile',
       gate: { when: f => !!f.ch7HeardTahirih && !!f.ch7QuddusAfter, lockedDialogue: 'ch7-messenger-wait' },

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PHONE_ZOOM } from './tapZones';
 
 /**
  * The map's two cameras. The main camera follows the player and zooms (mouse
@@ -90,7 +91,7 @@ export function setupMapCameras(scene: Phaser.Scene): MapCameras {
 
 /** Maps start a little zoomed out on roomy screens, so a square fits. */
 function defaultZoom(scene: Phaser.Scene): number {
-  return Math.min(scene.scale.width, scene.scale.height * 1.6) >= 1100 ? 0.85 : 0.7;
+  return Math.min(scene.scale.width, scene.scale.height * 1.6) >= 1100 ? 0.85 : PHONE_ZOOM;
 }
 
 function readZoom(): number | undefined {

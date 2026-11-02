@@ -187,7 +187,7 @@ export const ch10TehranStreetMap: MapDefinition = {
     { gridX: 9, gridY: 19, texture: 'ch10-water-seller',
       prompt: 'Speak with the Water-Seller  [E]',
       dialogue: 'ch10-water-seller' },
-    { gridX: 27, gridY: 21, texture: 'crowd-shadow',
+    { gridX: 28, gridY: 21, texture: 'crowd-shadow',
       prompt: 'Listen to the whispering crowd  [E]',
       dialogue: 'ch10-whispers',
       present: f => !f.ch10Released },

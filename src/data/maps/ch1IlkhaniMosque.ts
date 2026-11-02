@@ -62,7 +62,7 @@ export const ch1IlkhaniMosqueMap: MapDefinition = {
     { gridX: 2, gridY: 9, texture: 'ch1-sleeping-nephew',
       prompt: 'Look at the sleeping traveller  [E]',
       dialogue: 'ch1-ilkhani-nephew' },
-    { gridX: 3, gridY: 10, texture: 'ch1-brother',
+    { gridX: 4, gridY: 9, texture: 'ch1-brother',
       prompt: 'Speak with Mullá Ḥusayn\'s Brother  [E]',
       dialogue: 'ch1-brother' },
     { gridX: 11, gridY: 2, texture: 'ch1-ilkhani-attendant',

@@ -28,11 +28,10 @@
  *   edge (a non-blocking building such as a city gate or a mosque portal, or
  *   a gap of up to five cells in a row of buildings such as a colonnade) is
  *   marked by that gateway, which stands in view, and is not measured.
- * - Presence: the flags every `present` gate (people and props) reads are
- *   found by calling the gates with a recording proxy; every combination of
- *   up to 10 such flags is evaluated and each distinct set of who-and-what
- *   is present is measured once. Combinations the story never reaches are
- *   measured too, so the worst case reported names the flags it needs.
+ * - Presence: each distinct set of who-and-what is present (`presence.mjs`,
+ *   which must be installed on the page first) is measured once, including
+ *   combinations the story never reaches, so the worst case reported names
+ *   the flags it needs.
  */
 
 /** Runs in the page. Returns per-interactable worst coverage over all presence sets. */
@@ -128,34 +127,8 @@ export function measureOcclusion(key) {
     return { spec, sprite };
   });
 
-  // --- presence sets ---
-  const gates = [...new Set(conditional.values())];
-  const readFlags = (base) => {
-    const read = new Set();
-    const proxy = new Proxy(base, { get: (t, k) => { if (typeof k === 'string') read.add(k); return t[k]; } });
-    for (const gate of gates) { try { gate(proxy); } catch { /* a gate that needs real flags */ } }
-    return read;
-  };
-  const flags = [...readFlags({})];
-  for (let i = 0; i < flags.length && flags.length <= 12; i++) {
-    for (const k of readFlags({ [flags[i]]: true })) if (!flags.includes(k)) flags.push(k);
-  }
-  const combos = [];
-  if (flags.length <= 10) {
-    for (let m = 0; m < 1 << flags.length; m++) combos.push(flags.filter((_, b) => m & (1 << b)));
-  } else {
-    // Too many to enumerate: no flags, each one alone, and each prefix of them.
-    combos.push([]);
-    flags.forEach((f, i) => { combos.push([f]); combos.push(flags.slice(0, i + 1)); });
-  }
-  const phases = new Map();
-  for (const on of combos) {
-    const state = Object.fromEntries(on.map((f) => [f, true]));
-    const here = new Set();
-    for (const [sprite, gate] of conditional) { try { if (gate(state)) here.add(sprite); } catch { /* skip */ } }
-    const sig = [...conditional.keys()].map((s) => (here.has(s) ? 1 : 0)).join('');
-    if (!phases.has(sig) || phases.get(sig).on.length > on.length) phases.set(sig, { on, here });
-  }
+  // --- presence sets (`presence.mjs`, installed on the page) ---
+  const { flags, phases } = window.__presencePhases(conditional);
 
   // --- sample points per interactable ---
   const spriteSamples = (o) => {
@@ -261,7 +234,7 @@ export function measureOcclusion(key) {
 
   const results = new Map();
   const exitResults = new Map();
-  for (const { on, here } of phases.values()) {
+  for (const { on, here } of phases) {
     const visible = (o) => (conditional.has(o) ? here.has(o) : o.visible);
     const onGround = worldSprites.filter((o) => visible(o));
     for (const [id, group] of exitGroups) {
@@ -311,7 +284,7 @@ export function measureOcclusion(key) {
       }
     }
   }
-  return { phases: phases.size, flags, results: [...results.values()], exits: [...exitResults.values()] };
+  return { phases: phases.length, flags, results: [...results.values()], exits: [...exitResults.values()] };
 }
 
 export const HIDDEN = 0.6;

@@ -46,6 +46,7 @@ import { createMapKeys, pollMapKeys, type MapKeys } from './mapKeys';
 import { createObjectiveHud, type ObjectiveHud } from './mapObjectiveHud';
 import { findPath, screenToGrid, type GridPoint } from './mapPathing';
 import { streetFronts } from './streetFronts';
+import { PHONE_ZOOM, tapTarget, tapZone } from './tapZones';
 import type { DoorSpec, MapDefinition, NpcSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
 
@@ -313,7 +314,16 @@ export class MapScene extends Phaser.Scene {
     if (over.length > 0) return; // a HUD button took it
     const at = this.mapCameras.worldPoint(pointer);
     const target = screenToGrid(this.originX, this.originY, at.x, at.y);
-    const npc = this.npcs.interactables.find(i => i.gridX === target.x && i.gridY === target.y);
+    // A person, story object or door takes the tap anywhere in its zone, a fingertip across at least.
+    const npc = tapTarget(this.npcs.interactables, at.x, at.y, this.cameras.main.zoom);
+    if (npc) {
+      const path = findPath(this.blocked, this.playerGrid, { x: npc.gridX, y: npc.gridY });
+      if (!path) return;
+      this.walkPath = path;
+      this.walkTarget = npc;
+      if (path.length === 0) npc.action();
+      return;
+    }
     // Clicking an open exit's glowing cell, or just beyond it, goes through.
     const exit = this.exits.find(e => exitIsOpen(e) &&
       ((e.fromX === target.x && e.fromY === target.y) || (e.fromX + e.dx === target.x && e.fromY + e.dy === target.y)));
@@ -322,8 +332,7 @@ export class MapScene extends Phaser.Scene {
     if (!path) return;
     if (exit) path.push({ x: exit.fromX + exit.dx, y: exit.fromY + exit.dy });
     this.walkPath = path;
-    this.walkTarget = npc;
-    if (npc && path.length === 0) this.triggerInteraction();
+    this.walkTarget = undefined;
   }
 
   private setupHUD(width: number, height: number): void {
@@ -427,7 +436,7 @@ export class MapScene extends Phaser.Scene {
         this.time.delayedCall(Math.max(0, this.moveCooldown), () => {
           const dx = Math.abs(target.gridX - this.playerGrid.x);
           const dy = Math.abs(target.gridY - this.playerGrid.y);
-          if (dx + dy === 1) target.action();
+          if (dx + dy <= 1) target.action();
         });
       }
     }
@@ -448,6 +457,12 @@ export class MapScene extends Phaser.Scene {
         spawnY: exit.targetSpawnY,
       });
     });
+  }
+
+  /** For the smoke test's tap-zone check: the zoom phones open at, and an item's zone there. */
+  readonly phoneZoom = PHONE_ZOOM;
+  tapZoneOf(item: Interactable): Phaser.Geom.Rectangle {
+    return tapZone(item.area, PHONE_ZOOM);
   }
 
   private triggerInteraction(): void {

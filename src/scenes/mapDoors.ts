@@ -4,6 +4,7 @@ import type { BuildingSpec, DoorSpec } from '../data/maps/types';
 import type { FlagState } from '../dialogue/types';
 import { makeTextureGraphics } from './graphicsFactory';
 import { TILE_H, type Interactable } from './baseMapTypes';
+import { doorwayArea } from './tapZones';
 
 /**
  * Doors into other maps. Each becomes an interactable on the building cell
@@ -44,6 +45,8 @@ export function placeMapDoors(
       gridY: spec.gridY,
       prompt: spec.prompt,
       texture: MARK,
+      // The doorway up to its mark.
+      area: doorwayArea(pos.sx, pos.sy + TILE_H / 2, MARK_LIFT + 16),
       action: () => (isOpen(spec) ? onEnter(spec) : onLocked()),
     };
     return { spec, mark, interactable };

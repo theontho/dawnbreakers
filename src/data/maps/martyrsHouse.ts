@@ -77,7 +77,7 @@ export const martyrsHouseMap: MapDefinition = {
     { gridX: 11, gridY: 4, texture: 'martyrs-turshizi',
       prompt: 'Look at the mujtahid  [E]',
       dialogue: 'martyrs-turshizi' },
-    { gridX: 12, gridY: 5, texture: 'martyrs-kirmani',
+    { gridX: 13, gridY: 4, texture: 'martyrs-kirmani',
       prompt: 'Look at the merchant of Kirmán  [E]',
       dialogue: 'martyrs-kirmani' },
     { gridX: 10, gridY: 9, texture: 'martyrs-murtada',

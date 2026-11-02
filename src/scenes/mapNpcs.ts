@@ -4,6 +4,7 @@ import type { NpcSpec } from '../data/maps/types';
 import { isPersonTexture } from './personTextures';
 import { makeTextureGraphics } from './graphicsFactory';
 import { TILE_H, type Interactable } from './baseMapTypes';
+import { doorwayArea } from './tapZones';
 
 /**
  * NPC and story-object placement for a map. Each spec becomes an
@@ -47,6 +48,8 @@ const GHOST_DEPTH = 9000;
 export interface MapNpcs {
   /** Interactables currently on the map (absent NPCs are excluded). */
   readonly interactables: Interactable[];
+  /** Everyone and everything that can ever be on the map, present or not, with the doors. */
+  readonly everyone: readonly Interactable[];
   /** Re-check presence and speech marks against the latest flags. */
   refresh(flags: FlagState): void;
 }
@@ -111,6 +114,8 @@ export function placeMapNpcs(
         texture: spec.texture,
         prompt: spec.prompt,
         sprite,
+        area: sprite ? sprite.getBounds() : doorwayArea(markX, markFoot, SCENERY_MARK_LIFT),
+        present: spec.present,
         action: () => onInteract(spec),
       },
     };
@@ -118,6 +123,7 @@ export function placeMapNpcs(
 
   const handle: MapNpcs = {
     interactables: [],
+    everyone: [...placed.map(npc => npc.interactable), ...extras],
     refresh: (latest) => {
       handle.interactables.length = 0;
       // Several specs may share a cell (someone who leaves, someone who arrives):

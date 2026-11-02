@@ -126,6 +126,14 @@ long-exposure star trails, and the facing.
   road half under a wall, a person whose feet are behind a crate); an exit
   fails only when fewer than half of its cells can be seen. Doors painted
   on a building's face are measured as a doorway on that face.
+- **Room to tap.** On a phone every person, story object and door is a
+  tap target at least 44 points across (`src/scenes/tapZones.ts`), and
+  smoke fails a map where two of them overlap at the zoom phones open at,
+  in any set of who is present. People need two cells between them across
+  the screen (`|dx - dy| >= 2`) or four down it (`|dx + dy| >= 4`): two
+  cells east, or two south-west of each other, is enough; one step
+  apart, or diagonally below, is not. Phases of one person on the same cell
+  count as one target. Exits are not tap targets.
 - `exits`: stepping off the map edge from `fromX/fromY` in direction
   `dx/dy`. Optional `requires: f => ...` and `lockedLabel` keep an exit shut
   until the story allows. Pair every exit with a matching return exit on the

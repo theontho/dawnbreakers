@@ -126,7 +126,7 @@ export const ch10ExileRoadMap: MapDefinition = {
     { gridX: 17, gridY: 17, texture: 'ch10-muleteer',
       prompt: 'Speak with the Muleteer  [E]',
       dialogue: 'ch10-muleteer' },
-    { gridX: 30, gridY: 21, texture: 'ch10-waiting-sister',
+    { gridX: 29, gridY: 21, texture: 'ch10-waiting-sister',
       prompt: 'Speak with Zahrá  [E]',
       dialogue: 'ch10-sister-road' },
     { gridX: 31, gridY: 21, texture: 'ch10-young-prisoner',

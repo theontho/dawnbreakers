@@ -19,6 +19,8 @@ import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { openGame, root, waitForBoot } from './lib/gameBrowser.mjs';
 import { measureOcclusion, occlusionReport } from './lib/occlusion.mjs';
+import { installPresence } from './lib/presence.mjs';
+import { measureTapZones, tapZoneReport } from './lib/tapZones.mjs';
 
 const args = process.argv.slice(2);
 const argValue = (name) => {
@@ -182,8 +184,11 @@ try {
     const tight = reach.filter((r) => r.sides === 1 && !r.doorway);
 
     // Occlusion, in every distinct set of who is present, before dialogues move the flags.
+    await page.evaluate(installPresence);
     const occlusion = occlusionReport(await page.evaluate(measureOcclusion, key));
     errors.push(...occlusion.errors);
+    // Tap zones: a fingertip's target for each person, object and door, none overlapping.
+    errors.push(...tapZoneReport(await page.evaluate(measureTapZones, key)));
 
     // Open each NPC's dialogue and walk the first choice path to its end.
     const { talked, unfinished } = await page.evaluate(walkDialogues, key);

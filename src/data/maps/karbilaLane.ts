@@ -24,7 +24,7 @@ const HOUSE = { gridX: 8, gridY: 0, w: 8, h: 7 } as const;
 export const HOUSE_DOOR = { x: HOUSE.gridX + 5, y: HOUSE.gridY + HOUSE.h - 1 } as const;
 const LANE_X = [11, 12] as const;
 
-const AQA_JAN = [12, 7] as const;
+const AQA_JAN = [12, 8] as const;
 const NEIGHBOUR = [9, 12] as const;
 const ULUVI = [11, 17] as const;
 const ULUVI_WINTER = [10, 9] as const;

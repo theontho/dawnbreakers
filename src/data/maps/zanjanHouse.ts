@@ -90,7 +90,7 @@ export const zanjanHouseMap: MapDefinition = {
       dialogue: 'zj-hujjat-last',
       gate: { when: f => !!f.zjSawBrokenRoom, lockedDialogue: 'zj-hujjat-resting' },
       present: zjEnd },
-    { gridX: 4, gridY: 5, texture: 'zanjan-umm-ashraf',
+    { gridX: 5, gridY: 5, texture: 'zanjan-umm-ashraf',
       prompt: 'Speak with Umm-i-Ashraf  [E]',
       dialogue: 'zj-umm-ashraf-end',
       present: zjEnd },

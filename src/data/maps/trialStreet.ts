@@ -109,7 +109,7 @@ export const trialStreetMap: MapDefinition = {
     { gridX: 33, gridY: 14, texture: 'trial-azim',
       prompt: 'Speak with ʿAẓím  [E]',
       dialogue: 'trial-azim' },
-    { gridX: 22, gridY: 9, texture: 'trial-gate-farrash',
+    { gridX: 22, gridY: 10, texture: 'trial-gate-farrash',
       prompt: 'Speak with the Gate Guard  [E]',
       dialogue: 'trial-gate-farrash',
       gate: { when: f => streetWitnessCount(f) >= 2, lockedDialogue: 'trial-gate-farrash-locked' } },

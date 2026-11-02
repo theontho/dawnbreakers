@@ -89,7 +89,7 @@ const npcs: NpcSpec[] = [
   { ...DOOR_CELL, prompt: 'Look at the door of the house of Mírzá Buzurg  [E]',
     dialogue: 'nur-house-door-after',
     present: has('nurTutorCameOut') },
-  { gridX: 16, gridY: 7, texture: 'nur-musa',
+  { gridX: 16, gridY: 8, texture: 'nur-musa',
     prompt: 'Speak with the Man at the Door  [E]',
     dialogue: 'nur-musa',
     present: tutorAtDawn },

@@ -225,7 +225,7 @@ export const ch4ShirazReturnMap: MapDefinition = {
       prompt: 'Read the governor\'s decree  [E]',
       dialogue: 'ch4-decree' },
     // The uncle's lane
-    { gridX: 35, gridY: 41, texture: 'ch1-npc-servant',
+    { gridX: 35, gridY: 43, texture: 'ch1-npc-servant',
       prompt: 'Speak with Mubárak  [E]',
       dialogue: 'ch4-mubarak' },
     { gridX: 36, gridY: 42, texture: 'ch4-khal',
