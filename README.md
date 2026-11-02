@@ -45,7 +45,7 @@ All art and sound are generated at runtime: textures are painted with the
 canvas API at boot, and the music is a generative Persian ensemble (santur,
 tār, ney, kamāncheh, daf) synthesized with WebAudio, in modes that keep the
 dastgāhs' quarter tones. The title screen plays a recorded score,
-`public/dawnbreakers.mp3`, and falls back to the synthesized dawn theme if it
+`public/dawnbreakers.m4a` (AAC, 96 kbps), and falls back to the synthesized dawn theme if it
 cannot load.
 
 Writing chapters, maps, or dialogue? Read [`docs/content-guide.md`](docs/content-guide.md)

@@ -4,11 +4,11 @@ import { logGameMessage } from '../logging/gameLogger';
 import type { SunriseClock } from './titleSunriseClock';
 
 /**
- * The title screen's music: the recorded score `dawnbreakers.mp3`, or the
+ * The title screen's music: the recorded score `dawnbreakers.m4a`, or the
  * synthesized ensemble's dawn theme if the recording cannot be loaded.
  */
 
-const MUSIC_PATH = 'dawnbreakers.mp3';
+const MUSIC_PATH = 'dawnbreakers.m4a';
 const VOLUME = 0.45;
 
 /**

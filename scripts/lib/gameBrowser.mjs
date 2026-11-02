@@ -11,7 +11,7 @@
 import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright-core';
+import { chromium, webkit } from 'playwright-core';
 import { createServer, preview } from 'vite';
 
 export const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
@@ -36,17 +36,22 @@ function browserPath() {
  * sources, to check what ships (the loading screen's script loader exists
  * only in a build).
  *
- * @param {{ gpu?: boolean, built?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
+ * `webkit: true` runs Safari's engine instead of Chromium, as an iPhone
+ * (touch, mobile viewport), for bugs only Safari shows.
+ *
+ * @param {{ gpu?: boolean, built?: boolean, webkit?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
  */
 export async function openGame(options = {}) {
   const server = options.built
     ? await preview({ root, logLevel: 'error', preview: { port: 0, strictPort: false, open: false } })
     : await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null, open: false } });
   if (!options.built) await server.listen();
-  const browser = await chromium.launch({
-    executablePath: browserPath(),
-    args: [...(options.gpu ? GPU_ARGS : SOFTWARE_ARGS), ...(options.args ?? [])],
-  }).catch(async (error) => {
+  const browser = await (options.webkit
+    ? webkit.launch()
+    : chromium.launch({
+      executablePath: browserPath(),
+      args: [...(options.gpu ? GPU_ARGS : SOFTWARE_ARGS), ...(options.args ?? [])],
+    })).catch(async (error) => {
     await server.close().catch(() => {});
     if (/Executable doesn't exist/.test(error.message)) {
       throw new Error(`${error.message}\nInstall Playwright's headless Chromium with: npx playwright-core install chromium-headless-shell`);
@@ -68,6 +73,7 @@ export async function openGame(options = {}) {
   const page = await browser.newPage({
     viewport: options.viewport ?? { width: 1280, height: 800 },
     deviceScaleFactor: options.deviceScaleFactor ?? 1,
+    ...(options.webkit ? { isMobile: true, hasTouch: true } : {}),
   });
   return { page, url: server.resolvedUrls.local[0], close };
 }
