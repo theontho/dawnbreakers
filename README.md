@@ -45,8 +45,9 @@ All art and sound are generated at runtime: textures are painted with the
 canvas API at boot, and the music is a generative Persian ensemble (santur,
 tār, ney, kamāncheh, daf) synthesized with WebAudio, in modes that keep the
 dastgāhs' quarter tones. The title screen plays a recorded score,
-`public/dawnbreakers.m4a` (AAC, 96 kbps), and falls back to the synthesized dawn theme if it
-cannot load.
+`public/dawnbreakers.m4a` (AAC, 96 kbps), "Dawnbreakers" by macattacka, made with
+[Suno](https://suno.com) and used non-commercially under its free plan; it falls
+back to the synthesized dawn theme if it cannot load.
 
 Writing chapters, maps, or dialogue? Read [`docs/content-guide.md`](docs/content-guide.md)
 first. To bring the translations up to date after changing English text:
@@ -197,9 +198,9 @@ narrative. Treat it as a starting point and refine with primary sources.
 The game's own code, art, music, writing and translations are licensed under
 either of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
 [LICENSE](LICENSE) is the full account: it lists the parts under other terms
-(the recorded title music, a few quoted scripture translations, the Hipparcos
-star data, Natural Earth geography and the bundled Phaser), and each build
-writes the bundled packages' notices to `LICENSE.txt` beside `index.html`.
+(the recorded title music, which is non-commercial only, a few quoted scripture
+translations, the Hipparcos star data, Natural Earth geography and the bundled
+Phaser), and each build writes the bundled packages' notices to `LICENSE.txt` beside `index.html`.
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in this work by you, as defined in the Apache-2.0 license, shall be
