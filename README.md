@@ -194,13 +194,12 @@ narrative. Treat it as a starting point and refine with primary sources.
 
 ## License
 
-Licensed under either of
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
-  <https://www.apache.org/licenses/LICENSE-2.0>)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/licenses/MIT>)
-
-at your option.
+The game's own code, art, music, writing and translations are licensed under
+either of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
+[LICENSE](LICENSE) is the full account: it lists the parts under other terms
+(the recorded title music, a few quoted scripture translations, the Hipparcos
+star data, Natural Earth geography and the bundled Phaser), and each build
+writes the bundled packages' notices to `LICENSE.txt` beside `index.html`.
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in this work by you, as defined in the Apache-2.0 license, shall be

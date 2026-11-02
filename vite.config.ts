@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
+import { licenseNotices } from './scripts/vite/licenseNotices';
 import { splashLoader } from './scripts/vite/splashLoader';
 
 /**
@@ -19,7 +20,7 @@ function patchesHash(): string {
 
 export default defineConfig({
   base: './',
-  plugins: [splashLoader()],
+  plugins: [splashLoader(), licenseNotices(fileURLToPath(new URL('.', import.meta.url)))],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

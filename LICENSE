@@ -1,0 +1,111 @@
+Dawnbreakers
+Copyright (c) 2026 theontho
+
+This file says what license covers each part of this repository and of the
+game built from it. Most of it is the project's own work, offered under your
+choice of two licenses. A few parts come from elsewhere, or are quoted, and
+keep their own terms; they are listed in part 2 and are NOT relicensed here.
+
+
+1. The project's own work: MIT OR Apache-2.0
+---------------------------------------------
+
+Except where part 2 says otherwise, everything in this repository is
+licensed under either of
+
+  * the Apache License, Version 2.0 (LICENSE-APACHE, or
+    https://www.apache.org/licenses/LICENSE-2.0), or
+  * the MIT license (LICENSE-MIT, or https://opensource.org/licenses/MIT)
+
+at your option. SPDX-License-Identifier: MIT OR Apache-2.0
+
+This covers the source code (TypeScript, C++, Objective-C++, scripts, build
+files), the art drawn by that code, the synthesized music and sound effects,
+the hand-made SVG and PNG icons and images in public/, the story text,
+dialogue and glossary written for the game, their Persian and Chinese
+translations, and the documentation.
+
+Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in this work by you, as defined in the Apache-2.0
+license, shall be dual licensed as above, without any additional terms or
+conditions.
+
+
+2. Material under other terms
+-----------------------------
+
+2.1 Title music: public/dawnbreakers.m4a
+
+    "Dawnbreakers", by macattacka, made with Suno (https://suno.com).
+
+    This recording is NOT covered by the MIT or Apache licenses, and no
+    license to it is granted by this repository. Its use is governed by
+    Suno's Terms of Service for the account that created it. If you
+    redistribute or adapt the game, remove or replace this file unless you
+    have the rights to it. The game falls back to its own synthesized dawn
+    theme (part 1) when the file is absent.
+
+2.2 Quoted scripture and narrative
+
+    The dialogue and story text are original, dramatised paraphrases of
+    Nabil's narrative. A few short passages are quoted word for word from
+    Shoghi Effendi's English translations in "The Dawn-Breakers: Nabil's
+    Narrative of the Early Days of the Baha'i Revelation" (1932), which
+    remain under the copyright of their rights holders and are quoted here
+    for the purpose of telling the history. They are NOT relicensed under
+    part 1. They are:
+
+      * Tahirih's verse "The effulgence of the Abha Beauty hath pierced the
+        veil of night..." (src/data/dialogues_ch/qazvin_karbila.ts)
+      * Vahid's prayer in the words of the Imam Husayn, "Thou knowest, O my
+        Beloved..." (src/data/dialogues_ch/nayriz_end.ts)
+      * the verse of the Qur'an (37:180) rendered "far be the glory of thy
+        Lord, the Lord of all greatness, from what they impute to Him"
+        (src/data/dialogues_ch/trial_court.ts)
+      * the chant of the Siyah-Chal, "God is sufficient unto me; He verily
+        is the All-Sufficing!" and "In Him let the trusting trust."
+        (src/data/dialogues_ch/chapter10_siyah_chal.ts,
+        src/data/dialogues_ch/chapter10_exile_road.ts,
+        src/data/story/chapter10.ts)
+
+    The Persian and Arabic originals of these passages are in the public
+    domain.
+
+2.3 Star catalogue: data/sky/hipparcos.csv, src/data/travelStars.ts
+
+    Derived from the Hipparcos Main Catalogue: ESA, 1997, "The Hipparcos
+    and Tycho Catalogues", ESA SP-1200, as distributed by the CDS,
+    Strasbourg, as catalogue I/239
+    (https://cdsarc.cds.unistra.fr/viz-bin/cat/I/239). This research has
+    made use of the VizieR catalogue access tool, CDS, Strasbourg, France
+    (DOI: 10.26093/cds/vizier). The data are used under the CDS and ESA
+    conditions of use, which ask for this acknowledgement; keep it with
+    any copy.
+
+2.4 Map geography: src/data/glossary/mapData.ts
+
+    Derived from Natural Earth (https://www.naturalearthdata.com), which is
+    in the public domain. Made with Natural Earth.
+
+2.5 Phaser and the libraries bundled into the built game
+
+    The built game includes Phaser 3 (MIT, Copyright (c) 2024 Richard Davey,
+    Phaser Studio Inc.) and eventemitter3 (MIT, Copyright (c) 2014 Arnout
+    Kazemier). Each build writes their full license texts to LICENSE.txt
+    next to index.html, generated from the packages actually bundled.
+
+    patches/phaser+3.90.0.patch changes Phaser's source; the Phaser code in
+    it is under Phaser's MIT license, and the changes are under part 1.
+
+2.6 Native Sky Rewind (native/skyrewind-cpp)
+
+    Its build downloads GLFW 3.4 (zlib/libpng license,
+    https://github.com/glfw/glfw) and Dear ImGui 1.90.9 (MIT,
+    https://github.com/ocornut/imgui). Neither is stored in this repository.
+    A binary of the native app built from them must carry their notices.
+
+2.7 Development tools
+
+    The packages installed only for development (Vite, TypeScript, ESLint,
+    Playwright and the rest of package.json's devDependencies) are not
+    distributed with the game and remain under their own licenses.
