@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
+import { splashLoader } from './scripts/vite/splashLoader';
 
 /**
  * Hash of `patches/` (patch-package). Vite keys its pre-bundled dependency
@@ -18,6 +19,7 @@ function patchesHash(): string {
 
 export default defineConfig({
   base: './',
+  plugins: [splashLoader()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

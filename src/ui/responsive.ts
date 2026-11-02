@@ -185,17 +185,43 @@ function safeAreaProbeElement(): HTMLDivElement {
   return safeAreaProbe;
 }
 
+/** How long the size must hold still before a scene is rebuilt for it. */
+const RESIZE_SETTLE_MS = 180;
+
+/**
+ * Rebuilds `scene` for a new size once resizing has stopped: a window dragged
+ * wider, a phone turned or its toolbars settling send many resizes, and
+ * rebuilding on each one stutters and flickers. Nothing is rebuilt if the
+ * size comes back to the one the scene was laid out for, and a scene paused
+ * or asleep under another is rebuilt when it comes back.
+ */
 export function restartSceneOnResize(
   scene: Phaser.Scene,
   getData?: () => Record<string, unknown>,
 ): void {
+  const builtWidth = scene.scale.width;
+  const builtHeight = scene.scale.height;
+  let timer: number | undefined;
+  const stale = (): boolean => scene.scale.width !== builtWidth || scene.scale.height !== builtHeight;
+  const rebuild = (): void => {
+    if (stale()) scene.scene.restart(getData?.());
+  };
+  const settle = (): void => {
+    timer = undefined;
+    if (scene.scene.isActive(scene.scene.key)) rebuild();
+  };
   const handleResize = (): void => {
-    if (!scene.scene.isActive(scene.scene.key)) return;
-    scene.scene.restart(getData?.());
+    if (timer !== undefined) window.clearTimeout(timer);
+    timer = window.setTimeout(settle, RESIZE_SETTLE_MS);
   };
 
   scene.scale.on(Phaser.Scale.Events.RESIZE, handleResize);
+  scene.events.on(Phaser.Scenes.Events.RESUME, rebuild);
+  scene.events.on(Phaser.Scenes.Events.WAKE, rebuild);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    if (timer !== undefined) window.clearTimeout(timer);
     scene.scale.off(Phaser.Scale.Events.RESIZE, handleResize);
+    scene.events.off(Phaser.Scenes.Events.RESUME, rebuild);
+    scene.events.off(Phaser.Scenes.Events.WAKE, rebuild);
   });
 }

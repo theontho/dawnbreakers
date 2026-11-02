@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
-import { createServer } from 'vite';
+import { createServer, preview } from 'vite';
 
 export const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 
@@ -32,11 +32,17 @@ function browserPath() {
 }
 
 /**
- * @param {{ gpu?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
+ * `built: true` serves the last `vite build` from `dist/` instead of the
+ * sources, to check what ships (the loading screen's script loader exists
+ * only in a build).
+ *
+ * @param {{ gpu?: boolean, built?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
  */
 export async function openGame(options = {}) {
-  const server = await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null, open: false } });
-  await server.listen();
+  const server = options.built
+    ? await preview({ root, logLevel: 'error', preview: { port: 0, strictPort: false, open: false } })
+    : await createServer({ root, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null, open: false } });
+  if (!options.built) await server.listen();
   const browser = await chromium.launch({
     executablePath: browserPath(),
     args: [...(options.gpu ? GPU_ARGS : SOFTWARE_ARGS), ...(options.args ?? [])],

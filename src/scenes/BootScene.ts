@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ensureTileTextures } from '../assets/mapAssetLibrary';
+import { SPLASH_STAGE, splashProgress } from '../ui/splash';
 
 /**
  * Paints the ground tiles, which every map shares. Map objects are painted
@@ -13,6 +14,7 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     ensureTileTextures(this);
+    splashProgress(SPLASH_STAGE.tiles);
     this.scene.start('Title');
   }
 }

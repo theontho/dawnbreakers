@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { followSunrise, loadTitleMusic, startTitleMusic, type TitleMusic } from './titleMusic';
 import { chapters as storyChapters } from '../data/chapters';
-import { hideSplash } from '../ui/splash';
+import { hideSplashWhenSettled } from '../ui/splash';
 import { loadBookmark, resetStory } from '../dialogue/progress';
 import { localizedStyle, t } from '../i18n';
 import { logGameEvent } from '../logging/gameLogger';
@@ -45,8 +45,8 @@ export class TitleScene extends Phaser.Scene {
     this.music = undefined;
     this.musicLeadSeconds = resume?.musicLeadSeconds;
     restartSceneOnResize(this, () => this.resumeData());
-    // The page's own loading screen gives way once the title is on screen.
-    this.game.events.once(Phaser.Core.Events.POST_RENDER, hideSplash);
+    // The page's own loading screen gives way once the title is on screen and the page has settled.
+    hideSplashWhenSettled(this.game);
 
     // On a phone held sideways the canvas's foot runs off the screen, and the
     // menu lives at the foot: lay the title out on what shows.

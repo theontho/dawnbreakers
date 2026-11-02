@@ -75,6 +75,14 @@
       #splash h1 { margin: 0 16px; font-weight: normal; font-size: clamp(34px, 8vw, 68px); color: #f3e2b5; text-shadow: 0 2px 10px #120b05; }
       #splash p { margin: 0 16px; font-style: italic; color: #e2c98f; font-size: clamp(15px, 2.4vw, 22px); }
       #splash .loading { margin-top: 18px; font-size: 14px; color: #9c8458; animation: breathe 1.8s ease-in-out infinite; }
+      #splash .bar {
+        width: min(260px, 64vw); height: 3px; border-radius: 2px; overflow: hidden; background: rgba(226, 201, 143, 0.16);
+      }
+      #splash .bar i {
+        display: block; height: 100%; background: linear-gradient(90deg, #9c7a3c, #f3e2b5); transform-origin: left;
+        transform: scaleX(0.02); transition: transform 0.35s ease-out;
+      }
+      #splash[dir="rtl"] .bar i { transform-origin: right; }
       #splash .stars { position: absolute; inset: 0; z-index: -1; }
       #splash .stars i {
         position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff3c8;
@@ -94,6 +102,7 @@
       <h1>The Dawn-Breakers</h1>
       <p>Shíráz, the eve of 23 May 1844</p>
       <div class="loading">Loading…</div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="2"><i></i></div>
     </div>
     <script>
       // The first screen, before the game's scripts arrive: in the player's language, under a few stars.
@@ -113,6 +122,16 @@
           splash.querySelector('p').textContent = text[1];
           splash.querySelector('.loading').textContent = text[2];
         }
+        // The loading bar only ever moves forward; the loader and the game both report to it.
+        var bar = splash.querySelector('.bar');
+        var fill = bar.querySelector('i');
+        var shown = 0.02;
+        window.splashProgress = function (fraction) {
+          if (!(fraction > shown)) return;
+          shown = Math.min(1, fraction);
+          fill.style.transform = 'scaleX(' + shown + ')';
+          bar.setAttribute('aria-valuenow', String(Math.round(shown * 100)));
+        };
         var stars = splash.querySelector('.stars');
         for (var i = 0; i < 90; i++) {
           var star = document.createElement('i');

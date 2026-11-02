@@ -19,7 +19,9 @@ import { attachConsolePanel } from './ui/consolePanel';
 import { measuredSafeAreaInsets, MIN_GAME_HEIGHT, MIN_GAME_WIDTH } from './ui/responsive';
 import { attachFpsLabel, installDebugOverlayHotkey } from './ui/debugOverlay';
 import { installAudioUnlock, playSfx } from './audio';
+import { SPLASH_STAGE, splashProgress } from './ui/splash';
 
+splashProgress(SPLASH_STAGE.scripts);
 applyLocaleDocument();
 
 const gameElement = document.getElementById('game');
@@ -28,6 +30,7 @@ syncGameViewportHeight(gameElement);
 // Block boot on the active locale's catalog so the first paint isn't english
 // fallback. Other locales lazy-load when the player switches via Settings.
 await loadLocale(activeLocale);
+splashProgress(SPLASH_STAGE.language);
 
 attachConsolePanel();
 installDebugOverlayHotkey();
@@ -60,6 +63,12 @@ const config: Phaser.Types.Core.GameConfig = {
     DialogueScene, MiniGamePickerScene, ...miniGameScenes(), JournalScene, SettingsScene, ChapterEndScene, JourneyScene, MapEditorScene,
   ],
 };
+
+// Before Phaser's own listener, so it measures the page at its new height
+// rather than the last one and the canvas is resized once, not twice.
+const syncViewport = (): void => syncGameViewportHeight(gameElement);
+window.addEventListener('resize', syncViewport);
+window.visualViewport?.addEventListener('resize', syncViewport);
 
 // Find out now, while the loading screen shows, whether the sun can glow in
 // HDR: the GPU takes a moment to set up, and doing it as the title opens stutters.
