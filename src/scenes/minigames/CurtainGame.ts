@@ -47,7 +47,10 @@ export class CurtainGame extends MiniGameScene {
 
   readonly heading = 'At the Curtain\'s Edge';
   protected readonly hint = 'Lean along the curtain toward her voice: move the pointer, or ← and →. Words you are near enough to hear stay with you.';
+  protected readonly touchHint = 'Lean along the curtain toward her voice: drag your finger. Words you are near enough to hear stay with you.';
 
+  /** When the pause after a line ends and the next begins (or the game ends). */
+  private lineStartsAt = Number.POSITIVE_INFINITY;
   private lean = 0.5;
   private leanTarget = 0.5;
   private voice = 0.5;
@@ -69,6 +72,7 @@ export class CurtainGame extends MiniGameScene {
     this.leanTarget = 0.5;
     this.line = 0;
     this.nextWordAt = 1.2;
+    this.lineStartsAt = Number.POSITIVE_INFINITY;
     this.drumsUntil = 0;
     this.nextDrumsAt = 9 + Math.random() * 3;
     this.caughtTotal = 0;
@@ -133,7 +137,18 @@ export class CurtainGame extends MiniGameScene {
     const drums = e < this.drumsUntil;
     this.noiseText.setVisible(drums);
 
-    if (e >= this.nextWordAt) this.speakWord(drums);
+    if (e >= this.lineStartsAt) this.nextLine();
+    else if (e >= this.nextWordAt) this.speakWord(drums);
+  }
+
+  private nextLine(): void {
+    this.lineStartsAt = Number.POSITIVE_INFINITY;
+    if (this.line >= LINES.length) {
+      this.finish({ qzListened: this.caughtTotal >= this.wordTotal * 0.7 ? 'clear' : 'part' });
+      return;
+    }
+    this.startLine();
+    this.nextWordAt = this.elapsed + WORD_SECONDS;
   }
 
   private speakWord(drums: boolean): void {
@@ -146,18 +161,10 @@ export class CurtainGame extends MiniGameScene {
     this.nextWordAt = this.elapsed + WORD_SECONDS;
     if (this.spoken < this.words.length) return;
 
-    this.nextWordAt += LINE_PAUSE;
+    // The next line (or the end) comes after a pause, on the same clock as the words.
     this.line++;
-    if (this.line >= LINES.length) {
-      this.time.delayedCall(LINE_PAUSE * 1000, () => {
-        this.finish({ qzListened: this.caughtTotal >= this.wordTotal * 0.7 ? 'clear' : 'part' });
-      });
-      this.nextWordAt = Number.POSITIVE_INFINITY;
-      return;
-    }
-    this.time.delayedCall(LINE_PAUSE * 1000, () => {
-      if (!this.finished) this.startLine();
-    });
+    this.lineStartsAt = this.elapsed + LINE_PAUSE;
+    this.nextWordAt = Number.POSITIVE_INFINITY;
   }
 
   private joiner(): string {

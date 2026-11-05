@@ -86,6 +86,20 @@ export const barathaRoadMap: MapDefinition = {
       label: '↓ The road south to Karbilá' },
   ],
   ambience: f => (resting(f) ? NOON : DUSK),
+  // The ride home: the student from Khurásán walks the road beside you and talks.
+  companion: { texture: 'forerunners-seeker', present: f => !resting(f) },
+  remarks: [
+    { id: 'smiled', gridX: 12, gridY: 13, radius: 3, requires: f => !resting(f), lines: [
+      { speaker: 'A Student from Khurásán', text: 'He smiled. You saw him. I have never been so frightened in my life, and he smiled as if the shepherd had brought him a letter from home.' },
+    ] },
+    { id: 'ten', gridX: 18, gridY: 14, radius: 2, requires: f => !resting(f), lines: [
+      { speaker: 'A Student from Khurásán', text: 'Ten of us heard the shepherd today, at least. If anyone ever asks what happened at Baráthá, there will be ten to say it.' },
+      { speaker: 'Narrator', text: 'Years later, Nabíl will hear it from no fewer than ten who were there, and write it down.' },
+    ] },
+    { id: 'seek', gridX: 23, gridY: 14, radius: 2, requires: f => !resting(f), lines: [
+      { speaker: 'A Student from Khurásán', text: 'Scatter and seek, he says. As if we would know Him if we met Him on this road. (He looks back at the palms.) Would you?' },
+    ] },
+  ],
 };
 
 /** Noon, the sun white on the pasture; and the evening of the ride home. */

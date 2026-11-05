@@ -1,3 +1,4 @@
+import { ch8CanVisit, ch8DayOpen } from '../record';
 import type { FlagState } from '../../dialogue/types';
 import type { DecorSpec, MapAmbience, MapDefinition } from './types';
 
@@ -79,12 +80,18 @@ export const ch8TabarsiShrineMap: MapDefinition = {
       dialogue: 'ch8-shrine' },
 
     // The keeper, through every season.
-    ...([['ch8-keeper-autumn', building], ['ch8-keeper-winter', winter], ['ch8-keeper-hunger', hunger]] as const)
+    ...([['ch8-keeper-autumn', building], ['ch8-keeper-winter', winter], ['ch8-keeper-hunger', (f: FlagState) => hunger(f) && !ch8DayOpen(f)]] as const)
       .map(([dialogue, present]) => ({
         gridX: 6, gridY: 6, texture: 'ch8-shrine-keeper',
         prompt: 'Speak with the Keeper of the Shrine  [E]',
         dialogue, present,
       })),
+    // The day the rice was shared out: trimming the lamps with him is one of the day's places.
+    { gridX: 6, gridY: 6, texture: 'ch8-shrine-keeper',
+      prompt: 'Trim the lamps with the Keeper  [E]',
+      dialogue: 'ch8-day-shrine',
+      gate: { when: ch8CanVisit('shrine'), lockedDialogue: 'ch8-day-late' },
+      present: ch8DayOpen },
 
     // The old man from Qazvín coughs by the west wall until the spring.
     { gridX: 2, gridY: 5, texture: 'ch8-qazvini-elder',

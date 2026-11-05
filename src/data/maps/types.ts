@@ -1,7 +1,8 @@
 import type Phaser from 'phaser';
-import type { FlagState } from '../../dialogue/types';
+import type { FlagOp, FlagState } from '../../dialogue/types';
 import type { MusicMood, SoundLayer } from '../../audio';
 import type { Building, Decor, MapExit, TileKind } from '../../scenes/baseMapTypes';
+import type { SpokenLine } from '../../ui/remarkCaption';
 
 /**
  * Data-driven map definition consumed by `MapScene`. One file per map under
@@ -39,6 +40,10 @@ export interface MapDefinition {
   doors?: DoorSpec[];
   /** Cells that open only as the story allows (a ladder rigged after a storm). */
   passages?: PassageSpec[];
+  /** Things said as the player walks past places; see `MapRemark`. */
+  remarks?: MapRemark[];
+  /** A companion who walks with the player; see `MapCompanion`. */
+  companion?: MapCompanion;
   /**
    * An indoor map: the cut edge of the slab is drawn as masonry rather than
    * earth. Pair it with interior walls along the back edges and a door or
@@ -52,6 +57,32 @@ export interface MapDefinition {
    * the world is built, with the world position of grid cell (0, 0)'s centre.
    */
   animate?: (scene: Phaser.Scene, origin: { x: number; y: number }) => void;
+}
+
+/**
+ * Something said as the player walks past a place, without stopping them
+ * (`src/scenes/mapRemarks.ts`): a companion's remark on what they pass, or
+ * a word called out on the road. It plays once, the first time the player
+ * comes within `radius` cells of `gridX, gridY` while `requires` holds.
+ * Central figures never speak one (see AGENTS.md).
+ */
+export interface MapRemark {
+  /** Unique on its map; it is remembered as heard under this id. */
+  id: string;
+  gridX: number;
+  gridY: number;
+  /** How near, in cells either way, the player must come. Defaults to 3. */
+  radius?: number;
+  requires?: (flags: FlagState) => boolean;
+  lines: SpokenLine[];
+  /** Applied when the remark is said: what the player learns by hearing it. */
+  effect?: FlagOp;
+}
+
+/** Someone who walks a step behind the player on this map, while `present` holds. */
+export interface MapCompanion {
+  texture: string;
+  present?: (flags: FlagState) => boolean;
 }
 
 export interface WaterSpec {

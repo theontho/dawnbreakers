@@ -21,6 +21,7 @@ const literalFields = new Set([
   'subtitle',
   'text',
   'title',
+  'touchHint',
 ]);
 const nameFields = new Set(['speaker']);
 const allowedUnwrappedText = new Set(['✓', '⌄', '−']);

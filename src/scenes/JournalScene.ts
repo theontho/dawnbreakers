@@ -5,9 +5,11 @@ import { chapterByScene, chapters, type Chapter } from '../data/chapters';
 import type { JournalEntry } from '../data/story/types';
 import { getFlags } from '../dialogue/flags';
 import type { FlagState } from '../dialogue/types';
-import { chapterLabel, localizedStyle, rtl, t, textOriginX } from '../i18n';
+import { chapterLabel, formatNumber, localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { buttonFont, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 import { currentObjectiveText } from './mapObjectiveHud';
+import { claimById, claimsWithKnowledge, heardAccounts, written } from '../data/record';
+import type { RecordLaunch } from './RecordScene';
 
 function entryRevealed(entry: JournalEntry, flags: FlagState): boolean {
   const value = flags[entry.flag];
@@ -107,6 +109,23 @@ export class JournalScene extends Phaser.Scene {
       })).setOrigin(contentOrigin, 0), 18);
     }
 
+    const known = claimsWithKnowledge(flags);
+    if (known.length > 0) {
+      const accounts = known.reduce((n, id) => n + heardAccounts(flags, claimById(id)).length, 0);
+      const writtenCount = known.filter(id => !!written(flags, id)).length;
+      const label = t('Your record: {accounts} accounts heard on {questions} questions, {written} written down  ›', {
+        accounts: formatNumber(accounts), questions: formatNumber(known.length), written: formatNumber(writtenCount),
+      });
+      const link = this.add.text(contentX, y, rtl ? `${label} ✎` : `✎ ${label}`, localizedStyle({
+        fontFamily: 'Georgia, serif', fontSize: buttonFont(16, size), color: '#9ed6c8',
+        backgroundColor: '#1f2a26', padding: { x: 10, y: 12 }, wordWrap: { width: panelW - 68 },
+      })).setOrigin(contentOrigin, 0).setInteractive({ useHandCursor: true });
+      link.on('pointerover', () => link.setColor('#d8fff4'))
+        .on('pointerout', () => link.setColor('#9ed6c8'))
+        .on('pointerdown', () => this.openRecord());
+      add(link, 18);
+    }
+
     const ordered = here ? [here, ...chapters.filter(c => c !== here).reverse()] : [...chapters].reverse();
     const sections = ordered
       .map(chapter => ({ chapter, entries: chapter.story.journal.filter(e => entryRevealed(e, flags)) }))
@@ -138,6 +157,19 @@ export class JournalScene extends Phaser.Scene {
       y += 8;
     }
     return y - top;
+  }
+
+  /** The record over the journal; the journal comes back, redrawn, when it closes. */
+  private openRecord(): void {
+    this.scene.setVisible(false);
+    this.scene.launch('Record', {
+      onFinish: () => {
+        this.scene.resume();
+        this.scene.setVisible(true);
+        this.scene.restart({ from: this.fromKey });
+      },
+    } as RecordLaunch);
+    this.scene.pause();
   }
 
   private sectionHeading(

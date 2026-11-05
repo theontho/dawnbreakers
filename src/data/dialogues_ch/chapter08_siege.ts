@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../../dialogue/types';
+import { heard } from '../record';
 
 /**
  * Chapter 8, the last months at Ṭabarsí: spring 1849. Mullá Ḥusayn rests in
@@ -27,6 +28,7 @@ export const wounded: DialogueTree = {
     },
     memory: {
       speaker: 'A Wounded Believer',
+      onEnter: { set: { [heard('ch8-khan', 'wounded')]: true } },
       text: 'His horse caught its foot in a tent rope. While he was freeing it, a shot came from the branches of a tree. He did not cry out. He only turned his horse toward the fort, as if he had remembered an appointment.',
       choices: [{ text: '(Listen.)', next: 'face' }],
     },
@@ -73,21 +75,16 @@ export const youthHunger: DialogueTree = {
       speaker: 'A Young Companion',
       text: 'Do not look in the pot. (He smiles weakly.) It is a saddle. We boil the leather until it is soft enough to chew. Before the saddles it was the horses, and before the horses the rice ran out.',
       choices: [
-        { text: '"Quddús asked me to help share out what is left."', next: 'stores',
-          requires: f => !!f.ch8AskedToShare && f.ch8RationFavoured === undefined },
+        { text: '"Do you remember how I shared out the rice?"', next: 'shared',
+          requires: f => f.ch8RationFavoured !== undefined },
         { text: '"Eat my share. I am not hungry."', next: 'give' },
         { text: '(Sit and take your share in silence.)', next: 'share' },
         { text: '"Do you remember the village woman\'s rice?"', next: 'rice', requires: f => !!f.ch8GaveRice },
       ],
     },
-    stores: {
-      speaker: 'A Young Companion',
-      text: 'Then God help you, because I could not do it. (He points with the ladle.) The wounded by the wall. The watch, when they come down. The boys from Mashhad, my own lot. Every week there is less, and every week they all look at you.',
-      choices: [{ text: '(Take the ladle.)', next: 'shared', play: 'RationGame' }],
-    },
     shared: {
       speaker: 'A Young Companion',
-      text: '(He takes the empty pot from you and turns it over.) Well. That is the stores.',
+      text: '(He turns the empty pot over.) I remember. The sacks were empty before the sun was over the wall. Every week since, there has been less.',
       choices: [
         { text: '"I gave most to the wounded."', next: 'toWounded', requires: f => f.ch8RationFavoured === 'wounded' },
         { text: '"I kept the watch on its feet."', next: 'toWatch', requires: f => f.ch8RationFavoured === 'watch' },
@@ -107,7 +104,7 @@ export const youthHunger: DialogueTree = {
     },
     toYoung: {
       speaker: 'A Young Companion',
-      text: 'Quddús said the youngest, and you listened. (He looks at his hands.) I ate it. I am ashamed, and I ate it. Nobody here will tell you it was wrong.',
+      text: 'You fed the youngest, and I was one of the youngest. (He looks at his hands.) I ate it. I am ashamed, and I ate it. Nobody here will tell you it was wrong.',
       choices: [{ text: '(Sit beside him.)', next: 'share' }],
     },
     toAll: {
@@ -145,8 +142,7 @@ export const quddusHunger: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Quddús',
-      onEnter: { set: { ch8AskedToShare: true } },
-      text: 'He rests beside the shrine now, and I speak with him in the evenings as before. (He is thin; his eyes are not.) We have eaten our horses and our saddles. Share what there is with the youngest, and keep listening at the gate.',
+      text: 'He rests beside the shrine now, and I speak with him in the evenings as before. (He is thin; his eyes are not.) We have eaten our horses and our saddles. Keep listening at the gate, and keep writing down what you hear.',
       choices: [{ text: '"How long can we hold?"', next: 'hold' }],
     },
     hold: {

@@ -20,6 +20,16 @@ export type TravellerKind =
   | 'camel'
   | 'litter';
 
+/**
+ * A word on the road from someone in the party, said in a caption as the
+ * journey reaches `day` (1 is the first night). Never a central figure.
+ */
+export interface JourneyRemark {
+  day: number;
+  speaker: string;
+  text: string;
+}
+
 export interface Journey {
   id: string;
   /** The chapter it leaves and the one it leads into. */
@@ -43,6 +53,8 @@ export interface Journey {
   party: readonly TravellerKind[];
   music: MusicMood;
   sound: readonly SoundLayer[];
+  /** What the party says along the way, in order of `day`. */
+  remarks?: readonly JourneyRemark[];
 }
 
 /**
@@ -67,6 +79,16 @@ export const JOURNEYS: readonly Journey[] = [
     party: ['lantern', 'staff', 'walker', 'walker', 'packMule'],
     music: 'road',
     sound: ['wind', 'breeze'],
+    remarks: [
+      { day: 2, speaker: 'Mullá Ḥusayn\'s Nephew',
+        text: 'Najaf by morning. I asked my uncle where we go after the shrine, and he said: wherever we are drawn.' },
+      { day: 30, speaker: 'Mullá Ḥusayn\'s Brother',
+        text: 'Búshihr. My brother walks the streets of this port as if it were a garden in spring, in this heat. He says there is a sweetness in the air here he cannot account for.' },
+      { day: 50, speaker: 'Mullá Ḥusayn',
+        text: 'We cannot stay here. Something draws me north, as a magnet draws iron, and I have stopped asking it why.' },
+      { day: 76, speaker: 'Mullá Ḥusayn',
+        text: 'At the gate, go on to the Masjid-i-Ílkhání, both of you, and wait for me there. God willing, I will be with you for the evening prayer.' },
+    ],
   },
   {
     id: 'shiraz-to-road',
@@ -124,11 +146,11 @@ export const JOURNEYS: readonly Journey[] = [
     from: 'mecca',
     to: 'baghdad',
     title: 'Up from Najaf in Chains',
-    subtitle: 'The desert road to Baghdád, winter 1844',
-    description: 'Far to the west, in Ottoman ʿIráq, Mullá ʿAlíy-i-Basṭámí walks in chains between the governor\'s horsemen, up from Najaf by the desert road along the Euphrates to Baghdád, where the Páshá means to try him.',
+    subtitle: 'From Najaf to Baghdád, autumn 1844',
+    description: 'Far to the west, in Ottoman ʿIráq, the disciples of the Shaykh of Najaf give Mullá ʿAlíy-i-Basṭámí up in chains to the Sultan\'s officers, and he is taken north to Baghdád, to wait in prison for the Páshá\'s judgement.',
     latitude: 32.75,
     longitude: 44.3,
-    departs: { year: 1844, month: 12, day: 10, hour: 20, minute: 30 },
+    departs: { year: 1844, month: 10, day: 20, hour: 20, minute: 30 },
     days: 5,
     facing: 0,
     terrain: 'desert',
@@ -159,7 +181,7 @@ export const JOURNEYS: readonly Journey[] = [
     to: 'isfahan',
     title: 'The Cholera Summer',
     subtitle: 'Shíráz to Iṣfahán, autumn 1846',
-    description: 'Cholera empties the streets of Shíráz. The chief constable, his own sons stricken, lets his Prisoner go on the one condition that He leave the city, and the road north to Iṣfahán lies open.',
+    description: 'Cholera empties the streets of Shíráz. The chief constable\'s son is stricken and recovers, the constable begs the governor to set his Prisoner free, and the road north to Iṣfahán lies open.',
     latitude: 30.9,
     longitude: 52.3,
     departs: { year: 1846, month: 9, day: 26, hour: 20, minute: 30 },
@@ -271,6 +293,20 @@ export const JOURNEYS: readonly Journey[] = [
     party: ['standard', 'rider', 'walker', 'staff'],
     music: 'forest',
     sound: ['wind', 'river'],
+    remarks: [
+      { day: 1, speaker: 'Narrator',
+        text: 'A farsang out of Mashhad, Mullá Ḥusayn raises the Black Standard and sets the Báb\'s own turban on his head. Two hundred and two companions follow him west.' },
+      { day: 6, speaker: 'A Young Companion',
+        text: 'At Míyámay thirty men of the village joined us in one night. Thirty! The whole village came out to the masjid to watch them go.' },
+      { day: 14, speaker: 'Mullá Ḥusayn',
+        text: 'We stand at the parting of the ways. We shall wait here, by this stream, for His decree as to which way we should take.' },
+      { day: 20, speaker: 'Narrator',
+        text: 'At Chashmih-ʿAlí a gale tears a great branch from the tree you camp under. Three days later a rider from Ṭihrán brings the news: Muḥammad Sháh is dead.' },
+      { day: 22, speaker: 'Mullá Ḥusayn',
+        text: 'This is the way that leads to our Karbilá. Whoever is unprepared for the trials that lie before us, let him go home now and give up the journey.' },
+      { day: 28, speaker: 'A Young Companion',
+        text: 'Twenty have turned back since Savád-Kúh. I counted them. (He hitches up his bundle.) I am not going to be the twenty-first.' },
+    ],
   },
   {
     id: 'tabarsi-to-tehran',
@@ -288,6 +324,10 @@ export const JOURNEYS: readonly Journey[] = [
     party: ['staff'],
     music: 'sorrow',
     sound: ['wind'],
+    remarks: [
+      { day: 3, speaker: 'Narrator',
+        text: 'You say the names over as you climb, the ones you are sure of. There are more of them than you can hold, and the snow takes your breath between them.' },
+    ],
   },
   {
     id: 'tehran-to-nayriz',
@@ -356,6 +396,18 @@ export const JOURNEYS: readonly Journey[] = [
     party: ['staff', 'litter', 'camel', 'packMule'],
     music: 'pilgrimage',
     sound: ['wind', 'crickets'],
+    remarks: [
+      { day: 1, speaker: 'A Muleteer',
+        text: 'Kirmánsháh is full this Ramaḍán. They say a nobleman from Ṭihrán has been here the whole month, and his door is never shut once the fast is broken.' },
+      { day: 2, speaker: 'Narrator',
+        text: 'In a house near the bazaar two Bábís sit up late over a heap of copied pages: an older scribe who once wrote for the Báb, and a youth of Zarand who crossed half of Persia to find him. Years later the youth will write the history of these days. His name is Nabíl.' },
+      { day: 6, speaker: 'An Old Cameleer',
+        text: 'The Ṭáq-i-Garrá, the old gate of the mountains. From here the road falls all the way to ʿIráq, and the heat comes up to meet it.' },
+      { day: 10, speaker: 'A Muleteer',
+        text: 'Khániqín, and the Sultan\'s customs men. Show them your pilgrim\'s face, not your purse.' },
+      { day: 15, speaker: 'An Old Cameleer',
+        text: 'Baghdád. The boatmen say a Persian nobleman crossed the bridge of boats not long ago with only two companions, going south to the shrines.' },
+    ],
   },
   {
     id: 'karbila-to-tehran',
@@ -373,6 +425,12 @@ export const JOURNEYS: readonly Journey[] = [
     party: ['walker', 'staff', 'packMule'],
     music: 'prison',
     sound: ['breeze'],
+    remarks: [
+      { day: 8, speaker: 'A Muleteer',
+        text: 'News from the capital: the new Grand Vizier is a man of Núr, Mírzá Áqá Khán. They say he is gentle with his own countrymen.' },
+      { day: 24, speaker: 'A Muleteer',
+        text: 'Ṭihrán in summer? Every man with sense and a mule goes up into the hills, to Shimrán and Lavásán, until the heat breaks.' },
+    ],
   },
 ];
 

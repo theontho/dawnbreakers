@@ -76,12 +76,15 @@ export class ChapterEndScene extends Phaser.Scene {
       this.input.keyboard?.once('keydown-SPACE', continueToNext);
       buttonY += 62;
     } else {
-      this.add.text(cx, cy + 10, t('Here ends this telling of The Dawn-Breakers. The dawn it witnessed is still rising.'), localizedStyle({
-        fontFamily: 'Georgia, serif', fontSize: responsiveFont(15, size, 12), color: '#e8d9b0', fontStyle: 'italic',
+      // The epilogue was the pilgrim's testimony; Nabíl, who was not on that road, gathered such testimony for real.
+      const nabil = t('In 1888 Nabíl-i-Zarandí began to write this history. He asked those who had been there, and where they disagreed, he wrote that down too. What you said on the road is what you would have told him.');
+      const ending = t('Here ends this telling of The Dawn-Breakers. The dawn it witnessed is still rising.');
+      this.add.text(cx, cy + 28, `${nabil}\n\n${ending}`, localizedStyle({
+        fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, size, 11), color: '#e8d9b0', fontStyle: 'italic',
         align: 'center',
-        wordWrap: { width: cardW - 48 },
+        wordWrap: { width: cardW - 56 },
       }, 'center')).setOrigin(0.5);
-      buttonY = cy + 60;
+      buttonY = cy + 106;
     }
 
     this.makeButton(cx, buttonY, t('Chapter Select'),

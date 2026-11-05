@@ -211,6 +211,26 @@ long-exposure star trails, and the facing.
 - Every NPC conversation should leave the player with something: a fact, a
   flag, a feeling, a direction.
 
+### Talk while moving
+
+Some things are said without stopping the player: a companion's remark on a
+place they pass, a word called out on the road, an aside from the narrator.
+They show as a caption over the scene (`src/ui/remarkCaption.ts`), queue one
+after another, and a tap moves on. Nothing in one can be answered; anything
+the player must choose belongs in a dialogue.
+
+- On a map, `remarks: [{ id, gridX, gridY, radius?, requires?, lines }]`
+  plays once (remembered as heard under its `id`) the first time the player
+  comes within `radius` cells (default 3) of its cell while `requires`
+  holds. `lines` are `{ speaker, text }`; `'Narrator'` shows as an italic
+  aside with no name.
+- `companion: { texture, present? }` puts someone a step behind the player
+  on that map, walking into the cell they have just left. Give remarks to
+  someone who is there: the companion, or people on the map.
+- On a journey, `remarks: [{ day, speaker, text }]` are said as the road
+  reaches each day, by the party drawn walking.
+- Central figures never speak a remark. Keep each line to a sentence or two.
+
 ### Mini-games
 
 A choice with `play: 'LampGame'` (any `MiniGameId`) hides the dialogue and
@@ -225,7 +245,8 @@ depending on how it went.
 | `LampGame` | Mecca | the storm at the cabin door | `ch3LanternOuts` |
 | `InkGame` | Mountain prisons | Siyyid Ḥusayn's room at Mákú | `ch6CopiedLine` |
 | `CoffeeGame` | Trial at Tabríz | the foot of the hall steps | `trialOverheard` |
-| `RationGame` | Ṭabarsí | the young companion at the cauldron | `ch8RationFavoured` |
+| `TabarsiRationGame` | Ṭabarsí | the young companion at the cauldron | `ch8RationFavoured` |
+| `ZanjanRationGame` | Zanján | Umm-i-Ashraf at the ovens, in winter | `zjRationFavoured` |
 | `CurtainGame` | Ṭáhirih | the curtain at Karbilá | `qzListened` |
 | `LanesGame` | Ṭihrán and Núr | after the scroll is given | `nurLanesNoticed` |
 

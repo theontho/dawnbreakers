@@ -1,4 +1,5 @@
 import type { DialogueTree, FlagState } from '../../dialogue/types';
+import { heed, resistedAt } from '../../dialogue/voices';
 import { chapter10RoadDialogues } from './chapter10_exile_road';
 import { chapter10StreetDialogues } from './chapter10_street';
 
@@ -77,8 +78,15 @@ export const ch10Prisoner: DialogueTree = {
           requires: f => f.recognised === false },
         { text: '"How does a man bear the hours down here?"', next: 'hours',
           requires: f => f.recognised !== false },
+        { text: '"I was afraid once, at the gate of Ṭabarsí, when Quddús told the fearful to go. I stayed."', next: 'stayed',
+          requires: f => resistedAt(f, 'ch8-dawn') },
         { text: '(Sit beside him without speaking.)', next: 'beside' },
       ],
+    },
+    stayed: {
+      speaker: 'Fellow Prisoner',
+      onEnter: { set: { heardPrisonerHope: true } },
+      text: 'Ṭabarsí! And you stayed. (He shifts his chain so it does not bite.) Then you already know what I was going to tell you: the fear does not leave. It only stops being the one who decides.',
     },
     afraid: {
       speaker: 'Fellow Prisoner',
@@ -268,10 +276,18 @@ export const ch10JailerRelease: DialogueTree = {
     rise: {
       speaker: 'The Jailer',
       text: 'Up. Not that way: up the stair. Your name is on a paper with the Grand Vizier\'s seal, among men whose guilt could not be proved. Do not thank me.',
+      voice: { voice: 'fear', text: 'They can call a name down as easily as up.' },
       choices: [
         { text: '"And He who wore the heaviest chain?"', next: 'him' },
-        { text: '(Look back along the rows.)', next: 'rows' },
+        { text: '(Look back along the rows.)', next: 'rows', voice: 'longing', effect: { set: heed('ch10-stair', 'longing') } },
+        { text: 'Go up, now, and do not look back. Give them no reason to call you down again.', next: 'stair', voice: 'fear',
+          effect: { set: heed('ch10-stair', 'fear') } },
       ],
+    },
+    stair: {
+      speaker: 'Narrator',
+      onEnter: { set: { ch10Released: true } },
+      text: 'You climb without turning your head. Behind you Riḍá calls up the stair, "Tell Zahrá I am singing," and you carry it up the three flights into a light so white it hurts, and are ashamed, and keep climbing.',
     },
     him: {
       speaker: 'The Jailer',

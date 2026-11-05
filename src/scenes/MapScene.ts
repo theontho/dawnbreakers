@@ -38,6 +38,7 @@ import {
 import { inBounds } from './baseMapTileCanvas';
 import { nearestFreeCell } from './mapExits';
 import { placeMapDoors, type MapDoors } from './mapDoors';
+import { setupMapRemarks, type MapRemarks } from './mapRemarks';
 import { buildWorldData, refreshBlocking } from './mapWorldData';
 import { setupMapCameras, type MapCameras } from './mapCamera';
 import { createMapAmbience, emitsFire, type AmbienceHandle } from './mapAmbience';
@@ -89,6 +90,7 @@ export class MapScene extends Phaser.Scene {
 
   private promptText!: Phaser.GameObjects.Text;
   private exitPromptText!: Phaser.GameObjects.Text;
+  private remarks!: MapRemarks;
   private mobileControls?: Phaser.GameObjects.Container;
   private endingShown = false;
 
@@ -183,10 +185,15 @@ export class MapScene extends Phaser.Scene {
     this.applyAmbience(getFlags());
     this.revealMasks = setupPlayerRevealMasks(this, this.occludableSprites, this.player, this.scene.key);
     setupInteractableHighlights(
-      this, this.npcs.interactables, this.exits, (gx, gy) => this.gridToScreen(gx, gy), this.highlights,
+      this, this.npcs.everyone, this.exits, (gx, gy) => this.gridToScreen(gx, gy), this.highlights,
     );
+    applyInteractableHighlightVisibility(this.highlights, this.npcs.interactables);
     this.setupInput();
     this.setupHUD(width, height);
+    this.remarks = setupMapRemarks(
+      this, this.scene.key, this.definition.remarks ?? [], this.definition.companion, this.playerGrid,
+      (gx, gy) => this.gridToScreen(gx, gy), () => this.exitPromptText.y - 24,
+    );
     this.setupCameraFollow(width, height);
     this.mapCameras = setupMapCameras(this);
     this.events.on(Phaser.Scenes.Events.RESUME, this.handleSceneResume, this);
@@ -294,6 +301,8 @@ export class MapScene extends Phaser.Scene {
     this.refreshDecor(flags);
     this.doors.refresh(flags);
     this.npcs.refresh(flags);
+    applyInteractableHighlightVisibility(this.highlights, this.npcs.interactables);
+    this.remarks.refresh(flags);
     this.applyAmbience(flags);
     this.refreshExitGlows();
     this.objectiveHud?.update(flags);
@@ -422,7 +431,10 @@ export class MapScene extends Phaser.Scene {
       inBounds: (x, y) => inBounds(this.definition.width, this.definition.height, x, y),
       gridToScreen: (x, y) => this.gridToScreen(x, y),
       transitionTo: exit => this.transitionTo(exit),
-      onStep: (x, y) => playFootstep(this.map[y]![x]!),
+      onStep: (x, y) => {
+        playFootstep(this.map[y]![x]!);
+        this.remarks.step(x, y);
+      },
       // True-scale cells are smaller relative to a stride, so steps come quicker.
       stepMs: 105,
       onLockedExit: () => playSfx('locked'),

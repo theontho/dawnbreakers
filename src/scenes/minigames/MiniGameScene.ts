@@ -56,6 +56,8 @@ export abstract class MiniGameScene extends Phaser.Scene {
   abstract readonly heading: string;
   /** One line under the game saying how to play, in English. */
   protected abstract readonly hint: string;
+  /** The same for a finger on a touch screen, where there are no keys to press. */
+  protected abstract readonly touchHint: string;
 
   init(data: MiniGameLaunch): void {
     this.onFinish = data.onFinish;
@@ -71,7 +73,7 @@ export abstract class MiniGameScene extends Phaser.Scene {
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(26, size, 18), color: '#f3d98a', fontStyle: 'italic',
       align: 'center',
     }, 'center')).setOrigin(0.5, 0).setDepth(DEPTH_UI);
-    this.hintText = this.add.text(0, 0, t(this.hint), localizedStyle({
+    this.hintText = this.add.text(0, 0, t(coarsePointer() ? this.touchHint : this.hint), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(17, size, 14), color: '#d8c79e', align: 'center',
     }, 'center')).setOrigin(0.5, 1).setDepth(DEPTH_UI);
     this.skipText = this.add.text(0, 0, t('Skip'), localizedStyle({
@@ -172,4 +174,9 @@ export abstract class MiniGameScene extends Phaser.Scene {
     this.skipText.setPosition(rtl ? safe.x : safe.right, safe.y);
     this.layout(this.area());
   }
+}
+
+/** A finger rather than a mouse: a phone or tablet's touch screen. */
+function coarsePointer(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
 }

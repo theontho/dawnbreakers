@@ -1,7 +1,8 @@
-import type { DecorSpec, MapDefinition } from './types';
+import type { DecorSpec, MapAmbience, MapDefinition } from './types';
 import { CellSet, traceRoute, widen, type Cell } from './ch8MapTools';
 import { MAZINDARAN_WOODS, scatterWoodland } from './woodland';
 import { wallRun } from './wallRuns';
+import { afterTheDay, DAY_COMPANION, DAY_NPCS, DAY_REMARKS, dayAmbience } from './ch8FortDay';
 
 /**
  * Fort Shaykh Ṭabarsí, October 1848 to May 1849, at true scale. A palisade
@@ -11,7 +12,8 @@ import { wallRun } from './wallRuns';
  * to the gate. The royal army camps behind its earthworks to the east. The
  * map passes through three phases by flag: building (until
  * `ch8QuddusArrived`), winter (until `ch8MullaHusaynFell`), and hunger, when
- * the officer comes under a white flag.
+ * the officer comes under a white flag. Hunger opens with the day the rice
+ * was shared out (`ch8FortDay.ts`): three of six places before nightfall.
  *
  * Districts (x runs east, y runs south):
  * - The palisade x 10..33, y 8..31; the gate at (10, 19..20) between towers.
@@ -209,15 +211,15 @@ export const ch8TabarsiFortMap: MapDefinition = {
       prompt: 'Speak with Quddús  [E]',
       dialogue: 'ch8-quddus-oath',
       gate: { when: f => !!f.ch8TruceOffered, lockedDialogue: 'ch8-quddus-hunger' },
-      present: f => !!f.ch8MullaHusaynFell },
+      present: afterTheDay },
     { gridX: 19, gridY: 26, texture: 'ch8-wounded',
       prompt: 'Speak with the Wounded Believer  [E]',
       dialogue: 'ch8-wounded',
-      present: f => !!f.ch8MullaHusaynFell },
+      present: afterTheDay },
     { gridX: 25, gridY: 27, texture: 'ch8-young-companion',
       prompt: 'Sit with Riḍá at the cauldron  [E]',
       dialogue: 'ch8-youth-hunger',
-      present: f => !!f.ch8MullaHusaynFell },
+      present: afterTheDay },
     { gridX: 4, gridY: 19, texture: 'ch8-officer',
       prompt: 'Meet the officer under the white flag  [E]',
       dialogue: 'ch8-truce',
@@ -226,7 +228,12 @@ export const ch8TabarsiFortMap: MapDefinition = {
       prompt: 'Look at the white flag  [E]',
       dialogue: 'ch8-truce-flag',
       present: f => !!f.ch8SharedHunger },
+
+    // The day the rice was shared out.
+    ...DAY_NPCS,
   ],
+  remarks: DAY_REMARKS,
+  companion: DAY_COMPANION,
   doors: [
     // The shrine itself: the tomb, the lamps, the men who keep watch inside.
     { gridX: SHRINE_DOOR[0], gridY: SHRINE_DOOR[1], prompt: 'Enter the shrine  [E]',
@@ -237,15 +244,17 @@ export const ch8TabarsiFortMap: MapDefinition = {
     targetScene: 'Ch8ForestRoad', targetSpawnX: 46, targetSpawnY: 12,
     label: '← Back along the forest road',
   })),
-  ambience: {
-    wash: { color: 0x5c6a80, alpha: 0.42 },
-    lights: [
-      { gridX: 26, gridY: 27, radius: 150, color: 0xff9a40, intensity: 0.6 },
-      { gridX: 43, gridY: 14, radius: 140, color: 0xff8a30, intensity: 0.5 },
-      { gridX: 44, gridY: 24, radius: 140, color: 0xff8a30, intensity: 0.5 },
-      { gridX: SHRINE_DOOR[0], gridY: SHRINE_DOOR[1] + 1, radius: 120, color: 0xffe0a0, intensity: 0.35 },
-    ],
-    particles: 'rain', music: 'siege',
-    vignette: 0.6,
-  },
+  ambience: f => dayAmbience(FORT_AMBIENCE, f),
+};
+
+const FORT_AMBIENCE: MapAmbience = {
+  wash: { color: 0x5c6a80, alpha: 0.42 },
+  lights: [
+    { gridX: 26, gridY: 27, radius: 150, color: 0xff9a40, intensity: 0.6 },
+    { gridX: 43, gridY: 14, radius: 140, color: 0xff8a30, intensity: 0.5 },
+    { gridX: 44, gridY: 24, radius: 140, color: 0xff8a30, intensity: 0.5 },
+    { gridX: SHRINE_DOOR[0], gridY: SHRINE_DOOR[1] + 1, radius: 120, color: 0xffe0a0, intensity: 0.35 },
+  ],
+  particles: 'rain', music: 'siege',
+  vignette: 0.6,
 };

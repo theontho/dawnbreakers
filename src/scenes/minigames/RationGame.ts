@@ -5,11 +5,10 @@ import { playSfx } from '../../audio';
 import { formatNumber, localizedStyle, rtl, t, wrapsBetweenCharacters } from '../../i18n';
 import { buttonFont, responsiveFont } from '../../ui/responsive';
 import { MiniGameScene, type PlayArea } from './MiniGameScene';
-
-type GroupId = 'wounded' | 'watch' | 'young';
+import type { RationStores } from './rationStores';
 
 interface Group {
-  id: GroupId;
+  id: string;
   name: () => string;
   /** Strength lost each week. */
   need: number;
@@ -20,45 +19,31 @@ interface Group {
   minus?: Phaser.GameObjects.Text;
 }
 
-interface Week {
-  portions: (flags: FlagState) => number;
-  pot: () => string;
-}
-
-/** What there was to eat, week by week, after Nabíl: rice, the horses, saddles, grass, bones. */
-const WEEKS: Week[] = [
-  { portions: f => (f.ch8GaveRice ? 11 : 8),
-    pot: () => t('The last of the rice. A few grains in every pot.') },
-  { portions: () => 8, pot: () => t('The horses, one by one.') },
-  { portions: () => 6, pot: () => t('Saddles and harness, boiled until the leather can be chewed.') },
-  { portions: () => 5, pot: () => t('Grass, gathered in the field when the guns fall quiet, and boiled.') },
-  { portions: () => 4, pot: () => t('Bones, churned and boiled. Quddús calls them his meat.') },
-];
 const PORTION = 0.13;
 
 /**
- * The hungry months at Ṭabarsí (chapter 8), after Mullá Ḥusayn's death:
- * Quddús asks the player to share out what there is. Each week there is
- * less in the pot, and three tables to feed: the wounded, the watch on the
- * walls, and the youngest. Nothing the player does can make it enough; the
- * play is in the choosing. No one starves on this screen: what hunger
- * does is told, plainly, in the story around it.
+ * Sharing out a besieged fort's stores through a winter (Ṭabarsí, Zanján):
+ * each week there is less in the pot, and three tables to feed. Nothing the
+ * player does can make it enough; the play is in the choosing. No one
+ * starves on this screen: what hunger does is told, plainly, in the story
+ * around it. Each siege's tables and weeks are its `RationStores`.
  *
- * Result: `ch8RationFavoured`, the table that was given most ('wounded',
- * 'watch', 'young'), or 'even'.
+ * Result: the stores' `resultFlag`, set to the id of the table that was
+ * given most, or 'even'.
  */
 export class RationGame extends MiniGameScene {
-  constructor() {
-    super('RationGame');
+  constructor(private readonly stores: RationStores) {
+    super(stores.key);
   }
 
   readonly heading = 'Sharing Out the Stores';
   protected readonly hint = 'Click a table, or press 1, 2 or 3, to give it a portion; − or Backspace takes one back. Press Enter, or Share it out, to end the week.';
+  protected readonly touchHint = 'Tap a table to give it a portion; − takes one back. Tap Share it out to end the week.';
 
   private groups: Group[] = [];
   private week = 0;
   private portions = 0;
-  private order: GroupId[] = [];
+  private order: string[] = [];
   private potText!: Phaser.GameObjects.Text;
   private leftText!: Phaser.GameObjects.Text;
   private shareButton!: Phaser.GameObjects.Text;
@@ -66,11 +51,7 @@ export class RationGame extends MiniGameScene {
   private shiftAnim = 0;
 
   protected begin(): void {
-    this.groups = [
-      { id: 'wounded', name: () => t('The wounded'), need: 0.24, strength: 0.45, given: 0, total: 0 },
-      { id: 'watch', name: () => t('The watch on the walls'), need: 0.2, strength: 0.7, given: 0, total: 0 },
-      { id: 'young', name: () => t('The youngest'), need: 0.16, strength: 0.6, given: 0, total: 0 },
-    ];
+    this.groups = this.stores.tables.map(table => ({ ...table, given: 0, total: 0 }));
     this.week = 0;
     this.order = [];
     const size = this.scale;
@@ -113,7 +94,7 @@ export class RationGame extends MiniGameScene {
   }
 
   private startWeek(): void {
-    const week = WEEKS[this.week]!;
+    const week = this.stores.weeks[this.week]!;
     this.portions = week.portions(getFlags());
     this.order = [];
     for (const group of this.groups) group.given = 0;
@@ -148,8 +129,8 @@ export class RationGame extends MiniGameScene {
     }
     this.shiftAnim = 1;
     this.week++;
-    if (this.week >= WEEKS.length) {
-      this.finish({ ch8RationFavoured: this.favoured() });
+    if (this.week >= this.stores.weeks.length) {
+      this.finish({ [this.stores.resultFlag]: this.favoured() });
       return;
     }
     this.startWeek();
@@ -163,7 +144,7 @@ export class RationGame extends MiniGameScene {
 
   private refresh(): void {
     this.leftText.setText(t('Week {week} of {weeks}. Portions left: {left}', {
-      week: this.week + 1, weeks: WEEKS.length, left: this.portions,
+      week: this.week + 1, weeks: this.stores.weeks.length, left: this.portions,
     }));
     for (const group of this.groups) {
       group.label?.setText(`${group.name()}\n${'●'.repeat(group.given) || formatNumber(0)}`);
@@ -229,6 +210,6 @@ export class RationGame extends MiniGameScene {
   }
 
   protected skipResult(): FlagState {
-    return { ch8RationFavoured: 'even' };
+    return { [this.stores.resultFlag]: 'even' };
   }
 }

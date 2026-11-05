@@ -76,6 +76,13 @@ export const CH08_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0x8a2f2a, skin: 0xd6b48a, clothing: { style: 'wrap', secondary: 0x2f5a4a, accent: 0xd9a441 }, hat: { style: 'headscarf', color: 0xc9a55c }, shadow: true } },
   { id: 'ch8-officer', label: 'Officer', texture: 'ch8-officer', kind: 'character', category: 'characters', color: 0x2e3a5a, blocks: true,
     character: { body: 0x2e3a5a, skin: 0xd8c09a, clothing: { style: 'uniform', secondary: 0x1f2840, accent: 0xc9a55c }, hat: { style: 'tallHat', color: 0x1a1a1a, accent: 0xc9a55c }, shadow: true } },
+  // The day the rice was shared out: Nabíl's informants and the siyyid from Qum.
+  { id: 'ch8-baqir', label: 'Companion', texture: 'ch8-baqir', kind: 'character', category: 'characters', color: 0x3a4a5a, blocks: true,
+    character: { body: 0x3a4a5a, skin: 0xd8bc90, clothing: { style: 'robe', secondary: 0x2a3440, accent: 0xb8a070 }, hat: { style: 'turban', color: 0xe8e2cc, accent: 0x3a4a5a }, shadow: true } },
+  { id: 'ch8-furughi', label: 'Companion', texture: 'ch8-furughi', kind: 'character', category: 'characters', color: 0x5a4a3a, blocks: true,
+    character: { body: 0x5a4a3a, skin: 0xd6b88e, clothing: { style: 'cloak', secondary: 0x3a3028, accent: 0xc9a55c }, hat: { style: 'turban', color: 0xd8cfb8, accent: 0x5a4a3a }, shadow: true } },
+  { id: 'ch8-siyyid-qum', label: 'Companion', texture: 'ch8-siyyid-qum', kind: 'character', category: 'characters', color: 0x2a2a30, blocks: true,
+    character: { body: 0x2f3a44, skin: 0xdcc49c, clothing: { style: 'cloak', secondary: 0x1f262e, accent: 0x8a7a5a }, hat: { style: 'turban', color: 0x1a1a1a, accent: 0x2f3a44 }, shadow: true } },
   { id: 'ch8-conscript', label: 'Soldier', texture: 'ch8-conscript', kind: 'character', category: 'characters', color: 0x4c5360, blocks: true,
     character: { body: 0x5a5a4a, skin: 0xc8a47a, clothing: { style: 'uniform', secondary: 0x3f3f34, accent: 0x8a7a5a }, hat: { style: 'tallHat', color: 0x2a2a24 }, shadow: true } },
 ];

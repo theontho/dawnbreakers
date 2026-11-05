@@ -5,11 +5,16 @@ import { InkGame } from './InkGame';
 import { LampGame } from './LampGame';
 import { LanesGame } from './LanesGame';
 import { RationGame } from './RationGame';
+import { TABARSI_STORES, ZANJAN_STORES } from './rationStores';
 
 /**
  * Every chapter's mini-game scene, keyed by its `MiniGameId`. Registered
  * after the dialogue so they draw over it.
  */
 export function miniGameScenes(): Phaser.Scene[] {
-  return [new LampGame(), new InkGame(), new CoffeeGame(), new RationGame(), new CurtainGame(), new LanesGame()];
+  return [
+    new LampGame(), new InkGame(), new CoffeeGame(),
+    new RationGame(TABARSI_STORES), new RationGame(ZANJAN_STORES),
+    new CurtainGame(), new LanesGame(),
+  ];
 }

@@ -139,6 +139,12 @@ export class JourneyHud {
     this.layer.setVisible(visible);
   }
 
+  /** The top of the control row as laid out now, for what sits just above it. */
+  controlsTop(): number {
+    const tops = this.buttons.filter(b => b.text.visible).map(b => b.text.getBounds().top);
+    return tops.length > 0 ? Math.min(...tops) : this.safe.bottom;
+  }
+
   private layoutButtons(): void {
     const gap = 8;
     const { x, width, bottom } = this.safe;

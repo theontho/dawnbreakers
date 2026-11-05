@@ -63,47 +63,53 @@ listening into play. Techniques worth borrowing, with how each could fit:
 8. **Talk while moving.** *Oxenfree* and *Firewatch* keep conversations
    going as the player walks; companions remark on places they pass.
 
-**Recommendation:** start with three that reinforce each other: the witness
-who gives testimony (1), limited time per chapter (2) and one signature
-activity per chapter (4). Layer inner voices (3) and using knowledge (5) on
-top later. Next step: a short design doc working one chapter through (Ṭabarsí
-or the trial at Tabríz) before building anything.
+**Built (November 2026), worked through Ṭabarsí:** see
+`docs/design/chronicler.md`. A day of three places out of six, where the
+player hears accounts that disagree and writes the record, with a
+confidence for each (1, 2); inner voices (doubt, fear, longing) at
+Ṭabarsí, chapter 1's dawn, the Síyáh-Chál and the exile road (3); heard
+accounts carried into other conversations with `present` (5); care in
+place of questioning: water, wounds, a dying man's hand, your share of
+rice (6); the epilogue as the player's testimony, built from the sealed
+record and the pilgrim's own mini-game results (7); and walking talk,
+with a companion on the map and remarks on roads and journeys (8). Next:
+a second chapter's claims (the trial at Tabríz), so the testimony draws on
+more than one.
 
 See also `docs/ai/localization-research.md` for the narrative-system
 direction (storylets, central narrative state, stable line ids).
 
 ## Story coverage
 
-The book's main episodes all have chapters (17). Episodes still only
-mentioned in passing:
-
-- Bahá'u'lláh's journey to Karbilá in 1851 and the Amír-Niẓám's rise; would
-  have to be told entirely through witnesses.
-- Mullá ʿAlí-i-Basṭámí's trial in Baghdád, the first martyrdom.
+The book's main episodes all have chapters (20). Bahá'u'lláh's journey to
+Karbilá in 1851 is told by witnesses: the caravan's talk at Kirmánsháh on
+the journey into *The Promised Ḥusayn*, and Mírzá Muḥammad of Mázindarán,
+who came down with Him, by the canal in Karbilá (the Amír-Niẓám's
+"suggestion" and the post of Amír-Díván). Mullá ʿAlí-i-Basṭámí's trial is
+*The Trial at Baghdád*.
 
 ## Art and polish
 
-- The low `writing-desk` table remains in four camp and outdoor scenes
-  (Badasht camp, Chihríq, Qazvín, the Nayríz fort); the floor writing board
-  (`floor-writing-board`) may suit them better.
-- An officer by the Vakíl Mosque pulpit is 37% covered by the colonnade
-  (a smoke note, under the 60% failure line); every nearby cell was worse.
-- City's road north loses two of its four exit cells behind the wall and
-  house on its east side (a smoke note, not a failure). Any tall thing just
-  south-east of a north-edge exit hides it, so clearing it means reshaping
-  the north end of the city, not moving one piece. A gateway over the road
-  (a sābāṭ, as in Ṭihrán's street) would also count it as marked.
-- Extend the visibility check to gameplay helpers (witness spots, door
-  highlights) where they lack a sprite.
+Nothing open. (November 2026: the floor writing board replaced the low desk
+in the Badasht camp, Chihríq and the Nayríz fort, and the desk stays behind
+Ṭáhirih's curtain at Karbilá, where only something that tall reads; the
+Vakíl Mosque's front row of columns is cut away with its vaults; a sābāṭ
+spans Shíráz's road north; smoke fails a story object with no sprite and
+nothing on its cell to draw it, and the H / Tab rings now mark doors and
+scenery-drawn story objects, and follow who is present.)
 
 ## Robustness and translation
 
-- The journal history (`src/data/story/`) has been checked against Nabíl's
-  text and corrected. A few details in it come from other sources, which is
-  fine but worth knowing if the game ever cites them: the Súrih of the
-  Inevitable at Badasht and the declaration at the Kaʿba (God Passes By),
-  the condition on the Báb's release from Shíráz (A Traveller's Narrative),
-  and the gold buttons at the Síyáh-Chál. The dialogue and glossary have had
-  the same pass, except the Núr chapter, the first two chapters' rumours and
-  travellers, and the place and word glossaries (only skimmed; Ṭáhirih's
-  "two months" in Hamadán is unconfirmed).
+- Every journal entry, dialogue and glossary has been checked against
+  Nabíl, in the English and in Ishráq-Khávarí's Persian (*Maṭáliʿu'l-Anvár*,
+  a translation of the English: Nabíl's own manuscript is unpublished).
+  `docs/sources.md` lists what was checked, with pages in both, and the
+  details that come from other sources (God Passes By, A Traveller's
+  Narrative, The Chosen Highway). Two structural licences are recorded
+  there: chapter 1's evening vigil in the lane, and chapter 2 sending Mullá
+  Ḥusayn out with the others.
+- The mini-games were tuned against bots. A person should still play each
+  on a phone and in Farsi and say what is too hard, too easy or unclear
+  (GitHub #3); `npm run minigames -- --phone --locale fa` shows each one
+  there.
+- HDR glow on a real HDR screen is unconfirmed (GitHub #1).

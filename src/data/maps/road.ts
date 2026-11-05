@@ -190,6 +190,18 @@ export const roadMap: MapDefinition = {
       targetScene: 'HouseQuarter', targetSpawnX: 33, targetSpawnY: 20,
       label: '← Back through the city to the Quiet Quarter' },
   ],
+  // Asides as you pass: the gate's Qur'án, the poet's garden, the top of the pass.
+  remarks: [
+    { id: 'gate', gridX: GATE.x + 2, gridY: GATE.road, radius: 2, lines: [
+      { speaker: 'Narrator', text: 'You pass under the arch of the gate. In a little room above it a great Qur\'án is kept, so that everyone who leaves Shíráz goes out beneath the Word of God.' },
+    ] },
+    { id: 'poet', gridX: 52, gridY: 36, radius: 4, lines: [
+      { speaker: 'Narrator', text: 'Down among the cypresses the poet Ḥáfiẓ has lain under his stone these four hundred and fifty years. Half of Shíráz still opens his book to ask it what to do.' },
+    ] },
+    { id: 'pass', gridX: 44, gridY: 3, radius: 3, requires: f => !!f.ch2HeardCharge, lines: [
+      { speaker: 'Narrator', text: 'From here the road climbs into the pass toward Iṣfahán. Behind you the city lies in its gardens, small enough to cover with your hand.' },
+    ] },
+  ],
   ambience: {
     wash: { color: 0xd89a78, alpha: 0.24 },
     lights: [

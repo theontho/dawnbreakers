@@ -1,4 +1,8 @@
 import type { DialogueTree } from '../../dialogue/types';
+import { heard } from '../record';
+import { chapter08DayDialogues } from './chapter08_day';
+import { chapter08DayPlaceDialogues } from './chapter08_dayPlaces';
+import { chapter08NightDialogues } from './chapter08_night';
 import { chapter08ForestDialogues } from './chapter08_forest';
 import { chapter08ShrineDialogues } from './chapter08_shrine';
 import { chapter08SiegeDialogues } from './chapter08_siege';
@@ -107,6 +111,7 @@ export const mullaHusaynLast: DialogueTree = {
     },
     return: {
       speaker: 'Narrator',
+      onEnter: { set: { [heard('ch8-door', 'own')]: true } },
       text: 'They bring him back at sunrise. A shot from the branches of a tree, they say. He is carried to Quddús, who asks to be left alone with him. The door of the shrine is closed. Through it you hear two voices, and then one.',
       choices: [{ text: '(Wait.)', next: 'burial' }],
     },
@@ -267,6 +272,9 @@ export const chapter08Dialogues: Record<string, DialogueTree> = {
   ...chapter08ForestDialogues,
   ...chapter08SiegeDialogues,
   ...chapter08ShrineDialogues,
+  ...chapter08DayDialogues,
+  ...chapter08DayPlaceDialogues,
+  ...chapter08NightDialogues,
   [mullaHusaynWalls.id]: mullaHusaynWalls,
   [mullaHusaynAwaiting.id]: mullaHusaynAwaiting,
   [mullaHusaynWinter.id]: mullaHusaynWinter,

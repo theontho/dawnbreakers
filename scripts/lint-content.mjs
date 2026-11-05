@@ -31,7 +31,7 @@ const updateBaseline = process.argv.includes('--update-baseline');
 const ignoreDirs = new Set(['node_modules', 'dist', 'dist-demo', '.git']);
 const literalFields = new Set([
   'text', 'body', 'label', 'title', 'subtitle', 'prompt',
-  'description', 'speaker', 'sceneTitle',
+  'description', 'speaker', 'sceneTitle', 'heading', 'hint', 'touchHint', 'lockedLabel',
 ]);
 
 const EM_DASH = '\u2014';

@@ -8,6 +8,7 @@
  *   npm run minigames -- --games LampGame   # a subset
  *   npm run minigames -- --quick            # screenshot, then skip
  *   npm run minigames -- --locale fa        # in another language
+ *   npm run minigames -- --phone            # on a touch phone (390 x 844)
  */
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -22,13 +23,16 @@ const GAMES = {
   LampGame: 'Ch3Ship',
   InkGame: 'Ch6MakuChamber',
   CoffeeGame: 'TrialCourt',
-  RationGame: 'Ch8TabarsiFort',
+  TabarsiRationGame: 'Ch8TabarsiFort',
+  ZanjanRationGame: 'ZanjanFort',
   CurtainGame: 'QazvinKarbila',
   LanesGame: 'NurMadrasa',
 };
 const only = argValue('--games')?.split(',').filter(Boolean);
 const quick = args.includes('--quick');
 const locale = argValue('--locale') ?? 'en';
+const phone = args.includes('--phone');
+const variant = `${locale}${phone ? '-phone' : ''}`;
 const outDir = resolve(root, 'out/minigames');
 mkdirSync(outDir, { recursive: true });
 
@@ -52,7 +56,8 @@ function botStep(key) {
       s.goTo(want);
       break;
     }
-    case 'RationGame':
+    case 'TabarsiRationGame':
+    case 'ZanjanRationGame':
       if (s.portions > 0) s.give(s.groups[s.portions % s.groups.length]);
       else s.shareOut();
       break;
@@ -68,7 +73,10 @@ function botStep(key) {
   }
 }
 
-const { page, url, close } = await openGame({ args: ['--autoplay-policy=no-user-gesture-required'] });
+const { page, url, close } = await openGame({
+  args: ['--autoplay-policy=no-user-gesture-required'],
+  ...(phone ? { touch: true, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 } : {}),
+});
 const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 page.on('console', (m) => {
@@ -118,7 +126,7 @@ try {
         if (!wait && !holding) { await page.keyboard.down(hold); holding = true; }
       }
       if (!shot && Date.now() - started > 4500) {
-        await page.screenshot({ path: resolve(outDir, `${key}-${locale}.png`) });
+        await page.screenshot({ path: resolve(outDir, `${key}-${variant}.png`) });
         shot = true;
         if (quick) await page.evaluate((k) => window.__game.scene.getScene(k).skipMiniGame(), key);
       }

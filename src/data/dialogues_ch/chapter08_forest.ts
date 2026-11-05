@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../../dialogue/types';
+import { heard } from '../record';
 
 /**
  * Chapter 8, the forest road: autumn 1848. Mullá Ḥusayn leads the Black
@@ -257,7 +258,12 @@ export const villageWoman: DialogueTree = {
   },
 };
 
-/** A conscript from Láríján on picket, late in the siege. */
+/**
+ * A conscript from Láríján on picket, late in the siege, after ʿAbbás-Qulí
+ * Khán has come back knowing whom he shot (Nabíl p. 386): before that the
+ * Khán kept even his officers in the dark. On the day of the rice the same
+ * man sits by the causeway (`ch8-day-water`).
+ */
 export const conscript: DialogueTree = {
   id: 'ch8-conscript',
   startId: 'g',
@@ -266,9 +272,23 @@ export const conscript: DialogueTree = {
       speaker: 'A Conscript',
       text: 'Halt. No, wait. You are no soldier, and I am not much of one. They took me from my village in Láríján after the harvest. I had never seen a fort before this one.',
       choices: [
+        { text: '"You were at the water, the day of the rice."', next: 'water', requires: f => !!f.ch8DayWater },
         { text: '"Do you know who is inside?"', next: 'inside' },
         { text: '"Are you allowed to speak to me?"', next: 'allowed' },
       ],
+    },
+    water: {
+      speaker: 'A Conscript',
+      text: 'With the water skins. I remember. (He looks along the road.) The week after, our khan came back from his village like a man who had been handed a gift. Somebody inside handed it to him.',
+      choices: [
+        { text: '"And the pen? Did you tell them?"', next: 'pen', requires: f => !!f.ch8ToldConscriptPen },
+        { text: '"Who do they say is inside, now?"', next: 'inside' },
+      ],
+    },
+    pen: {
+      speaker: 'A Conscript',
+      text: 'About his hand shaking? I told them at the fire. They laughed. I did not. I have stopped believing the officers about anything they did not see.',
+      choices: [{ text: '"Who do they say is inside, now?"', next: 'inside' }],
     },
     allowed: {
       speaker: 'A Conscript',
@@ -282,7 +302,7 @@ export const conscript: DialogueTree = {
     },
     khan: {
       speaker: 'A Conscript',
-      onEnter: { set: { ch8MetConscript: true } },
+      onEnter: { set: { ch8MetConscript: true, [heard('ch8-khan', 'boast')]: true } },
       text: 'I know. My khan says he fired the shot himself, from up in a tree. He boasts of it at supper. (He lowers his voice.) Since then he does not sleep well. None of us do. Go on. I did not see you.',
     },
   },

@@ -111,6 +111,26 @@ export const zanjanStory: ChapterStory = {
       body: 'Umm-i-Ashraf showed you her son, born in the fort under the guns. She had vowed him to God on the night of his birth.',
     },
     {
+      flag: 'zjRationFavoured', equals: 'barricades',
+      title: 'The Bread Paddle',
+      body: 'Through the winter you shared out the bread at the ovens, and gave most of it to the men on the barricades. Only a few women at the walls, selling flour at a ruinous price, brought food in from outside.',
+    },
+    {
+      flag: 'zjRationFavoured', equals: 'wounded',
+      title: 'The Bread Paddle',
+      body: 'Through the winter you shared out the bread at the ovens, and gave most of it to the sick and wounded. Only a few women at the walls, selling flour at a ruinous price, brought food in from outside.',
+    },
+    {
+      flag: 'zjRationFavoured', equals: 'children',
+      title: 'The Bread Paddle',
+      body: 'Through the winter you shared out the bread at the ovens, and gave most of it to the children. Only a few women at the walls, selling flour at a ruinous price, brought food in from outside.',
+    },
+    {
+      flag: 'zjRationFavoured', equals: 'even',
+      title: 'The Bread Paddle',
+      body: 'Through the winter you shared out the bread at the ovens, the same to every table. Only a few women at the walls, selling flour at a ruinous price, brought food in from outside.',
+    },
+    {
       flag: 'zjHeardCrier',
       title: 'The Crier in the Snow',
       body: 'Every winter night a crier offered pardon and reward to any who would leave the fort and renounce his faith. Mír Ṣaláḥ could not count one who had gone.',

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { chapterById, type ChapterId } from '../data/chapters';
 import type { FlagState, MiniGameId } from '../dialogue/types';
-import { hdrGlowDiagnosis, hdrGpu, type HdrDiagnosis } from '../hdr/hdrSupport';
+import { hdrGlowDiagnosis, hdrGpu, isSafari, type HdrDiagnosis } from '../hdr/hdrSupport';
 import { showHdrSwatch } from '../hdr/hdrSwatch';
 import { localizedStyle, t } from '../i18n';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
@@ -20,7 +20,8 @@ const GAMES: Array<{ id: MiniGameId; chapter: ChapterId; outcome: (r: FlagState)
     outcome: r => (r.qzListened === 'clear' ? t('You heard nearly every word.') : t('You heard pieces of it.')) },
   { id: 'CoffeeGame', chapter: 'tabriz-trial',
     outcome: r => t('You caught {n} of the 6 moments at the doors.', { n: Number(r.trialOverheard) }) },
-  { id: 'RationGame', chapter: 'tabarsi', outcome: r => rationOutcome(String(r.ch8RationFavoured)) },
+  { id: 'TabarsiRationGame', chapter: 'tabarsi', outcome: r => rationOutcome(String(r.ch8RationFavoured)) },
+  { id: 'ZanjanRationGame', chapter: 'zanjan', outcome: r => rationOutcome(String(r.zjRationFavoured)) },
 ];
 
 function rationOutcome(favoured: string): string {
@@ -28,6 +29,8 @@ function rationOutcome(favoured: string): string {
     case 'wounded': return t('Most went to the wounded.');
     case 'watch': return t('Most went to the watch on the walls.');
     case 'young': return t('Most went to the youngest.');
+    case 'barricades': return t('Most went to the barricades.');
+    case 'children': return t('Most went to the children.');
     default: return t('You shared it out evenly.');
   }
 }
@@ -37,9 +40,13 @@ function hdrLine(diagnosis: HdrDiagnosis): string {
     case 'on': return t('HDR is on. The right half of the patch should be clearly brighter than the left.');
     case 'off': return t('HDR is available but turned off in Settings.');
     case 'sdr-screen': return t('This screen reports standard range, so the glow stays off. If the right half of the patch is brighter anyway, the browser is wrong about the screen.');
-    case 'no-extended': return t('This browser has WebGPU but cannot draw brighter than white on a canvas.');
+    case 'no-extended': return isSafari()
+      ? t('Safari has WebGPU here but does not draw brighter than white on its canvas yet. Chrome or Edge 131 or later can.')
+      : t('This browser has WebGPU but cannot draw brighter than white on a canvas.');
     case 'no-adapter': return t('This browser has WebGPU but found no graphics adapter for it.');
-    case 'no-webgpu': return t('This browser offers no WebGPU here. HDR needs Chrome or Edge 131 or later, on https or localhost.');
+    case 'no-webgpu': return isSafari()
+      ? t('Safari offers no WebGPU here. HDR needs Chrome or Edge 131 or later, on https or localhost.')
+      : t('This browser offers no WebGPU here. HDR needs Chrome or Edge 131 or later, on https or localhost.');
   }
 }
 

@@ -1,3 +1,4 @@
+import { CH8_DAY, ch8Visits } from '../record/day';
 import type { ChapterStory } from './types';
 
 export const chapter08Story: ChapterStory = {
@@ -13,6 +14,23 @@ export const chapter08Story: ChapterStory = {
     {
       text: 'Sit with Quddús, and stand by Mullá Ḥusayn through the winter',
       done: f => !!f.ch8MullaHusaynFell,
+    },
+    {
+      text: 'Share out the rice with Mírzá Muḥammad-Báqir by the gate',
+      done: f => !!f.ch8RiceShared,
+    },
+    {
+      text: 'Before nightfall, go where you are needed',
+      done: f => ch8Visits(f) >= CH8_DAY.slots,
+      progress: f => ({ current: Math.min(ch8Visits(f), CH8_DAY.slots), total: CH8_DAY.slots }),
+    },
+    {
+      text: 'Keep the night watch at the gate with Riḍá, then write by the keeper\'s wick',
+      done: f => !!f.ch8RecordWritten,
+    },
+    {
+      text: 'Hear the news Mírzá Muḥammad-Báqir brings to the gate',
+      done: f => !!f.ch8BetrayalNamed,
     },
     {
       text: 'Share the hunger of the companions at the cauldron',
@@ -131,8 +149,68 @@ export const chapter08Story: ChapterStory = {
     },
     {
       flag: 'ch8VisitedGrave',
-      title: 'River Stones',
-      body: 'You knelt at the grave beside the shrine, ringed with white river stones, its lamp fed with the last of the oil.',
+      title: 'Earth Smoothed Flat',
+      body: 'You knelt by the shrine where the earth had been smoothed flat. Quddús asked that the place be hidden, even from the companions, and no stone marks it.',
+    },
+    {
+      flag: 'ch8RiceShared',
+      title: 'The Rice He Stored',
+      body: 'Mírzá Muḥammad-Báqir, who drew the lines of the fort, shared out the rice Mullá Ḥusayn had stored against the hard days. Then Quddús told any who were afraid to go now, before the way was barred.',
+    },
+    {
+      flag: 'ch8DayTower',
+      title: 'The Ledger at the Gate',
+      body: 'You held the ledger flat while Muḥammad-Báqir wrote the names of the fallen. "Write whose word it was," he said.',
+    },
+    {
+      flag: 'ch8DayWounded',
+      title: 'Water Along the Wall',
+      body: 'You carried water to the wounded by the east wall while Mullá Ṣádiq bound their wounds and talked of the night behind the closed door.',
+    },
+    {
+      flag: 'ch8HeldHand',
+      title: 'A Hand Held',
+      body: 'A dying companion who had ridden out with Mullá Ḥusayn lay facing the palisade. You held his hand and asked him nothing.',
+    },
+    {
+      flag: 'ch8DayShrine',
+      title: 'Short Wicks',
+      body: 'You trimmed the shrine\'s lamps with the keeper, who swept the earth over the thirty-six in the north grave, and would not guess aloud about the other.',
+    },
+    {
+      flag: 'ch8DayWall',
+      title: 'A Trembling Pen',
+      body: 'At a loophole of the west wall Furúghí copied out the verses and remembered Mullá Ḥusayn as a boy whose hand shook when he wrote.',
+    },
+    {
+      flag: 'ch8DayWater',
+      title: 'Across the Ditch',
+      body: 'Filling the water skins below the causeway, you heard from a conscript that his khan sits four farsangs off, not knowing whom he shot.',
+    },
+    {
+      flag: 'ch8DayLeanTo',
+      title: 'The Siyyid from Qum',
+      body: 'Under the lean-tos a frightened siyyid from Qum asked you where Mullá Ḥusayn lies, and how many can still stand.',
+    },
+    {
+      flag: 'ch8ToldSiyyidGrave',
+      title: 'What You Told Him',
+      body: 'You told the siyyid from Qum what the keeper guessed about the grave. He wrote it down.',
+    },
+    {
+      flag: 'ch8ZargarGiven',
+      title: 'Rice for the Road',
+      body: 'At midnight a hungry man went out of the gate. You gave him your own share of rice for the road.',
+    },
+    {
+      flag: 'ch8NightWatch',
+      title: 'The Midnight Gate',
+      body: 'On the night watch with Riḍá you saw a man slip out of the gate with his rice under his arm. Riḍá said: let him go.',
+    },
+    {
+      flag: 'ch8BetrayalNamed',
+      title: 'A Sealed Letter',
+      body: 'Ten days before Naw-Rúz ʿAbbás-Qulí Khán came back knowing Mullá Ḥusayn was dead. A betrayer in the fort had written to him, and the man at the gate had carried the letter.',
     },
     {
       flag: 'ch8WoodcutterListened',

@@ -1,11 +1,15 @@
 import type { DialogueTree } from '../../dialogue/types';
+import { heed, heededCount } from '../../dialogue/voices';
+import { anyToTell, canTell, carriedAnything, carriedLines, closingLines, recordLines, testimonyState, toldKey } from '../record';
 
 /**
  * The western gate of Ṭihrán at dawn, January 1853. Bahá'u'lláh and His
  * family have set out for Baghdád under escort, in deep winter. The player
  * arrives after they have gone: only the tracks in the snow remain. The
  * final reflection closes the circle with the lamplit night in Shíráz and
- * branches on `recognised` (true, false, or never answered).
+ * branches on `recognised` (true, false, or never answered). Before the
+ * last answer the pilgrim says what they carried and what they saw: the
+ * record written at Ṭabarsí, read back as testimony (docs/design/chronicler.md).
  */
 
 /** The guard from the prison stair, now posted at the western gate. */
@@ -162,6 +166,71 @@ export const ch10Final: DialogueTree = {
       speaker: 'Narrator',
       text: 'And then, in a pit with no window, a dawn no one saw. In Shíráz the door was closed and you sat outside it. Under Ṭihrán there was no door at all, only a chain, a thread of light, and a stillness that made the iron quiet.',
       choices: [
+        { text: '(Remember what you carried.)', next: 'carried', requires: carriedAnything },
+        { text: '(Say aloud what you saw at Ṭabarsí.)', next: 'testimony', requires: f => !carriedAnything(f) && anyToTell(f) },
+        { text: '(Look west.)', next: 'answer', requires: f => !carriedAnything(f) && !anyToTell(f) },
+      ],
+    },
+    carried: {
+      speaker: 'Narrator',
+      text: 'Eight years of roads, and your hands remember them better than your head.',
+      lines: carriedLines,
+      choices: [
+        { text: '(Say aloud what you saw at Ṭabarsí.)', next: 'testimony', requires: anyToTell },
+        { text: '(Look west.)', next: 'answer', requires: f => !anyToTell(f) },
+      ],
+    },
+    testimony: {
+      speaker: 'Narrator',
+      text: 'There is no one on the road to hear it. Say it anyway, the way you will one day say it to whoever comes asking. What do you tell first?',
+      choices: [
+        { text: '(How many had fallen.)', next: 'tFallen', requires: canTell('ch8-fallen'), effect: { set: { [toldKey('ch8-fallen')]: true } } },
+        { text: '(Where Mullá Ḥusayn lies.)', next: 'tGrave', requires: canTell('ch8-grave'), effect: { set: { [toldKey('ch8-grave')]: true } } },
+        { text: '(What passed behind the closed door.)', next: 'tDoor', requires: canTell('ch8-door'), effect: { set: { [toldKey('ch8-door')]: true } } },
+        { text: '(The man in the tree.)', next: 'tKhan', requires: canTell('ch8-khan'), effect: { set: { [toldKey('ch8-khan')]: true } } },
+        { text: '(The trembling pen.)', next: 'tSword', requires: canTell('ch8-sword'), effect: { set: { [toldKey('ch8-sword')]: true } } },
+        { text: '(The man at the gate at midnight.)', next: 'tMidnight', requires: canTell('ch8-midnight'), effect: { set: { [toldKey('ch8-midnight')]: true } } },
+        { text: '(That is enough.)', next: 'close' },
+      ],
+    },
+    tFallen: {
+      speaker: 'Narrator', text: 'How many had fallen since Bárfurúsh:', lines: f => recordLines('ch8-fallen', f),
+      choices: [{ text: '(Tell more.)', next: 'testimony', requires: anyToTell }, { text: '(That is enough.)', next: 'close' }],
+    },
+    tGrave: {
+      speaker: 'Narrator', text: 'Where Mullá Ḥusayn lies:', lines: f => recordLines('ch8-grave', f),
+      choices: [{ text: '(Tell more.)', next: 'testimony', requires: anyToTell }, { text: '(That is enough.)', next: 'close' }],
+    },
+    tDoor: {
+      speaker: 'Narrator', text: 'What passed behind the closed door:', lines: f => recordLines('ch8-door', f),
+      choices: [{ text: '(Tell more.)', next: 'testimony', requires: anyToTell }, { text: '(That is enough.)', next: 'close' }],
+    },
+    tKhan: {
+      speaker: 'Narrator', text: 'The man in the tree:', lines: f => recordLines('ch8-khan', f),
+      choices: [{ text: '(Tell more.)', next: 'testimony', requires: anyToTell }, { text: '(That is enough.)', next: 'close' }],
+    },
+    tSword: {
+      speaker: 'Narrator', text: 'What kind of man Mullá Ḥusayn had been:', lines: f => recordLines('ch8-sword', f),
+      choices: [{ text: '(Tell more.)', next: 'testimony', requires: anyToTell }, { text: '(That is enough.)', next: 'close' }],
+    },
+    tMidnight: {
+      speaker: 'Narrator', text: 'The man at the gate at midnight:', lines: f => recordLines('ch8-midnight', f),
+      choices: [{ text: '(Tell more.)', next: 'testimony', requires: anyToTell }, { text: '(That is enough.)', next: 'close' }],
+    },
+    close: {
+      speaker: 'Narrator',
+      text: 'Your breath hangs in the cold and is gone.',
+      lines: closingLines,
+      choices: [
+        { text: '(Look west.)', next: 'answer', requires: f => testimonyState(f) === 'kept', effect: { set: { ch10Testimony: 'kept' } } },
+        { text: '(Look west.)', next: 'answer', requires: f => testimonyState(f) === 'gaps', effect: { set: { ch10Testimony: 'gaps' } } },
+        { text: '(Look west.)', next: 'answer', requires: f => testimonyState(f) === 'full', effect: { set: { ch10Testimony: 'full' } } },
+      ],
+    },
+    answer: {
+      speaker: 'Narrator',
+      text: 'The tracks run west into the white. Something in you must answer them, as something answered a lamp in Shíráz.',
+      choices: [
         { text: '"In Shíráz the lamp went out because the sun made it needless. I did not know the sun could rise underground."',
           next: 'end', requires: f => f.recognised === true, effect: { set: { ch10Final: 'kept' } } },
         { text: '"I asked for time. I was given eight years and a winter in the dark. I am ready now to say what I saw."',
@@ -170,6 +239,9 @@ export const ch10Final: DialogueTree = {
           next: 'end', requires: f => f.recognised === undefined, effect: { set: { ch10Final: 'ready' } } },
         { text: '"I do not know yet what I saw. I know which way the tracks go."',
           next: 'end', effect: { set: { ch10Final: 'following' } } },
+        { text: 'You have been homesick for eight years, and never for a place. Follow them.',
+          next: 'end', voice: 'longing', requires: f => heededCount(f, 'longing') >= 2,
+          effect: { set: { ch10Final: 'following', ...heed('ch10-road', 'longing') } } },
       ],
     },
     end: {

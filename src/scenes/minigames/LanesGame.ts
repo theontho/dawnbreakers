@@ -42,6 +42,7 @@ export class LanesGame extends MiniGameScene {
 
   readonly heading = 'Through the Dark Lanes';
   protected readonly hint = 'Walk with → and stop or step back with ←, or hold the pointer on either side. Stand in a doorway while a lantern passes.';
+  protected readonly touchHint = 'Hold your finger on the right to walk, and on the left to stop or step back. Stand in a doorway while a lantern passes.';
 
   private x = 1;
   private noticed = 0;

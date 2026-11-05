@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { addAudioControls } from '../ui/audioControls';
 import { isDebugOverlayVisible, setDebugOverlayVisible } from '../ui/debugOverlay';
-import { hdrGlowSupported, isHdrGlowEnabled, setHdrGlowEnabled } from '../hdr/hdrSupport';
+import { hdrGlowDiagnosisForScreen, isHdrGlowEnabled, setHdrGlowEnabled, type HdrDiagnosis } from '../hdr/hdrSupport';
 import { resetStory } from '../dialogue/progress';
 import { localizedStyle, rtl, t, textOriginX } from '../i18n';
 import { addLanguageDropdown } from '../ui/languageDropdown';
@@ -150,20 +150,25 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   /**
-   * Corner toggle for the sun and moon shining past white, offered only on
-   * a screen and browser that can show it.
+   * Corner toggle for the sun and moon shining past white. Where this screen
+   * and browser cannot show it, the corner says why instead (the Mini-games
+   * screen's HDR check explains at length).
    */
   private addHdrToggle(left: number, top: number, size: { width: number; height: number }): void {
-    void hdrGlowSupported().then(supported => {
-      if (!supported || !this.scene.isActive()) return;
-      const label = (): string => (isHdrGlowEnabled() ? t('HDR glow ✓') : t('HDR glow'));
+    void hdrGlowDiagnosisForScreen().then(diagnosis => {
+      if (!this.scene.isActive()) return;
+      const available = diagnosis === 'on' || diagnosis === 'off';
+      const label = (): string => (available
+        ? (isHdrGlowEnabled() ? t('HDR glow ✓') : t('HDR glow'))
+        : hdrUnavailableLabel(diagnosis));
       const toggle = this.add.text(left, top, label(), localizedStyle({
         fontFamily: 'Georgia, serif',
         fontSize: responsiveFont(12, size, 11),
-        color: '#9c8458',
+        color: available ? '#9c8458' : '#6a5a40',
         padding: { x: 6, y: 6 },
-      })).setOrigin(0, 0).setInteractive({ useHandCursor: true });
-      toggle.on('pointerdown', () => {
+      })).setOrigin(0, 0);
+      if (!available) return;
+      toggle.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
         setHdrGlowEnabled(!isHdrGlowEnabled());
         toggle.setText(label());
       });
@@ -246,5 +251,15 @@ export class SettingsScene extends Phaser.Scene {
       .on('pointerdown', onClick);
 
     return this.add.container(0, 0, [bg, text]);
+  }
+}
+
+/** Why there is no HDR glow here, short enough for the panel's corner. */
+function hdrUnavailableLabel(diagnosis: HdrDiagnosis): string {
+  switch (diagnosis) {
+    case 'sdr-screen': return t('HDR glow: standard-range screen');
+    case 'no-webgpu': return t('HDR glow: no WebGPU here');
+    case 'no-adapter': return t('HDR glow: no graphics adapter');
+    default: return t('HDR glow: not in this browser');
   }
 }

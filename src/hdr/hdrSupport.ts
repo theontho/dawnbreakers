@@ -62,6 +62,25 @@ function hdrDisplay(): MediaQueryList | undefined {
   return display;
 }
 
+/** Whether the screen the window is on reports high dynamic range. */
+export function hdrScreen(): boolean {
+  return hdrDisplay()?.matches ?? false;
+}
+
+/**
+ * The diagnosis without waking the GPU on a screen that reports standard
+ * range (Settings opens often; the mini-game check probes regardless).
+ */
+export async function hdrGlowDiagnosisForScreen(): Promise<HdrDiagnosis> {
+  return hdrScreen() ? hdrGlowDiagnosis() : 'sdr-screen';
+}
+
+/** Safari, which may lack WebGPU or extended tone mapping where Chrome has them. */
+export function isSafari(): boolean {
+  const ua = navigator.userAgent;
+  return /Safari\//.test(ua) && !/Chrome\/|Chromium\/|Edg\//.test(ua);
+}
+
 /** True once this screen and browser are known to show HDR from a WebGPU canvas. */
 export async function hdrGlowSupported(): Promise<boolean> {
   if (!hdrDisplay()?.matches) return false;

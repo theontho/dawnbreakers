@@ -34,6 +34,7 @@ export class InkGame extends MiniGameScene {
 
   readonly heading = 'A Fair Copy';
   protected readonly hint = 'Draw the pen along the line from right to left, or hold ←. When the ink freezes, warm it at the brazier: click the inkwell, or press ↓.';
+  protected readonly touchHint = 'Draw the pen along the line from right to left with your finger. When the ink freezes, tap the inkwell to warm it at the brazier.';
 
   private written = 0;
   private warmth = 1;

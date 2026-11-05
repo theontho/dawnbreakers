@@ -172,7 +172,8 @@ export const ch8ForestRoadMap: MapDefinition = {
     { gridX: 43, gridY: 15, texture: 'ch8-conscript',
       prompt: 'Speak with the Conscript  [E]',
       dialogue: 'ch8-conscript',
-      present: f => !!f.ch8MullaHusaynFell },
+      // Only once the Khán is back and boasting: on the day of the rice he sits by the causeway.
+      present: f => !!f.ch8BetrayalNamed },
   ],
   exits: [12, 13].map(fromY => ({
     fromX: W - 1, fromY, dx: 1, dy: 0,

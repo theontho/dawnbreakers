@@ -7,6 +7,7 @@ import { MAP_DEFINITIONS } from './data/maps';
 import { DialogueScene } from './scenes/DialogueScene';
 import { TitleScene } from './scenes/TitleScene';
 import { JournalScene } from './scenes/JournalScene';
+import { RecordScene } from './scenes/RecordScene';
 import { SettingsScene } from './scenes/SettingsScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
 import { ChapterEndScene } from './scenes/ChapterEndScene';
@@ -60,7 +61,7 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [
     BootScene, TitleScene, ChapterSelectScene,
     ...MAP_DEFINITIONS.map(def => new MapScene(def)),
-    DialogueScene, MiniGamePickerScene, ...miniGameScenes(), JournalScene, SettingsScene, ChapterEndScene, JourneyScene, MapEditorScene,
+    DialogueScene, MiniGamePickerScene, ...miniGameScenes(), JournalScene, RecordScene, SettingsScene, ChapterEndScene, JourneyScene, MapEditorScene,
   ],
 };
 

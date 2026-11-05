@@ -111,6 +111,41 @@ export const ummAshraf: DialogueTree = {
       speaker: 'Narrator',
       onEnter: { set: { zjMetAshraf: true } },
       text: 'Years later, Ashraf will stand before his judges in this same town. His mother will go to him and tell him she will disown him if he recants. He will not, and she will say she rejoices to have kept her vow.',
+      choices: [
+        { text: '(Look at the ovens.)', next: 'ovens', requires: f => f.zjRationFavoured === undefined },
+        { text: '(Leave her with him.)' },
+      ],
+    },
+    ovens: {
+      speaker: 'Umm-i-Ashraf',
+      text: 'The women have given me the flour to keep, God help me, and the barricades, the sick and the mothers all come to me for it. (She shifts the baby to her other arm.) Take the paddle. You share it out this winter, and I will tell you if you are a fool.',
+      choices: [{ text: '(Take the bread paddle.)', next: 'shared', play: 'ZanjanRationGame' }],
+    },
+    shared: {
+      speaker: 'Narrator',
+      text: 'The snow lies on the barricades and the last loaves come out of the oven as thin as paper. Umm-i-Ashraf watches you lay the paddle down.',
+      choices: [
+        { text: '"Most went to the barricades."', next: 'toBarricades', requires: f => f.zjRationFavoured === 'barricades' },
+        { text: '"Most went to the sick and wounded."', next: 'toWounded', requires: f => f.zjRationFavoured === 'wounded' },
+        { text: '"Most went to the children."', next: 'toChildren', requires: f => f.zjRationFavoured === 'children' },
+        { text: '"I gave every table the same."', next: 'toAll', requires: f => f.zjRationFavoured === 'even' },
+      ],
+    },
+    toBarricades: {
+      speaker: 'Umm-i-Ashraf',
+      text: 'Twenty-eight barricades, nineteen men at each and nineteen more to watch. If they fall, the ovens fall with them. (She does not look toward the children.) It was not wrong. It will not feel right either, whatever you do.',
+    },
+    toWounded: {
+      speaker: 'Umm-i-Ashraf',
+      text: 'The men in the cellars cannot fight, and you fed them anyway. (She nods slowly.) That is how we will be remembered, if anyone remembers: not for the guns, for who we fed when it was no use.',
+    },
+    toChildren: {
+      speaker: 'Umm-i-Ashraf',
+      text: '(She holds Ashraf a little tighter.) The men on the barricades would have told you the same, every one. Hunger is a hard teacher. Let the children learn it last.',
+    },
+    toAll: {
+      speaker: 'Umm-i-Ashraf',
+      text: 'The same to all. (She almost smiles.) Ḥujjat would have done it so. No one went to sleep full, and no one could say the bread was given unjustly.',
     },
   },
 };

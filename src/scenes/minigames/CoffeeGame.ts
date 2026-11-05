@@ -48,6 +48,7 @@ export class CoffeeGame extends MiniGameScene {
 
   readonly heading = 'At the Doors of the Hall';
   protected readonly hint = 'Climb with ↑ and go down with ↓, or click where to stand. Fill the tray at the coffee-maker, and be at the doors with hot coffee when they open.';
+  protected readonly touchHint = 'Tap where to stand. Fill the tray at the coffee-maker, and be at the doors with hot coffee when they open.';
 
   private station = 1;
   private moving = 0;

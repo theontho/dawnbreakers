@@ -6,6 +6,7 @@ import { localSiderealTime, locationFromDegrees } from '../sky/projection';
 import { skyBodies, type SkyBodies } from '../sky/skyBodies';
 import type { GeographicLocation } from '../sky/types';
 import { capFrameRate } from '../ui/frameCap';
+import { RemarkCaption } from '../ui/remarkCaption';
 import { restartSceneOnResize } from '../ui/responsive';
 import { firstSunEvent, type SunEvent } from '../travel/firstSunEvent';
 import { JourneyClock } from '../travel/journeyClock';
@@ -108,6 +109,9 @@ export class JourneyScene extends Phaser.Scene {
   private lastMs: number | undefined;
   private shownFrameRate = '';
   private leaving = false;
+  private caption!: RemarkCaption;
+  /** The day whose remarks have been said, so each is said once as the road passes it. */
+  private remarkedDay = 0;
 
   constructor() { super('Journey'); }
 
@@ -116,6 +120,7 @@ export class JourneyScene extends Phaser.Scene {
     this.onward = data.onward;
     this.settings = { ...DEFAULT_SETTINGS, ...data.settings };
     this.walked = 0;
+    this.remarkedDay = 0;
     this.lastMs = undefined;
     this.leaving = false;
   }
@@ -146,6 +151,7 @@ export class JourneyScene extends Phaser.Scene {
     this.passage = new JourneyPassage(this.clock, journey);
     this.hud = new JourneyHud(this, journey);
     this.glows = new SkyGlows(this, this.sky, this.land, this.party, this.hud);
+    this.caption = new RemarkCaption(this, () => this.hud.controlsTop() - 10, 150);
     playMusic(journey.music);
     setSoundscape(journey.sound);
 
@@ -191,6 +197,20 @@ export class JourneyScene extends Phaser.Scene {
     this.party?.draw(this.walked, light, now);
     this.glows.update(light, timeBlur);
     this.hud.updateClockFor(date, this.journey.longitude, this.statusLine());
+    this.sayRemarks();
+  }
+
+  /** The party's remarks for the days the road has reached since the last frame, going forward only. */
+  private sayRemarks(): void {
+    const day = dayOfJourney(this.journey, this.clock.date);
+    if (day <= this.remarkedDay) {
+      // Run back before a remark's day, it may be said again on the way forward.
+      if (day < this.remarkedDay) this.remarkedDay = day;
+      return;
+    }
+    const due = (this.journey.remarks ?? []).filter(r => r.day > this.remarkedDay && r.day <= day);
+    this.remarkedDay = day;
+    if (due.length > 0) this.caption.say(due);
   }
 
   /**
