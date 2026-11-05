@@ -4631,6 +4631,22 @@ export const text: TranslationCatalog = {
   "Your breath hangs in the cold and is gone.": "你的呼吸在寒冷中凝成一团，随即消散。",
   "Your record": "你的记录",
   "Your record: {accounts} accounts heard on {questions} questions, {written} written down  ›": "你的记录：就{questions}个问题听取了{accounts}种说法，已写下{written}种  ›",
+  "Badasht, summer 1848": "巴达什特，1848年夏",
+  "Iṣfahán, autumn 1846": "伊斯法罕，1846年秋",
+  "Karbilá, autumn 1851": "卡尔巴拉，1851年秋",
+  "Karbilá, the last days of 1843": "卡尔巴拉，1843年的最后几日",
+  "Káshán, the eve of Naw-Rúz 1847": "卡尚，1847年诺鲁孜节前夕",
+  "Mákú, winter 1847": "马库，1847年冬",
+  "Mecca, the month of pilgrimage, 1844": "麦加，朝圣之月，1844年",
+  "Nayríz, May 1850": "内里兹，1850年5月",
+  "Qazvín, 1847": "加兹温，1847年",
+  "Shaykh Ṭabarsí, autumn 1848": "谢赫·塔巴尔西，1848年秋",
+  "Shíráz, autumn 1845": "设拉子，1845年秋",
+  "Tabríz, the eve of 9 July 1850": "大不里士，1850年7月8日夜",
+  "The Qur'án Gate of Shíráz, summer 1844": "设拉子古兰门，1844年夏",
+  "Ṭihrán, August 1852": "德黑兰，1852年8月",
+  "Ṭihrán, autumn 1844": "德黑兰，1844年秋",
+  "Zanján, autumn 1850": "赞詹，1850年秋",
 };
 
 // Chapter metadata translations.

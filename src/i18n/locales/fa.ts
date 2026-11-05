@@ -4634,6 +4634,22 @@ export const text: TranslationCatalog = {
   "Your breath hangs in the cold and is gone.": "نفست در سرما آویزان می‌ماند و می‌رود.",
   "Your record": "گزارش تو",
   "Your record: {accounts} accounts heard on {questions} questions, {written} written down  ›": "گزارش تو: {accounts} روایت دربارهٔ {questions} پرسش شنیده شد، {written} نوشته شد  ›",
+  "Badasht, summer 1848": "بدشت، تابستان ۱۸۴۸",
+  "Iṣfahán, autumn 1846": "اصفهان، پاییز ۱۸۴۶",
+  "Karbilá, autumn 1851": "کربلا، پاییز ۱۸۵۱",
+  "Karbilá, the last days of 1843": "کربلا، واپسین روزهای ۱۸۴۳",
+  "Káshán, the eve of Naw-Rúz 1847": "کاشان، شب نوروز ۱۸۴۷",
+  "Mákú, winter 1847": "ماکو، زمستان ۱۸۴۷",
+  "Mecca, the month of pilgrimage, 1844": "مکه، ماه زیارت، ۱۸۴۴",
+  "Nayríz, May 1850": "نیریز، مه ۱۸۵۰",
+  "Qazvín, 1847": "قزوین، ۱۸۴۷",
+  "Shaykh Ṭabarsí, autumn 1848": "شیخ طبرسی، پاییز ۱۸۴۸",
+  "Shíráz, autumn 1845": "شیراز، پاییز ۱۸۴۵",
+  "Tabríz, the eve of 9 July 1850": "تبریز، شب ۹ ژوئیهٔ ۱۸۵۰",
+  "The Qur'án Gate of Shíráz, summer 1844": "دروازه قرآن شیراز، تابستان ۱۸۴۴",
+  "Ṭihrán, August 1852": "تهران، اوت ۱۸۵۲",
+  "Ṭihrán, autumn 1844": "تهران، پاییز ۱۸۴۴",
+  "Zanján, autumn 1850": "زنجان، پاییز ۱۸۵۰",
 };
 
 // The trial at Tabríz.

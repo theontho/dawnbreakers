@@ -1,5 +1,8 @@
+import type { Season, VistaFrame } from './vista/types';
+
 /**
- * Where everything stands in the dawn view of Shíráz, in screen pixels.
+ * Where everything stands in the dawn view of a walled city (Shíráz first),
+ * in screen pixels.
  * The sun rises at the centre of the screen over `horizonY`; the city wall
  * runs across the view with its gate a little to the left, so the road can
  * wind up to it out of the fields.
@@ -19,12 +22,11 @@ export interface DawnLayout {
   portalX: number | null;
   /** Size scale: 1 at 800 pixels tall. */
   k: number;
-  /** Topmost painted pixel, so the baked layers can skip the open sky. */
-  top: number;
+  season: Season;
 }
 
-export function dawnLayout(width: number, height: number, horizonY: number): DawnLayout {
-  const k = Math.min(1.5, Math.max(0.75, height / 800));
+export function dawnLayout(frame: VistaFrame): DawnLayout {
+  const { width, height, horizonY, k, season } = frame;
   const wallBase = Math.round(Math.min(height - 60 * k, horizonY + height * 0.085));
   const wallTop = wallBase - Math.round(36 * k);
   const centre = width / 2;
@@ -43,6 +45,6 @@ export function dawnLayout(width: number, height: number, horizonY: number): Daw
     argX: gateX - argX > 140 * k ? argX : null,
     portalX: portalX - shrineX > 150 * k ? portalX : null,
     k,
-    top: Math.max(0, Math.floor(horizonY - 150 * k)),
+    season,
   };
 }

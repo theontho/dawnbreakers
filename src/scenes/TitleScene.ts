@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { followSunrise, loadTitleMusic, startTitleMusic, type TitleMusic } from './titleMusic';
-import { chapters as storyChapters } from '../data/chapters';
+import { chapterById, chapters as storyChapters, type ChapterId } from '../data/chapters';
+import { openingEvening, TITLE_OPENINGS, titleChapter } from '../data/titleOpenings';
+import { vistaFor } from '../assets/art/vista';
 import { hideSplashWhenSettled } from '../ui/splash';
 import { loadBookmark, resetStory } from '../dialogue/progress';
 import { localizedStyle, t } from '../i18n';
@@ -14,6 +16,7 @@ import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS } from './titleS
 import { SunriseClock, type SunriseClockState } from './titleSunriseClock';
 import { addGitHubLink, addMenuButton, foldMenu, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
 import { addSunriseTransport } from './titleTransport';
+import { addTitleOpeningPicker, announceTitleOpening } from './titleOpeningPicker';
 
 /**
  * Carried across a restart of the title (a resize or a change of language)
@@ -22,9 +25,18 @@ import { addSunriseTransport } from './titleTransport';
  */
 type TitleResume = { clock: SunriseClockState; musicLeadSeconds: number };
 
+/**
+ * `chapter` is the opening picked in the viewer, kept across restarts while
+ * the title is open; without it the title shows the chapter the story would
+ * continue. `announce` names the picked chapter as it comes up.
+ */
+type TitleData = { resume?: TitleResume; chapter?: ChapterId; announce?: boolean };
+
 const REPO_URL = 'https://github.com/theontho/dawnbreakers';
 /** A screen shorter than this (a phone held sideways) folds the menu as a narrow one does. */
 const FOLD_BELOW_HEIGHT = 520;
+/** The language button and the opening viewer under it take this much of the top corner. */
+const TITLE_CORNER_WIDTH = 96;
 
 /** A soft dark halo that keeps the title legible over night and noon sky alike. */
 const TITLE_SHADOW = { offsetX: 0, offsetY: 2, color: '#120b05', blur: 10, fill: true, stroke: false };
@@ -34,13 +46,15 @@ export class TitleScene extends Phaser.Scene {
   private clock?: SunriseClock;
   private music?: TitleMusic;
   private musicLeadSeconds?: number;
+  private pickedChapter?: ChapterId;
 
   constructor() {
     super('Title');
   }
 
-  create(data: { resume?: TitleResume } = {}): void {
+  create(data: TitleData = {}): void {
     const { resume } = data;
+    this.pickedChapter = data.chapter;
     this.clock = undefined;
     this.music = undefined;
     this.musicLeadSeconds = resume?.musicLeadSeconds;
@@ -58,7 +72,10 @@ export class TitleScene extends Phaser.Scene {
     const centerX = safe.x + safe.width / 2;
     const narrow = isNarrowLayout(size);
 
-    const sunrise = addSunriseBackground(this, width, height);
+    let bookmark = loadBookmark();
+    const chapter = (data.chapter && chapterById(data.chapter)) || titleChapter(bookmark?.scene);
+    const opening = TITLE_OPENINGS[chapter.id];
+    const sunrise = addSunriseBackground(this, width, height, vistaFor(opening.vista), openingEvening(opening));
     const musicReady = loadTitleMusic(this);
 
     const titleLayer = this.add.container(0, 0);
@@ -74,8 +91,12 @@ export class TitleScene extends Phaser.Scene {
       wordWrap: { width: Math.min(safe.width, 900) },
       shadow: TITLE_SHADOW,
     }, 'center')).setOrigin(0.5, 0);
+    // Clear of the column under the language button (the opening viewer) where they would meet.
+    if (title.x + title.width / 2 > safe.right - TITLE_CORNER_WIDTH || title.x - title.width / 2 < safe.x + TITLE_CORNER_WIDTH) {
+      title.y += MIN_TOUCH_TARGET + 6;
+    }
 
-    const subtitle = this.add.text(centerX, title.y + title.height + 4, t('Shíráz, the eve of 23 May 1844'), localizedStyle({
+    const subtitle = this.add.text(centerX, title.y + title.height + 4, t(opening.subtitle), localizedStyle({
       fontFamily: 'Georgia, serif',
       fontSize: responsiveFont(22, size, 15),
       color: '#e2c98f',
@@ -85,7 +106,6 @@ export class TitleScene extends Phaser.Scene {
       shadow: TITLE_SHADOW,
     }, 'center')).setOrigin(0.5, 0);
 
-    let bookmark = loadBookmark();
     const startButton = addMenuButton(this, size, t(bookmark ? 'Continue' : 'Start'), 'primary');
     const chapters = addMenuButton(this, size, t('Chapters ›'), 'secondary');
     const journeys = addMenuButton(this, size, t('Journeys'), 'secondary');
@@ -115,6 +135,11 @@ export class TitleScene extends Phaser.Scene {
       playSunrise(this, sunrise, clock, this.titleStartedAtMs);
       addTitleLanguageButton(this, size, () => this.scene.restart(this.resumeData()));
       addSunriseTransport(this, size, clock);
+      addTitleOpeningPicker(this, size, chapter, picked => {
+        this.pickedChapter = picked.id;
+        this.scene.restart({ ...this.resumeData(), announce: true });
+      });
+      if (data.announce) announceTitleOpening(this, size, chapter, centerX, subtitle.y + subtitle.height + 10, Math.min(safe.width, 720));
       this.followMusic();
       const activate = (button: Phaser.GameObjects.Text, tone: MenuTone, onClick: () => void) =>
         activateTitleTextButton(this, button, MENU_COLORS[tone].normal, MENU_COLORS[tone].hover, onClick);
@@ -171,9 +196,10 @@ export class TitleScene extends Phaser.Scene {
     if (!clock.isPlaying) music.pause();
   }
 
-  private resumeData(): { resume?: TitleResume } {
-    if (!this.clock) return {};
-    return { resume: { clock: this.clock.state, musicLeadSeconds: this.musicLeadSeconds ?? 0 } };
+  private resumeData(): TitleData {
+    const chapter = this.pickedChapter;
+    if (!this.clock) return { chapter };
+    return { chapter, resume: { clock: this.clock.state, musicLeadSeconds: this.musicLeadSeconds ?? 0 } };
   }
 
   /** The "press to begin" prompt, where the start button will appear. */

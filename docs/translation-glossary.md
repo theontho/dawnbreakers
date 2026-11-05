@@ -222,7 +222,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | ʿAlí Khán, Warden of Mákú | علی‌خان، زندانبان ماکو | 阿里汗，马库的狱守 |
 | ʿAẓím | عظیم | 阿齐姆 |
 
-## Titles and labels (851)
+## Titles and labels (868)
 
 | English | fa | zh |
 | --- | --- | --- |
@@ -380,6 +380,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | At the Pool | کنار حوض | 在水池边 |
 | At the Scribes' Desk | بر میز کاتبان | 在书记官案前 |
 | Back from Mashhad | بازگشته از مشهد | 从马什哈德回来 |
+| Badasht, summer 1848 | بدشت، تابستان ۱۸۴۸ | 巴达什特，1848年夏 |
 | Badasht, the Hamlet | بدشت، دهکده | 巴达什特，村落 |
 | Badasht, the Three Gardens | بدشت، سه باغ | 巴达什特，三座花园 |
 | Baghdád and the Road Home | بغداد و راه بازگشت | 巴格达与归乡之路 |
@@ -558,6 +559,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Ironwood | آهن‌چوب | 铁木 |
 | Iṣfahán to Káshán, March 1847 | از اصفهان تا کاشان، مارس ۱۸۴۷ | 从伊斯法罕到卡尚，1847年3月 |
 | Iṣfahán, 1846 to 1847 | اصفهان، ۱۸۴۶ تا ۱۸۴۷ | 伊斯法罕，1846年至1847年 |
+| Iṣfahán, autumn 1846 | اصفهان، پاییز ۱۸۴۶ | 伊斯法罕，1846年秋 |
 | Iṣfahán, by the River | اصفهان، کنار رود | 伊斯法罕，河畔 |
 | Iṣfahán, Káshán and Qum, autumn 1844 | اصفهان، کاشان و قم، پاییز ۱۸۴۴ | 伊斯法罕、卡尚与库姆，1844年秋 |
 | Iṣfahán, the Palace of the Sun | اصفهان، عمارت خورشید | 伊斯法罕，太阳宫 |
@@ -566,6 +568,8 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Kaaba | کعبه | 克尔白天房 |
 | Karbilá and Qazvín, 1845 to 1848 | کربلا و قزوین، ۱۸۴۵ تا ۱۸۴۸ | 卡尔巴拉与加兹温，1845年至1848年 |
 | Karbilá, 1851 to 1852 | کربلا، ۱۸۵۱ تا ۱۸۵۲ | 卡尔巴拉，1851年至1852年 |
+| Karbilá, autumn 1851 | کربلا، پاییز ۱۸۵۱ | 卡尔巴拉，1851年秋 |
+| Karbilá, the last days of 1843 | کربلا، واپسین روزهای ۱۸۴۳ | 卡尔巴拉，1843年的最后几日 |
 | Karbilá, winter 1843 to 1844 | کربلا، زمستان ۱۸۴۳ تا ۱۸۴۴ | 卡尔巴拉，1843年冬至1844年 |
 | Karbilá: a Lane East of the Shrine | کربلا: کوچه‌ای در شرق بقعه | 卡尔巴拉：圣祠东边的一条巷子 |
 | Karbilá: before the Shrine of the Imám Ḥusayn | کربلا: پیش بقعهٔ امام حسین | 卡尔巴拉：伊玛目侯赛因圣祠前 |
@@ -573,6 +577,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Karbilá: the Lane of Siyyid Káẓim | کربلا: کوچهٔ سید کاظم | 卡尔巴拉：赛义德·卡兹姆的巷子 |
 | Karbilá: the Palm Groves on the Canal | کربلا: نخلستان‌های کنار نهر | 卡尔巴拉：渠边的棕榈林 |
 | Káshán and Kulayn | کاشان و کلین | 卡尚与库莱因 |
+| Káshán, the eve of Naw-Rúz 1847 | کاشان، شب نوروز ۱۸۴۷ | 卡尚，1847年诺鲁孜节前夕 |
 | Káshán, the Gate of ʿAṭṭár | کاشان، دروازهٔ عطار | 卡尚，阿塔尔门 |
 | Káshán, the House of Ḥájí Mírzá Jání | کاشان، خانهٔ حاجی میرزا جانی | 卡尚，哈吉·米尔扎·贾尼之家 |
 | Keeper of the Shrine | کلیددار بقعه | 圣祠看守人 |
@@ -598,6 +603,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Maku Fortress | دژ ماکو | 马库堡垒 |
 | Mákú, the Amanuensis's Room | ماکو، اتاق کاتب | 马库，抄写员的房间 |
 | Mákú, the Open Mountain | ماکو، کوهستان گشاده | 马库，敞开的山 |
+| Mákú, winter 1847 | ماکو، زمستان ۱۸۴۷ | 马库，1847年冬 |
 | Man of Bárfurúsh | مرد بارفروشی | 巴尔弗鲁什人 |
 | Market & Supplies | بازار و آذوقه | 市场与补给 |
 | Market Awning | سایبان بازار | 市集遮篷 |
@@ -606,6 +612,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Mázindarán to Ṭihrán, winter 1850 | از مازندران تا تهران، زمستان ۱۸۵۰ | 从马赞德兰到德黑兰，1850年冬 |
 | Mázindarán, 1848 to 1849 | مازندران، ۱۸۴۸ تا ۱۸۴۹ | 马赞德兰，1848年至1849年 |
 | Meanwhile, in the West | در همین هنگام، در غرب | 与此同时，在西方 |
+| Mecca, the month of pilgrimage, 1844 | مکه، ماه زیارت، ۱۸۴۴ | 麦加，朝圣之月，1844年 |
 | Mecca: the Sacred Mosque | مکه: مسجدالحرام | 麦加：禁寺 |
 | Merchant | بازرگان | 商人 |
 | Milestone | سنگ نشان | 里程碑 |
@@ -627,6 +634,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Mutamid | معتمد | 穆阿泰米德 |
 | Mute, Not Dumb | خاموش، نه لال | 沉默，并非哑巴 |
 | Nayríz | نیریز | 内里兹 |
+| Nayríz, May 1850 | نیریز، مه ۱۸۵۰ | 内里兹，1850年5月 |
 | Nayríz: the Quarter of Chinár-Súkhtih | نیریز: محلهٔ چنارسوخته | 内里兹：奇纳尔-苏赫提街区 |
 | News from Ṭihrán | خبر از تهران | 德黑兰来的消息 |
 | Nine Days | نه روز | 九天 |
@@ -696,6 +704,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Pulpit | منبر | 讲坛 |
 | Qahru'lláh | قهرالله | 加赫鲁拉 |
 | Qará-Guhar | قره‌گهر | 卡拉-古哈尔 |
+| Qazvín, 1847 | قزوین، ۱۸۴۷ | 加兹温，1847年 |
 | Qazvín, Tabríz and Mákú, summer 1847 | قزوین، تبریز و ماکو، تابستان ۱۸۴۷ | 加兹温、大不里士与马库，1847年夏 |
 | Qazvín: the Lane of Mullá Ṣáliḥ | قزوین: کوچهٔ ملا صالح | 加兹温：毛拉·萨利赫之巷 |
 | Quddus | قدّوس | 古杜斯 |
@@ -739,6 +748,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Serai | سرای | 衙署 |
 | Severed Ropes | طناب‌های گسسته | 断绳 |
 | Shaykh Ṣáliḥ | شیخ صالح | 谢赫·萨利赫 |
+| Shaykh Ṭabarsí, autumn 1848 | شیخ طبرسی، پاییز ۱۸۴۸ | 谢赫·塔巴尔西，1848年秋 |
 | Shepherd | چوپان | 牧人 |
 | Ship Cabin | اتاقک کشتی | 船舱 |
 | Ship Mast | دکل کشتی | 船桅 |
@@ -749,6 +759,8 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Shíráz to the northern road, summer 1844 | از شیراز تا راه شمال، تابستان ۱۸۴۴ | 从设拉子到北去之路，1844年夏 |
 | Shíráz, 1845 to 1846 | شیراز، ۱۸۴۵ تا ۱۸۴۶ | 设拉子，1845年至1846年 |
 | Shíráz, 22 May 1844 | شیراز، ۲۲ مه ۱۸۴۴ | 设拉子，1844年5月22日 |
+| Shíráz, autumn 1845 | شیراز، پاییز ۱۸۴۵ | 设拉子，1845年秋 |
+| Shíráz, the eve of 23 May 1844 | شیراز، شب ۲۳ مه ۱۸۴۴ | 设拉子，1844年5月22日夜 |
 | Shíráz, the Streets in 1845 | شیراز، کوچه‌ها در ۱۸۴۵ | 设拉子，1845年的街巷 |
 | Shíráz: the City at Dusk | شیراز: شهر در غروب | 设拉子：黄昏之城 |
 | Shíráz: the Quiet Quarter | شیراز: محله آرام | 设拉子：宁静街区 |
@@ -783,6 +795,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Tabríz, before the Governor's Residence | تبریز، پیش اقامتگاه حاکم | 大不里士，总督官邸前 |
 | Tabríz, summer 1848 | تبریز، تابستان 1848 | 大不里士，1848年夏 |
 | Tabríz, the Barrack Square | تبریز، میدان سربازخانه | 大不里士，营房广场 |
+| Tabríz, the eve of 9 July 1850 | تبریز، شب ۹ ژوئیهٔ ۱۸۵۰ | 大不里士，1850年7月8日夜 |
 | Tabríz, the Lane of the Shaykhu'l-Islám | تبریز، کوچهٔ شیخ‌الاسلام | 大不里士，伊斯兰长老的巷子 |
 | Tabríz, the Residence Courtyard | تبریز، حیاط اقامتگاه | 大不里士，官邸院子 |
 | Tabríz, the Rooftops | تبریز، بام‌ها | 大不里士，屋顶 |
@@ -917,6 +930,7 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | The Promised Ḥusayn | حسین موعود | 应许的侯赛因 |
 | The Pulpit of the Vakíl | منبر وکیل | 瓦基勒清真寺的讲坛 |
 | The Qur'án Gate can wait until dawn | دروازه قرآن تا سپیده‌دم می‌تواند بماند | 古兰门可以等到黎明 |
+| The Qur'án Gate of Shíráz, summer 1844 | دروازه قرآن شیراز، تابستان ۱۸۴۴ | 设拉子古兰门，1844年夏 |
 | The Rice He Stored | برنجی که ذخیره کرد | 他储存的米 |
 | The Road from Iṣṭahbánát | راه اصطهبانات | 伊斯塔赫巴纳特之路 |
 | The Road from Shimírán | راه شمیران | 来自希米兰的路 |
@@ -984,7 +998,9 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Ṭihrán and Núr | تهران و نور | 德黑兰与努尔 |
 | Ṭihrán, a Caravanserai by the Bazaar | تهران، کاروانسرایی کنار بازار | 德黑兰，巴扎旁的一座驿站 |
 | Ṭihrán, a Lane at Dawn | تهران، کوچه‌ای در سپیده‌دم | 德黑兰，黎明的一条巷子 |
+| Ṭihrán, August 1852 | تهران، اوت ۱۸۵۲ | 德黑兰，1852年8月 |
 | Ṭihrán, August 1852 to January 1853 | تهران، اوت ۱۸۵۲ تا ژانویه ۱۸۵۳ | 德黑兰，1852年8月至1853年1月 |
+| Ṭihrán, autumn 1844 | تهران، پاییز ۱۸۴۴ | 德黑兰，1844年秋 |
 | Ṭihrán, by the Sabzih-Maydán | تهران، کنار سبزه‌میدان | 德黑兰，萨卜泽广场旁 |
 | Ṭihrán, February 1850 | تهران، فوریه ۱۸۵۰ | 德黑兰，1850年2月 |
 | Ṭihrán, the Madrasa of Mírzá Ṣáliḥ | تهران، مدرسه میرزا صالح | 德黑兰，米尔扎·萨利赫经学院 |
@@ -1075,5 +1091,6 @@ hand (core terms live in `scripts/i18n-glossary.mjs`). Languages: English
 | Your Unease | دل‌آشوبی تو | 你的不安 |
 | Zahrá at the Stair | زهرا کنار پلکان | 阶梯旁的扎赫拉 |
 | Zanján | زنجان | 赞詹 |
+| Zanján, autumn 1850 | زنجان، پاییز ۱۸۵۰ | 赞詹，1850年秋 |
 | Zanján: the Barricaded Quarter | زنجان: محلهٔ سنگربندی‌شده | 赞詹：设有路障的街区 |
 | ʿAẓím's Night | شب عظیم | 阿齐姆之夜 |

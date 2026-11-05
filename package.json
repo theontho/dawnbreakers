@@ -32,7 +32,8 @@
     "journeys:stars": "node scripts/generate-travel-stars.mjs",
     "i18n:glossary": "node scripts/i18n-glossary.mjs",
     "minigames": "node scripts/minigames.mjs",
-    "social-preview": "node scripts/social-preview.mjs"
+    "social-preview": "node scripts/social-preview.mjs",
+    "vistas": "node scripts/title-vistas.mjs"
   },
   "keywords": [],
   "author": "",

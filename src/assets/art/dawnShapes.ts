@@ -271,11 +271,13 @@ export interface CypressSpec {
   lean?: number;
   /** How much of the sunrise its flank catches. */
   rim?: number;
+  /** Foliage colour: a cypress's dark green by default, lighter for a poplar. */
+  color?: number;
 }
 
 const CYPRESS = 0x2c4a32;
 
-/** The Persian cypress: a dark flame, its sun-facing flank edged with light. */
+/** The Persian cypress (or, in a lighter green, a poplar): a dark flame, its sun-facing flank edged with light. */
 export function cypress(p: DawnPass, c: CypressSpec): void {
   const { ctx } = p;
   const half = c.w / 2;
@@ -289,7 +291,8 @@ export function cypress(p: DawnPass, c: CypressSpec): void {
   };
   ctx.beginPath();
   shape();
-  ctx.fillStyle = faceGradient(p, top, c.base, CYPRESS, 1, c.depth);
+  const color = c.color ?? CYPRESS;
+  ctx.fillStyle = faceGradient(p, top, c.base, color, 1, c.depth);
   ctx.fill();
   if (!isAccent(p) && c.h > 18) {
     // Scalloped tufts.
@@ -301,7 +304,7 @@ export function cypress(p: DawnPass, c: CypressSpec): void {
     ctx.lineWidth = 0.8;
     for (let y = top + 3; y < c.base; y += 2.6) {
       const x = c.x - half + rand() * c.w;
-      ctx.strokeStyle = tone(p, CYPRESS, rand() < 0.5 ? 1.35 : 0.6, c.depth);
+      ctx.strokeStyle = tone(p, color, rand() < 0.5 ? 1.35 : 0.6, c.depth);
       ctx.beginPath();
       ctx.arc(x, y, 1.6 + rand() * 1.4, Math.PI * 0.15, Math.PI * 0.85);
       ctx.stroke();

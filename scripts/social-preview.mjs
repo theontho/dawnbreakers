@@ -9,6 +9,7 @@
  */
 import { resolve } from 'node:path';
 import { openGame, root, waitForBoot } from './lib/gameBrowser.mjs';
+import { enterTitle, showTitleOpening } from './lib/titleView.mjs';
 
 const args = process.argv.slice(2);
 const argValue = (name) => {
@@ -31,14 +32,9 @@ try {
   });
   await page.goto(url);
   await waitForBoot(page);
-  await page.keyboard.press('Space');
-  // Past the book opening, then pause and seek to the moment.
-  await page.waitForFunction(() => window.__game.scene.getScene('Title').clock, null, { timeout: 30000 });
-  await page.evaluate((ms) => {
-    const { clock } = window.__game.scene.getScene('Title');
-    if (clock.isPlaying) clock.togglePlay();
-    clock.seek(ms);
-  }, atSeconds * 1000);
+  // Past the book opening, then Shíráz's dawn (the link preview's), paused at the moment.
+  await enterTitle(page);
+  await showTitleOpening(page, 'shiraz', atSeconds);
   await page.waitForTimeout(500);
   // Keep the painting and the title; hide everything tappable and the
   // overlays above it (the transport and the language menu).

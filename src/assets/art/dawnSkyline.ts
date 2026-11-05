@@ -202,7 +202,7 @@ function row(p: DawnPass, L: DawnLayout, rand: () => number, spec: RowSpec): voi
 }
 
 /** A wind-catcher (bādgír): a slim tower with tall vent slots. */
-function windcatcher(p: DawnPass, cx: number, roof: number, color: number, depth: number): void {
+export function windcatcher(p: DawnPass, cx: number, roof: number, color: number, depth: number): void {
   const { ctx, k } = p;
   const w = 9 * k;
   const h = 20 * k;

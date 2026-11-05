@@ -272,21 +272,26 @@ function foreground(p: DawnPass, L: DawnLayout, road: RoadPath): void {
     grain(p, 0, L.height - lift - 4, L.width, lift + 4, BANK, 0, 0x6b, 1.4);
     ctx.restore();
   }
-  // Stones half sunk in the grass.
-  for (let i = 0; i < 9; i++) {
-    const x = rand() * L.width;
-    const y = edge(x) + (4 + rand() * 18) * k;
-    if (y > L.height) continue;
+  stones(p, edge, 9, 18, rand);
+  grass(p, points, rand);
+  for (const [x, r] of [[L.width * 0.03, 26], [L.width * 0.97, 22]] as const) {
+    pomegranate(p, x, edge(x) + 14 * k, r * k, Math.round(x));
+  }
+}
+
+/** Stones half sunk in the grass below a bank's edge, `spread` unscaled pixels deep. */
+export function stones(p: DawnPass, edge: (x: number) => number, count: number, spread: number, rand: () => number): void {
+  const { ctx, k } = p;
+  for (let i = 0; i < count; i++) {
+    const x = rand() * p.width;
+    const y = edge(x) + (4 + rand() * spread) * k;
+    if (y > p.height) continue;
     const r = (2 + rand() * 4) * k;
     ctx.fillStyle = tone(p, 0x8a8070, 0.8, 0);
     ctx.beginPath();
     ctx.ellipse(x, y, r * 1.4, r, 0, Math.PI, 0);
     ctx.fill();
     rimPath(p, x, () => ctx.ellipse(x, y, r * 1.4, r, 0, Math.PI * 1.15, Math.PI * 1.85), 0.5);
-  }
-  grass(p, points, rand);
-  for (const [x, r] of [[L.width * 0.03, 26], [L.width * 0.97, 22]] as const) {
-    pomegranate(p, x, edge(x) + 14 * k, r * k, Math.round(x));
   }
 }
 

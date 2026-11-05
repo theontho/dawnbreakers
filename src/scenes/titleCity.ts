@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
-import { paintDawnCity } from '../assets/art/dawnCity';
-import { dawnLayout } from '../assets/art/dawnLayout';
 import type { DawnMode } from '../assets/art/dawnPass';
+import { vistaScale, type Season, type Vista } from '../assets/art/vista/types';
 
 export type TitleCity = {
   setLight: (amount: number) => void;
@@ -10,8 +9,8 @@ export type TitleCity = {
 };
 
 /**
- * Shíráz at dawn, baked once into four screen-sized canvas textures (see
- * `dawnPass`): the night silhouettes, the day colours fading in over them,
+ * The opening's place at dawn, baked once into four screen-sized canvas
+ * textures (see `dawnPass`): the night silhouettes, the day colours fading in over them,
  * and two additive layers, the sunrise catching the edges and the lamps
  * that go out as it gets light. Each frame only changes three alphas;
  * re-tessellating the skyline every frame was once the title screen's
@@ -22,12 +21,17 @@ export function addTitleCity(
   width: number,
   height: number,
   horizonY: number,
+  vista: Vista,
+  season: Season,
 ): TitleCity {
-  const layout = dawnLayout(width, height, horizonY);
+  const k = vistaScale(height);
+  const frame = { width, height, horizonY, k, season };
+  // The topmost painted pixel, so the baked layers can skip the open sky.
+  const top = Math.max(0, Math.floor(horizonY - vista.reach * k));
   const bake = (mode: DawnMode): Phaser.GameObjects.Image => {
     const w = Math.ceil(width);
-    const h = Math.ceil(height - layout.top);
-    const key = `title-city-${mode}-${w}x${h}`;
+    const h = Math.ceil(height - top);
+    const key = `title-city-${vista.id}-${mode}-${w}x${h}`;
     if (scene.textures.exists(key)) scene.textures.remove(key);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       if (scene.textures.exists(key)) scene.textures.remove(key);
@@ -35,10 +39,10 @@ export function addTitleCity(
     const texture = scene.textures.createCanvas(key, w, h);
     if (!texture) throw new Error(`Unable to create title city texture: ${key}`);
     const ctx = texture.getContext();
-    ctx.translate(0, -layout.top);
-    paintDawnCity(ctx, mode, layout);
+    ctx.translate(0, -top);
+    vista.paint(ctx, mode, frame);
     texture.refresh();
-    return scene.add.image(0, layout.top, key).setOrigin(0);
+    return scene.add.image(0, top, key).setOrigin(0);
   };
   const night = bake('night');
   const day = bake('day');
@@ -56,7 +60,7 @@ export function addTitleCity(
 
   let profile: Float32Array | undefined;
   const skylineAt = (x: number) => {
-    profile ??= silhouetteProfile(night.texture.getSourceImage() as HTMLCanvasElement, layout.top);
+    profile ??= silhouetteProfile(night.texture.getSourceImage() as HTMLCanvasElement, top);
     const column = profile[Math.floor(x)];
     return column ?? height;
   };
