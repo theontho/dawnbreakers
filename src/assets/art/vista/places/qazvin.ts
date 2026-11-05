@@ -20,6 +20,7 @@ export const QAZVIN: Vista = {
   latitude: 36.27,
   longitude: 50.0,
   reach: 240,
+  land: 0xa09a8a,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, horizonY: H, season } = frame;

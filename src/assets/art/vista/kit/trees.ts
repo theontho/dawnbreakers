@@ -11,7 +11,7 @@ import type { Season } from '../types';
 
 const PALM_TRUNK = 0x6e5638;
 const PALM_LEAF = 0x4c6a34;
-const POPLAR = 0x52783a;
+const POPLAR = 0x46703a;
 
 export interface PalmSpec {
   x: number;
@@ -129,7 +129,11 @@ function tree(p: DawnPass, kind: GroveKind, x: number, base: number, size: numbe
       palm(p, { x, base, h: size, depth: g.depth, seed });
       return;
     case 'poplar':
-      cypress(p, { x, base, h: size * 1.2, w: size * 0.16, depth: g.depth, color: poplarColor(g.season), lean: (rand() - 0.5) * 2 * k, rim: g.rim });
+      if (g.season === 'winter') {
+        bareTree(p, x, base, size * 1.1, g.depth, seed, 0.25);
+        return;
+      }
+      cypress(p, { x, base, h: size * 1.2, w: size * 0.22, depth: g.depth, color: poplarColor(g.season), lean: (rand() - 0.5) * 2 * k, rim: g.rim });
       return;
     case 'cypress':
       cypress(p, { x, base, h: size, w: size * 0.18, depth: g.depth, lean: (rand() - 0.5) * 2 * k, rim: g.rim });
@@ -138,8 +142,49 @@ function tree(p: DawnPass, kind: GroveKind, x: number, base: number, size: numbe
       almond(p, x, base, size * 0.35, g.depth, seed, g.season);
       return;
     case 'broad':
+      if (g.season === 'winter') {
+        bareTree(p, x, base, size * 0.8, g.depth, seed, 1);
+        return;
+      }
       crown(p, { x, base, r: size * 0.36, color: leafColor(g.season, rand), depth: g.depth, seed, trunk: size * 0.3, rim: g.rim });
   }
+}
+
+/**
+ * A tree in winter: a trunk forking into bare branches, `spread` wide (1 a
+ * broad plane or walnut, low for a poplar's upswept twigs).
+ */
+export function bareTree(p: DawnPass, x: number, base: number, h: number, depth: number, seed: number, spread: number): void {
+  const { ctx } = p;
+  const rand = rng(seed);
+  const strokes: Array<[number, number, number, number, number]> = [];
+  const branch = (x0: number, y0: number, angle: number, len: number, width: number, level: number): void => {
+    const x1 = x0 + Math.sin(angle) * len;
+    const y1 = y0 - Math.cos(angle) * len;
+    strokes.push([x0, y0, x1, y1, width]);
+    if (level >= 4 || len < 3) return;
+    const forks = level === 0 ? 3 : 2;
+    for (let i = 0; i < forks; i++) {
+      const turn = (i / (forks - 1) - 0.5) * spread * 1.3 + (rand() - 0.5) * 0.3;
+      branch(x1, y1, angle * 0.6 + turn, len * (0.62 + rand() * 0.15), width * 0.6, level + 1);
+    }
+  };
+  branch(x, base, (rand() - 0.5) * 0.1, h * 0.38, Math.max(1.2, h * 0.05), 0);
+  ctx.strokeStyle = tone(p, 0x4a3a2c, 0.9, depth);
+  ctx.lineCap = 'round';
+  for (const [x0, y0, x1, y1, w] of strokes) {
+    ctx.lineWidth = Math.max(0.6, w);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  const tips = strokes.filter(s => s[4] < 1.2);
+  rimPath(p, x, () => tips.forEach(([x0, y0, x1, y1]) => {
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+  }), 0.5, depth);
 }
 
 /** An almond tree: pink-white blossom in spring, green leaf the rest of the year. */

@@ -19,6 +19,7 @@ export const KARBILA: Vista = {
   latitude: 32.616,
   longitude: 44.024,
   reach: 230,
+  land: 0xb8a088,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

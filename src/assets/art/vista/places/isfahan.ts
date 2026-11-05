@@ -19,6 +19,7 @@ export const ISFAHAN: Vista = {
   latitude: 32.65,
   longitude: 51.67,
   reach: 220,
+  land: 0xa08a78,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

@@ -18,6 +18,7 @@ export const QURAN_GATE: Vista = {
   latitude: 29.635,
   longitude: 52.56,
   reach: 280,
+  land: 0xa89490,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

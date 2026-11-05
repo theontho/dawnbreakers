@@ -19,6 +19,7 @@ export const TEHRAN: Vista = {
   latitude: 35.69,
   longitude: 51.42,
   reach: 300,
+  land: 0xa8a0a0,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, horizonY: H, season } = frame;

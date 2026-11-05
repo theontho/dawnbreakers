@@ -17,6 +17,7 @@ export const BAGHDAD: Vista = {
   latitude: 33.34,
   longitude: 44.4,
   reach: 210,
+  land: 0xa08a6a,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

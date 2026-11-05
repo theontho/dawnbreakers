@@ -8,5 +8,6 @@ export const SHIRAZ: Vista = {
   latitude: 29.61,
   longitude: 52.54,
   reach: 150,
+  land: 0xa89a8a,
   paint: (ctx, mode, frame) => paintDawnCity(ctx, mode, dawnLayout(frame)),
 };

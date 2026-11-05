@@ -1,4 +1,4 @@
-import { dawnPass } from '../../dawnPass';
+import { dawnPass, isAccent, tone, type DawnPass } from '../../dawnPass';
 import { bank, snowCover } from '../kit/ground';
 import { fort } from '../kit/landmarks';
 import { paintRange, rangeY, type RangeSpec } from '../kit/mountains';
@@ -16,6 +16,7 @@ export const MAKU: Vista = {
   latitude: 39.29,
   longitude: 44.45,
   reach: 320,
+  land: 0x9aa0b4,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;
@@ -24,6 +25,7 @@ export const MAKU: Vista = {
     // The cliff the town shelters under, and the fortress on its ledge.
     const cliff: RangeSpec = { base: town, peaks: [{ at: 0.16, h: 300, w: 330, sharp: 0.6 }, { at: 0.95, h: 220, w: 260, sharp: 0.8 }], floor: 24, rough: 10, color: 0x7a6a62, depth: 0.5, seed: 9.7, snow: 18, rim: 0.8 };
     paintRange(p, cliff);
+    strata(p, cliff);
     const ledgeX = width * 0.26;
     const ledge = rangeY(p, cliff, ledgeX) + 40 * k;
     fort(p, { x0: ledgeX - 50 * k, x1: ledgeX + 60 * k, base: ledge + 30 * k, top: ledge, color: 0x9a8670, depth: 0.46, towers: 3, seed: 31, keep: ledgeX + 20 * k });
@@ -33,3 +35,30 @@ export const MAKU: Vista = {
     bank(p, { color: 0x9aa0a8, lift: 44, seed: 0x3a4, gap: { at: 0.5, width: 0.4 } });
   },
 };
+
+/** Bands of rock across the cliff face, each catching a little light along its lip. */
+function strata(p: DawnPass, cliff: RangeSpec): void {
+  if (isAccent(p)) return;
+  const { ctx, k, width } = p;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(-8, cliff.base);
+  for (let x = -8; x <= width + 8; x += 4) ctx.lineTo(x, rangeY(p, cliff, x));
+  ctx.lineTo(width + 8, cliff.base);
+  ctx.closePath();
+  ctx.clip();
+  for (let i = 0; i < 14; i++) {
+    const y = cliff.base - (16 + i * 20) * k;
+    ctx.strokeStyle = tone(p, cliff.color, i % 2 ? 1.18 : 0.72, cliff.depth);
+    ctx.lineWidth = (i % 3 === 0 ? 3 : 1.5) * k;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    for (let x = -8; x <= width + 8; x += 12) {
+      const dy = Math.sin(x * 0.02 + i) * 4 * k + Math.sin(x * 0.07 + i * 3) * 2 * k;
+      if (x === -8) ctx.moveTo(x, y + dy);
+      else ctx.lineTo(x, y + dy);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}

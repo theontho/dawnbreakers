@@ -44,6 +44,8 @@ export interface Vista {
   longitude: number;
   /** How far above `horizonY` anything is painted, in unscaled pixels; the bake skips the open sky above it. */
   reach: number;
+  /** The far land's colour, filled from `horizonY` down behind everything as a backstop, so no gap in the town shows the sky (or the rising sun) below the horizon. */
+  land: number;
   paint: (ctx: Ctx, mode: DawnMode, frame: VistaFrame) => void;
 }
 

@@ -17,6 +17,7 @@ export const MECCA: Vista = {
   latitude: 21.4225,
   longitude: 39.8262,
   reach: 260,
+  land: 0x8a7262,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H } = frame;
@@ -35,7 +36,7 @@ export const MECCA: Vista = {
     arcade(p, { x0: width / 2 - half, x1: width / 2 + half, base: court - 14 * k, h: 22 * k, color: 0xd8ccb0, depth: 0.38, bay, domes: true, seed: 11 });
     courtFloor(p, width / 2 - half, width / 2 + half, court - 14 * k, court + 30 * k);
     kaaba(p, width / 2 + 4 * k, court + 14 * k, 50 * k, 0.32);
-    arcade(p, { x0: width / 2 - half - 20 * k, x1: width / 2 + half + 20 * k, base: court + 30 * k, h: 12 * k, color: 0xd2c4a6, depth: 0.3, bay: bay * 1.1, domes: true, seed: 12 });
+    arcade(p, { x0: width / 2 - half - 20 * k, x1: width / 2 + half + 20 * k, base: court + 30 * k, h: 12 * k, color: 0xd2c4a6, depth: 0.3, bay: bay * 1.1, seed: 12 });
     // The valley floor, dusty and bare, and the stony foreground.
     plain(p, court + 30 * k, 0xb8a284, 0x8e7a5e, 0x32);
     scrub(p, court + 38 * k, 18, 0x6a6a44, 0x33);

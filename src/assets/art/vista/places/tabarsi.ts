@@ -17,6 +17,7 @@ export const TABARSI: Vista = {
   latitude: 36.42,
   longitude: 52.92,
   reach: 220,
+  land: 0x4a5e44,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;
@@ -26,11 +27,11 @@ export const TABARSI: Vista = {
     grove(p, { x0: -10, x1: width + 10, base: H + 10 * k, kinds: ['broad'], spacing: 7, size: 34, depth: 0.55, seed: 0x7a1, season });
     // The fort the companions raised round the shrine: walls, corner towers and the tomb within.
     const cx = width / 2 + Math.min(width * 0.05, 60 * k);
-    tomb(p, cx, fortBase - 20 * k, 0.4);
-    const wallTop = fortBase - 26 * k;
-    block(p, { x: cx - 110 * k, top: wallTop, w: 220 * k, base: fortBase, color: 0x9a8668, depth: 0.38, seed: 61, parapet: 'plain' });
-    for (const dx of [-110, 110]) block(p, { x: cx + dx * k - 12 * k, top: wallTop - 20 * k, w: 24 * k, base: fortBase, color: 0x8a7658, depth: 0.37, seed: 62 + dx, parapet: 'kungura', windows: 1, lit: 0.8 });
-    grove(p, { x0: -10, x1: width + 10, base: fortBase + 4 * k, kinds: ['broad', 'broad', 'poplar'], spacing: 16, size: 60, depth: 0.3, seed: 0x7a2, season, skip: x => Math.abs(x - cx) < 140 * k });
+    tomb(p, cx, fortBase - 30 * k, 0.4);
+    const wallTop = fortBase - 40 * k;
+    block(p, { x: cx - 160 * k, top: wallTop, w: 320 * k, base: fortBase, color: 0x9a8668, depth: 0.38, seed: 61, parapet: 'plain', windows: 0 });
+    for (const dx of [-160, -55, 55, 160]) block(p, { x: cx + dx * k - 15 * k, top: wallTop - 26 * k, w: 30 * k, base: fortBase, color: 0x8a7658, depth: 0.37, seed: 62 + dx, parapet: 'kungura', windows: 1, lit: 0.8 });
+    grove(p, { x0: -10, x1: width + 10, base: fortBase + 4 * k, kinds: ['broad', 'broad', 'poplar'], spacing: 16, size: 60, depth: 0.3, seed: 0x7a2, season, skip: x => Math.abs(x - cx) < 190 * k });
     plain(p, fortBase + 4 * k, 0x7a8a5a, 0x5a6a40, 0x7a3);
     river(p, { far: fortBase + (height - fortBase) * 0.4, near: fortBase + (height - fortBase) * 0.47, seed: 9, wander: 5 });
     scrub(p, fortBase + 12 * k, 40, 0x4e6236, 0x7a6);
@@ -41,12 +42,12 @@ export const TABARSI: Vista = {
 /** The shrine: a square tomb under a tiled pyramid roof. */
 function tomb(p: DawnPass, cx: number, base: number, depth: number): void {
   const { ctx, k } = p;
-  const w = 40 * k;
-  block(p, { x: cx - w / 2, top: base - 30 * k, w, base, color: 0xd0bc98, depth, seed: 63, windows: 1, lit: 0.9 });
+  const w = 56 * k;
+  block(p, { x: cx - w / 2, top: base - 40 * k, w, base, color: 0xd0bc98, depth, seed: 63, windows: 1, lit: 0.9 });
   ctx.beginPath();
-  ctx.moveTo(cx - w * 0.62, base - 30 * k);
-  ctx.lineTo(cx, base - 64 * k);
-  ctx.lineTo(cx + w * 0.62, base - 30 * k);
+  ctx.moveTo(cx - w * 0.62, base - 40 * k);
+  ctx.lineTo(cx, base - 92 * k);
+  ctx.lineTo(cx + w * 0.62, base - 40 * k);
   ctx.closePath();
   ctx.fillStyle = isAccent(p) ? '#000' : tone(p, 0x3a7a8a, 1, depth);
   ctx.fill();

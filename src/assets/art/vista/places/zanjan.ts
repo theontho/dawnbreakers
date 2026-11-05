@@ -18,6 +18,7 @@ export const ZANJAN: Vista = {
   latitude: 36.68,
   longitude: 48.48,
   reach: 210,
+  land: 0xa69684,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

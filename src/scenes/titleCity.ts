@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import type { DawnMode } from '../assets/art/dawnPass';
-import { vistaScale, type Season, type Vista } from '../assets/art/vista/types';
+import { dawnPass, isAccent, tone, type DawnMode } from '../assets/art/dawnPass';
+import { vistaScale, type Season, type Vista, type VistaFrame } from '../assets/art/vista/types';
 
 export type TitleCity = {
   setLight: (amount: number) => void;
@@ -40,6 +40,7 @@ export function addTitleCity(
     if (!texture) throw new Error(`Unable to create title city texture: ${key}`);
     const ctx = texture.getContext();
     ctx.translate(0, -top);
+    paintBackstop(ctx, mode, frame, vista.land);
     vista.paint(ctx, mode, frame);
     texture.refresh();
     return scene.add.image(0, top, key).setOrigin(0);
@@ -66,6 +67,18 @@ export function addTitleCity(
   };
 
   return { setLight, skylineAt };
+}
+
+/**
+ * Solid land from the horizon to the bottom of the screen, under everything
+ * the vista paints: wherever its houses, palms or walls leave a gap below
+ * the horizon, the land shows through rather than the sky, and the sun
+ * cannot peek out from under a building.
+ */
+function paintBackstop(ctx: CanvasRenderingContext2D, mode: DawnMode, frame: VistaFrame, land: number): void {
+  const p = dawnPass(mode, ctx, frame);
+  ctx.fillStyle = isAccent(p) ? '#000' : tone(p, land, 0.95, 0.7);
+  ctx.fillRect(0, Math.floor(frame.horizonY), frame.width, frame.height - Math.floor(frame.horizonY));
 }
 
 /** The first opaque row of each column of a baked layer, in screen pixels. */

@@ -19,6 +19,7 @@ export const BADASHT: Vista = {
   latitude: 36.45,
   longitude: 55.07,
   reach: 240,
+  land: 0x8a8a5e,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

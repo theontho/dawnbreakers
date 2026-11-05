@@ -18,6 +18,7 @@ export const NAYRIZ: Vista = {
   latitude: 29.2,
   longitude: 54.33,
   reach: 230,
+  land: 0xa08c80,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

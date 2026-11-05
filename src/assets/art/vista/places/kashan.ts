@@ -19,6 +19,7 @@ export const KASHAN: Vista = {
   latitude: 33.98,
   longitude: 51.43,
   reach: 230,
+  land: 0xb8a088,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;

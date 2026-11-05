@@ -18,6 +18,7 @@ export const TABRIZ: Vista = {
   latitude: 38.08,
   longitude: 46.29,
   reach: 260,
+  land: 0x9c8e86,
   paint: (ctx, mode, frame) => {
     const p = dawnPass(mode, ctx, frame);
     const { k, width, height, horizonY: H, season } = frame;
