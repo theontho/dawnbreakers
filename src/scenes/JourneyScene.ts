@@ -18,7 +18,7 @@ import { Landscape, groundLayout, type GroundLayout } from '../travel/landscape'
 import { Party } from '../travel/party';
 import { Sea } from '../travel/sea';
 import { SkyCamera } from '../travel/skyCamera';
-import { blurredSkyLight, type SkyLight } from '../travel/skyLight';
+import { blurredSkyLight } from '../travel/skyLight';
 import { SkyGlows } from '../travel/skyGlows';
 import { SkyPainter, TRAIL_MODES } from '../travel/skyPainter';
 import { DEFAULT_SETTINGS, FACINGS, facingIndex, TRAIL_LABELS, type ViewerSettings } from '../travel/journeyViewerSettings';
@@ -83,7 +83,6 @@ export class JourneyScene extends Phaser.Scene {
   private arrived = false;
   private showArrival = false;
   private arriveAt?: number;
-  private lastLight?: SkyLight;
 
   constructor() { super('Journey'); }
 
@@ -131,10 +130,7 @@ export class JourneyScene extends Phaser.Scene {
     // Every road gets its arrival: between chapters, and in the viewer to watch it.
     this.arrival = new JourneyArrival(this, {
       journey,
-      party: this.party,
       camera: this.camera3,
-      figure: this.ground.figure,
-      controlsTop: () => this.hud.controlsTop(),
       onFinished: () => (this.onward ? this.goOnward() : this.showNextAfterArrival()),
     });
     playMusic(journey.music);
@@ -161,18 +157,12 @@ export class JourneyScene extends Phaser.Scene {
       this.arrive();
     }
     this.arrival?.update();
-    // Once the dawn covers the road, only the party is left to draw.
-    if (this.arrival?.covers) {
-      this.walked += (deltaMs / 1000) * this.ground.figure * 0.68;
-      // Backlit by the sunrise, they keep the road's last light: silhouettes against the dawn.
-      if (this.lastLight) this.party?.draw(this.walked, this.lastLight, now);
-      return;
-    }
+    // Once the dawn covers the road, there is nothing of it left to draw.
+    if (this.arrival?.covers) return;
     const date = this.clock.date;
     const bodies = skyBodies(date, this.location);
     const paceHours = Math.abs(this.clock.speed) / 3600;
     const light = blurredSkyLight(date, bodies, this.location, paceHours);
-    this.lastLight = light;
     const skyMs = date.getTime();
     // Between chapters the stars always draw comet tails; the viewer shows them as it is set.
     const trails = this.onward ? 'tail' : this.settings.trails;
@@ -196,7 +186,8 @@ export class JourneyScene extends Phaser.Scene {
     this.walked += (deltaMs / 1000) * this.ground.figure * 0.68;
     this.land.draw(this.walked, light, now);
     this.party?.draw(this.walked, light, now);
-    this.glows.update(light, timeBlur);
+    // The road's sun and moon stop glowing once its end begins; the arrival's dawn has its own sun.
+    if (!this.arrived) this.glows.update(light, timeBlur);
     this.hud.updateClockFor(date, this.journey.longitude, this.statusLine());
     this.sayRemarks();
   }

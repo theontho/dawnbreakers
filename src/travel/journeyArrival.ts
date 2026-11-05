@@ -8,21 +8,20 @@ import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS, type SunriseBac
 import { SunriseClock } from '../scenes/titleSunriseClock';
 import { glowTitleSun } from '../scenes/titleSunGlow';
 import { responsiveFont, safeLayout } from '../ui/responsive';
-import type { Party } from './party';
 import type { SkyCamera } from './skyCamera';
 
 /**
  * The end of a journey into a chapter: the road's last night gives way to
  * the dawn over the place it leads to, the chapter's own opening as the
  * title shows it. The camera turns from the road toward the sunrise and
- * pulls back; the party shrinks until they are small figures on the near
- * ground, walking on toward the town; then the sun comes up and a card
- * names the chapter. A first skip jumps to the pulled-back dawn, a second
+ * the dawn fades up over the road and pulls back into its own framing,
+ * the party going with the road; then the sun comes up and a card names
+ * the chapter. A first skip jumps to the pulled-back dawn, a second
  * goes on into the chapter.
  */
 
 const DAY_MS = 86400000;
-/** The move, in ms from its start: the turn, the dawn fading in and pulling back, the party shrinking. */
+/** The move, in ms from its start: the turn, then the dawn fading in over the road and pulling back. */
 const TURN_MS = 2400;
 const FADE_FROM_MS = 1400;
 const FADE_TO_MS = 3200;
@@ -30,38 +29,38 @@ const MOVE_MS = 5200;
 /** The dawn starts pulled in this much about its horizon, and eases out to its own framing. */
 const PUSH_IN = 1.7;
 /** The stretch of the title's sunrise the arrival plays, and how fast. */
-const DAWN_FROM_MS = 38000;
-const DAWN_TO_MS = 96000;
+/** From before the sun's rim reaches the land, so it rises behind it rather than starting up. */
+const DAWN_FROM_MS = 18000;
+const DAWN_TO_MS = 84000;
 const DAWN_SPEED = 4;
 const HOLD_MS = 1800;
-/** The party's height at the end, as a share of the screen's. */
-const PARTY_HEIGHT = 0.05;
 const CARD_DEPTH = 90;
+/** Over the road, its verge and the party, so they all fade out under it together. */
 const DAWN_DEPTH = 25;
-const PARTY_DEPTH = 30;
 
 export type ArrivalState = 'waiting' | 'moving' | 'settled' | 'done';
 
 export interface ArrivalOptions {
   journey: Journey;
-  party: Party | undefined;
   camera: SkyCamera;
-  /** A standing person's height in the journey's own frame. */
-  figure: number;
-  /** Where the bottom controls begin, so the party stands clear of them. */
-  controlsTop: () => number;
   onFinished: () => void;
 }
 
 export class JourneyArrival {
   private readonly sunrise: SunriseBackground;
   private readonly layer: Phaser.GameObjects.Container;
+  /**
+   * The dawn flattened into one picture while it fades in. Faded part by
+   * part, the sun would show through the half-faded land in front of it.
+   */
+  private readonly flat: Phaser.GameObjects.RenderTexture;
   private readonly clock: SunriseClock;
   private readonly card: Phaser.GameObjects.Container;
   private stage: ArrivalState = 'waiting';
   private startedAt = 0;
   private fromBearing = 0;
   private finishing?: Phaser.Time.TimerEvent;
+  private fading: boolean;
 
   constructor(private readonly scene: Phaser.Scene, private readonly options: ArrivalOptions) {
     const { width, height } = scene.scale;
@@ -72,7 +71,9 @@ export class JourneyArrival {
     const before = new Set(scene.children.list);
     this.sunrise = addSunriseBackground(scene, width, height, vista, lastEvening);
     const made = scene.children.list.filter(object => !before.has(object));
-    this.layer = scene.add.container(0, 0, made).setDepth(DAWN_DEPTH).setVisible(false).setAlpha(0);
+    this.layer = scene.add.container(0, 0, made).setDepth(DAWN_DEPTH).setVisible(false);
+    this.flat = scene.add.renderTexture(0, 0, width, height).setOrigin(0).setDepth(DAWN_DEPTH).setVisible(false);
+    this.fading = false;
     this.clock = new SunriseClock(SUNRISE_DURATION_MS, { positionMs: DAWN_FROM_MS, speed: DAWN_SPEED, playing: false });
     playSunrise(scene, this.sunrise, this.clock, performance.now(), { glow: false });
     this.card = this.addCard(width, height);
@@ -89,7 +90,7 @@ export class JourneyArrival {
 
   /** True once the dawn covers the whole screen, so the road's sky and land need not be drawn. */
   get covers(): boolean {
-    return this.layer.visible && this.layer.alpha >= 1;
+    return this.layer.visible && !this.fading;
   }
 
   /** Starts the move from the road's view; with `skip`, jumps straight to its end. */
@@ -98,7 +99,6 @@ export class JourneyArrival {
     this.stage = 'moving';
     this.startedAt = performance.now();
     this.fromBearing = this.options.camera.facing;
-    this.layer.setVisible(true);
     if (skip) this.settle();
     else this.frame(0);
   }
@@ -130,19 +130,17 @@ export class JourneyArrival {
     camera.face(this.fromBearing + shortestTurn(this.fromBearing, this.sunrise.dawn.azimuth) * turn);
     const fade = ease(clamp01((elapsed - FADE_FROM_MS) / (FADE_TO_MS - FADE_FROM_MS)));
     const pull = ease(clamp01((elapsed - FADE_FROM_MS) / (MOVE_MS - FADE_FROM_MS)));
-    this.layer.setAlpha(fade);
     this.placeDawn(PUSH_IN + (1 - PUSH_IN) * pull);
-    this.placeParty(ease(Math.min(1, elapsed / MOVE_MS)));
+    this.showFaded(fade);
   }
 
-  /** The end of the move: the dawn in its own framing, the party small in front, the sun coming up. */
+  /** The end of the move: the dawn in its own framing, the sun coming up. */
   private settle(): void {
     if (this.stage === 'settled' || this.stage === 'done') return;
     this.stage = 'settled';
     this.options.camera.face(this.sunrise.dawn.azimuth);
-    this.layer.setVisible(true).setAlpha(1);
     this.placeDawn(1);
-    this.placeParty(1);
+    this.showFaded(1);
     glowTitleSun(this.scene, this.sunrise);
     if (!this.clock.isPlaying) this.clock.togglePlay();
     this.scene.tweens.add({ targets: this.card, alpha: 1, duration: 900, delay: 400, ease: 'Sine.easeOut' });
@@ -154,23 +152,24 @@ export class JourneyArrival {
     this.options.onFinished();
   }
 
+  /** Shows the dawn at `alpha` over the road: whole once it is opaque, flattened while it is not. */
+  private showFaded(alpha: number): void {
+    this.fading = alpha < 1;
+    if (!this.fading) {
+      this.flat.setVisible(false);
+      this.layer.setVisible(true);
+      return;
+    }
+    this.layer.setVisible(true);
+    this.flat.clear().draw(this.layer).setAlpha(alpha).setVisible(alpha > 0);
+    this.layer.setVisible(false);
+  }
+
   /** Scales the dawn about the middle of its horizon. */
   private placeDawn(scale: number): void {
     const ax = this.sunrise.width / 2;
     const ay = this.sunrise.horizonY;
     this.layer.setScale(scale).setPosition(ax * (1 - scale), ay * (1 - scale));
-  }
-
-  /** From walking on the road to small figures on the near ground of the dawn, `t` of the way. */
-  private placeParty(t: number): void {
-    const { party, figure } = this.options;
-    if (!party) return;
-    const { width, height } = this.scene.scale;
-    const from = party.centre();
-    const endScale = (height * PARTY_HEIGHT) / figure;
-    const end = { x: width * 0.3, y: Math.min(height * 0.88, this.options.controlsTop() - 16) };
-    const scale = 1 + (endScale - 1) * t;
-    party.setFrame(scale, from, { x: from.x + (end.x - from.x) * t, y: from.y + (end.y - from.y) * t }, PARTY_DEPTH);
   }
 
   /** "Chapter N · Title" over the place and the moment, as the title screen names them. */

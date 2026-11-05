@@ -27,8 +27,6 @@ export class Party {
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly glows: Phaser.GameObjects.Image[] = [];
   private readonly slots: { kind: TravellerKind; x: number; offset: number }[] = [];
-  /** How the party is drawn on screen: scaled by `scale` about `from`, which lands at `to`. */
-  private frame = { scale: 1, from: { x: 0, y: 0 }, to: { x: 0, y: 0 } };
 
   constructor(scene: Phaser.Scene, members: readonly TravellerKind[], private readonly ground: GroundLayout, width: number) {
     this.graphics = scene.add.graphics().setDepth(10);
@@ -49,26 +47,6 @@ export class Party {
         this.glows.push(scene.add.image(0, 0, GLOW_TEXTURE).setDepth(9).setBlendMode(Phaser.BlendModes.ADD).setTint(LANTERN));
       }
     });
-  }
-
-  /** Where the party's leader walks (between the slots) and the road under them, in the party's own frame. */
-  centre(): { x: number; y: number } {
-    const xs = this.slots.map(slot => slot.x);
-    return { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: this.ground.roadY };
-  }
-
-  /**
-   * Draws the party scaled by `scale` about the point `from` (in its own
-   * frame), which lands on screen at `to`: how the arrival shrinks it onto
-   * the far foreground of a town. `depth` lifts it over what is drawn there.
-   */
-  setFrame(scale: number, from: { x: number; y: number }, to: { x: number; y: number }, depth?: number): void {
-    this.frame = { scale, from, to };
-    this.graphics.setScale(scale).setPosition(to.x - from.x * scale, to.y - from.y * scale);
-    if (depth !== undefined) {
-      this.graphics.setDepth(depth);
-      this.glows.forEach(glow => glow.setDepth(depth - 1));
-    }
   }
 
   /** The screen span the party walks in, from the road up past a rider's head. */
@@ -119,10 +97,7 @@ export class Party {
 
   private lantern(glow: Phaser.GameObjects.Image, hand: Hand, f: number, night: number, realMs: number): void {
     const flicker = 0.85 + Math.sin(realMs * 0.013) * 0.06 + Math.sin(realMs * 0.031) * 0.05;
-    const { scale, from, to } = this.frame;
-    glow.setPosition(to.x + (hand.x - from.x) * scale, to.y + (hand.y - from.y) * scale)
-      .setDisplaySize(f * 2.6 * scale, f * 1.9 * scale)
-      .setAlpha(0.55 * night * flicker);
+    glow.setPosition(hand.x, hand.y).setDisplaySize(f * 2.6, f * 1.9).setAlpha(0.55 * night * flicker);
     this.graphics.fillStyle(0xffd590, 0.4 + 0.6 * night);
     this.graphics.fillRect(hand.x - f * 0.025, hand.y - f * 0.04, f * 0.05, f * 0.07);
   }
