@@ -114,7 +114,7 @@ function addSkyGradient(
 ): Phaser.GameObjects.Image {
   const textureWidth = Math.ceil(width);
   const textureHeight = Math.ceil(height);
-  const key = `title-${name}-sky-${textureWidth}x${textureHeight}`;
+  const key = `${scene.scene.key}-dawn-${name}-sky-${textureWidth}x${textureHeight}`;
 
   const texture = createSizedCanvas(scene, key, textureWidth, textureHeight);
   if (!texture) {
@@ -177,6 +177,7 @@ export function playSunrise(
   sunrise: SunriseBackground,
   clock: SunriseClock,
   titleStartedAtMs: number,
+  options: { glow?: boolean } = {},
 ): void {
   const sunTargetY = sunrise.height * sunTargetYMultiplier;
   const sunStartedAtMs = performance.now();
@@ -212,7 +213,8 @@ export function playSunrise(
 
   clock.onChange(render);
   scene.events.on(Phaser.Scenes.Events.UPDATE, tick);
-  glowTitleSun(scene, sunrise);
+  // A scene that moves the dawn about first (the journey's arrival) starts the HDR glow itself once it holds still.
+  if (options.glow !== false) glowTitleSun(scene, sunrise);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, tick));
   render();
 }
@@ -257,7 +259,7 @@ function ellipseTop(e: Ellipse, x: number): number {
 function addHorizonGlow(scene: Phaser.Scene, width: number, height: number, horizonY: number, haze: Ellipse): Phaser.GameObjects.Image {
   const textureWidth = Math.ceil(width);
   const textureHeight = Math.ceil(height);
-  const key = `title-horizon-light-${textureWidth}x${textureHeight}`;
+  const key = `${scene.scene.key}-dawn-horizon-light-${textureWidth}x${textureHeight}`;
 
   const texture = createSizedCanvas(scene, key, textureWidth, textureHeight);
   if (!texture) {
@@ -307,6 +309,8 @@ function addHorizonGlow(scene: Phaser.Scene, width: number, height: number, hori
 /**
  * Canvas textures here are sized to the screen, so each resize would leave
  * the previous size behind. Replace any stale copy and free it on shutdown.
+ * Keys carry the scene's own key, since the title and a journey's arrival
+ * each paint a dawn and one's shutdown must not take the other's.
  */
 function createSizedCanvas(scene: Phaser.Scene, key: string, width: number, height: number): Phaser.Textures.CanvasTexture | null {
   if (scene.textures.exists(key)) scene.textures.remove(key);

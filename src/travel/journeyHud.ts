@@ -28,6 +28,8 @@ export class JourneyHud {
   readonly layer: Phaser.GameObjects.Container;
   private readonly clock: Phaser.GameObjects.Text;
   private readonly status: Phaser.GameObjects.Text;
+  /** The shade, the road's name and description, and its clock: what the arrival's chapter card takes the place of. */
+  private readonly heading: Phaser.GameObjects.GameObject[] = [];
   private readonly buttons: { text: Phaser.GameObjects.Text; spec: HudButton }[] = [];
   private readonly safe: SafeLayout;
   private readonly dateFormat: Intl.DateTimeFormat;
@@ -82,6 +84,12 @@ export class JourneyHud {
     this.status = this.text(clockX, clockY + this.clock.height + 2, '', { fontSize: responsiveFont(13, size, 11), color: '#9c8458', fontStyle: 'italic' }, clockWidth)
       .setOrigin(clockOrigin, 0);
     this.updateClockFor(journeyDeparture(journey), journey.longitude, '');
+    this.heading.push(shade, ...lines, this.clock, this.status);
+  }
+
+  /** Fades out the road's name, description and clock, leaving only the controls. */
+  fadeHeading(): void {
+    this.scene.tweens.add({ targets: this.heading, alpha: 0, duration: 700, ease: 'Sine.easeIn' });
   }
 
   /** Lays out the control row along the bottom, wrapping when it runs out of width. */

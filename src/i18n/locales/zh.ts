@@ -497,6 +497,7 @@ export const text: TranslationCatalog = {
   "Over the snows of the mountains to Ṭihrán, you carry the names of the fallen of Ṭabarsí and say them aloud to no one.": "你踏着山间的积雪前往德黑兰，心里带着塔巴尔西殉难者的名字，却不对任何人念出声来。",
   "Over the Winter Passes": "翻越冬日山口",
   "Pass the journey": "走完全程",
+  "Show the arrival": "观看抵达",
   "{hz} Hz": "{hz} 赫兹",
   "{hz} Hz (getting {actual})": "{hz} 赫兹（实际 {actual}）",
   "More": "更多",

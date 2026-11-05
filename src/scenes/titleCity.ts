@@ -31,7 +31,7 @@ export function addTitleCity(
   const bake = (mode: DawnMode): Phaser.GameObjects.Image => {
     const w = Math.ceil(width);
     const h = Math.ceil(height - top);
-    const key = `title-city-${vista.id}-${mode}-${w}x${h}`;
+    const key = `${scene.scene.key}-dawn-city-${vista.id}-${mode}-${w}x${h}`;
     if (scene.textures.exists(key)) scene.textures.remove(key);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       if (scene.textures.exists(key)) scene.textures.remove(key);

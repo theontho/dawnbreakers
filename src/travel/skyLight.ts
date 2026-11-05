@@ -1,6 +1,7 @@
 import { mix } from '../assets/art/canvasKit';
 import { clamp } from '../sky/math';
-import type { SkyBodies } from '../sky/skyBodies';
+import { skyBodies, type SkyBodies } from '../sky/skyBodies';
+import type { GeographicLocation } from '../sky/types';
 import { altitudeAzimuth } from './skyCamera';
 
 /** The colour and brightness of the sky and land at one moment, from the sun and moon. */
@@ -184,4 +185,31 @@ export function blendSkyLights(lights: readonly SkyLight[]): SkyLight {
     starVisibility: starVisibilityAt(seenAltitude),
     limitingMagnitude: twilightLimit(seenAltitude) - moonCost(moonlight),
   };
+}
+
+/** Real seconds of sky the light is blended over when time runs fast, and how many moments are taken. */
+const BLUR_SECONDS = 0.4;
+const BLUR_SAMPLES = 7;
+/** Sky hours a second (2 s a day) above which day and night would strobe and the light is blended. */
+const BLUR_FROM_PACE_HOURS = 12;
+
+/**
+ * The light of the moment, or when the days roll by faster than a frame can
+ * follow, the light of the hours around it taken together, so day and night
+ * blend instead of strobing.
+ */
+export function blurredSkyLight(date: Date, bodies: SkyBodies, location: GeographicLocation, paceHours: number): SkyLight {
+  const now = skyLightFor(bodies);
+  // Slower than this, each frame moves the sky a few minutes: no strobe to smooth.
+  if (paceHours <= BLUR_FROM_PACE_HOURS) return now;
+  const windowMs = Math.min(24, paceHours * BLUR_SECONDS) * 3600000;
+  // The hours either side of the moment, so the sky's colour does not lag
+  // behind the stars and the sun; the moment itself goes last.
+  const lights: SkyLight[] = [];
+  for (let i = 0; i < BLUR_SAMPLES; i += 1) {
+    const offset = (i / (BLUR_SAMPLES - 1) - 0.5) * windowMs;
+    if (offset !== 0) lights.push(skyLightFor(skyBodies(new Date(date.getTime() + offset), location)));
+  }
+  lights.push(now);
+  return blendSkyLights(lights);
 }

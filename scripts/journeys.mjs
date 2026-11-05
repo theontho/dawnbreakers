@@ -3,7 +3,8 @@
  * Plays every journey between chapters headlessly and screenshots it after
  * the stars have turned a while; fails on any page error, and on a journey
  * that does not open. Also plays one passage between chapters through to the
- * next chapter's first map.
+ * next chapter's first map, checks the two-step skip through its arrival's
+ * dawn, and previews an arrival from the viewer.
  *
  *   npm run journeys                               # all, -> out/journeys/<id>.png
  *   npm run journeys -- --only shiraz-to-road,tehran-to-mecca
@@ -96,6 +97,33 @@ try {
     });
     await page.waitForFunction(() => window.__game.scene.isActive('Road'), null, { timeout: 150000 });
     console.log('passage: shiraz-to-road went on into Road');
+
+    // Skipping goes in two steps: to the dawn over the next chapter's place, then into it.
+    await page.evaluate(() => {
+      const game = window.__game;
+      game.scene.getScenes(true).forEach((s) => s.scene.stop());
+      game.scene.start('Journey', { journeyId: 'shiraz-to-road', onward: { scene: 'Road' } });
+    });
+    await page.waitForFunction(() => window.__game.scene.isActive('Journey') && window.__game.scene.getScene('Journey').arrival, null, { timeout: 30000 });
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(500);
+    const firstSkip = await page.evaluate(() => window.__game.scene.isActive('Journey') && window.__game.scene.getScene('Journey').arrival.state);
+    if (firstSkip !== 'settled') throw new Error(`first skip should show the arrival's dawn, got ${firstSkip}`);
+    await page.screenshot({ path: join(outDir, 'arrival-shiraz-to-road.png') });
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__game.scene.isActive('Road'), null, { timeout: 15000 });
+    console.log('arrival: first skip showed the dawn, the second went on into Road');
+
+    // The viewer previews any road's arrival with A.
+    await page.evaluate(() => {
+      const game = window.__game;
+      game.scene.getScenes(true).forEach((s) => s.scene.stop());
+      game.scene.start('Journey', { journeyId: 'baghdad-to-shiraz', settings: { autoplay: false } });
+    });
+    await page.waitForFunction(() => window.__game.scene.isActive('Journey') && window.__game.scene.getScene('Journey').arrival, null, { timeout: 30000 });
+    await page.keyboard.press('KeyA');
+    await page.waitForFunction(() => window.__game.scene.getScene('Journey').arrival.state === 'settled', null, { timeout: 15000 });
+    console.log('arrival: the viewer previewed baghdad-to-shiraz');
   }
 } catch (error) {
   failed = true;

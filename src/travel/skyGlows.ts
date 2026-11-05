@@ -36,6 +36,11 @@ export class SkyGlows {
     this.glows = new SceneGlows(scene);
   }
 
+  /** Takes the sun and moon's glow away, as when the arrival's dawn covers the road's sky. */
+  hide(): void {
+    this.glows.update([], []);
+  }
+
   update(light: SkyLight, timeBlur: number): void {
     if (!this.glows.active) return;
     this.partyBounds = this.party?.bounds();

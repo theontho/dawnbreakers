@@ -498,6 +498,7 @@ export const text: TranslationCatalog = {
   "Over the snows of the mountains to Ṭihrán, you carry the names of the fallen of Ṭabarsí and say them aloud to no one.": "از برف کوه‌ها به سوی تهران می‌گذری و نام شهیدان طبرسی را با خود می‌بری و آن را بر زبان هیچ‌کس نمی‌آوری.",
   "Over the Winter Passes": "از گردنه‌های زمستانی",
   "Pass the journey": "گذراندن سفر",
+  "Show the arrival": "نمایش رسیدن",
   "{hz} Hz": "{hz} هرتز",
   "{hz} Hz (getting {actual})": "{hz} هرتز (اکنون {actual})",
   "More": "بیشتر",

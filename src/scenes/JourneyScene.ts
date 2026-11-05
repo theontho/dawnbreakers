@@ -3,12 +3,13 @@ import { playMusic, setSoundscape } from '../audio';
 import { JOURNEYS, journeyDeparture, type Journey } from '../data/journeys';
 import { rtl, t } from '../i18n';
 import { localSiderealTime, locationFromDegrees } from '../sky/projection';
-import { skyBodies, type SkyBodies } from '../sky/skyBodies';
+import { skyBodies } from '../sky/skyBodies';
 import type { GeographicLocation } from '../sky/types';
 import { capFrameRate } from '../ui/frameCap';
 import { RemarkCaption } from '../ui/remarkCaption';
 import { restartSceneOnResize } from '../ui/responsive';
 import { firstSunEvent, type SunEvent } from '../travel/firstSunEvent';
+import { JourneyArrival } from '../travel/journeyArrival';
 import { JourneyClock } from '../travel/journeyClock';
 import { JourneyHud, type HudButton } from '../travel/journeyHud';
 import { JourneyPassage, dayOfJourney } from '../travel/journeyPassage';
@@ -17,9 +18,10 @@ import { Landscape, groundLayout, type GroundLayout } from '../travel/landscape'
 import { Party } from '../travel/party';
 import { Sea } from '../travel/sea';
 import { SkyCamera } from '../travel/skyCamera';
-import { blendSkyLights, skyLightFor, type SkyLight } from '../travel/skyLight';
+import { blurredSkyLight, type SkyLight } from '../travel/skyLight';
 import { SkyGlows } from '../travel/skyGlows';
-import { SkyPainter, TRAIL_MODES, type TrailMode } from '../travel/skyPainter';
+import { SkyPainter, TRAIL_MODES } from '../travel/skyPainter';
+import { DEFAULT_SETTINGS, FACINGS, facingIndex, TRAIL_LABELS, type ViewerSettings } from '../travel/journeyViewerSettings';
 import { starFieldFor, type StarField } from '../travel/travelStars';
 
 /** Where to go once a journey played between chapters is over. */
@@ -29,57 +31,21 @@ export interface JourneyOnward {
   spawnY?: number;
 }
 
-/** How the viewer was set, carried across a restart for the next journey or a resize. */
-interface ViewerSettings {
-  rateIndex: number;
-  direction: 1 | -1;
-  playing: boolean;
-  trails: TrailMode;
-  /** Quarter turns away from the journey's own facing. */
-  turn: number;
-  /** Facing where the sun first rises or sets after the road sets out, instead of the road's facing. */
-  centerSun: boolean;
-  /** Playing each road as the game does between chapters, and going on to the next. */
-  autoplay: boolean;
-  /** Real seconds each day takes while the days between roll by. */
-  secondsPerDay: number;
-  /** The most frames a second the sky is drawn: 120 for fast stars on a screen that can show them, 60 to save power. */
-  maxHz: FrameRate;
-  /** The full dark of the 1840s: every star the naked eye could find, and the Milky Way. */
-  fullDark: boolean;
-}
-
-type FrameRate = 60 | 120;
-
 export interface JourneyLaunch {
   [key: string]: unknown;
   journeyId?: string;
   /** Set when the journey plays between chapters: it runs once along the road and goes on. */
   onward?: JourneyOnward;
   settings?: ViewerSettings;
+  /** The journey had already reached its arrival (the scene restarted for a resize): show the dawn at once. */
+  arrived?: boolean;
+  /** The viewer's "Show the arrival": play the move into the dawn as soon as the road is up. */
+  showArrival?: boolean;
 }
 
 const PASSAGE_HOLD_MS = 1600;
 /** How much of the screen's height is sky, above the horizon. */
 const SKY_SHARE = 0.7;
-/** Real seconds of sky the light is blended over when time runs fast, and how many moments are taken. */
-const BLUR_SECONDS = 0.4;
-const BLUR_SAMPLES = 7;
-/** Sky hours a second (2 s a day) above which day and night would strobe and the light is blended. */
-const BLUR_FROM_PACE_HOURS = 12;
-const FACINGS: readonly { label: string }[] = [
-  { label: 'Facing north' },
-  { label: 'Facing east' },
-  { label: 'Facing south' },
-  { label: 'Facing west' },
-];
-const TRAIL_LABELS: Record<TrailMode, { label: string }> = {
-  off: { label: 'Trails: off' },
-  tail: { label: 'Trails: comet tails' },
-  exposure: { label: 'Trails: long exposure' },
-};
-const DEFAULT_SETTINGS: ViewerSettings = { rateIndex: 2, direction: 1, playing: true, trails: 'tail', turn: 0, centerSun: true, autoplay: true, secondsPerDay: SECONDS_PER_DAY, maxHz: 120, fullDark: false };
-
 /**
  * A journey between chapters: the party on the road under the true sky of
  * that night and place, the stars wheeling about the pole as time runs.
@@ -112,6 +78,12 @@ export class JourneyScene extends Phaser.Scene {
   private caption!: RemarkCaption;
   /** The day whose remarks have been said, so each is said once as the road passes it. */
   private remarkedDay = 0;
+  /** The dawn over the place the road leads to, which the road gives way to at its end. */
+  private arrival?: JourneyArrival;
+  private arrived = false;
+  private showArrival = false;
+  private arriveAt?: number;
+  private lastLight?: SkyLight;
 
   constructor() { super('Journey'); }
 
@@ -123,6 +95,10 @@ export class JourneyScene extends Phaser.Scene {
     this.remarkedDay = 0;
     this.lastMs = undefined;
     this.leaving = false;
+    this.arrived = data.arrived ?? false;
+    this.showArrival = data.showArrival ?? false;
+    this.arriveAt = undefined;
+    this.arrival = undefined;
   }
 
   create(): void {
@@ -152,11 +128,23 @@ export class JourneyScene extends Phaser.Scene {
     this.hud = new JourneyHud(this, journey);
     this.glows = new SkyGlows(this, this.sky, this.land, this.party, this.hud);
     this.caption = new RemarkCaption(this, () => this.hud.controlsTop() - 10, 150);
+    // Every road gets its arrival: between chapters, and in the viewer to watch it.
+    this.arrival = new JourneyArrival(this, {
+      journey,
+      party: this.party,
+      camera: this.camera3,
+      figure: this.ground.figure,
+      controlsTop: () => this.hud.controlsTop(),
+      onFinished: () => (this.onward ? this.goOnward() : this.showNextAfterArrival()),
+    });
     playMusic(journey.music);
     setSoundscape(journey.sound);
 
     if (this.onward) this.startPassage();
     else this.startViewer();
+    if (this.arrived) this.arrive(true);
+    // On the wall clock, which the scene's own can lag behind while the road's first frames are slow.
+    else if (this.showArrival) this.arriveAt = performance.now() + 600;
     this.cameras.main.fadeIn(500, 0, 0, 0);
     // The cap holds while the sky is up; the rest of the game runs as the screen does.
     capFrameRate(this.game, this.settings.maxHz);
@@ -168,10 +156,23 @@ export class JourneyScene extends Phaser.Scene {
     const deltaMs = Math.min(100, now - (this.lastMs ?? now));
     this.lastMs = now;
     this.clock.update(now);
+    if (this.arriveAt !== undefined && now >= this.arriveAt) {
+      this.arriveAt = undefined;
+      this.arrive();
+    }
+    this.arrival?.update();
+    // Once the dawn covers the road, only the party is left to draw.
+    if (this.arrival?.covers) {
+      this.walked += (deltaMs / 1000) * this.ground.figure * 0.68;
+      // Backlit by the sunrise, they keep the road's last light: silhouettes against the dawn.
+      if (this.lastLight) this.party?.draw(this.walked, this.lastLight, now);
+      return;
+    }
     const date = this.clock.date;
     const bodies = skyBodies(date, this.location);
     const paceHours = Math.abs(this.clock.speed) / 3600;
-    const light = this.blurredLight(date, bodies, paceHours);
+    const light = blurredSkyLight(date, bodies, this.location, paceHours);
+    this.lastLight = light;
     const skyMs = date.getTime();
     // Between chapters the stars always draw comet tails; the viewer shows them as it is set.
     const trails = this.onward ? 'tail' : this.settings.trails;
@@ -213,29 +214,8 @@ export class JourneyScene extends Phaser.Scene {
     if (due.length > 0) this.caption.say(due);
   }
 
-  /**
-   * The light of the moment, or when the days roll by faster than a frame can
-   * follow, the light of the hours around it taken together, so day and night
-   * blend instead of strobing.
-   */
-  private blurredLight(date: Date, bodies: SkyBodies, paceHours: number): SkyLight {
-    const now = skyLightFor(bodies);
-    // Slower than this, each frame moves the sky a few minutes: no strobe to smooth.
-    if (paceHours <= BLUR_FROM_PACE_HOURS) return now;
-    const windowMs = Math.min(24, paceHours * BLUR_SECONDS) * 3600000;
-    // The hours either side of the moment, so the sky's colour does not lag
-    // behind the stars and the sun; the moment itself goes last.
-    const lights: SkyLight[] = [];
-    for (let i = 0; i < BLUR_SAMPLES; i += 1) {
-      const offset = (i / (BLUR_SAMPLES - 1) - 0.5) * windowMs;
-      if (offset !== 0) lights.push(skyLightFor(skyBodies(new Date(date.getTime() + offset), this.location)));
-    }
-    lights.push(now);
-    return blendSkyLights(lights);
-  }
-
   private launchData(): JourneyLaunch {
-    return { journeyId: this.journey.id, onward: this.onward, settings: this.settings };
+    return { journeyId: this.journey.id, onward: this.onward, settings: this.settings, arrived: this.arrived };
   }
 
   private statusLine(): string {
@@ -252,9 +232,57 @@ export class JourneyScene extends Phaser.Scene {
   /** Between chapters: the nights of the road going by, then on into the next chapter. */
   private startPassage(): void {
     this.clock.setRate(0);
-    this.passage.start(() => this.time.delayedCall(PASSAGE_HOLD_MS, () => this.goOnward()), this.settings.secondsPerDay);
-    this.hud.setButtons([{ label: () => t('Continue ›'), onClick: () => this.goOnward() }]);
-    for (const key of ['ENTER', 'SPACE', 'ESC']) this.input.keyboard?.once(`keydown-${key}`, () => this.goOnward());
+    this.passage.start(() => this.time.delayedCall(PASSAGE_HOLD_MS, () => this.arrive()), this.settings.secondsPerDay);
+    this.hud.setButtons([{ label: () => t('Continue ›'), onClick: () => this.skipAhead() }]);
+    // Continue goes in two steps: to the dawn over the place, then on into the chapter. Esc goes straight on.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.code === 'Escape') this.goOnward();
+      else if (event.code === 'Enter' || event.code === 'Space') this.skipAhead();
+      else return;
+      event.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('keydown', onKey));
+  }
+
+  /** The road's end: its sky gives way to the dawn over the place it leads to. */
+  private arrive(skip = false): void {
+    if (!this.arrival) {
+      this.goOnward();
+      return;
+    }
+    this.arrived = true;
+    this.passage.stop();
+    this.clock.setRate(0);
+    this.caption.clear();
+    this.glows.hide();
+    this.hud.fadeHeading();
+    this.arrival.begin(skip);
+  }
+
+  /** The first press shows the dawn over the place; the next goes on into the chapter. */
+  private skipAhead(): void {
+    if (!this.arrival) {
+      this.goOnward();
+      return;
+    }
+    if (this.arrival.state === 'waiting') this.arrive(true);
+    else if (this.arrival.skip()) this.goOnward();
+  }
+
+  /** The viewer's preview of the road's end: the move into the dawn, from the road as it is now, or again from the start. */
+  private replayArrival(): void {
+    this.takeClock();
+    if (this.arrival?.state === 'waiting') this.arrive();
+    else this.scene.restart({ journeyId: this.journey.id, settings: this.settings, showArrival: true });
+  }
+
+  /** In the viewer, once the dawn has come up, on to the next road. */
+  private showNextAfterArrival(): void {
+    if (!this.settings.autoplay || this.leaving) return;
+    this.leaving = true;
+    this.cameras.main.fadeOut(600, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.showJourney(JOURNEYS.indexOf(this.journey) + 1));
   }
 
   private goOnward(): void {
@@ -287,6 +315,7 @@ export class JourneyScene extends Phaser.Scene {
       { label: () => t(s.centerSun ? 'Center sun: on' : 'Center sun: off'), onClick: () => this.toggleCenterSun() },
       { label: () => t(s.fullDark ? 'Stars: full dark, as in the 1840s' : 'Stars: as usual'), onClick: () => this.toggleFullDark() },
       { label: () => t('Pass the journey'), onClick: () => this.passTheJourney() },
+      { label: () => t('Show the arrival'), onClick: () => this.replayArrival() },
       { label: () => '−', onClick: () => this.changeDayPace(-1), keepWithNext: true },
       { label: () => t('{seconds} s a day', { seconds: s.secondsPerDay }), onClick: () => this.changeDayPace(1), keepWithNext: true },
       { label: () => '+', onClick: () => this.changeDayPace(1) },
@@ -322,6 +351,7 @@ export class JourneyScene extends Phaser.Scene {
       KeyB: () => this.toggleFullDark(),
       KeyZ: () => this.toggleFrameRate(),
       KeyN: () => this.passTheJourney(),
+      KeyA: () => this.replayArrival(),
       BracketLeft: () => this.changeDayPace(-1),
       BracketRight: () => this.changeDayPace(1),
       KeyH: () => this.hud.setVisible(!this.hud.layer.visible),
@@ -429,9 +459,8 @@ export class JourneyScene extends Phaser.Scene {
     this.settings.autoplay = true;
     this.passage.start(() => this.time.delayedCall(PASSAGE_HOLD_MS, () => {
       if (!this.settings.autoplay || this.leaving) return;
-      this.leaving = true;
-      this.cameras.main.fadeOut(600, 0, 0, 0);
-      this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.showJourney(JOURNEYS.indexOf(this.journey) + 1));
+      if (this.arrival) this.arrive();
+      else this.showNextAfterArrival();
     }), this.settings.secondsPerDay);
     this.restartExposure();
   }
@@ -458,8 +487,4 @@ export class JourneyScene extends Phaser.Scene {
     this.clock.openShutter();
     this.sky.openShutter();
   }
-}
-
-function facingIndex(bearing: number): number {
-  return Math.round(bearing / 90) % 4;
 }
