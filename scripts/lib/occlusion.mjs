@@ -19,7 +19,9 @@
  *   column on the owner's face at the door cell (on the south or east face
  *   when the cell is on that edge), keeping only points where the owner is
  *   opaque, covered by anything drawn after the owner. A door on no owner
- *   is measured as a person standing on its cell.
+ *   is measured as a person standing on its cell, and a story object with
+ *   no sprite and nothing on its cell to draw it fails as unmarked: once its
+ *   speech mark goes, nothing on screen shows where it is.
  * - Exits are judged as a group, all the widened cells of one way out: a
  *   cell is hidden when more than 60% of its ground diamond is under
  *   anything opaque, and the exit fails only when fewer than half of its
@@ -98,6 +100,7 @@ export function measureOcclusion(key) {
     .forEach(({ o }, rank) => order.set(o, rank));
   const worldSprites = scene.children.list.filter((o) => (o.type === 'Image' || o.type === 'Sprite')
     && o !== scene.player
+    && o.name !== 'companion'
     && o.depth < TOP_WORLD_DEPTH
     && o.depth > -500
     && o.scrollFactorX === 1
@@ -234,6 +237,7 @@ export function measureOcclusion(key) {
 
   const results = new Map();
   const exitResults = new Map();
+  const unmarked = new Set();
   for (const { on, here } of phases) {
     const visible = (o) => (conditional.has(o) ? here.has(o) : o.visible);
     const onGround = worldSprites.filter((o) => visible(o));
@@ -259,9 +263,13 @@ export function measureOcclusion(key) {
       ...npcSprites.filter((n) => n.sprite && visible(n.sprite)).map((n) => ({
         name: n.spec.prompt, at: `${n.spec.gridX},${n.spec.gridY}`, pts: spriteSamples(n.sprite), after: order.get(n.sprite), owners: [n.sprite],
       })),
-      ...npcSprites.filter((n) => !n.spec.texture && (!n.spec.present || here.has(n.spec))).map((n) => ({
-        name: n.spec.prompt, at: `${n.spec.gridX},${n.spec.gridY}`, door: true, ...doorSamples(n.spec),
-      })),
+      ...npcSprites.filter((n) => !n.spec.texture && (!n.spec.present || here.has(n.spec))).map((n) => {
+        const samples = doorSamples(n.spec);
+        // A story object with no sprite is drawn by the scenery on its cell. With nothing
+        // there, only its speech mark shows it, and that goes once it has been heard.
+        if (samples.owners.length === 0) unmarked.add(`${n.spec.prompt.replace(/\s*\[E\]$/, '')} at ${n.spec.gridX},${n.spec.gridY}`);
+        return { name: n.spec.prompt, at: `${n.spec.gridX},${n.spec.gridY}`, door: true, ...samples };
+      }),
       ...scene.doors.interactables.map((d) => ({ name: d.prompt, at: `${d.gridX},${d.gridY}`, door: true, ...doorSamples(d) })),
     ];
     for (const t of targets) {
@@ -284,16 +292,17 @@ export function measureOcclusion(key) {
       }
     }
   }
-  return { phases: phases.length, flags, results: [...results.values()], exits: [...exitResults.values()] };
+  return { phases: phases.length, flags, results: [...results.values()], exits: [...exitResults.values()], unmarked: [...unmarked] };
 }
 
 export const HIDDEN = 0.6;
 export const COVERED = 0.35;
 
 /** Smoke lines for one scene: errors (more than 60% hidden) and notes (more than 35%). */
-export function occlusionReport({ results, exits }) {
+export function occlusionReport({ results, exits, unmarked }) {
   const errors = [];
   const notes = [];
+  for (const u of unmarked) errors.push(`unmarked: ${u} has no sprite and nothing on its cell draws it (give it a texture, or stand it on the wall, door or building that shows it)`);
   // An exit may lose some of its cells behind a tree; it fails when fewer than half can be seen.
   for (const e of exits) {
     if (e.hidden === 0) continue;

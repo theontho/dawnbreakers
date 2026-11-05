@@ -51,7 +51,8 @@ const block = (texture: string, cells: ReadonlyArray<readonly [number, number]>)
   cells.map(([gridX, gridY]) => ({ gridX, gridY, texture, blocks: true }));
 
 const FURNISHED: DecorSpec[] = [
-  // The women's side: lamps, her writing desk, the late Siyyid's books.
+  // The women's side: lamps, her writing desk, the late Siyyid's books. A desk,
+  // not the floor board: behind the curtain only something this tall reads.
   ...block('ch8-oil-lamp', [[3, 2], [15, 2]]),
   ...block('writing-desk', [[9, 2]]),
   ...block('ch2-bundles', [[12, 1]]),

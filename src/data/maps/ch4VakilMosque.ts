@@ -12,7 +12,8 @@ import { wallRun } from './wallRuns';
  * the player faces.
  *
  * Layout (x runs east, y runs south):
- * - Prayer hall: y 0..9, columns every third cell (x 3..36, y 3, 6, 9).
+ * - Prayer hall: y 0..9, columns every third cell (x 3..36, y 3, 6); its front
+ *   row on the court is cut away with the vaults, so the pulpit stays in view.
  *   Qibla iwan x 18..21 in the back wall; the pulpit x 22, y 1..3, its foot at (22, 3).
  * - Court: x 3..35, y 10..30, the pool x 15..23, y 17..23.
  * - Arcades: west x 0..2 (the portal x 0..2, y 16..21, open through rows 18..19),
@@ -57,10 +58,14 @@ function hallWalls(): DecorSpec[] {
   ];
 }
 
-/** The spiral columns, every third cell; each carries its arches back to the west and north. */
+/**
+ * The spiral columns, every third cell; each carries its arches back to the
+ * west and north. The front row (y 9) is left out with the cut-away: it stood
+ * squarely before the Imám-Jumʿih and the officer by the pulpit.
+ */
 function columns(): DecorSpec[] {
   const out: DecorSpec[] = [];
-  for (const y of [3, 6, 9]) {
+  for (const y of [3, 6]) {
     for (let x = 3; x <= 36; x += 3) out.push({ gridX: x, gridY: y, texture: 'ch4-spiral-column', blocks: true });
   }
   return out;

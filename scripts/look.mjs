@@ -5,6 +5,10 @@
  *
  *   npm run look -- City:8:13,Ch6Maku:6:12            # -> out/look-<Scene>-<x>-<y>.png
  *   npm run look -- City:8:13 --out out/doors --dpr 2
+ *   npm run look -- QazvinKarbila:10:4 --flags opened_tahirih,qzWitness=true
+ *
+ * `--flags` seeds story flags (true/false, numbers, otherwise strings), for
+ * example to skip a chapter's opening narration or see a later phase.
  */
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -17,9 +21,16 @@ const argValue = (name) => {
 };
 const spots = (args[0] ?? '').split(',').filter(Boolean);
 if (spots.length === 0) {
-  console.error('Usage: look.mjs Scene:x:y[,Scene:x:y] [--out prefix] [--dpr n] [--locale code]');
+  console.error('Usage: look.mjs Scene:x:y[,Scene:x:y] [--out prefix] [--dpr n] [--locale code] [--flags k=v,...]');
   process.exit(1);
 }
+const parseFlag = (value) => {
+  if (value === undefined || value === 'true') return true;
+  if (value === 'false') return false;
+  return Number.isFinite(Number(value)) ? Number(value) : value;
+};
+const flags = Object.fromEntries((argValue('--flags') ?? '').split(',').filter(Boolean)
+  .map((pair) => { const [k, v] = pair.split('='); return [k, parseFlag(v)]; }));
 const prefix = resolve(root, argValue('--out') ?? 'out/look');
 mkdirSync(dirname(prefix), { recursive: true });
 
@@ -30,10 +41,11 @@ try {
     failed = true;
     console.error(`pageerror: ${e.message}`);
   });
-  await page.addInitScript((locale) => {
+  await page.addInitScript(({ locale, flags }) => {
     localStorage.clear();
     localStorage.setItem('dawnbreakers.locale', locale);
-  }, argValue('--locale') ?? 'en');
+    localStorage.setItem('dawnbreakers.flags.v1', JSON.stringify(flags));
+  }, { locale: argValue('--locale') ?? 'en', flags });
   await page.goto(url);
   await waitForBoot(page);
   for (const spot of spots) {

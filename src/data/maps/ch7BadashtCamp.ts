@@ -102,7 +102,7 @@ const MEADOW: DecorSpec[] = [
   ...blocking('apricot-tree', [[1, 14], [11, 15], [16, 15], [25, 15], [30, 15], [40, 14], [7, 34], [11, 36], [29, 35], [34, 36], [38, 34]]),
   ...blocking('cypress', [[16, 21], [16, 28], [24, 21], [24, 28]]),
   ...blocking('ch5-river-reeds', [[23, 17], [20, 30], [23, 34], [20, 19]]),
-  ...blocking('writing-desk', [[15, 33]]),
+  ...blocking('floor-writing-board', [[15, 33]]),
   ...blocking('lamp', [[17, 30], [20, 26], [23, 23], [17, 35]]),
   ...blocking('ch9-cloth-bundle', [[26, 34], [27, 33]]),
   ...loose('rug', [[16, 34], [25, 35]]),

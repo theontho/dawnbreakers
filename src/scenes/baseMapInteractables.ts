@@ -32,13 +32,6 @@ export interface RevealMaskHandle {
   lastPlayerReveal?: RevealTarget;
 }
 
-export function interactableRevealTargets(interactables: Interactable[]): RevealTarget[] {
-  return interactables
-    .map((interactable) => interactable.sprite)
-    .filter((sprite): sprite is Phaser.GameObjects.Image => Boolean(sprite))
-    .map((sprite) => revealTargetForSprite(sprite, 0.62, 34, 54));
-}
-
 export function playerRevealTarget(player: Phaser.GameObjects.Image): RevealTarget {
   return revealTargetForSprite(player, 0.68, 38, 60);
 }
@@ -140,32 +133,56 @@ export function destroyPlayerRevealMasks(
 const HIGHLIGHT_DEPTH = 9700;
 
 export interface InteractableHighlightHandle {
-  graphics: Phaser.GameObjects.Graphics[];
+  /** One ring per interactable that can ever be on the map, and one per exit cell. */
+  rings: Array<{ graphics: Phaser.GameObjects.Graphics; of?: Interactable }>;
   tween?: Phaser.Tweens.Tween;
   toggled: boolean;
   held: boolean;
+  /** The interactables on the map now; a ring shows only for these. */
+  present: ReadonlySet<Interactable>;
 }
 
 export function createInteractableHighlightHandle(): InteractableHighlightHandle {
-  return { graphics: [], toggled: false, held: false };
+  return { rings: [], toggled: false, held: false, present: new Set() };
 }
 
+/**
+ * Where an interactable's ring goes: round its sprite, or, for a door or a
+ * story object the scenery draws, round the doorway it is tapped at.
+ */
+function highlightTarget(interactable: Interactable): RevealTarget {
+  if (interactable.sprite) return revealTargetForSprite(interactable.sprite, 0.62, 34, 54);
+  const area = interactable.area;
+  return {
+    x: area.centerX,
+    y: area.centerY,
+    depth: 0,
+    radius: Phaser.Math.Clamp(Math.max(area.width, area.height) * 0.62, 34, 54),
+  };
+}
+
+/**
+ * The press-H / hold-Tab rings: one round every person, story object and
+ * door that can ever be on the map (`everyone`), shown only while it is
+ * present, and one on every exit cell.
+ */
 export function setupInteractableHighlights(
   scene: Phaser.Scene,
-  interactables: Interactable[],
+  everyone: readonly Interactable[],
   exits: MapExit[],
   gridToScreen: (gx: number, gy: number) => { sx: number; sy: number },
   handle: InteractableHighlightHandle,
 ): void {
-  for (const reveal of interactableRevealTargets(interactables)) {
+  for (const interactable of everyone) {
+    const ring = highlightTarget(interactable);
     const highlight = scene.add.graphics().setDepth(HIGHLIGHT_DEPTH).setVisible(false);
     highlight.fillStyle(0xf3d98a, 0.12);
-    highlight.fillCircle(reveal.x, reveal.y, reveal.radius);
+    highlight.fillCircle(ring.x, ring.y, ring.radius);
     highlight.lineStyle(3, 0xf3d98a, 0.85);
-    highlight.strokeCircle(reveal.x, reveal.y, reveal.radius);
+    highlight.strokeCircle(ring.x, ring.y, ring.radius);
     highlight.lineStyle(1, 0xffffff, 0.55);
-    highlight.strokeCircle(reveal.x, reveal.y, reveal.radius * 0.72);
-    handle.graphics.push(highlight);
+    highlight.strokeCircle(ring.x, ring.y, ring.radius * 0.72);
+    handle.rings.push({ graphics: highlight, of: interactable });
   }
 
   for (const exit of exits) {
@@ -177,12 +194,12 @@ export function setupInteractableHighlights(
     highlight.strokeEllipse(pos.sx, pos.sy, 58, 28, 48);
     highlight.lineStyle(1, 0xffffff, 0.55);
     highlight.strokeEllipse(pos.sx, pos.sy, 42, 20, 48);
-    handle.graphics.push(highlight);
+    handle.rings.push({ graphics: highlight });
   }
 
-  if (handle.graphics.length > 0) {
+  if (handle.rings.length > 0) {
     handle.tween = scene.tweens.add({
-      targets: handle.graphics,
+      targets: handle.rings.map(r => r.graphics),
       alpha: 0.52,
       duration: 720,
       yoyo: true,
@@ -193,10 +210,16 @@ export function setupInteractableHighlights(
   }
 }
 
-export function applyInteractableHighlightVisibility(handle: InteractableHighlightHandle): void {
+/** Shows the rings while H is toggled or Tab held; `present` updates who is on the map. */
+export function applyInteractableHighlightVisibility(
+  handle: InteractableHighlightHandle,
+  present?: readonly Interactable[],
+): void {
+  if (present) handle.present = new Set(present);
   const visible = handle.toggled || handle.held;
-  for (const highlight of handle.graphics) {
-    if (highlight.visible !== visible) highlight.setVisible(visible);
+  for (const { graphics, of } of handle.rings) {
+    const show = visible && (!of || handle.present.has(of));
+    if (graphics.visible !== show) graphics.setVisible(show);
   }
   if (visible) handle.tween?.resume();
   else handle.tween?.pause();

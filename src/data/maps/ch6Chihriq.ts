@@ -54,7 +54,7 @@ const loose = (texture: string, cells: ReadonlyArray<readonly [number, number]>)
 
 /** Courtyard: the amanuensis's desk and lamp, a brazier, a narrow row of cells along the west wall. */
 const COURTYARD: DecorSpec[] = [
-  ...blocking('writing-desk', [[25, 4]]),
+  ...blocking('floor-writing-board', [[25, 4]]),
   ...blocking('lamp', [[23, 3]]),
   ...blocking('crates', [[27, 3]]),
   ...blocking('ch6-brazier', [[40, 13]]),

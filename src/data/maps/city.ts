@@ -10,7 +10,8 @@ import { wallRun } from './wallRuns';
  * garden walls; the city wall closes the south and east.
  *
  * Districts (x runs east, y runs south):
- * - Road north: x 16..19 from the mosque to the top edge (exit at x 18).
+ * - Road north: x 16..19 from the mosque to the top edge (exit at x 18),
+ *   leaving under a sābāṭ (x 15..20, y 0..3) whose arch spans x 17..18.
  * - Ílkhání court: x 21..35, y 5..20, walled, gateway onto the back lane.
  * - Walled garden: x 37..54, y 0..20, trees over its walls.
  * - Back lane: y 22..24 behind the bazaar's north row.
@@ -23,12 +24,16 @@ import { wallRun } from './wallRuns';
 const W = 56;
 const H = 52;
 
+/** Rooms built over the road north on a vault; the road runs through its middle two columns. */
+const SABAT = { x: 15, y: 0 } as const;
 const GREAT_MOSQUE = { gridX: 4, gridY: 18, w: 12, h: 10 };
 const ILKHANI = { gridX: 24, gridY: 8, w: 8, h: 7 };
 /** The Ílkhání's door, mid-way along its front (south-west) face. */
 export const ILKHANI_DOOR = { x: 28, y: ILKHANI.gridY + ILKHANI.h - 1 };
 
 const buildings: BuildingSpec[] = [
+  // The sābāṭ over the road north: only its outer columns block (see build).
+  { gridX: SABAT.x, gridY: SABAT.y, w: 6, h: 4, texture: 'ch10-street-arch', blocks: false },
   // The great mosque and the Masjid-i-Ílkhání
   { ...GREAT_MOSQUE, texture: 'mosque-great' },
   { ...ILKHANI, texture: 'mosque-local' },
@@ -80,12 +85,11 @@ function cityWall(): DecorSpec[] {
 function compoundWalls(): DecorSpec[] {
   const w = 'compound-wall';
   return [
-    // The road north: house walls and garden walls on both sides
-    ...wallRun(w, 15, 0, 15, 4),
+    // The road north: house walls and garden walls on both sides, back from the sābāṭ
     ...wallRun(w, 15, 8, 15, 17),
     ...wallRun(w, 2, 15, 2, 38),
     ...wallRun(w, 3, 17, 14, 17),
-    ...wallRun(w, 20, 0, 20, 21, { gaps: [[20, 16], [20, 17], [20, 18]] }),
+    ...wallRun(w, 20, 4, 20, 21, { gaps: [[20, 16], [20, 17], [20, 18]] }),
     // The Ílkhání court: its garden to the north, its gateway to the back lane
     ...wallRun(w, 21, 5, 35, 5),
     ...wallRun(w, 36, 0, 36, 21),
@@ -179,8 +183,12 @@ export const cityMap: MapDefinition = {
   width: W,
   height: H,
   spawn: { x: 45, y: 46 },
-  build: ({ paintRect }) => {
+  build: ({ paintRect, block }) => {
     paintRect(0, 0, W, H, 'path');
+    // The sābāṭ's piers either side of the road under it.
+    for (let y = SABAT.y; y < SABAT.y + 4; y++) {
+      for (const x of [SABAT.x, SABAT.x + 1, SABAT.x + 4, SABAT.x + 5]) block(x, y);
+    }
     // Walled gardens
     paintRect(37, 0, 18, 21, 'grass');
     paintRect(21, 6, 15, 2, 'grass');

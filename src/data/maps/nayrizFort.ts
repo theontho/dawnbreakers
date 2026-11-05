@@ -45,7 +45,7 @@ const props: DecorSpec[] = [
   ...block('ch8-bedroll', [[2, 7], [2, 8]]),
   ...block('ch8-oil-lamp', [[3, 4]]),
   // The chronicler's board, the ladder to the wall walk, lamps of the court.
-  ...block('writing-desk', [[17, 5]]),
+  ...block('floor-writing-board', [[17, 5]]),
   ...block('zanjan-ladder', [[21, 1]]),
   ...block('lamp', [[GATE_X - 1, H - 2], [GATE_X + 2, H - 2], [9, 9], [23, 9]]),
   // Stores against the east wall; empty water-jars waiting for the cistern.
