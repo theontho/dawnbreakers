@@ -64,6 +64,9 @@ const props: DecorSpec[] = [
 ];
 
 const people = [
+  // In summer, by the canal: one of the two who came down from Ṭihrán with Bahá'u'lláh.
+  { gridX: CLASSMATE[0], gridY: CLASSMATE[1], texture: 'karbila-mazindarani',
+    prompt: 'Speak with the Traveller from Mázindarán  [E]', dialogue: 'kr-mazindarani', present: krSummer },
   // The water-seller on the north bank by the bridge, through all three seasons.
   { gridX: WATER_SELLER[0], gridY: WATER_SELLER[1], texture: 'forerunners-water-seller',
     prompt: 'Speak with the Water-Seller  [E]', dialogue: 'kr-water-seller', present: krSummer },

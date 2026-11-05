@@ -33,7 +33,7 @@ export const PEOPLE: readonly GlossaryEntry[] = [
   person('khatun-jan', 'Khátún-Ján', ['Khátún-Ján'],
     'The wife of Muḥammad-Hádí Farhádí. Disguised as a beggar, she carried a sealed letter into the house where Ṭáhirih was confined, and brought her out.'),
   person('bastami', 'Mullá ʿAlíy-i-Basṭámí', ['Mullá ʿAlíy-i-Basṭámí'],
-    'The second Letter of the Living, the first sent out to teach. He was tried in Baghdád in 1845 and died a prisoner of the Ottomans.'),
+    'A Letter of the Living, fourth in Nabíl\'s list, and the first sent out to teach. Tried in Baghdád in 1845, he was sent under guard toward Constantinople, and Nabíl could learn nothing certain of his end.'),
   person('vahid', 'Vaḥíd', ['Vaḥíd', 'Siyyid Yaḥyá'],
     'Siyyid Yaḥyá of Dáráb, one of the most learned men in Persia, sent by Muḥammad Sháh to examine the Báb\'s claim. He became a believer, and was named Vaḥíd, "the Peerless". In 1850 he took refuge with some seventy-two companions in the fort of Khájih above Nayríz; lured out by an oath sworn on the Qur\'án, he was slain on 29 June 1850, ten days before the Báb.'),
   person('anis', 'Anís', ['Anís'],

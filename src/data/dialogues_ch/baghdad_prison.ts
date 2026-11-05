@@ -88,7 +88,7 @@ export const aliPrison: DialogueTree = {
     },
     najaf: {
       speaker: 'Mullá ʿAlíy-i-Basṭámí',
-      text: 'I went to the greatest of them, Shaykh Muḥammad-Ḥasan. I told him the Promised One had come, and laid the pages before him. He called me a heretic in front of his students, and they put me out. A few days later the governor\'s men came for me.',
+      text: 'I went to the greatest of them, Shaykh Muḥammad-Ḥasan. I told him the Promised One had come, and laid the pages before him. He called me a heretic in front of his students, and they put me out, and in the end they gave me up in chains to the Sultan\'s officers.',
       choices: [{ text: '"Why would you not say the name, before them all?"', next: 'name' }],
     },
     name: {
@@ -109,7 +109,7 @@ export const aliPrison: DialogueTree = {
     weeks: {
       speaker: 'Narrator',
       onEnter: { set: { bgSpokeWithAli: true } },
-      text: 'You come back with bread on other nights, through the rest of the winter, while the Páshá\'s letter goes to Istanbul and the answer comes slowly back. Then one morning, before it is light, your father shakes you awake. They are bringing the Persian out.',
+      text: 'You come back with bread on other nights, through the rest of the winter and into the spring, while the Páshá\'s letter goes to Istanbul and the answer comes slowly back. Then one morning, before it is light, your father shakes you awake. They are bringing the Persian out.',
     },
   },
 };

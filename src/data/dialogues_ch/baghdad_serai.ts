@@ -94,7 +94,7 @@ export const studentHall: DialogueTree = {
     },
     said: {
       speaker: 'A Student from Karbilá',
-      text: 'That the Promised One, whom we have waited for a thousand years, has appeared. That the Gate has opened. He laid the pages on the Shaykh\'s carpet and asked him to read. He would not say who, or where. Only that it was so.',
+      text: 'That the Promised One, whom we have waited for a thousand years, has appeared. That the Gate has opened. He laid the pages on the Shaykh\'s carpet and asked him to read. He would not give a name. Only that an unschooled youth of Persia, of the House of Háshim, had in two days and nights set down verses to equal the whole Qur\'án.',
       choices: [{ text: '"And the Shaykh?"', next: 'shaykh' }],
     },
     shaykh: {

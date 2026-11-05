@@ -89,7 +89,7 @@ export const baghdadStory: ChapterStory = {
     {
       flag: 'baghdadComplete',
       title: 'The First',
-      body: 'He was led away north in chains toward Istanbul, and no sure word of him came back. He died in Ottoman captivity, the first of the believers to give his life for the Faith of the Báb.',
+      body: 'He was led away north in chains toward Istanbul, and no sure word of him came back. Whatever his end, he was the first of the believers to give his life for the Faith of the Báb.',
     },
   ],
 };

@@ -52,7 +52,7 @@ export const gateWarden: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Gate Guard',
-      text: 'Mind the arch, friend. Up there in the little room is a Qur\'án copied by a hand three hundred years dead. Whoever leaves Shíráz passes beneath it, and the Book keeps him on the road.',
+      text: 'Mind the arch, friend. Up there in the little room is a Qur\'án copied by a hand four hundred years dead. Whoever leaves Shíráz passes beneath it, and the Book keeps him on the road.',
       choices: [
         { text: '"Have many passed beneath it this week?"', next: 'many' },
         { text: '"Does it work?"', next: 'work' },

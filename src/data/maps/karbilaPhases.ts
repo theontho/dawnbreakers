@@ -22,7 +22,7 @@ export const krSpring = (f: FlagState) => !!f.krSpring;
 const count = (f: FlagState, flags: readonly string[]) => flags.filter(k => !!f[k]).length;
 
 /** The people of Karbilá the player meets in summer before the day of ʿArafih. */
-export const SUMMER_ROUNDS = ['krMetWaterSeller', 'krMetClassmate', 'krMetServant', 'krVisitedGrave', 'krMetUluvi'] as const;
+export const SUMMER_ROUNDS = ['krMetWaterSeller', 'krMetClassmate', 'krMetServant', 'krVisitedGrave', 'krMetUluvi', 'krMetMazindarani'] as const;
 export const SUMMER_NEEDED = 3;
 export const krSummerRounds = (f: FlagState) => count(f, SUMMER_ROUNDS);
 

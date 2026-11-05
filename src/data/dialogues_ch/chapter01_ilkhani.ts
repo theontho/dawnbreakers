@@ -22,7 +22,7 @@ export const ilkhaniAttendant: DialogueTree = {
     },
     room: {
       speaker: 'The Mosque Attendant',
-      text: 'A mosque is a house that cannot refuse a traveller. Your friends have taken the corner by the west wall. The tall one, their leader, left at noon for the gate and has not come back. I have kept a lamp filled for him.',
+      text: 'A mosque is a house that cannot refuse a traveller. Your friends have taken the corner by the west wall. The tall one, their leader, stayed behind at the city gate and has not come in. I have kept a lamp filled for him.',
       choices: [
         { text: '"Thank you. That is kind."' },
         { text: '"Who comes to this mosque?"', next: 'who' },

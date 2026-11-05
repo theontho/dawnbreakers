@@ -67,11 +67,11 @@ export const forerunnersStory: ChapterStory = {
     {
       flag: 'frForetold',
       title: 'The Shepherd at Baráthá',
-      body: 'At noon by the Masjid of Baráthá, an Arab shepherd told Siyyid Káẓim of a dream: within thirty days he would die. The Siyyid smiled, and asked his weeping students whether they did not wish him to go, so that the One they awaited might appear.',
+      body: 'At noon by the Masjid of Baráthá, an Arab shepherd told Siyyid Káẓim of a dream: three days after he came home to Karbilá, on the day of ʿArafih, he would die. The Siyyid smiled, and asked his weeping students whether they did not wish him to go, so that the One they awaited might appear.',
     },
     {
       flag: 'frKazimDied',
-      title: 'The Eleventh of Dhi\'l-Ḥijjih',
+      title: 'The Day of ʿArafih',
       body: 'Siyyid Káẓim died in Karbilá on 31 December 1843, telling all who came to him to go and seek. He was laid to rest within the precincts of the shrine of the Imám Ḥusayn.',
     },
     {

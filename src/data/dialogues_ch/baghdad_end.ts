@@ -15,12 +15,12 @@ export const aliDeparture: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Narrator',
-      text: 'Grey light on the river. At the head of the quay the Páshá\'s soldiers stand stamping in the cold beside their mules, and between them, with chains at his wrists, Mullá ʿAlí. They are taking him north, to Mosul and the long road to Istanbul.',
+      text: 'Grey light on the river. At the head of the quay the Páshá\'s soldiers stand yawning beside their mules, and between them, with chains at his wrists, Mullá ʿAlí. They are taking him north, to Mosul and the long road to Istanbul.',
       choices: [{ text: '(Go to him.)', next: 'him' }],
     },
     him: {
       speaker: 'Mullá ʿAlíy-i-Basṭámí',
-      text: 'The boatman\'s son. (The chain clinks as he lifts his hand to you.) You came. Go home after, before the soldiers notice you. They are cold this morning, and so am I.',
+      text: 'The boatman\'s son. (The chain clinks as he lifts his hand to you.) You came. Go home after, before the soldiers notice you. They are tired this morning, and so am I.',
       choices: [{ text: '"Will they let you go, in Istanbul?"', next: 'go' }],
     },
     go: {
@@ -36,7 +36,7 @@ export const aliDeparture: DialogueTree = {
     close: {
       speaker: 'Narrator',
       onEnter: { set: { baghdadComplete: true } },
-      text: 'No word of him came back that anyone could trust. Some said he died on the road. Some said he was set to labour in the Sultan\'s dockyards at Istanbul and died there within the year. Mullá ʿAlí of Basṭám, the second Letter of the Living, was the first to give his life for the new Faith.',
+      text: 'No word of him came back that anyone could trust. Some said he fell ill and died on the road, and some that he was put to death. Some said he was set to labour in the Sultan\'s dockyards at Istanbul and died there. Mullá ʿAlí of Basṭám, the fourth Letter of the Living, was the first to give his life for the new Faith.',
     },
   },
 };

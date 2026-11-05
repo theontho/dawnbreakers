@@ -48,6 +48,11 @@ export const karbilaStory: ChapterStory = {
       body: 'You prayed in the shrine and stood a long time by Siyyid Káẓim\'s resting-place, eight years after he bade his students scatter and seek.',
     },
     {
+      flag: 'krMetMazindarani',
+      title: 'The Road from Ṭihrán',
+      body: 'Mírzá Muḥammad of Mázindarán, who survived Ṭabarsí, came down with Bahá\'u\'lláh by Kirmánsháh and Baghdád. The Amír-Niẓám had urged Him to visit Karbilá while the Sháh was at Iṣfahán, and offered Him a post at court on His return. He refused it.',
+    },
+    {
       flag: 'krMetClassmate',
       title: 'The Old Pillar',
       body: 'A classmate from the Siyyid\'s lessons who stayed behind told you who was left: hardly anyone. He waits and sees, he says, and says it too quickly.',

@@ -9,7 +9,7 @@ import type { FlagState } from '../../dialogue/types';
  * - winter (that evening, and the nights after): the student's bread, the
  *   jailer, the prisoner; until the player has sat with Mullá ʿAlí
  *   (`bgSpokeWithAli`);
- * - departure (weeks later, before dawn): he is led away north in chains,
+ * - departure (in spring, before dawn): he is led away north in chains,
  *   and the chapter closes (`baghdadComplete`).
  */
 

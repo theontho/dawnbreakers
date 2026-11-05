@@ -61,7 +61,7 @@ export const nurHusaynGift: DialogueTree = {
     gone: {
       speaker: 'Narrator',
       onEnter: { set: { nurHusaynFarewell: true } },
-      text: 'He goes east. Within the week the tutor finds you in the court: the son of the house in the lane has set out for Núr, the Vazír\'s country in the hills of Mázindarán. The tutor says it as if he had been told to tell no one, and could not help it. The road north leaves Ṭihrán from the end of that same lane.',
+      text: 'He goes east. Not long after, the tutor finds you in the court: the son of the house in the lane has set out for Núr, the Vazír\'s country in the hills of Mázindarán. The tutor says it as if he had been told to tell no one, and could not help it. The road north leaves Ṭihrán from the end of that same lane.',
     },
   },
 };

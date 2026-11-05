@@ -32,7 +32,7 @@ export const seraiMerchant: DialogueTree = {
     },
     qazvin: {
       speaker: 'A Cloth Merchant from Káshán',
-      text: 'He came carrying a sealed letter from a kinswoman, a woman of great learning in Qazvín who has never set foot in Shíráz. He would not say what was in it. Only that it had been received, and that she is counted among the first, though she never left her own house.',
+      text: 'He came carrying a sealed letter from a kinswoman, a woman of great learning in Qazvín who has never set foot in Shíráz. He would not say what was in it. Only that it had been received, and that she is counted among the first, though she never made the journey herself.',
       choices: [{ text: '"Counted among the first?"', next: 'first' }],
     },
     first: {

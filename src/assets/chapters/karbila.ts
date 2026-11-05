@@ -34,6 +34,9 @@ export const KARBILA_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0x3a3a48, skin: 0xd6b48c, clothing: { style: 'cloak', secondary: 0x24242e, accent: 0xb8a070 }, hat: { style: 'turban', color: 0xf0ebe0, accent: 0x3a3a48 }, hair: 0x2a1c12, shadow: true } },
   { id: 'karbila-aqa-jan', label: 'Traveller', texture: 'karbila-aqa-jan', kind: 'character', category: 'characters', color: 0x6a4a2a, blocks: true,
     character: { body: 0x6a4a2a, skin: 0xdcbc94, clothing: { style: 'sash', secondary: 0x8a6a48, accent: 0x3a5a6a }, hat: { style: 'cap', color: 0x2a3a4a }, hair: 0x1a120a, shadow: true } },
+  // Mírzá Muḥammad of Mázindarán, in a northern travelling coat.
+  { id: 'karbila-mazindarani', label: 'Traveller', texture: 'karbila-mazindarani', kind: 'character', category: 'characters', color: 0x3a4a3a, blocks: true,
+    character: { body: 0x3a4a3a, skin: 0xd0ac80, clothing: { style: 'cloak', secondary: 0x5a4a32, accent: 0x8a7a50 }, hat: { style: 'cap', color: 0x2a2a22 }, hair: 0x2a1c12, shadow: true } },
   { id: 'karbila-uluvi', label: 'Dervish', texture: 'karbila-uluvi', kind: 'character', category: 'characters', color: 0x7a6a4a, blocks: true,
     character: { body: 0x7a6a4a, skin: 0xc8a47a, clothing: { style: 'cloak', secondary: 0x5a4a32, accent: 0x9a3a2a }, hat: { style: 'tallHat', color: 0xd8ccb0 }, hair: 0x3a2a1a, shadow: true } },
   // The same follower in winter, the tall hat given up.

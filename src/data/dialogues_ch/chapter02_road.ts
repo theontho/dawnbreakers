@@ -79,7 +79,7 @@ export const husaynCharge: DialogueTree = {
     },
     pilgrimage: {
       speaker: 'Mullá Ḥusayn',
-      text: 'He goes on pilgrimage to Mecca, by sea from Búshihr. Quddús goes with Him, the youngest of us and the last to find Him, and Mubárak to serve them both.',
+      text: 'He goes on pilgrimage to Mecca, by sea from Búshihr. Quddús goes with Him, the last of us to find Him, and Mubárak to serve them both.',
       choices: [{ text: '"What would you have me do?"', next: 'task' }],
     },
     task: {

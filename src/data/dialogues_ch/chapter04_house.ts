@@ -172,7 +172,7 @@ export const ch4UncleDoor: DialogueTree = {
     },
     release: {
       speaker: 'Narrator',
-      text: 'Nabíl records that the boy recovered. The constable would hold such a prisoner no longer, and the governor, fearing the sickness more than the Siyyid, let Him go, on condition that He leave Shíráz. Before dawn He sets out north, toward Iṣfahán. He will not see His city again.',
+      text: 'Nabíl records that the boy recovered, and that the constable wrote at once to the governor, begging him to set his Prisoner free. He was released, free to go wherever He pleased. Before dawn He sets out north, toward Iṣfahán. He will not see His city again.',
       choices: [
         { text: '"Quddús said compassion is a cloak. I will wear it on the road."', next: 'end',
           requires: f => f.ch4Response === 'compassion' },

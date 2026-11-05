@@ -48,7 +48,7 @@ export const shepherd: DialogueTree = {
     },
     message: {
       speaker: 'An Arab Shepherd',
-      text: 'He said: greet him from Me, and tell him that his hour is near. Within thirty days, he will come to Me. (His voice shakes.) Forgive me, master. I am only a shepherd. I would not have said it if I had not been told to.',
+      text: 'He said: greet him from Me, and tell him to rejoice, for the hour of his going is at hand. When he has made his visits at Kázimayn and come home to Karbilá, three days after, on the day of ʿArafih, he will come to Me. (His voice shakes.) Forgive me, master. I am only a shepherd. I would not have said it if I had not been told to.',
       choices: [{ text: '(Look at the Siyyid.)', next: 'calm' }],
     },
     calm: {
@@ -66,7 +66,7 @@ export const shepherd: DialogueTree = {
     },
     ready: {
       speaker: 'Siyyid Káẓim',
-      text: 'No one is ever ready. That is why you must go out and seek, and not wait for readiness to come to you in Karbilá. (He tears the bread and hands half to the shepherd.) Thirty days is a long time. Let us use them.',
+      text: 'No one is ever ready. That is why you must go out and seek, and not wait for readiness to come to you in Karbilá. (He tears the bread and hands half to the shepherd.) It is some weeks yet to ʿArafih. Let us use them.',
       choices: [{ text: '(Go on.)', next: 'end' }],
     },
     end: {

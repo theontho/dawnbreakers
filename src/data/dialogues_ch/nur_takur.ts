@@ -66,7 +66,7 @@ export const nurElder: DialogueTree = {
     },
     note: {
       speaker: 'The Village Elder',
-      text: 'He would not come himself. He wrote ʿAzíz a note: be not afraid, no one will dare molest you. Only he made such a slip in the grammar that it said something else altogether, and when it was read out here in Tákur the notables were scandalised. They vilified the bearer and the author both.',
+      text: 'He would not come himself. He wrote ʿAzíz a note: be not afraid, no one will dare molest you. Only he so mangled the grammar that it said something else altogether, or nothing at all, and when it was read out here in Tákur the notables were scandalised. They vilified the bearer and the author both.',
       choices: [{ text: '"And now?"', next: 'envoys' }],
     },
     envoys: {

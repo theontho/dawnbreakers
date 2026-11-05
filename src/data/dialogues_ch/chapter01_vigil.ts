@@ -1,4 +1,5 @@
 import type { DialogueTree } from '../../dialogue/types';
+import { heed, heededAt } from '../../dialogue/voices';
 import { rumourCount } from './chapter01_rumourFlags';
 
 /**
@@ -81,7 +82,7 @@ export const thresholdVigil: DialogueTree = {
     signs: {
       speaker: 'Mullá Ḥusayn',
       onEnter: { set: { heardTestimony: true } },
-      text: 'He asked me the signs by which the Promised One would be known. I named them, as our teacher taught us: of the line of the Prophet, of mature age, of innate knowledge, free of bodily defect. He listened. Then He said, very quietly, that all these signs were manifest in Him.',
+      text: 'He asked me the signs by which the Promised One would be known. I named them, as our teacher taught us: of the line of the Prophet, more than twenty years of age and less than thirty, of innate knowledge, of medium height, free of bodily defect. He listened. Then He said, very quietly, that all these signs were manifest in Him.',
       choices: [
         { text: '"A grave claim. What proof did you ask?"', next: 'proof' },
         { text: '"And your heart? What did it answer?"', next: 'heart' },
@@ -102,11 +103,11 @@ export const thresholdVigil: DialogueTree = {
       text: 'The lane is brightening. You have not seen what he has seen. You have only a night of waiting, a city of rumours, and the changed face of a man you trust. Something in you must answer.',
       choices: [
         { text: '"I have studied too long to leap. Teach me the proofs, and I will weigh them."', next: 'caution',
-          effect: { set: { scholarlyCaution: true } } },
+          voice: 'doubt', effect: { set: { scholarlyCaution: true, ...heed('ch1-dawn', 'doubt') } } },
         { text: '"I have longed for this dawn since I was a child."', next: 'longing',
-          effect: { set: { longingConfessed: true } } },
+          voice: 'longing', effect: { set: { longingConfessed: true, ...heed('ch1-dawn', 'longing') } } },
         { text: '"Who am I to judge such a claim? I fear presumption more than ignorance."', next: 'presumption',
-          effect: { set: { fearedPresumption: true } } },
+          voice: 'fear', effect: { set: { fearedPresumption: true, ...heed('ch1-dawn', 'fear') } } },
       ],
     },
     caution: {
@@ -127,17 +128,34 @@ export const thresholdVigil: DialogueTree = {
     silence: {
       speaker: 'Mullá Ḥusayn',
       text: 'He has bidden me keep this secret for now. Seventeen others must find Him by their own search, each unprompted, before His name is spoken openly. So I ask nothing of you. I only tell you what I saw.',
+      voice: [
+        { voice: 'doubt', text: 'One man\'s face at dawn, after a night without sleep. You have trusted faces before.',
+          requires: f => heededAt(f, 'ch1-dawn', 'doubt') },
+        { voice: 'longing', text: 'You have waited your whole life for someone to come out of a door like that one.',
+          requires: f => heededAt(f, 'ch1-dawn', 'longing') },
+        { voice: 'fear', text: 'If it is true, everything you are will be asked of you. Everything.',
+          requires: f => heededAt(f, 'ch1-dawn', 'fear') },
+      ],
       choices: [
         { text: '"I believe your witness. My heart turns toward this dawn."', next: 'recognised',
           effect: { set: { recognised: true } } },
+        { text: 'I have waited since I was a child. I need no more time.', next: 'recognised', voice: 'longing',
+          requires: f => heededAt(f, 'ch1-dawn', 'longing'), effect: { set: { recognised: true, ...heed('ch1-answer', 'longing') } } },
         { text: '"I need time, and the verses themselves, before I can say I believe."', next: 'deferred',
           effect: { set: { recognised: false } } },
+        { text: 'Say nothing at all. Not yet. Not to anyone.', next: 'mute', voice: 'fear',
+          requires: f => heededAt(f, 'ch1-dawn', 'fear'), effect: { set: heed('ch1-answer', 'fear') } },
       ],
     },
     recognised: {
       speaker: 'Narrator',
       onEnter: { set: { shirazComplete: true } },
       text: 'Mullá Ḥusayn grips your hands. Behind him, the lamp is extinguished; the sun has made it needless. Tonight in Shíráz a new age began, and you were at its door. The first of the Letters of the Living has been found, and you have been his first witness.',
+    },
+    mute: {
+      speaker: 'Narrator',
+      onEnter: { set: { shirazComplete: true } },
+      text: 'You open your mouth and nothing comes. Mullá Ḥusayn waits, then lays a hand on your shoulder as if you had answered. Behind him the lamp is extinguished; the sun has made it needless. You walk down the lane with the question still unspoken, and it walks with you.',
     },
     deferred: {
       speaker: 'Narrator',
@@ -180,7 +198,7 @@ export const brotherAtIlkhani: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Mullá Ḥusayn\'s Brother',
-      text: 'You have found our corner of the Ílkhání. My nephew is asleep on the bundles already. Have you seen my brother? He went out to the gate at noon and has not come back for his supper.',
+      text: 'You have found our corner of the Ílkhání. My nephew is asleep on the bundles already. Have you seen my brother? He sent us on ahead from the city gate, and promised to join us for the evening prayer. He has not come.',
       choices: [
         { text: '"He met a young merchant-Siyyid who invited him home tonight."', next: 'invited',
           requires: f => !!f.metMullaHusayn },
@@ -230,7 +248,7 @@ export const nightWatchman: DialogueTree = {
     household: {
       speaker: 'A Night Watchman',
       onEnter: { set: { watchmanSpoke: true } },
-      text: 'His uncle raised Him after His father died. A trader in Búshihr, honest to a fault. They say He would close His shop to pray at noon, even in the hottest season. (He shrugs.) The mullás say worse things. The mullás are not on the night watch.',
+      text: 'His uncle raised Him after His father died. He traded for years in Búshihr, honest to a fault. They say that on Fridays He would pray for hours on His roof in the noon sun, even in the hottest season. (He shrugs.) The mullás say worse things. The mullás are not on the night watch.',
       choices: [{ text: '"Peace be with you, watchman."' }],
     },
   },

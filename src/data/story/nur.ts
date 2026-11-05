@@ -48,7 +48,7 @@ export const nurStory: ChapterStory = {
     {
       flag: 'nurHeardPorter',
       title: 'The Foot of the Minaret',
-      body: 'In Ṭihrán Mullá Ḥusayn lodged in the madrasa of Mírzá Ṣáliḥ, called Pá-Minár. The porter said he went out before dawn and came back an hour after sunset to shut himself in his cell.',
+      body: 'In Ṭihrán Mullá Ḥusayn lodged in the madrasa of Mírzá Ṣáliḥ, called Pá-Minár. The porter said he went out early each morning and came back an hour after sunset to shut himself in his cell.',
     },
     {
       flag: 'nurHeardHaji',

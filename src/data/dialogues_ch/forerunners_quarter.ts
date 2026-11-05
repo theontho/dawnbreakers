@@ -154,7 +154,7 @@ export const seeker: DialogueTree = {
   },
 };
 
-/** At the door, after the road to Kázimayn: the copyist tells of the thirty days. */
+/** At the door, after the road to Kázimayn: the copyist tells of the weeks to ʿArafih. */
 export const copyistDoor: DialogueTree = {
   id: 'fr-copyist-door',
   startId: 'g',
@@ -166,13 +166,13 @@ export const copyistDoor: DialogueTree = {
     },
     days: {
       speaker: 'Narrator',
-      text: 'The thirty days pass in this house. The Siyyid teaches when he can, and when he cannot, he has the door left open. To everyone who comes in he says the same: do not linger by my side when I am gone. Scatter, and seek Him.',
+      text: 'The weeks until ʿArafih pass in this house. The Siyyid teaches when he can, and when he cannot, he has the door left open. To everyone who comes in he says the same: do not linger by my side when I am gone. Scatter, and seek Him.',
       choices: [{ text: '(Go on.)', next: 'death' }],
     },
     death: {
       speaker: 'Narrator',
       onEnter: { set: { frKazimDied: true } },
-      text: 'On the eleventh of Dhi\'l-Ḥijjih, the last day of the year 1843 by the Christian reckoning, Siyyid Káẓim dies in Karbilá. He is laid to rest within the precincts of the shrine of the Imám Ḥusayn. Within the month, the city puts on black.',
+      text: 'On the day of ʿArafih, the ninth of Dhi\'l-Ḥijjih, the last day of the year 1843 by the Christian reckoning, Siyyid Káẓim dies in Karbilá. He is laid to rest within the precincts of the shrine of the Imám Ḥusayn. Within the month, the city puts on black.',
     },
   },
 };
@@ -192,7 +192,7 @@ export const husaynReturn: DialogueTree = {
       text: 'I heard on the road. (He holds your hands a long moment.) Tell me what he said at the end. Not what the lane says. What he said.',
       choices: [
         { text: '"That we should not linger by his side. That we should scatter and seek."', next: 'scatter' },
-        { text: '"A shepherd at Baráthá told him he would die within thirty days. He was glad."', next: 'shepherd',
+        { text: '"A shepherd at Baráthá told him he would die on the day of ʿArafih. He was glad."', next: 'shepherd',
           requires: f => !!f.frForetold },
       ],
     },
