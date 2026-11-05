@@ -34,18 +34,43 @@ export const LOCALE_CONFIGS: Record<Locale, LocaleConfig> = {
 const isLocale = (value: string | null): value is Locale =>
   SUPPORTED_LOCALES.includes(value as Locale);
 
+/**
+ * The language a first visit starts in: the first of the browser's preferred
+ * languages that the game has (any Persian or Chinese variant counts), and
+ * English when none matches, the list is missing, or anything about it is
+ * odd. Kept in step with the splash screen's copy of this rule in `index.html`.
+ */
+export function detectLocale(languages: readonly string[] | undefined): Locale {
+  for (const tag of languages ?? []) {
+    if (typeof tag !== 'string') continue;
+    const primary = tag.trim().toLowerCase().split(/[-_]/)[0];
+    if (primary && isLocale(primary)) return primary;
+  }
+  return DEFAULT_LOCALE;
+}
+
+function browserLanguages(): readonly string[] | undefined {
+  try {
+    const { languages, language } = window.navigator;
+    return languages?.length ? languages : language ? [language] : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A language the player chose before wins; otherwise the browser's, if the game has it; otherwise English. */
 function readInitialLocale(): Locale {
   if (typeof window === 'undefined') {
     return DEFAULT_LOCALE;
   }
 
+  let stored: string | null = null;
   try {
-    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    return isLocale(stored) ? stored : DEFAULT_LOCALE;
+    stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
   } catch (error) {
     console.warn('Unable to read locale preference.', error);
-    return DEFAULT_LOCALE;
   }
+  return isLocale(stored) ? stored : detectLocale(browserLanguages());
 }
 
 const isRtlLocale = (locale: Locale) => LOCALE_CONFIGS[locale].direction === 'rtl';
@@ -101,6 +126,23 @@ const inFlight = new Map<Locale, Promise<void>>();
  * otherwise non-english locales render their english keys until the import
  * resolves.
  */
+/**
+ * Loads the starting language's catalog, falling back to English (without
+ * saving it as the player's choice) if the catalog cannot be fetched, so a
+ * bad connection or a stale deploy never leaves the game without words.
+ */
+export async function loadInitialLocale(): Promise<void> {
+  try {
+    await loadLocale(activeLocale);
+  } catch (error) {
+    console.warn(`Unable to load the ${activeLocale} catalog; starting in English.`, error);
+    inFlight.delete(activeLocale);
+    activeLocale = DEFAULT_LOCALE;
+    rtl = isRtlLocale(activeLocale);
+    applyLocaleDocument();
+  }
+}
+
 export async function loadLocale(locale: Locale): Promise<void> {
   if (locale === 'en' || catalogs[locale] !== EMPTY_CATALOG) return;
   const existing = inFlight.get(locale);

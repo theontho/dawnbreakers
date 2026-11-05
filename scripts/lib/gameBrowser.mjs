@@ -40,7 +40,9 @@ function browserPath() {
  * (touch, mobile viewport), for bugs only Safari shows. `touch: true` makes
  * a Chromium page a phone the same way.
  *
- * @param {{ gpu?: boolean, built?: boolean, webkit?: boolean, touch?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number }} [options]
+ * `locale` sets the browser's language (`navigator.languages`), e.g. 'fa-IR'.
+ *
+ * @param {{ gpu?: boolean, built?: boolean, webkit?: boolean, touch?: boolean, args?: string[], viewport?: { width: number, height: number }, deviceScaleFactor?: number, locale?: string }} [options]
  */
 export async function openGame(options = {}) {
   const server = options.built
@@ -74,6 +76,7 @@ export async function openGame(options = {}) {
   const page = await browser.newPage({
     viewport: options.viewport ?? { width: 1280, height: 800 },
     deviceScaleFactor: options.deviceScaleFactor ?? 1,
+    ...(options.locale ? { locale: options.locale } : {}),
     ...(options.webkit || options.touch ? { isMobile: true, hasTouch: true } : {}),
   });
   return { page, url: server.resolvedUrls.local[0], close };

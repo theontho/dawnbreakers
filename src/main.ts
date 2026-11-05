@@ -15,7 +15,7 @@ import { JourneyScene } from './scenes/JourneyScene';
 import { MapEditorScene } from './scenes/MapEditorScene';
 import { miniGameScenes } from './scenes/minigames';
 import { MiniGamePickerScene } from './scenes/MiniGamePickerScene';
-import { activeLocale, applyLocaleDocument, loadLocale } from './i18n';
+import { applyLocaleDocument, loadInitialLocale } from './i18n';
 import { attachConsolePanel } from './ui/consolePanel';
 import { measuredSafeAreaInsets, MIN_GAME_HEIGHT, MIN_GAME_WIDTH } from './ui/responsive';
 import { attachFpsLabel, installDebugOverlayHotkey } from './ui/debugOverlay';
@@ -29,8 +29,9 @@ const gameElement = document.getElementById('game');
 syncGameViewportHeight(gameElement);
 
 // Block boot on the active locale's catalog so the first paint isn't english
-// fallback. Other locales lazy-load when the player switches via Settings.
-await loadLocale(activeLocale);
+// fallback (or English itself, if it will not load). Other locales lazy-load
+// when the player switches via Settings.
+await loadInitialLocale();
 splashProgress(SPLASH_STAGE.language);
 
 attachConsolePanel();
