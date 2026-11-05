@@ -29,6 +29,8 @@ export type SunriseBackground = {
   skyTime?: (ms: number) => Date;
   daySky: Phaser.GameObjects.Image;
   dawnGlow: Phaser.GameObjects.Image;
+  /** Screen y of the top of the dusky haze band in `dawnGlow` at column x, which reads as a far ridge. */
+  hazeTop: (x: number) => number;
   dayClouds: Phaser.GameObjects.Container;
   city: TitleCity;
   nightWash: Phaser.GameObjects.Rectangle;
@@ -58,7 +60,8 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
   ]).setAlpha(0);
   const sunRays = scene.add.graphics();
   const sunrise = addSunrise(scene, width, height, cityBaseY);
-  const dawnGlow = addHorizonGlow(scene, width, height, horizonY).setAlpha(0);
+  const haze = horizonHaze(width, height, horizonY);
+  const dawnGlow = addHorizonGlow(scene, width, height, horizonY, haze).setAlpha(0);
   const nightSky = new TitleNightSky(scene, width, height, cityBaseY);
   const cloudDrift = { fromX: -width * 0.28, toX: width * 0.28 };
   const dayClouds = scene.add.container(cloudDrift.fromX, 0)
@@ -85,6 +88,7 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
     nightSky,
     daySky,
     dawnGlow,
+    hazeTop: (x: number) => ellipseTop(haze, x),
     dayClouds,
     city,
     nightWash,
@@ -232,7 +236,19 @@ function applySunriseLighting(sunrise: SunriseBackground, positionMs = 0): void 
   sunrise.nightWash.setAlpha(daylight.nightWashAlpha);
 }
 
-function addHorizonGlow(scene: Phaser.Scene, width: number, height: number, horizonY: number): Phaser.GameObjects.Image {
+type Ellipse = { x: number; y: number; rx: number; ry: number };
+
+/** The dusky band low over the hills, in front of the sun while it is low. */
+function horizonHaze(width: number, height: number, horizonY: number): Ellipse {
+  return { x: width / 2, y: horizonY + height * 0.12, rx: width * 0.56, ry: height * 0.06 };
+}
+
+function ellipseTop(e: Ellipse, x: number): number {
+  const u = (x - e.x) / e.rx;
+  return Math.abs(u) >= 1 ? Infinity : e.y - e.ry * Math.sqrt(1 - u * u);
+}
+
+function addHorizonGlow(scene: Phaser.Scene, width: number, height: number, horizonY: number, haze: Ellipse): Phaser.GameObjects.Image {
   const textureWidth = Math.ceil(width);
   const textureHeight = Math.ceil(height);
   const key = `title-horizon-light-${textureWidth}x${textureHeight}`;
@@ -275,7 +291,7 @@ function addHorizonGlow(scene: Phaser.Scene, width: number, height: number, hori
   ctx.fill();
   ctx.fillStyle = 'rgba(94, 49, 64, 0.24)';
   ctx.beginPath();
-  ctx.ellipse(width / 2, horizonY + height * 0.12, width * 0.56, height * 0.06, 0, 0, Math.PI * 2);
+  ctx.ellipse(haze.x, haze.y, haze.rx, haze.ry, 0, 0, Math.PI * 2);
   ctx.fill();
   texture.refresh();
 

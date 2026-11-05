@@ -4,7 +4,8 @@ import { BLOOM_REACH, CORE_INNER, CORE_OUTER } from './glowMath';
  * One glow per canvas: a triangle over the whole canvas, and per pixel the
  * bright core (cut to the moon's phase) and the additive bloom round it,
  * both cut along the skyline (one texel per column) where the land, the
- * city or the party stands in front, and out of the words and panels drawn
+ * city or the party stands in front, dimmed below a haze band that reads as
+ * a far ridge, and out of the words and panels drawn
  * over them (a mask the size of the canvas, by its alpha). The core goes
  * wherever a letter covers it and nowhere else; the bloom keeps a little
  * glare over the letters, as a bright sun does. The output is
@@ -36,9 +37,10 @@ fn fragmentMain(@builtin(position) frag: vec4f) -> @location(0) vec4f {
   let radius = glow.disc.z;
   let feather = glow.disc.w;
   let dist = length(offset) / radius;
-  let ground = textureLoad(skyline, vec2i(i32(frag.x), 0), 0).r;
-  // How much of this pixel is open sky: above the skyline, and what the words and panels leave.
-  let sky = clamp((ground - frag.y) * 0.75, 0.0, 1.0);
+  let line = textureLoad(skyline, vec2i(i32(frag.x), 0), 0);
+  // How much of this pixel is open sky: above the land, through the haze, and what the words and panels leave.
+  let underHaze = clamp((frag.y - line.g) * 0.75, 0.0, 1.0);
+  let sky = clamp((line.r - frag.y) * 0.75, 0.0, 1.0) * (1.0 - glow.bloom.w * underHaze);
   let covered = textureLoad(cover, vec2i(frag.xy), 0).a;
 
   let along = dot(offset, glow.phase.yz);

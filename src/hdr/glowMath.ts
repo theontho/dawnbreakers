@@ -22,10 +22,24 @@ export interface GlowSpec {
   sunward: number;
   /** Screen y of the top of whatever stands in front of the sky at column x: the land, the city, the party. */
   skyline: (x: number) => number;
+  /** A haze band drawn in front of the sky that reads as a far ridge; the glow below its top is dimmed by `opacity`. */
+  haze?: GlowHaze;
   /** How much of the whole glow shows, 0 to 1: a camera fade, a fading disc, a shade over the sky. */
   fade: number;
   /** The words, buttons and panels in front of the glow, which it is cut out of where they are drawn. */
   occluders: readonly Occluder[];
+}
+
+/**
+ * A translucent band in front of the sun, such as the title's dusky haze
+ * over the hills. It is drawn faint, but its top edge reads as a ridge, so
+ * the glow below it is held back by `opacity` (0 lets it all through, 1
+ * hides it as the land does).
+ */
+export interface GlowHaze {
+  /** Screen y of the band's top at column x; Infinity where it does not reach. */
+  top: (x: number) => number;
+  opacity: number;
 }
 
 export interface Rect {
@@ -104,13 +118,23 @@ export function glowIsDark(spec: GlowSpec): boolean {
   return spec.y - reach >= lowestGround;
 }
 
+/** Floats per column of the skyline texture: the land's top, then the haze's. */
+export const SKYLINE_CHANNELS = 2;
+/** Far below any canvas: where there is no haze. */
+const NO_HAZE = 1e9;
+
 /**
- * The skyline under a glow's canvas, one value per device pixel column, in
- * the canvas's own device pixels, for the shader to cut the glow along.
+ * The skyline under a glow's canvas, one pair per device pixel column (the
+ * top of the land, then the top of the haze), in the canvas's own device
+ * pixels, for the shader to cut the glow along.
  */
-export function sampleSkyline(spec: Pick<GlowSpec, 'skyline'>, origin: { x: number; y: number }, pixelRatio: number, out: Float32Array<ArrayBuffer>): Float32Array<ArrayBuffer> {
-  for (let column = 0; column < out.length; column += 1) {
-    out[column] = (spec.skyline(origin.x + (column + 0.5) / pixelRatio) - origin.y) * pixelRatio;
+export function sampleSkyline(spec: Pick<GlowSpec, 'skyline' | 'haze'>, origin: { x: number; y: number }, pixelRatio: number, out: Float32Array<ArrayBuffer>): Float32Array<ArrayBuffer> {
+  const columns = out.length / SKYLINE_CHANNELS;
+  for (let column = 0; column < columns; column += 1) {
+    const x = origin.x + (column + 0.5) / pixelRatio;
+    const haze = spec.haze ? spec.haze.top(x) : Infinity;
+    out[column * 2] = (spec.skyline(x) - origin.y) * pixelRatio;
+    out[column * 2 + 1] = Number.isFinite(haze) ? (haze - origin.y) * pixelRatio : NO_HAZE;
   }
   return out;
 }
@@ -122,7 +146,7 @@ export function sampleSkyline(spec: Pick<GlowSpec, 'skyline'>, origin: { x: numb
  *   core:   HDR colour, core opacity
  *   disc:   centre x, centre y, radius, feather of the phase edge
  *   phase:  lit fraction, cos and sin of the lit limb's bearing, unused
- *   bloom:  additive bloom colour, unused
+ *   bloom:  additive bloom colour, opacity of the haze
  */
 export function packGlowUniforms(spec: GlowSpec, origin: { x: number; y: number }, pixelRatio: number, out: Float32Array<ArrayBuffer> = new Float32Array(GLOW_UNIFORM_FLOATS)): Float32Array<ArrayBuffer> {
   const fade = clamp01(spec.fade);
@@ -136,7 +160,7 @@ export function packGlowUniforms(spec: GlowSpec, origin: { x: number; y: number 
     r, g, b, fade,
     (spec.x - origin.x) * pixelRatio, (spec.y - origin.y) * pixelRatio, radius, Math.max(1, radius * 0.06),
     clamp01(spec.lit), Math.cos(spec.sunward), Math.sin(spec.sunward), 0,
-    br, bg, bb, 0,
+    br, bg, bb, spec.haze ? clamp01(spec.haze.opacity) : 0,
   ]);
   return out;
 }

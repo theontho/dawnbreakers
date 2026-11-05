@@ -1,6 +1,6 @@
 import { GlowCover } from './glowCover';
 import { GLOW_SHADER } from './glowShader';
-import { GLOW_UNIFORM_FLOATS, glowBounds, glowIsDark, packGlowUniforms, sampleSkyline, type GlowSpec } from './glowMath';
+import { GLOW_UNIFORM_FLOATS, SKYLINE_CHANNELS, glowBounds, glowIsDark, packGlowUniforms, sampleSkyline, type GlowSpec } from './glowMath';
 import type { HdrGpu } from './hdrSupport';
 
 /** The game draws at one canvas pixel per CSS pixel, and the glow is soft; more would only cost fill. */
@@ -10,7 +10,7 @@ interface GlowCanvas {
   canvas: HTMLCanvasElement;
   context: GPUCanvasContext;
   uniforms: GPUBuffer;
-  /** The skyline under the canvas, one texel per column, and the bind group that holds it with the uniforms. */
+  /** The skyline under the canvas, one texel per column (land and haze), and the bind group that holds it with the uniforms. */
   skyline: GPUTexture | undefined;
   /** The words and panels in front, by their alpha. */
   cover: GlowCover | undefined;
@@ -195,9 +195,9 @@ export class HdrGlowLayer {
     glow.skyline?.destroy();
     glow.cover?.destroy();
     glow.cover = new GlowCover(device, columns);
-    glow.skyline = device.createTexture({ size: [columns, 1], format: 'r32float', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
-    glow.columns = new Float32Array(columns);
-    glow.lastColumns = new Float32Array(columns);
+    glow.skyline = device.createTexture({ size: [columns, 1], format: 'rg32float', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    glow.columns = new Float32Array(columns * SKYLINE_CHANNELS);
+    glow.lastColumns = new Float32Array(columns * SKYLINE_CHANNELS);
     glow.bindGroup = device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(0),
       entries: [
@@ -212,7 +212,8 @@ export class HdrGlowLayer {
     const { device } = this.gpu;
     if (!glow.skyline || !glow.bindGroup) return;
     device.queue.writeBuffer(glow.uniforms, 0, glow.packed);
-    device.queue.writeTexture({ texture: glow.skyline }, glow.columns, { bytesPerRow: glow.columns.length * 4 }, [glow.columns.length, 1]);
+    const columns = glow.columns.length / SKYLINE_CHANNELS;
+    device.queue.writeTexture({ texture: glow.skyline }, glow.columns, { bytesPerRow: columns * SKYLINE_CHANNELS * 4 }, [columns, 1]);
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
       colorAttachments: [{
