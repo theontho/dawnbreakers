@@ -4,7 +4,7 @@ import type { TravellerKind } from '../data/journeys';
 import { drawLitter, drawPack, drawRider, drawWalker, type Hand, type Headwear } from './figures';
 import { GLOW_TEXTURE } from './glowTexture';
 import type { GroundLayout } from './landscape';
-import { drawMount, mountWidth, type MountKind } from './mounts';
+import { drawMount, mountWidth, type MountKind, type Saddle } from './mounts';
 import type { SkyLight } from './skyLight';
 
 const MOUNT_OF: Partial<Record<TravellerKind, MountKind>> = {
@@ -19,7 +19,7 @@ const HEADWEAR: readonly Headwear[] = ['turban', 'kulah', 'turban'];
 const LANTERN = 0xffb45a;
 
 /**
- * The travelling party in silhouette, leader on the right, each walking to
+ * The travelling party in silhouette (see `figures.ts` and `mounts.ts`), leader on the right, each walking to
  * the right at their own stride while the land slides past. A carried lantern
  * throws a warm pool of light on the road.
  */
@@ -70,7 +70,7 @@ export class Party {
       const phase = (walked / stride) * Math.PI * 2 + slot.offset;
       const ground = this.ground.roadY + (i % 2) * f * 0.03;
       if (mount) {
-        const seat = drawMount(g, mount, slot.x, ground, f, phase, color);
+        const seat = drawMount(g, mount, slot.x, ground, f, phase, color, slot.kind !== 'packMule');
         this.load(slot.kind, seat, phase, color, realMs);
         return;
       }
@@ -88,7 +88,7 @@ export class Party {
     });
   }
 
-  private load(kind: TravellerKind, seat: Hand, phase: number, color: number, realMs: number): void {
+  private load(kind: TravellerKind, seat: Saddle, phase: number, color: number, realMs: number): void {
     const f = this.ground.figure;
     if (kind === 'packMule') drawPack(this.graphics, seat, f, color);
     else if (kind === 'litter') drawLitter(this.graphics, seat, f, color);
