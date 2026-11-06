@@ -45,6 +45,13 @@ export type SunriseBackground = {
 };
 
 export const SUNRISE_DURATION_MS = 210000;
+/**
+ * The sunrise told quickly, as a journey's arrival and a chapter chosen
+ * from the list show it: from before the sun's rim reaches the land, so it
+ * rises behind it rather than starting up, to the sun well clear, at four
+ * times the pace.
+ */
+export const QUICK_DAWN = { fromMs: 18000, toMs: 84000, speed: 4 } as const;
 const cloudDriftMs = 160000;
 const fixedSunPeakingElapsedMs = 23675;
 const sunTargetYMultiplier = -1.45;

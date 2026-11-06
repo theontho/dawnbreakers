@@ -12,7 +12,7 @@ import {
 } from '../ui/responsive';
 import { activateTitleTextButton, addTitleLanguageButton } from './titleControls';
 import { playTitleBookOpening } from './titleBookOpening';
-import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS } from './titleSunrise';
+import { addSunriseBackground, playSunrise, QUICK_DAWN, SUNRISE_DURATION_MS } from './titleSunrise';
 import { SunriseClock, type SunriseClockState } from './titleSunriseClock';
 import { addGitHubLink, addMenuButton, foldMenu, layoutMenu, MENU_COLORS, type MenuTone } from './titleMenu';
 import { addSunriseTransport } from './titleTransport';
@@ -175,11 +175,25 @@ export class TitleScene extends Phaser.Scene {
       });
     };
 
-    if (resume || data.direct) {
+    if (resume) {
       this.titleStartedAtMs = performance.now();
-      const clock = new SunriseClock(SUNRISE_DURATION_MS, resume?.clock);
+      const clock = new SunriseClock(SUNRISE_DURATION_MS, resume.clock);
       showMenu(clock);
-      startMusic((resume?.musicLeadSeconds ?? 0) + clock.position / 1000);
+      startMusic(resume.musicLeadSeconds + clock.position / 1000);
+      return;
+    }
+    if (data.direct) {
+      // Chosen from the chapter list: the sun comes up quickly, as at a journey's end, then the
+      // morning goes on at its own pace and the music comes in with it.
+      this.titleStartedAtMs = performance.now();
+      const clock = new SunriseClock(SUNRISE_DURATION_MS, { positionMs: QUICK_DAWN.fromMs, speed: QUICK_DAWN.speed, playing: true });
+      showMenu(clock);
+      const settle = clock.onChange(() => {
+        if (clock.position < QUICK_DAWN.toMs && clock.isPlaying) return;
+        settle();
+        if (clock.speed === QUICK_DAWN.speed) clock.setSpeed(1);
+        startMusic(clock.position / 1000);
+      });
       return;
     }
 

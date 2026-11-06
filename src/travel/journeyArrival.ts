@@ -4,7 +4,7 @@ import { chapterById } from '../data/chapters';
 import { journeyDeparture, type Journey } from '../data/journeys';
 import { TITLE_OPENINGS } from '../data/titleOpenings';
 import { chapterLabel, localizedStyle, t } from '../i18n';
-import { addSunriseBackground, playSunrise, SUNRISE_DURATION_MS, type SunriseBackground } from '../scenes/titleSunrise';
+import { addSunriseBackground, playSunrise, QUICK_DAWN, SUNRISE_DURATION_MS, type SunriseBackground } from '../scenes/titleSunrise';
 import { SunriseClock } from '../scenes/titleSunriseClock';
 import { glowTitleSun } from '../scenes/titleSunGlow';
 import { responsiveFont, safeLayout } from '../ui/responsive';
@@ -28,11 +28,6 @@ const FADE_TO_MS = 3200;
 const MOVE_MS = 5200;
 /** The dawn starts pulled in this much about its horizon, and eases out to its own framing. */
 const PUSH_IN = 1.7;
-/** The stretch of the title's sunrise the arrival plays, and how fast. */
-/** From before the sun's rim reaches the land, so it rises behind it rather than starting up. */
-const DAWN_FROM_MS = 18000;
-const DAWN_TO_MS = 84000;
-const DAWN_SPEED = 4;
 const HOLD_MS = 1800;
 const CARD_DEPTH = 90;
 /** Over the road, its verge and the party, so they all fade out under it together. */
@@ -74,11 +69,11 @@ export class JourneyArrival {
     this.layer = scene.add.container(0, 0, made).setDepth(DAWN_DEPTH).setVisible(false);
     this.flat = scene.add.renderTexture(0, 0, width, height).setOrigin(0).setDepth(DAWN_DEPTH).setVisible(false);
     this.fading = false;
-    this.clock = new SunriseClock(SUNRISE_DURATION_MS, { positionMs: DAWN_FROM_MS, speed: DAWN_SPEED, playing: false });
+    this.clock = new SunriseClock(SUNRISE_DURATION_MS, { positionMs: QUICK_DAWN.fromMs, speed: QUICK_DAWN.speed, playing: false });
     playSunrise(scene, this.sunrise, this.clock, performance.now(), { glow: false });
     this.card = this.addCard(width, height);
     this.clock.onChange(() => {
-      if (this.stage === 'settled' && this.clock.position >= DAWN_TO_MS && !this.finishing) {
+      if (this.stage === 'settled' && this.clock.position >= QUICK_DAWN.toMs && !this.finishing) {
         this.finishing = scene.time.delayedCall(HOLD_MS, () => this.finish());
       }
     });

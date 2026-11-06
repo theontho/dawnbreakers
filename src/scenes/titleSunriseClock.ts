@@ -97,6 +97,12 @@ export class SunriseClock {
     this.emit('speed');
   }
 
+  /** A given speed, one of `SUNRISE_SPEEDS`. */
+  setSpeed(speed: typeof SUNRISE_SPEEDS[number]): void {
+    this.speedIndex = SUNRISE_SPEEDS.indexOf(speed);
+    this.emit('speed');
+  }
+
   /** One speed faster, wrapping from the fastest back to the slowest. */
   cycleSpeed(): void {
     this.speedIndex = (this.speedIndex + 1) % SUNRISE_SPEEDS.length;
