@@ -2,12 +2,14 @@ import { footprintBox, paintTexture } from '../art/canvasKit';
 import { standard } from '../art/banners';
 import { drawShrine, SHRINE_DOME_PAD, SHRINE_WALL } from '../art/shrine';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
+import { CH08_AMUL_OBJECTS } from './chapter08Amul';
 import { CH08_FOREST_TEXTURE_GENERATORS } from './chapter08Forest';
 import { CH08_FORT_TEXTURE_GENERATORS } from './chapter08Fort';
 import { CH08_SHRINE_OBJECTS, CH08_SHRINE_TEXTURE_GENERATORS } from './chapter08Shrine';
 
 /**
- * Chapter 8: the Mázindarán forest road and Fort Shaykh Ṭabarsí. The shrine,
+ * Chapter 8: the Mázindarán forest road, Fort Shaykh Ṭabarsí, and the
+ * interlude at Ámul (`chapter08Amul.ts`). The shrine,
  * palisade, and truce flag live here; forest props and siege props live in
  * their own modules.
  */
@@ -36,6 +38,7 @@ export const CH08_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
 /** Placeable map objects owned by chapter 8. */
 export const CH08_OBJECTS: MapObjectDefinition[] = [
   ...CH08_SHRINE_OBJECTS,
+  ...CH08_AMUL_OBJECTS,
   { id: 'ch8-shrine-glimpse', label: 'Shrine Glimpse', texture: 'ch8-shrine-glimpse', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 6, h: 6 }, isometric: true },
   { id: 'ch8-palisade', label: 'Palisade', texture: 'ch8-palisade', kind: 'prop', category: 'barriers-prison', color: 0x6b5136, blocks: true, footprint: { w: 1, h: 1 }, isometric: true },
   { id: 'ch8-shrine', label: 'Tabarsi Shrine', texture: 'ch8-shrine', kind: 'structure', category: 'shrines', color: 0xd8c07a, blocks: true, footprint: { w: 6, h: 6 }, isometric: true },

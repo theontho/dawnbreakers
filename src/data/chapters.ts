@@ -216,9 +216,9 @@ const SPECS: ChapterSpec[] = [
     story: CHAPTER_STORIES['tabarsi'],
     title: 'Fort Shaykh Ṭabarsí',
     subtitle: 'Mázindarán, 1848 to 1849',
-    description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
+    description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken. For a while you are someone else: a youth of Ámul, in the masjid where Bahá\'u\'lláh, riding to join the fort, is brought before the divines.',
     startScene: 'Ch8ForestRoad',
-    scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort', 'Ch8TabarsiShrine'],
+    scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort', 'Ch8TabarsiShrine', 'Ch8Amul'],
   },
   {
     id: 'seven-martyrs',

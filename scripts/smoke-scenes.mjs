@@ -79,7 +79,10 @@ async function walkDialogues(k) {
       const node = dialogue.tree.nodes[dialogue.currentId];
       const flags = JSON.parse(localStorage.getItem('dawnbreakers.flags.v1') ?? '{}');
       const choices = node?.choices?.filter((c) => !c.requires || c.requires(flags)) ?? [{}];
-      const choice = choices[0] ?? {};
+      // A choice that travels to another map would take the walk off this one: prefer staying,
+      // and where travelling is the only way on, end the dialogue here instead.
+      const first = choices.find((c) => !c.travel) ?? choices[0] ?? {};
+      const choice = first.travel ? { ...first, travel: undefined, next: undefined } : first;
       // Choosing a choice that leads nowhere finishes the dialogue; its stop lands on the next frame.
       const ended = !node || !choice.next || !dialogue.tree.nodes[choice.next];
       dialogue.choose(choice);

@@ -42,6 +42,13 @@ a first journal entry), and gives the witness a `player` figure. Its
 dialogue never recognises the player from other chapters or gates on their
 flags.
 
+A single map can do the same inside a chapter: an interlude seen through
+someone else's eyes (the youth of Ámul in the Ṭabarsí chapter). Give the
+map definition its own `player` texture and `opening` dialogue id (played
+once, on first arrival, remembered as `opened_<sceneKey>`), and reach it
+and leave it by a dialogue choice with `travel: { scene, spawnX, spawnY }`,
+which ends the conversation and takes the player there.
+
 Flags carried forward:
 
 - `recognised === true`: the player believed at dawn in chapter 1;

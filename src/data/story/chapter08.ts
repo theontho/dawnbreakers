@@ -1,8 +1,29 @@
 import { CH8_DAY, ch8Visits } from '../record/day';
+import type { FlagState } from '../../dialogue/types';
 import type { ChapterStory } from './types';
+
+/** While the player is the youth of Ámul, that interlude's steps come first; otherwise they are out of the way. */
+const atAmul = (step: (f: FlagState) => boolean) => (f: FlagState): boolean => !f.ch8AtAmul || step(f);
 
 export const chapter08Story: ChapterStory = {
   objectives: [
+    // The interlude at Ámul (Ch8Amul), reached from Quddús's news in winter.
+    {
+      text: 'Help your uncle ready the hall, and hear how the travellers were taken',
+      done: atAmul(f => (!!f.ch8AmulCarpets && !!f.ch8AmulGuardHeard) || !!f.ch8AmulRods),
+    },
+    {
+      text: 'Stand at the door of the prayer hall',
+      done: atAmul(f => !!f.ch8AmulRods),
+    },
+    {
+      text: 'Take your uncle\'s lantern round by the alley to the acting governor\'s man',
+      done: atAmul(f => !!f.ch8AmulWallOpened),
+    },
+    {
+      text: 'Go to the acting governor\'s gate',
+      done: atAmul(() => false),
+    },
     {
       text: 'Find Mullá Ḥusayn at the head of the column',
       done: f => !!f.ch8JoinedColumn,
@@ -96,6 +117,41 @@ export const chapter08Story: ChapterStory = {
       flag: 'ch8QuddusCounsel',
       title: 'Winter Counsel',
       body: 'Quddús told you to let grief sharpen compassion, not anger. Each night he wrote; each morning the companions chanted what he had written.',
+    },
+    {
+      flag: 'ch8AmulWitness',
+      title: 'A Youth of Ámul',
+      body: 'For a while you were someone else: a youth who trimmed the lamps of the masjid of Ámul for your uncle, in the first days of Muḥarram, while the fort lay under snow.',
+    },
+    {
+      flag: 'ch8AmulGuardHeard',
+      title: 'A Lonely House by the Road',
+      body: 'The chief of the guards had taken the travellers at a lonely house on the forest road, under orders to bring anyone near the fort to Ámul. He brought them in on horses, civilly, and papers went into a river on the way.',
+    },
+    {
+      flag: 'ch8AmulRods',
+      title: 'The Rods in the Prayer Hall',
+      body: 'From the back of the hall you heard Bahá\'u\'lláh answer the divines, and win His companions\' release, and offer Himself to bear the punishment in their place. You turned your face to the door and heard the rods.',
+    },
+    {
+      flag: 'ch8AmulSiyyid',
+      title: 'The Faith of Our Fathers',
+      body: 'A siyyid at the court gate feared that what his father taught him on the masjid\'s carpets would be unmade in a night.',
+    },
+    {
+      flag: 'ch8AmulWallOpened',
+      title: 'A Way Through the Wall',
+      body: 'You held a lantern while the acting governor\'s men opened the back wall of the room where the travellers were held. When the siyyid came at them with a club, the acting governor adjured him by the Prophet, and brought them safe to his house.',
+    },
+    {
+      flag: 'ch8AmulWallMended',
+      title: 'Mud and Straw',
+      body: 'Your uncle mended the hole in the masjid\'s wall before the mujtahid was up, and told no one who had made it.',
+    },
+    {
+      flag: 'ch8AmulTold',
+      title: 'The Road to Ṭihrán',
+      body: 'The governor came home from the fort with a changed heart, found no proof against the travellers, and a few days later sent them safe to Ṭihrán. Bahá\'u\'lláh never reached Ṭabarsí; Nabíl saw Providence in it.',
     },
     {
       flag: 'ch8KeptWatch',

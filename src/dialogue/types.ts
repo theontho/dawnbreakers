@@ -30,6 +30,18 @@ export interface DialogueChoice {
    * then goes on to `next`.
    */
   write?: string[];
+  /**
+   * Ends the conversation and takes the player to another map: into an
+   * interlude seen through someone else's eyes, and back out of it.
+   */
+  travel?: DialogueTravel;
+}
+
+/** Where a `travel` choice takes the player: a map's scene key and the cell they arrive on. */
+export interface DialogueTravel {
+  scene: string;
+  spawnX: number;
+  spawnY: number;
 }
 
 /** The pilgrim's inner voices. */

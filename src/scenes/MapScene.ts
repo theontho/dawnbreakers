@@ -18,7 +18,7 @@ import {
 } from './baseMapTypes';
 import { createBaseMapHud } from './baseMapHud';
 import { getBaseMapWorldBounds, renderBaseMapWorld, renderExitGlows, WORLD_BACKDROP_COLOR, type RenderedWorld } from './baseMapWorld';
-import { handleBaseMapEnding, launchBaseMapDialogue, openBaseMapChapterEnd, scheduleChapterOpening } from './baseMapFlow';
+import { handleBaseMapEnding, launchBaseMapDialogue, openBaseMapChapterEnd, playerTexture, scheduleOpening } from './baseMapFlow';
 import {
   exitIsOpen,
   handleBaseMapMovement,
@@ -49,7 +49,7 @@ import { findPath, screenToGrid, type GridPoint } from './mapPathing';
 import { streetFronts } from './streetFronts';
 import { PHONE_ZOOM, tapTarget, tapZone } from './tapZones';
 import type { DoorSpec, MapDefinition, NpcSpec } from '../data/maps/types';
-import type { FlagState } from '../dialogue/types';
+import type { DialogueTravel, FlagState } from '../dialogue/types';
 
 const UI_DEPTH = 10000;
 
@@ -146,7 +146,7 @@ export class MapScene extends Phaser.Scene {
       decor: this.decor,
       npcs: this.definition.npcs,
       doors: this.definition.doors,
-      player: this.chapter?.player ?? 'player',
+      player: playerTexture(this.definition, this.chapter),
     });
     this.cameras.main.setBackgroundColor(WORLD_BACKDROP_COLOR);
     const world = renderBaseMapWorld(this, this.worldState());
@@ -201,8 +201,8 @@ export class MapScene extends Phaser.Scene {
     if (import.meta.env.DEV) reportMissingTextures(this);
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.bookmark();
-    scheduleChapterOpening(this, this.chapter, tree =>
-      launchBaseMapDialogue(this, tree, () => this.afterDialogue()),
+    scheduleOpening(this, this.definition, this.chapter, tree =>
+      launchBaseMapDialogue(this, tree, travel => this.afterDialogue(travel)),
     this.replayOpening);
   }
 
@@ -266,7 +266,7 @@ export class MapScene extends Phaser.Scene {
 
   private spawnPlayer(): void {
     const pos = this.gridToScreen(this.playerGrid.x, this.playerGrid.y);
-    this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, this.chapter?.player ?? 'player')
+    this.player = this.add.image(pos.sx, pos.sy + TILE_H / 2, playerTexture(this.definition, this.chapter))
       .setOrigin(0.5, 1).setDepth(pos.sy + 2);
   }
 
@@ -285,12 +285,16 @@ export class MapScene extends Phaser.Scene {
     launchBaseMapDialogue(
       this,
       tree,
-      () => this.afterDialogue(),
+      travel => this.afterDialogue(travel),
     );
   }
 
-  /** Flags may have changed: refresh everything that reads them. */
-  private afterDialogue(): void {
+  /** Flags may have changed: refresh everything that reads them, or go where the dialogue sent the player. */
+  private afterDialogue(travel?: DialogueTravel): void {
+    if (travel) {
+      this.transitionTo({ targetScene: travel.scene, targetSpawnX: travel.spawnX, targetSpawnY: travel.spawnY });
+      return;
+    }
     this.bookmark();
     const flags = getFlags();
     this.refreshDecor(flags);
