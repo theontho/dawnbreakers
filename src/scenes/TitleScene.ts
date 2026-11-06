@@ -114,13 +114,14 @@ export class TitleScene extends Phaser.Scene {
     const startLabel = () => (!resumes() ? t('Begin this chapter') : t(bookmark ? 'Continue' : 'Start'));
     const startButton = addMenuButton(this, size, startLabel(), 'primary');
     const chapters = addMenuButton(this, size, t('Chapters ›'), 'secondary');
+    const saves = addMenuButton(this, size, t('Saves'), 'secondary');
     const journeys = addMenuButton(this, size, t('Journeys'), 'secondary');
     const miniGames = addMenuButton(this, size, t('Mini-games'), 'secondary');
     const editor = addMenuButton(this, size, t('Map Editor'), 'secondary');
     const about = addMenuButton(this, size, t('About'), 'secondary');
     const reset = addMenuButton(this, size, t('Reset story'), 'quiet');
     const source = addGitHubLink(this, REPO_URL);
-    const choices = [chapters, journeys, miniGames, editor, about, reset, source];
+    const choices = [chapters, saves, journeys, miniGames, editor, about, reset, source];
     // A phone keeps the sky clear with Start and More; the rest open under them.
     const folded = narrow || height < FOLD_BELOW_HEIGHT ? foldMenu(this, size, startButton, choices, safe) : undefined;
     if (!folded) layoutMenu([[startButton], choices], safe);
@@ -155,6 +156,7 @@ export class TitleScene extends Phaser.Scene {
       activate(startButton, 'primary', start);
       if (folded) activate(folded.toggle, 'secondary', folded.flip);
       activate(chapters, 'secondary', () => this.scene.start('ChapterSelect', { focus: chapter.id }));
+      activate(saves, 'secondary', () => this.scene.start('SaveSlots'));
       activate(journeys, 'secondary', () => this.scene.start('Journey'));
       activate(miniGames, 'secondary', () => this.scene.start('MiniGamePicker'));
       activate(editor, 'secondary', () => this.scene.start('MapEditor', { from: 'Title' }));

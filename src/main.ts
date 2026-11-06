@@ -10,6 +10,7 @@ import { JournalScene } from './scenes/JournalScene';
 import { RecordScene } from './scenes/RecordScene';
 import { SettingsScene } from './scenes/SettingsScene';
 import { ChapterSelectScene } from './scenes/ChapterSelectScene';
+import { SaveSlotsScene } from './scenes/SaveSlotsScene';
 import { ChapterEndScene } from './scenes/ChapterEndScene';
 import { JourneyScene } from './scenes/JourneyScene';
 import { MapEditorScene } from './scenes/MapEditorScene';
@@ -60,7 +61,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   pixelArt: false,
   scene: [
-    BootScene, TitleScene, ChapterSelectScene,
+    BootScene, TitleScene, ChapterSelectScene, SaveSlotsScene,
     ...MAP_DEFINITIONS.map(def => new MapScene(def)),
     DialogueScene, MiniGamePickerScene, ...miniGameScenes(), JournalScene, RecordScene, SettingsScene, ChapterEndScene, JourneyScene, MapEditorScene,
   ],

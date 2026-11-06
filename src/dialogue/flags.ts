@@ -1,3 +1,4 @@
+import { slotKey } from './saveSlots';
 import type { FlagState, FlagOp } from './types';
 
 const KEY = 'dawnbreakers.flags.v1';
@@ -86,7 +87,17 @@ function isFlagState(value: unknown): value is FlagState {
 const defaultStorage: FlagStorage =
   typeof localStorage !== 'undefined' ? localStorage : createMemoryStorage();
 
-const defaultStore: FlagStore = createFlagStore(defaultStorage);
+let defaultStore: FlagStore = createFlagStore(defaultStorage, slotKey(KEY));
+
+/** Reads the active save slot's flags afresh, after the slot changes. */
+export function reloadFlags(): void {
+  defaultStore = createFlagStore(defaultStorage, slotKey(KEY));
+}
+
+/** A slot's flags, read without making it the active one. */
+export function slotFlags(slot: number): FlagState {
+  return createFlagStore(defaultStorage, slotKey(KEY, slot)).getFlags();
+}
 
 export const getFlags = (): FlagState => defaultStore.getFlags();
 export const applyEffect = (effect?: FlagOp): void => defaultStore.applyEffect(effect);
