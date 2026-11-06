@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { chapters, type Chapter } from '../data/chapters';
+import { chapters, type Chapter, type ChapterId } from '../data/chapters';
 import { getFlags } from '../dialogue/flags';
 import { resetStory } from '../dialogue/progress';
 import { chapterLabel, localizedStyle, rtl, t, textOriginX } from '../i18n';
+import { chapterDawnTexture } from './chapterDawn';
 import { buttonFont, isNarrowLayout, responsiveFont, restartSceneOnResize, safeLayout } from '../ui/responsive';
 
 interface ChapterSelectLaunch {
@@ -10,16 +11,22 @@ interface ChapterSelectLaunch {
   returnToGameScene?: string;
   returnSpawnX?: number;
   returnSpawnY?: number;
+  /** The chapter to bring into view, the one whose dawn the title was showing. */
+  focus?: ChapterId;
 }
 
 /**
- * A grid view of all chapters. Click any chapter to jump straight into it.
+ * A list of all chapters, each card with a small painting of the chapter's
+ * dawn. Choosing one opens the title on that dawn, where it can be begun.
  * Reachable from the title screen, settings, and the Chapter-End card.
  */
 export class ChapterSelectScene extends Phaser.Scene {
   private returnToGameScene?: string;
   private returnSpawnX?: number;
   private returnSpawnY?: number;
+  private focus?: ChapterId;
+  /** Dawns still to paint, one a frame, so the list comes up at once. */
+  private pending: Array<() => void> = [];
 
   constructor() { super('ChapterSelect'); }
 
@@ -27,6 +34,7 @@ export class ChapterSelectScene extends Phaser.Scene {
     this.returnToGameScene = data.returnToGameScene;
     this.returnSpawnX = data.returnSpawnX;
     this.returnSpawnY = data.returnSpawnY;
+    this.focus = data.focus;
   }
 
   create(): void {
@@ -69,9 +77,15 @@ export class ChapterSelectScene extends Phaser.Scene {
 
     // Each card is as tall as its words, which run longer in some languages than others.
     let contentH = -gap;
+    let focusY: number | undefined;
+    this.pending = [];
     for (const ch of chapters) {
+      if (ch.id === this.focus) focusY = contentH + gap;
       contentH += gap + this.drawChapterCard(list, 0, contentH + gap, cardW, ch, ch.isComplete(flags), () => pressedHere && !dragged);
     }
+    const paintNext = () => this.pending.shift()?.();
+    this.events.on(Phaser.Scenes.Events.UPDATE, paintNext);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.UPDATE, paintNext));
     const maxScroll = Math.max(0, contentH - viewportH);
 
     const track = this.add.rectangle(safe.right - Math.max(8, safe.margin * 0.4), viewportY, 6, viewportH, 0x2a1c10, 0.85)
@@ -91,6 +105,13 @@ export class ChapterSelectScene extends Phaser.Scene {
         thumb.y = viewportY + (viewportH - thumbH) * (scrollY / maxScroll);
       }
     };
+
+    if (focusY !== undefined) {
+      setScroll(focusY - gap);
+      // Paint the dawns in view first.
+      const first = chapters.findIndex(c => c.id === this.focus);
+      this.pending = [...this.pending.slice(first), ...this.pending.slice(0, first)];
+    }
 
     this.input.on('wheel', (
       _pointer: Phaser.Input.Pointer,
@@ -162,11 +183,17 @@ export class ChapterSelectScene extends Phaser.Scene {
   ): number {
     const pad = 14;
     const narrowCard = w < 620;
+    // The dawn: a banner across the top of a narrow card, a picture at the start of a wide one.
+    const art = narrowCard
+      ? { x: x + 8, y: y + 8, w: w - 16, h: Math.round((w - 16) / 4.2) }
+      : { x: rtl ? x + w - 8 - 200 : x + 8, y: y + 8, w: 200, h: 112 };
+    const artSide = narrowCard ? 0 : art.w + 8;
     // A wide card keeps a column on the far side for the completed mark.
-    const textW = w - 48 - (narrowCard ? 0 : 172);
-    const textX = rtl ? x + w - 24 : x + 24;
+    const textW = w - 48 - artSide - (narrowCard ? 0 : 172);
+    const textX = rtl ? x + w - 24 - artSide : x + 24 + artSide;
+    const textTop = narrowCard ? art.y + art.h + 4 : y + pad;
     const originX = textOriginX(0);
-    const label = this.add.text(textX, y + pad, chapterLabel(chapter.number), localizedStyle({
+    const label = this.add.text(textX, textTop, chapterLabel(chapter.number), localizedStyle({
       fontFamily: 'Georgia, serif', fontSize: responsiveFont(14, this.scale), color: '#9c8458', fontStyle: 'italic',
     })).setOrigin(originX, 0);
     const title = this.add.text(textX, label.y + label.height + 2, t(chapter.title), localizedStyle({
@@ -190,7 +217,7 @@ export class ChapterSelectScene extends Phaser.Scene {
         bottom = mark.y + mark.height;
       }
     }
-    const h = Math.ceil(bottom + pad - y);
+    const h = Math.ceil(Math.max(bottom + pad, art.y + art.h + 8) - y);
     if (mark && !narrowCard) mark.setPosition(mark.x, y + h / 2).setOrigin(textOriginX(1), 0.5);
 
     const card = this.add.rectangle(x, y, w, h, 0x1a120a, 0.95)
@@ -200,19 +227,21 @@ export class ChapterSelectScene extends Phaser.Scene {
       .on('pointerover', () => card.setStrokeStyle(2, 0xf3d98a, 1))
       .on('pointerout',  () => card.setStrokeStyle(2, completed ? 0xc9a55c : 0x4a3a22, 1))
       .on('pointerup', () => { if (isTap()) this.startChapter(chapter); });
-    list.add([card, label, title, description, ...(mark ? [mark] : [])]);
+    const frame = this.add.rectangle(art.x, art.y, art.w, art.h, 0x2a2030, 1).setOrigin(0).setStrokeStyle(1, 0x4a3a22, 1);
+    list.add([card, frame, label, title, description, ...(mark ? [mark] : [])]);
+    this.pending.push(() => {
+      const image = this.add.image(art.x, art.y, chapterDawnTexture(this, chapter.id, art.w, art.h)).setOrigin(0);
+      list.addAt(image, list.getIndex(frame) + 1);
+    });
     return h;
   }
 
+  /** Opens the title on the chapter's dawn, where it can be begun. */
   private startChapter(chapter: Chapter): void {
     this.cameras.main.fadeOut(280, 0, 0, 0);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       if (this.returnToGameScene) this.scene.stop(this.returnToGameScene);
-      this.scene.start(chapter.startScene, {
-        spawnX: chapter.startSpawnX,
-        spawnY: chapter.startSpawnY,
-        replayOpening: true,
-      });
+      this.scene.start('Title', { chapter: chapter.id, direct: true, announce: true });
     });
   }
 

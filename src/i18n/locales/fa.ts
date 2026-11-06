@@ -451,6 +451,7 @@ export const text: TranslationCatalog = {
   Start: 'آغاز',
   'Press SPACE or click to begin': 'برای آغاز، فاصله را بزنید یا کلیک کنید',
   'Chapters ›': 'فصل‌ها ‹',
+  'Begin this chapter': 'آغاز این فصل',
   "{n} of {total}": "{n} از {total}",
   "{rate}, running backward": "{rate}، به عقب",
   "A Letter for Ṭihrán": "نامه‌ای برای تهران",

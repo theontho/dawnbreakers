@@ -29,9 +29,11 @@ type TitleResume = { clock: SunriseClockState; musicLeadSeconds: number };
 /**
  * `chapter` is the opening picked in the viewer, kept across restarts while
  * the title is open; without it the title shows the chapter the story would
- * continue. `announce` names the picked chapter as it comes up.
+ * continue. `announce` names the picked chapter as it comes up, and
+ * `direct` (from the chapter list) skips the gate and the book and starts
+ * the dawn at once.
  */
-type TitleData = { resume?: TitleResume; chapter?: ChapterId; announce?: boolean };
+type TitleData = { resume?: TitleResume; chapter?: ChapterId; announce?: boolean; direct?: boolean };
 
 const REPO_URL = 'https://github.com/theontho/dawnbreakers';
 /** A screen shorter than this (a phone held sideways) folds the menu as a narrow one does. */
@@ -107,7 +109,10 @@ export class TitleScene extends Phaser.Scene {
       shadow: TITLE_SHADOW,
     }, 'center')).setOrigin(0.5, 0);
 
-    const startButton = addMenuButton(this, size, t(bookmark ? 'Continue' : 'Start'), 'primary');
+    // Continue the story when its own dawn is showing; any other chapter's dawn offers to begin that chapter.
+    const resumes = () => (bookmark ? titleChapter(bookmark.scene).id === chapter.id : chapter.id === storyChapters[0]!.id);
+    const startLabel = () => (!resumes() ? t('Begin this chapter') : t(bookmark ? 'Continue' : 'Start'));
+    const startButton = addMenuButton(this, size, startLabel(), 'primary');
     const chapters = addMenuButton(this, size, t('Chapters ›'), 'secondary');
     const journeys = addMenuButton(this, size, t('Journeys'), 'secondary');
     const miniGames = addMenuButton(this, size, t('Mini-games'), 'secondary');
@@ -121,7 +126,9 @@ export class TitleScene extends Phaser.Scene {
     if (!folded) layoutMenu([[startButton], choices], safe);
 
     const start = () => {
-      if (bookmark && this.scene.get(bookmark.scene)) {
+      if (!resumes()) {
+        this.scene.start(chapter.startScene, { spawnX: chapter.startSpawnX, spawnY: chapter.startSpawnY, replayOpening: true });
+      } else if (bookmark && this.scene.get(bookmark.scene)) {
         this.scene.start(bookmark.scene, { spawnX: bookmark.x, spawnY: bookmark.y });
       } else {
         // A new story begins with the first chapter in the book's order.
@@ -147,7 +154,7 @@ export class TitleScene extends Phaser.Scene {
         activateTitleTextButton(this, button, MENU_COLORS[tone].normal, MENU_COLORS[tone].hover, onClick);
       activate(startButton, 'primary', start);
       if (folded) activate(folded.toggle, 'secondary', folded.flip);
-      activate(chapters, 'secondary', () => this.scene.start('ChapterSelect'));
+      activate(chapters, 'secondary', () => this.scene.start('ChapterSelect', { focus: chapter.id }));
       activate(journeys, 'secondary', () => this.scene.start('Journey'));
       activate(miniGames, 'secondary', () => this.scene.start('MiniGamePicker'));
       activate(editor, 'secondary', () => this.scene.start('MapEditor', { from: 'Title' }));
@@ -156,7 +163,7 @@ export class TitleScene extends Phaser.Scene {
         resetStory();
         bookmark = undefined;
         reset.setText(t('Reset ✓'));
-        startButton.setText(t('Start'));
+        startButton.setText(startLabel());
       });
     };
     const startMusic = (fromSeconds: number) => {
@@ -168,11 +175,11 @@ export class TitleScene extends Phaser.Scene {
       });
     };
 
-    if (resume) {
+    if (resume || data.direct) {
       this.titleStartedAtMs = performance.now();
-      const clock = new SunriseClock(SUNRISE_DURATION_MS, resume.clock);
+      const clock = new SunriseClock(SUNRISE_DURATION_MS, resume?.clock);
       showMenu(clock);
-      startMusic(resume.musicLeadSeconds + clock.position / 1000);
+      startMusic((resume?.musicLeadSeconds ?? 0) + clock.position / 1000);
       return;
     }
 

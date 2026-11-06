@@ -75,7 +75,7 @@ export function addTitleCity(
  * the horizon, the land shows through rather than the sky, and the sun
  * cannot peek out from under a building.
  */
-function paintBackstop(ctx: CanvasRenderingContext2D, mode: DawnMode, frame: VistaFrame, land: number): void {
+export function paintBackstop(ctx: CanvasRenderingContext2D, mode: DawnMode, frame: VistaFrame, land: number): void {
   const p = dawnPass(mode, ctx, frame);
   ctx.fillStyle = isAccent(p) ? '#000' : tone(p, land, 0.95, 0.7);
   ctx.fillRect(0, Math.floor(frame.horizonY), frame.width, frame.height - Math.floor(frame.horizonY));

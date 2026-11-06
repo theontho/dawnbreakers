@@ -450,6 +450,7 @@ export const text: TranslationCatalog = {
   Start: '开始',
   'Press SPACE or click to begin': '按空格键或点击开始',
   'Chapters ›': '章节 ›',
+  'Begin this chapter': '从本章开始',
   "{n} of {total}": "第 {n} 段，共 {total} 段",
   "{rate}, running backward": "{rate}，倒转",
   "A Letter for Ṭihrán": "一封送往德黑兰的信",
