@@ -558,7 +558,6 @@ export const text: TranslationCatalog = {
   'Open settings with Esc.': 'تنظیمات را با Esc باز کنید.',
   'Back to Game': 'بازگشت به بازی',
   'Restart': 'بازآغاز',
-  'ACT': 'عمل',
   '(Continue)': '(ادامه)',
 
   'Esc: back | S: save | arrows / drag: pan | R: recenter': 'Esc: بازگشت | S: ذخیره | جهت‌ها / کشیدن: جابه‌جایی | R: مرکز کردن',

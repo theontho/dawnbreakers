@@ -556,7 +556,6 @@ export const text: TranslationCatalog = {
   'Open settings with Esc.': '按 Esc 打开设置。',
   'Back to Game': '返回游戏',
   Restart: '重新开始',
-  ACT: '行动',
   '(Continue)': '（继续）',
   Palette: '调色板',
   Tiles: '地块',

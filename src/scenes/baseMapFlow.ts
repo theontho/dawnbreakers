@@ -8,15 +8,12 @@ import type { DialogueLaunch } from './DialogueScene';
 export function launchBaseMapDialogue(
   scene: Phaser.Scene,
   tree: DialogueTree,
-  setMobileControlsVisible: (visible: boolean) => void,
   onComplete: () => void,
 ): void {
-  setMobileControlsVisible(false);
   scene.scene.launch('Dialogue', {
     tree,
     onComplete: () => {
       scene.scene.resume();
-      setMobileControlsVisible(true);
       onComplete();
     },
   } as DialogueLaunch);
@@ -44,10 +41,8 @@ export function handleBaseMapEnding(
 export function openBaseMapChapterEnd(
   scene: Phaser.Scene,
   chapterId: string,
-  setMobileControlsVisible: (visible: boolean) => void,
 ): void {
   if (scene.scene.isActive('ChapterEnd')) return;
-  setMobileControlsVisible(false);
   scene.scene.launch('ChapterEnd', { chapterId, from: scene.scene.key });
   scene.scene.pause();
 }

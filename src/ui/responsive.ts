@@ -90,10 +90,6 @@ export function buttonFont(size: number, layout: LayoutSize, min = MIN_BUTTON_FO
   return responsiveFont(size, layout, min);
 }
 
-export function touchSize(size: number): number {
-  return Math.max(MIN_TOUCH_TARGET, Math.round(size));
-}
-
 export function responsiveMargin({ width, height }: LayoutSize): number {
   const shortSide = Math.min(width, height);
   if (width <= NARROW_BREAKPOINT_PX) {

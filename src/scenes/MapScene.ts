@@ -91,14 +91,10 @@ export class MapScene extends Phaser.Scene {
   private promptText!: Phaser.GameObjects.Text;
   private exitPromptText!: Phaser.GameObjects.Text;
   private remarks!: MapRemarks;
-  private mobileControls?: Phaser.GameObjects.Container;
   private endingShown = false;
 
   private keys!: MapKeys;
   private moveCooldown = 0;
-  private mobileMoveDirection?: { dx: number; dy: number };
-  private mobileActionButton?: Phaser.GameObjects.Rectangle;
-  private mobileActionLabel?: Phaser.GameObjects.Text;
   private walkPath: GridPoint[] = [];
   /** NPC the player clicked; interact once the walk ends beside it. */
   private walkTarget?: Interactable;
@@ -206,7 +202,7 @@ export class MapScene extends Phaser.Scene {
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.bookmark();
     scheduleChapterOpening(this, this.chapter, tree =>
-      launchBaseMapDialogue(this, tree, visible => this.setMobileControlsVisible(visible), () => this.afterDialogue()),
+      launchBaseMapDialogue(this, tree, () => this.afterDialogue()),
     this.replayOpening);
   }
 
@@ -289,7 +285,6 @@ export class MapScene extends Phaser.Scene {
     launchBaseMapDialogue(
       this,
       tree,
-      visible => this.setMobileControlsVisible(visible),
       () => this.afterDialogue(),
     );
   }
@@ -307,7 +302,7 @@ export class MapScene extends Phaser.Scene {
     this.refreshExitGlows();
     this.objectiveHud?.update(flags);
     this.endingShown = handleBaseMapEnding(this, this.endingShown, chapterId => {
-      openBaseMapChapterEnd(this, chapterId, visible => this.setMobileControlsVisible(visible));
+      openBaseMapChapterEnd(this, chapterId);
     });
   }
 
@@ -350,14 +345,9 @@ export class MapScene extends Phaser.Scene {
       openJournal: () => this.openOverlay('Journal', {}),
       toggleInteractableHighlights: () => this.toggleHighlights(),
       triggerInteraction: () => this.triggerInteraction(),
-      setMobileMoveDirection: direction => { this.mobileMoveDirection = direction; },
-      getMobileMoveDirection: () => this.mobileMoveDirection,
     });
     this.promptText = hud.promptText;
     this.exitPromptText = hud.exitPromptText;
-    this.mobileControls = hud.mobileControls;
-    this.mobileActionButton = hud.mobileActionButton;
-    this.mobileActionLabel = hud.mobileActionLabel;
     this.objectiveHud = createObjectiveHud(this, this.chapter, hud.titleText.getBounds().bottom, UI_DEPTH);
     this.objectiveHud.update(getFlags());
   }
@@ -367,20 +357,14 @@ export class MapScene extends Phaser.Scene {
     applyInteractableHighlightVisibility(this.highlights);
   }
 
-  private setMobileControlsVisible(visible: boolean): void {
-    this.mobileControls?.setVisible(visible);
-    if (!visible) this.mobileMoveDirection = undefined;
-  }
 
   private handleSceneResume(): void {
-    this.setMobileControlsVisible(true);
     // An overlay (the chapter-end card) may have changed the score.
     this.restoreAudio();
   }
 
   private openOverlay(key: 'Journal' | 'Settings', data: object): void {
     if (this.scene.isActive(key)) return;
-    this.setMobileControlsVisible(false);
     this.walkPath.length = 0;
     this.scene.launch(key, { from: this.scene.key, ...data });
     this.scene.pause();
@@ -398,8 +382,6 @@ export class MapScene extends Phaser.Scene {
       exits: this.exits,
       promptText: this.promptText,
       exitPromptText: this.exitPromptText,
-      mobileActionButton: this.mobileActionButton,
-      mobileActionLabel: this.mobileActionLabel,
       interactKey: this.keys.interact,
       triggerInteraction: () => this.triggerInteraction(),
     });
@@ -422,7 +404,6 @@ export class MapScene extends Phaser.Scene {
       moveCooldown: this.moveCooldown,
       cursors: this.keys.cursors,
       wasdKeys: this.keys.wasd,
-      mobileMoveDirection: this.mobileMoveDirection,
       path: this.walkPath,
       playerGrid: this.playerGrid,
       player: this.player,

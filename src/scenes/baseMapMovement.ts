@@ -9,11 +9,6 @@ interface GridPoint {
   y: number;
 }
 
-interface MoveDirection {
-  dx: number;
-  dy: number;
-}
-
 interface MovementState {
   moveCooldown: number;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -23,7 +18,6 @@ interface MovementState {
     S: Phaser.Input.Keyboard.Key;
     D: Phaser.Input.Keyboard.Key;
   };
-  mobileMoveDirection?: MoveDirection;
   /** Queued click-to-walk steps; consumed one per move, cleared by manual input. */
   path: PathPoint[];
   playerGrid: GridPoint;
@@ -48,8 +42,6 @@ interface InteractionPromptState {
   exits: MapExit[];
   promptText: Phaser.GameObjects.Text;
   exitPromptText: Phaser.GameObjects.Text;
-  mobileActionButton?: Phaser.GameObjects.Rectangle;
-  mobileActionLabel?: Phaser.GameObjects.Text;
   interactKey: Phaser.Input.Keyboard.Key;
   triggerInteraction: () => void;
 }
@@ -59,10 +51,6 @@ interface VisibleGameObject {
   setVisible(visible: boolean): unknown;
 }
 
-interface AlphaGameObject {
-  alpha: number;
-  setAlpha(alpha: number): unknown;
-}
 
 export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState): number {
   if (state.moveCooldown > 0) return state.moveCooldown;
@@ -74,10 +62,6 @@ export function handleBaseMapMovement(scene: Phaser.Scene, state: MovementState)
   else if (state.cursors.right?.isDown || D.isDown) dx = 1;
   else if (state.cursors.up?.isDown || W.isDown) dy = -1;
   else if (state.cursors.down?.isDown || S.isDown) dy = 1;
-  else if (state.mobileMoveDirection) {
-    dx = state.mobileMoveDirection.dx;
-    dy = state.mobileMoveDirection.dy;
-  }
 
   if (dx !== 0 || dy !== 0) {
     state.path.length = 0;
@@ -142,16 +126,12 @@ export function nearestInteractable(
 export function updateInteractionPrompt(state: InteractionPromptState): void {
   const near = nearestInteractable(state.interactables, state.playerGrid);
   if (near) {
-    setTextIfChanged(state.promptText, t(near.prompt));
+    setTextIfChanged(state.promptText, promptFor(t(near.prompt)));
     setVisibleIfChanged(state.promptText, true);
-    setAlphaIfChanged(state.mobileActionButton, 1);
-    setAlphaIfChanged(state.mobileActionLabel, 1);
     if (Phaser.Input.Keyboard.JustDown(state.interactKey)) state.triggerInteraction();
   } else {
     setTextIfChanged(state.promptText, '');
     setVisibleIfChanged(state.promptText, false);
-    setAlphaIfChanged(state.mobileActionButton, 0.62);
-    setAlphaIfChanged(state.mobileActionLabel, 0.62);
   }
 
   const onExit = state.exits.find(e =>
@@ -159,6 +139,13 @@ export function updateInteractionPrompt(state: InteractionPromptState): void {
   const exitText = onExit ? t(exitIsOpen(onExit) ? onExit.label : onExit.lockedLabel ?? onExit.label) : '';
   setTextIfChanged(state.exitPromptText, exitText);
   setVisibleIfChanged(state.exitPromptText, Boolean(onExit));
+}
+
+/** On a touch screen the prompt is tapped, so it drops the key it names. */
+const TOUCH_ONLY = typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+function promptFor(text: string): string {
+  return TOUCH_ONLY ? text.replace(/\s*\[E\]\s*$/, '') : text;
 }
 
 export function exitIsOpen(exit: MapExit): boolean {
@@ -173,9 +160,3 @@ function setVisibleIfChanged(object: VisibleGameObject, visible: boolean): void 
   if (object.visible !== visible) object.setVisible(visible);
 }
 
-function setAlphaIfChanged(
-  object: AlphaGameObject | undefined,
-  alpha: number,
-): void {
-  if (object && object.alpha !== alpha) object.setAlpha(alpha);
-}
