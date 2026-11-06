@@ -16,6 +16,7 @@ export type ChapterId =
   | 'tahirih'
   | 'badasht'
   | 'tabriz-trial'
+  | 'barfurush'
   | 'tabarsi'
   | 'seven-martyrs'
   | 'nayriz'
@@ -44,6 +45,7 @@ export const CHAPTER_COMPLETION_FLAGS: Record<ChapterId, string> = {
   tahirih: 'qazvinComplete',
   badasht: 'badashtComplete',
   'tabriz-trial': 'trialComplete',
+  barfurush: 'barfurushComplete',
   tabarsi: 'tabarsiComplete',
   'seven-martyrs': 'martyrsComplete',
   nayriz: 'nayrizComplete',
@@ -212,12 +214,26 @@ const SPECS: ChapterSpec[] = [
     scenes: ['TrialStreet', 'TrialCourt', 'TrialLane'],
   },
   {
+    id: 'barfurush',
+    story: CHAPTER_STORIES['barfurush'],
+    title: 'Bárfurúsh',
+    subtitle: 'Mázindarán, October 1848',
+    description: 'A farsang from Bárfurúsh, Mullá Ḥusayn bids the companions of the Black Standard cast down all they carry. The town comes out against them; in a caravanserai on its square you hold the ladder while three young men go up to give the call to prayer, and you follow a sworn escort into the forest, toward a shrine among the trees.',
+    startScene: 'BarfurushRoad',
+    startSpawnX: 15,
+    startSpawnY: 29,
+    opening: 'bf-opening',
+    scenes: ['BarfurushRoad', 'BarfurushMaydan', 'BarfurushSerai', 'BarfurushForest'],
+  },
+  {
     id: 'tabarsi',
     story: CHAPTER_STORIES['tabarsi'],
     title: 'Fort Shaykh Ṭabarsí',
     subtitle: 'Mázindarán, 1848 to 1849',
-    description: 'You find Mullá Ḥusayn and the Black Standard in the autumn forests of Mázindarán, raise walls around a forest shrine, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
+    description: 'Camped by a forest shrine after Bárfurúsh, you help the companions of the Black Standard raise walls around it, and keep faith through a winter of siege and hunger until an oath sworn on the Qur\'án is broken.',
     startScene: 'Ch8ForestRoad',
+    startSpawnX: 30,
+    startSpawnY: 20,
     scenes: ['Ch8ForestRoad', 'Ch8TabarsiFort', 'Ch8TabarsiShrine'],
   },
   {

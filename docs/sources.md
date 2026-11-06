@@ -178,3 +178,34 @@ the desert road along the Euphrates". Nabíl gives only "under the escort of
 government officials" (EN p. 91) and no date; Momen has him held in
 Baghdád for some months before the January tribunal, so a December march
 is probably too late. It should be made impressionistic.
+
+### Bárfurúsh, October 1848 (`barfurush`)
+
+Files: `src/data/dialogues_ch/barfurush_road.ts`, `barfurush_maydan.ts`,
+`barfurush_serai.ts`, `barfurush_forest.ts`, `src/data/story/barfurush.ts`,
+and the last remark of the journey `tabriz-to-barfurush`. Read against the
+reference.bahai.org text of EN ch. XIX ("The Mázindarán Upheaval");
+printed page numbers to be filled in when checked against the book, and FA
+not yet checked.
+
+| Claim | Where | Source | Notes |
+| --- | --- | --- | --- |
+| The Saʿídu'l-ʿUlamá gathered the town in the masjid, threw down his turban, tore his shirt, lamented the Faith; said Mullá Ḥusayn had once sat in his lessons and scorned him; called the people out at dawn | `bf-opening`, `bf-townsman`; journal `bfOpened`, `bfHeardSermon` | EN ch. XIX | Paraphrase. The player hears it afterwards; the opening says so. |
+| After the morning prayer Mullá Ḥusayn bade the companions cast away their belongings and keep only their horses and swords; Ḥájí ʿAbdu'l-Majíd of Nishápúr, father of Badíʿ, threw down his satchel of turquoise first | `bf-mh-dawn`, `bf-majid`, `bf-heap`; journal `bfCastAway`, `bfMetMajid` | EN ch. XIX | Badíʿ is not mentioned: he was not yet born. The pen-case, the wooden horse and the silver cup on the heap are invented. |
+| About a farsang from the town the crowd barred the way; six companions fell; a siyyid of Yazd, one of Mullá Ḥusayn's most devoted, was shot in the chest | `bf-mh-go`; journal `bfClash` | EN ch. XIX; footnote names him Siyyid Riḍá | "Six go down" is left open on whether they died. |
+| Mullá Ḥusayn pursued the man who fired; he had taken shelter behind a tree, holding his musket before him; one stroke cut tree, musket and man | `bf-mh-go`; map `bf-cleft-tree` | EN ch. XIX | The tree is drawn as an alder; Nabíl does not give the kind. |
+| Furúghí: had he not seen it himself he would not have believed it; Mullá Ḥusayn had never been a swordsman | `bf-furughi` | EN ch. XIX (Nabíl's enquiry of Mírzá Muḥammad-i-Furúghí) | Agrees with `ch8-sword` in the record. |
+| Quddús, told of the stroke, quoted "it was not ye who slew them" | not used | EN ch. XIX | Quddús was held at Sárí; left out so as not to place him. |
+| Mullá Ḥusayn rode three times round the Saʿídu'l-ʿUlamá's house, called on him to come out and lead the holy war he had preached; then asked the people why they had risen, whether the companions had denied their Faith, and spoke of coming through their fire with only a scratch on his face | `bf-mh-house`; journal `bfHeardAddress` | EN ch. XIX | Paraphrase. |
+| The companions lodged in the caravanserai of the Sabzih-Maydán; no bread could be bought nor water drawn; the gates were shut until sunset | `bf-mh-errand`, `bf-mh-report`, `bf-baker`, `bf-water`; journal `bfGatesShut` | EN ch. XIX | The player as one of those sent is invented; the baker's and water-carrier's reasons are invented. |
+| Mullá Ḥusayn asked who would give his life to sound the adhán from the roof; three youths in turn were shot, at "Alláh-u-Akbar", at "I bear witness that Muḥammad is the Apostle of God", and near "There is no God but God"; then he opened the gate and charged, and the square was empty by evening | `bf-mh-call`, `bf-ladder-*`; journal `bfThirdFell` | EN ch. XIX | Nabíl does not name the three. The first's village and the second's sandals are invented. |
+| Notables came on foot; ʿAbbás-Qulí Khán-i-Laríjání and Ḥájí Muṣṭafá Khán blamed the Saʿídu'l-ʿUlamá, urged them on toward Ámul, swore on the Qur'án that Khusraw-i-Qádí-Kalá'í and a hundred horsemen would escort them through Shír-Gáh, and called God's curse on themselves; Mullá Ḥusayn hinted at their insincerity and accepted; tea; it was Friday, 12 Dhi'l-Qaʿdih, and they broke their fast; he dined with the Kháns four hours after sunset | `bf-abbas-quli`, `bf-mustafa-khan`; journal `bfOathSworn` | EN ch. XIX | Ḥájí Muṣṭafá Khán's words are invented. |
+| At midnight the Saʿídu'l-ʿUlamá bade Khusraw rob and kill them; Khusraw asked whether men who sacrificed three rather than leave the call unfinished were not Muslims; the mujtahid took it on his own neck | `bf-rida-fire` `told`; journal `bfHeardMidnight` | EN ch. XIX | Told as what was said round the fire, since the player cannot have known it then. |
+| At dawn ʿAbbás-Qulí Khán charged Khusraw to treat them well; Mullá Ḥusayn quoted the Qurʾán on good and evil returning to the doer | `bf-khusraw-square` | EN ch. XIX | Paraphrase of the verse. |
+| They left two hours after sunrise expecting Shír-Gáh by noon; Khusraw took the forest way; his men seized their goods, killed several (among them the brother of Mullá Ṣádiq) and bound others; Mullá Ḥusayn dismounted, said midday was long past, had Qambar-ʿAlí spread his prayer-mat | `bf-khusraw-forest`, `bf-mh-halt`; journal `bfAmbush` | EN ch. XIX | |
+| Khusraw demanded his sword and horse; no answer; Mírzá Muḥammad-Taqíy-i-Juvayní carried him the qalyán and struck him with his own dagger; the companions turned on the escort, sparing only the attendant who had lit the pipe, who was sent with the jewelled qalyán to ʿAbbás-Qulí Khán: Khusraw thought his work was done; it had only just begun | `bf-juvayni`, `bf-attendant-spared`; journal `bfKhusrawDead`, `bfAttendantSent` | EN ch. XIX | The fight is not shown; the player sees "little of it". |
+| They camped there that night; at dawn Mullá Ḥusayn said "We are approaching our Karbilá", bade them leave all plunder and keep only swords and horses, walked a maydán to the shrine, and prayed (Qurʾán 23:29) that his arrival be blessed | `bf-mh-karbila`; journal `barfurushComplete` | EN ch. XIX | The keeper's dream is left to `ch8-keeper`; only his figure in the doorway is seen. |
+
+Dates: Nabíl gives Friday 12 Dhi'l-Qaʿdih 1264 for the day in the
+caravanserai, which falls about 10 to 13 October 1848 depending on the
+tabular reckoning. The title opening uses the evening of 9 October.

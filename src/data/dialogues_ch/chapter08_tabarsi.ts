@@ -23,7 +23,7 @@ export const mullaHusaynWalls: DialogueTree = {
   nodes: {
     g: {
       speaker: 'Mullá Ḥusayn',
-      text: 'Welcome to our resting place. You see what must be done: the shrine needs walls, the walls need a ditch, and every man here needs work for his hands while his heart waits. Find our mason at the west wall. He will show you how to set a stone so that it stays.',
+      text: 'Here it is, our resting place. You see what must be done: the shrine needs walls, the walls need a ditch, and every man here needs work for his hands while his heart waits. Find our mason at the west wall. He will show you how to set a stone so that it stays.',
     },
   },
 };

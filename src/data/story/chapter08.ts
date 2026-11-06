@@ -4,7 +4,7 @@ import type { ChapterStory } from './types';
 export const chapter08Story: ChapterStory = {
   objectives: [
     {
-      text: 'Find Mullá Ḥusayn at the head of the column',
+      text: 'Find Mullá Ḥusayn at the camp by the stream',
       done: f => !!f.ch8JoinedColumn,
     },
     {
@@ -44,8 +44,8 @@ export const chapter08Story: ChapterStory = {
   journal: [
     {
       flag: 'ch8JoinedColumn',
-      title: 'The Column in the Forest',
-      body: 'You found Mullá Ḥusayn in the forests of Mázindarán, wearing the green turban the Báb had sent him. Driven out of Bárfurúsh after a few nights in its caravanserai, the companions marched for the shrine of Shaykh Ṭabarsí.',
+      title: 'The Camp by the Stream',
+      body: 'In the first days at the shrine of Shaykh Ṭabarsí the companions camped by the stream below it. After Bárfurúsh and Khusraw\'s forest, Mullá Ḥusayn, in the green turban the Báb had sent him, spoke of a wall round the shrine.',
     },
     {
       flag: 'ch8SawStandard',
