@@ -198,11 +198,16 @@ export const nurHouseTakur: DialogueTree = {
     light: {
       speaker: 'Narrator',
       text: 'Núr means light. Nabíl would write that this district, hidden in the mountains of Mázindarán, was the first in all Persia to catch the rays of the Sun that had risen in Shíráz, and that while He went about it the very stones and trees seemed quickened.',
-      choices: [{ text: '(Think of Mullá Ḥusayn.)', next: 'letter' }],
+      choices: [{ text: '(Think of Mullá Ḥusayn.)', next: 'mashhad' }],
+    },
+    mashhad: {
+      speaker: 'Narrator',
+      text: 'He has gone on east to Mashhad. There the most learned man of Khurásán, Mírzá Aḥmad of Azghand, is the first to believe, and after him a teacher of children, a young mullá the Báb will name ʿAẓím, and Mírzá Muḥammad-Báqir of Qáʾin, who gives Mullá Ḥusayn his own house to lodge in.',
+      choices: [{ text: '(Think of the letter he owes.)', next: 'letter' }],
     },
     letter: {
       speaker: 'Narrator',
-      text: 'Far to the east, in Khurásán, Mullá Ḥusayn is writing his letter: of Iṣfahán and Káshán, of a scroll carried at dawn, of the journey to Mázindarán and what has happened in Núr. It will go south by way of Yazd, and reach the Báb in Shíráz on a holy night of Ramaḍán, with Quddús beside Him; and Nabíl records that He rejoiced, and spoke of a marvel that had come to pass between the months of Jamádí and Rajab.',
+      text: 'From that house Mullá Ḥusayn writes his letter, with the names of all who have believed: of Iṣfahán and Káshán, of a scroll carried at dawn, of the journey to Mázindarán and what has happened in Núr. It will go south by way of Yazd, and reach the Báb in Shíráz on a holy night of Ramaḍán, with Quddús beside Him; and Nabíl records that He rejoiced, and spoke of a marvel that had come to pass between the months of Jamádí and Rajab.',
       choices: [
         { text: '"A secret hidden in Ṭihrán. I stood at its door, and I did not go in."', next: 'end' },
         { text: '"I still do not know what I saw. But I know where I saw it."', next: 'end' },

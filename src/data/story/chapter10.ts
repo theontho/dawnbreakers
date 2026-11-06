@@ -114,6 +114,11 @@ export const chapter10Story: ChapterStory = {
       body: 'The shopkeeper has opened again. On windy nights he heard the chant from the pit, and caught himself answering it as he folded cloth.',
     },
     {
+      flag: 'ch10SawSulaymanPass',
+      title: 'Past the Draper\'s Shop',
+      body: 'The draper saw Sulaymán Khán led through the bazaar with candles burning in his wounds, reciting the poets as a bridegroom walks, and the jeering crowd fall silent before he reached the corner.',
+    },
+    {
       flag: 'ch10GuardRemembers',
       title: 'What the Sháh Heard',
       body: 'The guard, now at the western gate, says the Sháh himself heard the chanting in his palace and asked what it was. Some nights the guard found he knew the words.',

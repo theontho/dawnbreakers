@@ -123,6 +123,14 @@ export const JOURNEYS: readonly Journey[] = [
     party: ['mule', 'walker'],
     music: 'road',
     sound: ['breeze'],
+    remarks: [
+      { day: 1, speaker: 'Narrator',
+        text: 'In Iṣfahán the great divines would not receive him. The first to believe was a sifter of wheat, who heard him once and from then on would not leave his side.' },
+      { day: 3, speaker: 'Narrator',
+        text: 'Years later, hearing of a fort in the forests of Mázindarán, the sifter of wheat took up his sieve and set out, saying he would sift the people of every town on the way.' },
+      { day: 8, speaker: 'Narrator',
+        text: 'In Káshán a merchant, Ḥájí Mírzá Jání, believed. In Qum no one would listen at all.' },
+    ],
   },
   {
     id: 'tehran-to-mecca',

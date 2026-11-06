@@ -69,12 +69,26 @@ export const ch10ShopkeeperWinter: DialogueTree = {
     g: {
       speaker: 'A Shopkeeper',
       text: 'You! They let you up? Sit, sit, you look like a ghost of yourself. I opened again a month ago. The Sháh lives, and the criers have found new things to cry.',
-      choices: [{ text: '"Did you hear the singing, these nights?"', next: 'song' }],
+      choices: [
+        { text: '"Did you hear the singing, these nights?"', next: 'song' },
+        { text: '"What did the bazaar see, while I was below?"', next: 'bazaar' },
+      ],
     },
     song: {
       speaker: 'A Shopkeeper',
       onEnter: { set: { ch10ShopkeeperAnswers: true } },
       text: 'When the wind is right, the whole quarter hears it. One row calls and the other answers. I have caught myself, God forgive me, answering under my breath while I fold the cloth.',
+      choices: [{ text: '"And the bazaar, while I was below?"', next: 'bazaar' }, { text: '(Leave him to his cloth.)' }],
+    },
+    bazaar: {
+      speaker: 'A Shopkeeper',
+      text: 'Sulaymán Khán came past this shop. An officer\'s son, once of the court. They had cut his flesh and set lit candles in the wounds, and drums went in front of him. (He smooths a bolt of cloth that is already smooth.)',
+      choices: [{ text: '"How did he go?"', next: 'bridegroom' }],
+    },
+    bridegroom: {
+      speaker: 'A Shopkeeper',
+      onEnter: { set: { ch10SawSulaymanPass: true } },
+      text: 'Dancing. Reciting the old poets, as a bridegroom walks to his wedding. The crowd that came to jeer went quiet before he reached the corner. I shut my shutter, and I have not stopped seeing it.',
     },
   },
 };
