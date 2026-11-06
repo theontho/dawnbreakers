@@ -39,6 +39,7 @@ import { ch7NiyalaMap } from './ch7Niyala';
 import { trialStreetMap } from './trialStreet';
 import { trialCourtMap } from './trialCourt';
 import { trialLaneMap } from './trialLane';
+import { ch8AmulMap } from './ch8Amul';
 import { ch8ForestRoadMap } from './ch8ForestRoad';
 import { ch8TabarsiFortMap } from './ch8TabarsiFort';
 import { ch8TabarsiShrineMap } from './ch8TabarsiShrine';
@@ -111,6 +112,7 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch8ForestRoadMap,
   ch8TabarsiFortMap,
   ch8TabarsiShrineMap,
+  ch8AmulMap,
   martyrsCityMap,
   martyrsHouseMap,
   martyrsSeraiMap,

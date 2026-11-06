@@ -24,6 +24,17 @@ export interface MapDefinition {
   height: number;
   /** Default spawn when entering the scene without explicit spawnX/spawnY. */
   spawn: { x: number; y: number };
+  /**
+   * Texture of the player's figure on this map, when someone other than the
+   * chapter's witness is seen through here (an interlude). Left out, the
+   * chapter's `player` walks it.
+   */
+  player?: string;
+  /**
+   * Narration played once, on first arrival on this map, saying who the
+   * player is here: the map's counterpart to a chapter's `opening`.
+   */
+  opening?: string;
   /** Tile painting. Map starts as all `grass`. */
   build: (canvas: TileCanvas) => void;
   buildings: BuildingSpec[];

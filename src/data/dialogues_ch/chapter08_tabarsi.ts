@@ -1,5 +1,6 @@
 import type { DialogueTree } from '../../dialogue/types';
 import { heard } from '../record';
+import { chapter08AmulDialogues } from './chapter08_amul';
 import { chapter08DayDialogues } from './chapter08_day';
 import { chapter08DayPlaceDialogues } from './chapter08_dayPlaces';
 import { chapter08NightDialogues } from './chapter08_night';
@@ -213,7 +214,11 @@ export const youthWatch: DialogueTree = {
   },
 };
 
-/** Quddús in winter: counsel, and the news from Ámul. */
+/**
+ * Quddús in winter: counsel, and the news from Ámul. From the news the
+ * player may leave the fort for the interlude at Ámul (`chapter08_amul.ts`),
+ * seen through a youth of the town, and come back here at its end.
+ */
 export const quddusCounsel: DialogueTree = {
   id: 'ch8-quddus-counsel',
   startId: 'g',
@@ -230,7 +235,11 @@ export const quddusCounsel: DialogueTree = {
     amul: {
       speaker: 'Quddús',
       text: 'It is true. Bahá\'u\'lláh set out to join us and was seized at Ámul, and beaten before the people as if He were a common thief. He bore it so that others might be spared. Do not ask me to say more of it.',
-      choices: [{ text: '"Then how do we endure without bitterness?"', next: 'endure' }],
+      choices: [
+        { text: '(Leave the fort for a while, and see Ámul through another\'s eyes.)', requires: f => !f.ch8AmulTold,
+          travel: { scene: 'Ch8Amul', spawnX: 8, spawnY: 13 } },
+        { text: '"Then how do we endure without bitterness?"', next: 'endure' },
+      ],
     },
     write: {
       speaker: 'Quddús',
@@ -275,6 +284,7 @@ export const chapter08Dialogues: Record<string, DialogueTree> = {
   ...chapter08DayDialogues,
   ...chapter08DayPlaceDialogues,
   ...chapter08NightDialogues,
+  ...chapter08AmulDialogues,
   [mullaHusaynWalls.id]: mullaHusaynWalls,
   [mullaHusaynAwaiting.id]: mullaHusaynAwaiting,
   [mullaHusaynWinter.id]: mullaHusaynWinter,

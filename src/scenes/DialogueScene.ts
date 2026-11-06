@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { DialogueTree, DialogueChoice, DialogueNode, FlagState, NodeVoice } from '../dialogue/types';
+import type { DialogueTree, DialogueChoice, DialogueNode, DialogueTravel, FlagState, NodeVoice } from '../dialogue/types';
 import { VOICE_STYLE } from '../dialogue/voices';
 import { hasHeard } from '../data/record';
 import type { RecordLaunch } from './RecordScene';
@@ -12,13 +12,14 @@ import { buttonFont, clamp, MIN_TOUCH_TARGET, responsiveFont, safeLayout } from 
 
 export interface DialogueLaunch {
   tree: DialogueTree;
-  onComplete?: () => void;
+  /** Called as the dialogue closes, with where a `travel` choice goes if it ended on one. */
+  onComplete?: (travel?: DialogueTravel) => void;
   currentId?: string;
 }
 
 export class DialogueScene extends Phaser.Scene {
   private tree!: DialogueTree;
-  private onComplete?: () => void;
+  private onComplete?: (travel?: DialogueTravel) => void;
   private currentId!: string;
 
   private speakerText!: Phaser.GameObjects.Text;
@@ -210,6 +211,10 @@ export class DialogueScene extends Phaser.Scene {
     playSfx((node?.choices?.length ?? 0) > 1 ? 'choice' : 'dialogueAdvance');
     if (choice.effect) applyEffect(choice.effect);
 
+    if (choice.travel) {
+      this.finish(choice.travel);
+      return;
+    }
     if (choice.play) {
       this.playMiniGame(choice);
       return;
@@ -270,10 +275,10 @@ export class DialogueScene extends Phaser.Scene {
     return height;
   }
 
-  private finish(): void {
+  private finish(travel?: DialogueTravel): void {
     const cb = this.onComplete;
     this.scene.stop();
-    if (cb) cb();
+    if (cb) cb(travel);
   }
 }
 
