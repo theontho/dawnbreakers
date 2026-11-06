@@ -10,7 +10,8 @@ import { wallRun } from './wallRuns';
  * at the mountain's foot, where the people of Mákú gather each morning to
  * look up at the walls. A cold stream runs down the east side; across its
  * bridge the Tabríz road leaves for Chihríq, and the Mashhad road comes in
- * from the north, the road Mullá Ḥusayn walked on foot.
+ * from the north, from the river bridge where Mullá Ḥusayn came in on foot
+ * at Naw-Rúz (Ch6MakuGate).
  *
  * The Báb is never on the map. He is reached through the barred window of
  * the castle, the pages in His amanuensis's room, and what others say of Him.
@@ -28,8 +29,8 @@ import { wallRun } from './wallRuns';
  * - The town: houses either side of the street (y 36..37), the lane from
  *   the south where you arrive (x 14..15).
  * - The stream x 33..34, bridged on the street's rows; the east bank with
- *   the Mashhad road (x 39..40), the khan and its camels, and the Tabríz road
- *   out at (45, 36).
+ *   the Mashhad road (x 39..40, out north at (39, 0) to the river bridge),
+ *   the khan and its camels, and the Tabríz road out at (45, 36).
  */
 
 const W = 46;
@@ -48,6 +49,8 @@ const LODGING = { x: 12, y: 3, w: 5, h: 4, variant: 0 } as const;
 export const AMANUENSIS_DOOR = { x: LODGING.x + 2, y: LODGING.y + LODGING.h - 1 } as const;
 const STREET = 36;
 const STREAM = 33;
+/** The Mashhad road down the east bank, out at the north edge to the river bridge (Ch6MakuGate). */
+const MASHHAD_ROAD = 39;
 
 function ramparts(): DecorSpec[] {
   const r = 'ch6-rampart';
@@ -110,7 +113,7 @@ const TOWN: DecorSpec[] = [
 const EAST_BANK: DecorSpec[] = [
   ...loose('ch6-footbridge', [[STREAM, STREET], [STREAM + 1, STREET], [STREAM, STREET + 1], [STREAM + 1, STREET + 1]]),
   ...blocking('ch2-milestone', [[41, 33]]),
-  ...blocking('ch6-pine', [[36, 1], [43, 3], [36, 8], [44, 10], [36, 15], [43, 17], [37, 22], [44, 25], [36, 28], [44, 31]]),
+  ...blocking('ch6-pine', [[36, 1], [44, 2], [36, 8], [44, 10], [36, 15], [43, 17], [37, 22], [44, 25], [36, 28], [44, 31]]),
   ...blocking('ch6-rock', [[42, 6], [37, 12], [42, 14], [43, 21], [37, 25], [42, 28]]),
   ...blocking('ch2-camel', [[42, 40], [43, 42]]),
   ...blocking('crates', [[38, 44]]),
@@ -145,7 +148,7 @@ export const ch6MakuMap: MapDefinition = {
     // The lane from the south where you arrive.
     paintRect(14, STREET + 2, 2, H - STREET - 2, 'path');
     // The Mashhad road comes down the east bank from the north.
-    paintRect(39, 0, 2, STREET, 'path');
+    paintRect(MASHHAD_ROAD, 0, 2, STREET, 'path');
     // The cold stream running down from the heights.
     for (let y = 0; y < H; y += 1) {
       for (const x of [STREAM, STREAM + 1]) {
@@ -196,11 +199,7 @@ export const ch6MakuMap: MapDefinition = {
     { gridX: 23, gridY: 36, texture: 'ch6-courier',
       prompt: 'Speak with the Mountain Courier  [E]',
       dialogue: 'ch6-courier-transfer',
-      gate: { when: f => !!f.ch6ReadBayan && !!f.ch6MetMullaHusayn, lockedDialogue: 'ch6-courier-letters' } },
-    // East bank, where the Mashhad road comes in.
-    { gridX: 38, gridY: 32, texture: 'ch6-mulla-husayn',
-      prompt: 'Speak with Mullá Ḥusayn  [E]',
-      dialogue: 'ch6-mulla-husayn-visit' },
+      gate: { when: f => !!f.ch6HusaynCharge, lockedDialogue: 'ch6-courier-letters' } },
   ],
   doors: [
     // Siyyid Ḥusayn's room, where the pages are written and kept.
@@ -208,6 +207,11 @@ export const ch6MakuMap: MapDefinition = {
       targetScene: 'Ch6MakuChamber', targetSpawnX: 3, targetSpawnY: 4 },
   ],
   exits: [
+    { fromX: MASHHAD_ROAD, fromY: 0, dx: 0, dy: -1,
+      targetScene: 'Ch6MakuGate', targetSpawnX: 7, targetSpawnY: 26,
+      label: '↑ The Mashhad road, to the river bridge',
+      requires: f => !!f.ch6ReadBayan,
+      lockedLabel: 'The Mashhad road: Naw-Rúz has not come yet' },
     { fromX: W - 1, fromY: STREET, dx: 1, dy: 0,
       targetScene: 'Ch6Chihriq', targetSpawnX: 1, targetSpawnY: 27,
       label: '→ The road to Chihríq',

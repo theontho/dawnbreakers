@@ -27,6 +27,7 @@ import { kulaynHouseMap } from './kulaynHouse';
 import { kulaynCampMap } from './kulaynCamp';
 import { ch6MakuMap } from './ch6Maku';
 import { ch6MakuChamberMap } from './ch6MakuChamber';
+import { ch6MakuGateMap } from './ch6MakuGate';
 import { ch6ChihriqMap } from './ch6Chihriq';
 import { qazvinKarbilaMap } from './qazvinKarbila';
 import { qazvinLaneMap } from './qazvinLane';
@@ -94,6 +95,7 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   kulaynCampMap,
   ch6MakuMap,
   ch6MakuChamberMap,
+  ch6MakuGateMap,
   ch6ChihriqMap,
   qazvinKarbilaMap,
   qazvinLaneMap,

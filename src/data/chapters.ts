@@ -180,7 +180,7 @@ const SPECS: ChapterSpec[] = [
     subtitle: 'Mákú and Chihríq, 1847 to 1848',
     description: 'Snow on the ramparts of Mákú and Chihríq. A warden asks forgiveness, Mullá Ḥusayn arrives on foot from Mashhad, and in a prison without a lamp the Bayán is written down.',
     startScene: 'Ch6Maku',
-    scenes: ['Ch6Maku', 'Ch6MakuChamber', 'Ch6Chihriq'],
+    scenes: ['Ch6Maku', 'Ch6MakuChamber', 'Ch6MakuGate', 'Ch6Chihriq'],
   },
   {
     id: 'tahirih',
