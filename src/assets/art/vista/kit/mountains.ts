@@ -163,12 +163,18 @@ function gullies(p: DawnPass, spec: RangeSpec, points: ReadonlyArray<{ x: number
 
 /** Bands of rock across the face, each catching a little light along its lip. */
 function strata(p: DawnPass, spec: RangeSpec): void {
+  rockBands(p, spec.base, Math.max(0, ...spec.peaks.map(peak => peak.h)) * p.k, spec.color, spec.depth);
+}
+
+/**
+ * Bedded rock: bands across the whole width from `base` up through
+ * `height` pixels, alternately darker and lighter. Clip to the rock first.
+ */
+export function rockBands(p: DawnPass, base: number, height: number, color: number, depth: number): void {
   const { ctx, k, width } = p;
-  const tallest = Math.max(0, ...spec.peaks.map(peak => peak.h));
-  ctx.lineWidth = 1;
-  for (let i = 0; i * 20 < tallest - 6; i++) {
-    const y = spec.base - (16 + i * 20) * k;
-    ctx.strokeStyle = tone(p, spec.color, i % 2 ? 1.18 : 0.72, spec.depth);
+  for (let i = 0; (16 + i * 20) * k < height - 6 * k; i++) {
+    const y = base - (16 + i * 20) * k;
+    ctx.strokeStyle = tone(p, color, i % 2 ? 1.18 : 0.72, depth);
     ctx.lineWidth = (i % 3 === 0 ? 3 : 1.5) * k;
     ctx.globalAlpha = 0.5;
     ctx.beginPath();
