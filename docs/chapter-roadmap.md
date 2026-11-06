@@ -333,6 +333,7 @@ add or change content now, see `docs/content-guide.md`.
 
 **New scene keys:**
 - `Ch7BadashtCamp`
+- `Ch7Niyala` (the camp stoned at dawn below Niyálá, on the road into Mázindarán)
 
 **Owned files for agent:**
 - `src/scenes/Ch7BadashtCampScene.ts`
@@ -363,7 +364,8 @@ add or change content now, see `docs/content-guide.md`.
 2. Ṭáhirih appears unveiled.
 3. Player chooses response: shock, defence, silence, or seeking explanation.
 4. Bahá'u'lláh names a new dispensation and reconciles the gathering.
-5. Final node marks `badashtComplete`.
+5. Reconciliation marks `ch7Reconciled` and opens the road north-west to Niyálá.
+6. At Niyálá the player shelters from the stones, helps in the plundered camp, and the final node with Ṭáhirih marks `badashtComplete`.
 
 **Dialogue requirements:**
 - Primary tree: `ch7-unveiling`

@@ -1,6 +1,7 @@
 import { paintGardenCanopy, paintTent, QUDDUS_TENT, RECONCILIATION_TENT } from '../art/badasht';
 import { paintCookfire, paintCurtain, paintRosebush } from '../art/badashtProps';
 import type { MapObjectId, TextureGenerator, MapObjectDefinition } from '../mapAssetTypes';
+import { paintSplitLedger, paintStrewnOdes } from '../art/niyalaProps';
 import { CH07_TENT_OBJECTS, CH07_TENT_TEXTURE_GENERATORS } from './chapter07Tent';
 
 /**
@@ -8,8 +9,10 @@ import { CH07_TENT_OBJECTS, CH07_TENT_TEXTURE_GENERATORS } from './chapter07Tent
  * tents (a guest's pavilion 5.6 x 4.2 m, the larger one with its awning
  * 7 x 5.6 m), the garden canopy, mud-brick garden walls (in `art/wallStyles.ts`),
  * the curtain behind which Ṭáhirih first speaks, a cookfire for eighty-one
- * guests, and the rosebush. Carpet and lamp fall through to the shared base
- * art.
+ * guests, and the rosebush; and for the camp stoned at Niyálá, the young
+ * man of Shíráz who stood over the baggage, a villager who brings some of it
+ * back, and what was left in the grass. Carpet and lamp fall through to the
+ * shared base art.
  */
 export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerator>> = {
   ...CH07_TENT_TEXTURE_GENERATORS,
@@ -19,6 +22,8 @@ export const CH07_TEXTURE_GENERATORS: Partial<Record<MapObjectId, TextureGenerat
   'ch7-rosebush': (scene, def) => paintRosebush(scene, def.texture),
   'ch7-curtain': (scene, def) => paintCurtain(scene, def.texture),
   'ch7-cookfire': (scene, def) => paintCookfire(scene, def.texture),
+  'ch7-split-ledger': (scene, def) => paintSplitLedger(scene, def.texture),
+  'ch7-strewn-odes': (scene, def) => paintStrewnOdes(scene, def.texture),
 };
 
 /** Placeable map objects owned by chapter 7. */
@@ -49,4 +54,11 @@ export const CH07_OBJECTS: MapObjectDefinition[] = [
     character: { body: 0x5a4a5a, skin: 0xdcc49c, clothing: { style: 'sash', secondary: 0x3a3238, accent: 0x9a8a6a }, hat: { style: 'turban', color: 0xe0d8c8, accent: 0x5a4a5a }, shadow: true } },
   { id: 'ch7-npc-messenger', label: 'Believer', texture: 'ch7-npc-messenger', kind: 'character', category: 'characters', color: 0x3f4f70, blocks: true,
     character: { body: 0x4a5a3a, skin: 0xe0c49a, clothing: { style: 'robe', secondary: 0xd8b56a, accent: 0x3f4f70 }, hat: { style: 'turban', color: 0xf0e6cc, accent: 0x4a5a3a }, shadow: true } },
+  // Niyálá.
+  { id: 'ch7-split-ledger', label: 'Ledger', texture: 'ch7-split-ledger', kind: 'prop', category: 'furnishings', color: 0x5a2e22, blocks: true },
+  { id: 'ch7-strewn-odes', label: 'Scattered Pages', texture: 'ch7-strewn-odes', kind: 'prop', category: 'furnishings', color: 0xefe4c8, blocks: true },
+  { id: 'ch7-npc-abdullah', label: 'Companion', texture: 'ch7-npc-abdullah', kind: 'character', category: 'characters', color: 0x6a3a2a, blocks: true,
+    character: { body: 0x7a5236, skin: 0xd8b88a, clothing: { style: 'sash', secondary: 0xe6dcc4, accent: 0x9a2a24 }, hat: { style: 'cap', color: 0x2a2018 }, hair: 0x1d1610, shadow: true } },
+  { id: 'ch7-npc-niyala-villager', label: 'Woodcutter', texture: 'ch7-npc-niyala-villager', kind: 'character', category: 'characters', color: 0x4a5a34, blocks: true,
+    character: { body: 0x4a5a34, skin: 0xc49a6c, clothing: { style: 'vest', secondary: 0x7a5a3a, accent: 0xc8b07a }, hat: { style: 'cap', color: 0x5a4430 }, hair: 0x2a1c12, shadow: true } },
 ];

@@ -1,4 +1,5 @@
 import { gardensVisited } from '../dialogues_ch/chapter07_gardens';
+import { NIYALA_TASKS, niyalaHelped } from '../dialogues_ch/chapter07_niyala';
 import type { ChapterStory } from './types';
 
 export const chapter07Story: ChapterStory = {
@@ -23,6 +24,23 @@ export const chapter07Story: ChapterStory = {
     },
     {
       text: 'Return to the messenger at the Host\'s tent',
+      done: f => !!f.ch7Reconciled,
+    },
+    {
+      text: 'Ride with the friends toward Mázindarán',
+      done: f => !!f.ch7NiyalaArrived,
+    },
+    {
+      text: 'Take shelter from the stones',
+      done: f => !!f.ch7NiyalaSheltered,
+    },
+    {
+      text: 'Help where the camp was plundered',
+      done: f => niyalaHelped(f) >= NIYALA_TASKS,
+      progress: f => ({ current: niyalaHelped(f), total: NIYALA_TASKS }),
+    },
+    {
+      text: 'Go to Ṭáhirih before the company parts',
       done: f => !!f.badashtComplete,
     },
   ],
@@ -132,9 +150,49 @@ export const chapter07Story: ChapterStory = {
       body: 'A believer left Badasht after the unveiling, wanting a Day that looked like what he had expected. He was not the only one.',
     },
     {
-      flag: 'badashtComplete',
+      flag: 'ch7Reconciled',
       title: 'One Purpose',
-      body: 'In the lamplit tent Bahá\'u\'lláh received the friends one by one and drew them back to one purpose. The old dispensation was left behind. Now most of the friends ride for Mázindarán, and Mullá Ḥusayn has raised a black standard in Khurásán. You turned west, toward Tabríz.',
+      body: 'In the lamplit tent Bahá\'u\'lláh received the friends one by one and drew them back to one purpose. The old dispensation was left behind. Now most of the friends ride for Mázindarán, and you ride with them a little way.',
+    },
+    {
+      flag: 'ch7NiyalaArrived',
+      title: 'Below Niyálá',
+      body: 'The company camped at the foot of a mountain below the village of Niyálá. At first light the villagers began to stone the camp from the brow of the hill.',
+    },
+    {
+      flag: 'ch7NiyalaSheltered',
+      title: 'Borrowed Clothes',
+      body: 'From behind the rocks you watched the camp scatter. Bahá\'u\'lláh had put His own garments on Quddús and sent him to safety. Only Ṭáhirih, her maid and a young man of Shíráz stayed in the camp.',
+    },
+    {
+      flag: 'ch7HeardExcess',
+      title: 'Freedom and Licence',
+      body: 'The believer from Khurásán said some of the friends took the end of the old law for leave to do as they pleased. Freedom from a law, he said, is not freedom from God.',
+    },
+    {
+      flag: 'ch7BoundWounds',
+      title: 'Told to Stop',
+      body: 'You bound the wounds of Mírzá ʿAbdu\'lláh of Shíráz, who stood over the baggage with a sword until he was bidden to put it down and let the plunderers go.',
+    },
+    {
+      flag: 'ch7GatheredLedger',
+      title: 'The Ledger of Names',
+      body: 'You picked the Keeper of Names\' ledger out of the trampled grass. Most of its pages were whole, the day the veil fell among them.',
+    },
+    {
+      flag: 'ch7GatheredOdes',
+      title: 'Her Odes',
+      body: 'You gathered Ṭáhirih\'s odes from the rocks below her tent. One sheet was missing.',
+    },
+    {
+      flag: 'ch7NiyalaVillager',
+      title: 'How Mázindarán Treats a Guest',
+      body: 'A villager of Niyálá brought a saddlebag back down the hill. The nobleman of Núr had sat with the headmen and asked them if that was how Mázindarán treats a guest.',
+    },
+    {
+      flag: 'badashtComplete',
+      title: 'Scattered',
+      body: 'Bahá\'u\'lláh took Ṭáhirih on to Núr. Quddús was seized and held at Sárí, and the friends who fled carried Badasht down every valley. Mullá Ḥusayn has raised a black standard in Khurásán. You turned west, toward Tabríz.',
     },
   ],
 };

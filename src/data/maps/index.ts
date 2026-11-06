@@ -34,6 +34,7 @@ import { qazvinHouseMap } from './qazvinHouse';
 import { ch7BadashtHamletMap } from './ch7BadashtHamlet';
 import { ch7BadashtCampMap } from './ch7BadashtCamp';
 import { ch7QuddusTentMap } from './ch7QuddusTent';
+import { ch7NiyalaMap } from './ch7Niyala';
 import { trialStreetMap } from './trialStreet';
 import { trialCourtMap } from './trialCourt';
 import { trialLaneMap } from './trialLane';
@@ -101,6 +102,7 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   ch7BadashtHamletMap,
   ch7BadashtCampMap,
   ch7QuddusTentMap,
+  ch7NiyalaMap,
   trialStreetMap,
   trialCourtMap,
   trialLaneMap,

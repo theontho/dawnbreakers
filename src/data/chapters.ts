@@ -198,9 +198,9 @@ const SPECS: ChapterSpec[] = [
     story: CHAPTER_STORIES['badasht'],
     title: 'The Conference of Badasht',
     subtitle: 'Three gardens, summer 1848',
-    description: 'Eighty-one believers gather in three rented gardens. Each day brings a new name; one day brings a proclamation that breaks with the past, and Bahá\'u\'lláh draws the shaken friends back together.',
+    description: 'Eighty-one believers gather in three rented gardens. Each day brings a new name; one day brings a proclamation that breaks with the past, and Bahá\'u\'lláh draws the shaken friends back together. On the road into Mázindarán, at dawn below the village of Niyálá, the camp is stoned and the company scattered.',
     startScene: 'Ch7BadashtHamlet',
-    scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp', 'Ch7QuddusTent'],
+    scenes: ['Ch7BadashtHamlet', 'Ch7BadashtCamp', 'Ch7QuddusTent', 'Ch7Niyala'],
   },
   {
     id: 'tabriz-trial', // renumbered by the manager

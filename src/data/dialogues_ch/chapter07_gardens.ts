@@ -284,8 +284,8 @@ export const bahaullahReconcile: DialogueTree = {
     },
     road: {
       speaker: 'Narrator',
-      onEnter: { set: { badashtComplete: true } },
-      text: 'Within days the gathering breaks up, and most of the friends ride toward Mázindarán. You turn west instead, toward the mountain where He is held, and on the road you hear that He has been brought down to Tabríz. Far to the east, in Khurásán, Mullá Ḥusayn has raised a black standard and set out on the road west, toward the green hills he spoke of at Mákú.',
+      onEnter: { set: { ch7Reconciled: true } },
+      text: 'Within days the gathering breaks up. Most of the friends make ready for Mázindarán, Ṭáhirih and Quddús to ride in one howdah that Bahá\'u\'lláh has had prepared for them. You will ride with them a little way, north-west out of the gardens, before your own road turns west.',
     },
   },
 };
