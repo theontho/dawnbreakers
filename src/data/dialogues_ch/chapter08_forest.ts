@@ -2,84 +2,48 @@ import type { DialogueTree } from '../../dialogue/types';
 import { heard } from '../record';
 
 /**
- * Chapter 8, the forest road: autumn 1848. Mullá Ḥusayn leads the Black
- * Standard out of Khurásán toward the shrine of Shaykh Ṭabarsí after the
- * town of Bárfurúsh has turned on the companions. The woodcutter and the
- * conscript come back later in the siege with changed voices.
+ * Chapter 8, the forest road below the shrine of Shaykh Ṭabarsí: autumn
+ * 1848, the first days after the companions came there from Bárfurúsh and
+ * Khusraw's forest (the `barfurush` chapter). They camp by the stream while
+ * the lines of a wall are paced out round the shrine. The woodcutter and
+ * the conscript come back later in the siege with changed voices.
  */
 
-/** Mullá Ḥusayn at the head of the column; joining sets the march moving. */
+/** Mullá Ḥusayn at the camp by the stream; going on sets the companions to the walls. */
 export const mullaHusaynForest: DialogueTree = {
   id: 'ch8-mh-forest',
   startId: 'g',
   nodes: {
     g: {
       speaker: 'Mullá Ḥusayn',
-      text: 'Peace be upon you, friend. The road from Khurásán is long, and this forest makes every man a stranger. Come closer. Let me see your face.',
+      text: 'There you are. The keeper of the shrine has given us his blessing and the use of his well, and Mírzá Muḥammad-Báqir is up there pacing out lines in the mud. (He looks back down the road toward Bárfurúsh.) By now Qádí-Kalá will have heard how Khusraw\'s errand ended.',
       choices: [
-        { text: '"It is the one who sat outside the door in Shíráz."', next: 'shirazYes',
-          requires: f => f.recognised !== false && !f.ch6MetMullaHusayn },
-        { text: '"It is the one who sat outside the door in Shíráz, and walked with you at Mákú."', next: 'makuYes',
-          requires: f => f.recognised !== false && !!f.ch6MetMullaHusayn },
-        { text: '"You told me once to search. I have been searching."', next: 'shirazNo',
-          requires: f => f.recognised === false },
-      ],
-    },
-    shirazYes: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'The first who heard me at dawn! Four years, and you find us again in the rain of Mázindarán. God keeps a long memory for those who wait at doors.',
-      choices: [{ text: '"Where does this road lead you?"', next: 'standard' }],
-    },
-    makuYes: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'The first who heard me at dawn! At Mákú there was snow on my boots; now there is the mud of Mázindarán. Half a year, and you find us again. God keeps a long memory for those who wait at doors.',
-      choices: [{ text: '"Where does this road lead you?"', next: 'standard' }],
-    },
-    shirazNo: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'And still you walk toward the light and not away from it. That is search. You asked for the verses; since then He has poured out more than any scribe can carry. Walk with us, and read.',
-      choices: [{ text: '"Where does this road lead you?"', next: 'standard' }],
-    },
-    standard: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'From Mashhad we raised the Black Standard, as He bade me. He sent me His own green turban to wear, and a new name, Siyyid ʿAlí. Two hundred of us left Khurásán. More joined at every village.',
-      choices: [
+        { text: '"Lines? For what?"', next: 'walls' },
         { text: '"Why a black standard?"', next: 'why' },
-        { text: '"And what news from Ṭihrán?"', next: 'shah' },
       ],
     },
     why: {
       speaker: 'Mullá Ḥusayn',
       text: 'The traditions say black standards will come out of Khurásán in the days of the Qáʾim. We did not raise it to frighten anyone. We raised it so that those who know the old promise might look up and wonder.',
-      choices: [{ text: '"And the towns along the way?"', next: 'barfurush' }],
+      choices: [{ text: '"And the lines in the mud?"', next: 'walls' }],
     },
-    shah: {
+    walls: {
       speaker: 'Mullá Ḥusayn',
-      text: 'Muḥammad Sháh is dead. The capital is busy with a young king, and in every province the men who hated us are free to do as they please.',
-      choices: [{ text: '"Has it begun already?"', next: 'barfurush' }],
-    },
-    barfurush: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'At Bárfurúsh the Saʿídu\'l-ʿUlamá preached against us from the pulpit, and the town came out with stones and muskets. We did not come to fight. We came to proclaim, and to wait.',
-      choices: [{ text: '"Where will you wait?"', next: 'shrine' }],
-    },
-    shrine: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'There is a shrine in this forest, the tomb of Shaykh Ṭabarsí. When I reached it I prayed: O my Lord, bless Thou my arrival at this place. My heart tells me our road ends there.',
+      text: 'For a wall. Bárfurúsh came out against us with muskets, and in the forest we saw what an oath was worth. A shrine full of praying men needs a wall round it, and a ditch, and a gate someone can keep.',
       choices: [
-        { text: '"Then I will go with you to the shrine."', next: 'go' },
-        { text: '"Ends? You speak as if you know what is coming."', next: 'knows' },
+        { text: '"Then I will go up and help raise it."', next: 'go' },
+        { text: '"You called this place our Karbilá."', next: 'knows' },
       ],
     },
     knows: {
       speaker: 'Mullá Ḥusayn',
-      text: 'I know that I have given everything already. What remains is only the handing over. Do not grieve before the hour, friend. There is work to do: walls to raise, and hearts to steady.',
+      text: 'I did. I know that I have given everything already; what remains is only the handing over. Do not grieve before the hour, friend. There is work to do: walls to raise, and hearts to steady.',
       choices: [{ text: '"Then let us go."', next: 'go' }],
     },
     go: {
       speaker: 'Narrator',
       onEnter: { set: { ch8JoinedColumn: true } },
-      text: 'Mullá Ḥusayn turns his horse east along the forest road, and the Standard-bearer rides after him into the green dark. Behind them the companions break camp slowly, chanting. The shrine lies beyond the stream and the ironwoods.',
+      text: 'Mullá Ḥusayn walks back up the road toward the shrine, and the Standard-bearer goes after him. Behind them the companions break camp slowly, chanting. The shrine lies beyond the stream and the ironwoods.',
     },
   },
 };
@@ -94,7 +58,7 @@ export const standardForest: DialogueTree = {
       text: 'A black banner hangs heavy with rain from a tall pole. The Standard-bearer, a silent man from Khurásán, holds it as though it weighed nothing at all.',
       choices: [
         { text: '(Look along the hem for an inscription.)', next: 'hem' },
-        { text: '(Ask the Standard-bearer how far he has carried it.)', next: 'far' },
+        { text: '(Ask the Standard-bearer whether he ever sets it down.)', next: 'far' },
       ],
     },
     hem: {
@@ -104,7 +68,7 @@ export const standardForest: DialogueTree = {
     },
     far: {
       speaker: 'Narrator',
-      text: 'He only smiles. A companion beside him answers instead: "Every step from Mashhad, through Nishápúr and the mountains and the mud. He has not once let it touch the ground."',
+      text: 'He only smiles. A companion beside him answers instead: "Not at Bárfurúsh when the muskets fired, and not in the forest when Khusraw\'s men came. Every step from Mashhad, and he has not once let it touch the ground."',
       choices: [{ text: '(Stand beneath it a moment.)', next: 'end' }],
     },
     end: {
@@ -122,10 +86,10 @@ export const youthForest: DialogueTree = {
   nodes: {
     g: {
       speaker: 'A Young Companion',
-      text: 'You are not from Khurásán; I can tell by your boots. Mine wore through at Nishápúr. My name is Riḍá. My father dyes cloth in Mashhad. Look, my hands are still blue.',
+      text: 'I washed in the stream this morning, look, and the blue still will not come off. My father\'s vats in Mashhad, on my hands all the way to this forest. (He holds them up.) I thought Bárfurúsh would scrub it off, if anything did.',
       choices: [
-        { text: '"Why did you come?"', next: 'why' },
-        { text: '"Are you afraid?"', next: 'afraid' },
+        { text: '"Why did you come, Riḍá?"', next: 'why' },
+        { text: '"Are you still afraid?"', next: 'afraid' },
       ],
     },
     why: {
@@ -135,13 +99,13 @@ export const youthForest: DialogueTree = {
     },
     afraid: {
       speaker: 'A Young Companion',
-      text: 'At Bárfurúsh, when the stones came, yes. I hid behind a horse. Then I saw Mullá Ḥusayn\'s face, so calm that I felt ashamed, and I stopped hiding.',
+      text: 'You saw me at Bárfurúsh, behind that horse. In the forest, when Khusraw\'s men came, I did not hide; I was too busy being afraid for you. (He laughs.) Mullá Ḥusayn\'s face never changed, either time. I keep looking at it to borrow some.',
       choices: [{ text: '"And your family?"', next: 'mother' }],
     },
     mother: {
       speaker: 'A Young Companion',
       onEnter: { set: { ch8MetYoungCompanion: true } },
-      text: 'My mother sewed bread into my sash so I would not go hungry. I eat it one corner at a time. (He offers you a piece, hard as wood.) Share it with me. It tastes of home.',
+      text: 'My mother\'s bread is still in my sash, the bread I kept back from the heap. I said I would give it to someone who needed it more. (He offers you a piece, hard as wood.) Today I think that is you. It tastes of home.',
       choices: [
         { text: '(Take the bread and thank him.)', next: 'took', effect: { set: { ch8SharedBread: true } } },
         { text: '(Refuse gently. He will need it more.)', next: 'refuse' },

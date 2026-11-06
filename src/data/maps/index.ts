@@ -40,6 +40,10 @@ import { trialStreetMap } from './trialStreet';
 import { trialCourtMap } from './trialCourt';
 import { trialLaneMap } from './trialLane';
 import { ch8AmulMap } from './ch8Amul';
+import { barfurushRoadMap } from './barfurushRoad';
+import { barfurushMaydanMap } from './barfurushMaydan';
+import { barfurushSeraiMap } from './barfurushSerai';
+import { barfurushForestMap } from './barfurushForest';
 import { ch8ForestRoadMap } from './ch8ForestRoad';
 import { ch8TabarsiFortMap } from './ch8TabarsiFort';
 import { ch8TabarsiShrineMap } from './ch8TabarsiShrine';
@@ -109,6 +113,10 @@ export const MAP_DEFINITIONS: readonly MapDefinition[] = [
   trialStreetMap,
   trialCourtMap,
   trialLaneMap,
+  barfurushRoadMap,
+  barfurushMaydanMap,
+  barfurushSeraiMap,
+  barfurushForestMap,
   ch8ForestRoadMap,
   ch8TabarsiFortMap,
   ch8TabarsiShrineMap,

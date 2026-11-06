@@ -20,6 +20,7 @@ export type VistaId =
   | 'qazvin'
   | 'badasht'
   | 'tabriz'
+  | 'barfurush'
   | 'tabarsi'
   | 'nayriz'
   | 'zanjan';

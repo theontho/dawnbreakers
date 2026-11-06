@@ -1,5 +1,6 @@
 import { BADASHT } from './places/badasht';
 import { BAGHDAD } from './places/baghdad';
+import { BARFURUSH } from './places/barfurush';
 import { ISFAHAN } from './places/isfahan';
 import { KARBILA } from './places/karbila';
 import { KASHAN } from './places/kashan';
@@ -28,6 +29,7 @@ const VISTAS: Record<VistaId, Vista> = {
   qazvin: QAZVIN,
   badasht: BADASHT,
   tabriz: TABRIZ,
+  barfurush: BARFURUSH,
   tabarsi: TABARSI,
   nayriz: NAYRIZ,
   zanjan: ZANJAN,

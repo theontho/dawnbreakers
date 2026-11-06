@@ -144,7 +144,18 @@ try {
       game.scene.start(k);
     }, key);
     // A map paints its art on its first visit, which takes a while in software rendering.
-    await page.waitForFunction((k) => window.__game.scene.isActive(k), key, { timeout: 30000 });
+    // A chapter's start scene pauses itself on its first frame for the opening narration:
+    // wait for it to be running or paused under that, then close the narration.
+    await page.waitForFunction((k) => {
+      const scenes = window.__game.scene;
+      return scenes.isActive(k) || (scenes.isPaused(k) && scenes.isActive('Dialogue'));
+    }, key, { timeout: 30000 });
+    await page.evaluate((k) => {
+      const scenes = window.__game.scene;
+      if (!scenes.isPaused(k)) return;
+      scenes.stop('Dialogue');
+      scenes.resume(k);
+    }, key);
     await page.waitForTimeout(500);
     const fps = await page.evaluate(() => new Promise((done) => {
       let frames = 0;

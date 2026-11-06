@@ -33,6 +33,7 @@ export const TITLE_OPENINGS: Record<ChapterId, TitleOpening> = {
   tahirih: { vista: 'qazvin', evening: '1847-09-15', subtitle: 'Qazvín, 1847' },
   badasht: { vista: 'badasht', evening: '1848-06-25', subtitle: 'Badasht, summer 1848' },
   'tabriz-trial': { vista: 'tabriz', evening: '1848-07-22', subtitle: 'Tabríz, summer 1848' },
+  barfurush: { vista: 'barfurush', evening: '1848-10-09', subtitle: 'Bárfurúsh, October 1848', weather: 'mist' },
   tabarsi: { vista: 'tabarsi', evening: '1848-10-12', subtitle: 'Shaykh Ṭabarsí, autumn 1848', weather: 'mist' },
   'seven-martyrs': { vista: 'tehran', evening: '1850-02-18', subtitle: 'Ṭihrán, February 1850', weather: 'snow' },
   nayriz: { vista: 'nayriz', evening: '1850-05-27', subtitle: 'Nayríz, May 1850' },
