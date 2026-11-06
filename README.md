@@ -8,6 +8,20 @@ journals, and historical set pieces.
 Play it at **https://theontho.github.io/dawnbreakers/**. Publishing a GitHub
 release (or running the "Deploy to GitHub Pages" workflow by hand) redeploys it.
 
+## About this game
+
+This is a hobby game, made for fun. It is inspired by Nabíl's narrative of
+the early days of the Bábí and Bahá'í Faiths, but it is not that book, and it
+is not an official or authoritative work of any kind.
+
+Much of it was made with AI: the code, the art, the music, the writing and the
+translations. It will have mistakes in names, dates, places, people and
+events, and in how they are told. So please don't take it seriously, as
+history or as a statement of anyone's belief. For the true story, read *The
+Dawn-Breakers* itself.
+
+The same note is in the game, under **About** on the title screen.
+
 ## Run it
 
 ```bash

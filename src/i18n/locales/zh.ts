@@ -4648,6 +4648,10 @@ export const text: TranslationCatalog = {
   "Ṭihrán, August 1852": "德黑兰，1852年8月",
   "Ṭihrán, autumn 1844": "德黑兰，1844年秋",
   "Zanján, autumn 1850": "赞詹，1850年秋",
+  "About": "关于",
+  "Much of it was made with AI: the code, the art, the music, the writing and the translations. It will have mistakes in names, dates, places, people and events, and in how they are told.": "其中大部分是借助人工智能完成的：代码、美术、音乐、文字和翻译。在人名、日期、地点、人物和事件，以及它们的讲述方式上，都会有错误。",
+  "So please don't take it seriously, as history or as a statement of anyone's belief. For the true story, read The Dawn-Breakers itself.": "所以请不要把它当真，不要把它当作历史，也不要把它当作任何人信仰的表述。想了解真实的故事，请阅读《破晓者》原书。",
+  "The Dawn-Breakers is a hobby game, made for fun. It is inspired by Nabíl's narrative of the early days of the Bábí and Bahá'í Faiths, but it is not that book, and it is not an official or authoritative work of any kind.": "《破晓者》是一款出于兴趣、为了好玩而做的游戏。它的灵感来自纳比勒讲述巴孛信仰与巴哈伊信仰早期岁月的著作，但它并不是那本书，也不是任何形式的官方或权威作品。",
 };
 
 // Chapter metadata translations.

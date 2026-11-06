@@ -4651,6 +4651,10 @@ export const text: TranslationCatalog = {
   "Ṭihrán, August 1852": "تهران، اوت ۱۸۵۲",
   "Ṭihrán, autumn 1844": "تهران، پاییز ۱۸۴۴",
   "Zanján, autumn 1850": "زنجان، پاییز ۱۸۵۰",
+  "About": "درباره",
+  "Much of it was made with AI: the code, the art, the music, the writing and the translations. It will have mistakes in names, dates, places, people and events, and in how they are told.": "بخش بزرگی از آن با هوش مصنوعی ساخته شده است: کد، تصویرها، موسیقی، نوشته‌ها و ترجمه‌ها. در نام‌ها، تاریخ‌ها، مکان‌ها، شخصیت‌ها و رویدادها، و در شیوهٔ روایت آن‌ها، اشتباه‌هایی خواهد بود.",
+  "So please don't take it seriously, as history or as a statement of anyone's belief. For the true story, read The Dawn-Breakers itself.": "پس لطفاً آن را جدی نگیرید، نه به‌عنوان تاریخ و نه به‌عنوان بیان باور کسی. برای شنیدن ماجرای راستین، خودِ مطالع‌الانوار را بخوانید.",
+  "The Dawn-Breakers is a hobby game, made for fun. It is inspired by Nabíl's narrative of the early days of the Bábí and Bahá'í Faiths, but it is not that book, and it is not an official or authoritative work of any kind.": "مطالع‌الانوار یک بازی سرگرمی است که برای لذت ساخته شده است. الهام‌گرفته از روایت نبیل دربارهٔ روزهای آغازین ادیان بابی و بهائی است، اما آن کتاب نیست و هیچ‌گونه اثر رسمی یا معتبری به شمار نمی‌آید.",
 };
 
 // The trial at Tabríz.
