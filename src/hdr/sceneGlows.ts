@@ -87,23 +87,38 @@ export class SceneGlows {
 /**
  * The words, buttons and filled panels of a scene that lie over `area`, as
  * occluders: text by its own drawing (letters, and the box behind them if
- * it has one), a rectangle as opaque as its fill. Objects that cover most
- * of the screen are washes over the whole scene, not in front of the sky,
- * and are left out.
+ * it has one), a rectangle as opaque as its fill.
+ *
+ * With `frontOf`, only what is drawn after that object counts, and then
+ * everything does: a panel bigger than half a phone's screen, and the
+ * dimming wash behind a dialog, which holds the glow back as much as it
+ * darkens the sky. Without it, objects that cover most of the screen are
+ * taken for washes over the whole scene, not in front of the sky, and are
+ * left out.
  */
-export function sceneOccluders(scene: Phaser.Scene, area: { x: number; y: number; width: number; height: number }): Occluder[] {
+export function sceneOccluders(
+  scene: Phaser.Scene,
+  area: { x: number; y: number; width: number; height: number },
+  frontOf?: Phaser.GameObjects.GameObject,
+): Occluder[] {
   const found: Occluder[] = [];
   const screen = scene.scale.width * scene.scale.height;
+  let inFront = !frontOf;
   const visit = (objects: readonly Phaser.GameObjects.GameObject[], parentAlpha: number) => {
     for (const object of objects) {
+      if (object === frontOf) {
+        inFront = true;
+        continue;
+      }
       if (object instanceof Phaser.GameObjects.Container) {
         if (object.visible && object.alpha > 0) visit(object.list, parentAlpha * object.alpha);
         continue;
       }
+      if (!inFront) continue;
       const opacity = occluderOpacity(object) * parentAlpha;
       if (opacity < 0.02) continue;
       const bounds = (object as Phaser.GameObjects.Text).getBounds();
-      if (bounds.width * bounds.height > screen * 0.5) continue;
+      if (!frontOf && bounds.width * bounds.height > screen * 0.5) continue;
       const rect = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
       if (overlapFraction(area, rect) <= 0) continue;
       found.push(object instanceof Phaser.GameObjects.Text

@@ -69,7 +69,7 @@ export class JourneyArrival {
     // The dawn after the road's last night, over the place it leads to.
     const lastEvening = new Date(journeyDeparture(options.journey).getTime() + (options.journey.days - 1) * DAY_MS);
     const before = new Set(scene.children.list);
-    this.sunrise = addSunriseBackground(scene, width, height, vista, lastEvening);
+    this.sunrise = addSunriseBackground(scene, width, height, vista, lastEvening, opening.weather);
     const made = scene.children.list.filter(object => !before.has(object));
     this.layer = scene.add.container(0, 0, made).setDepth(DAWN_DEPTH).setVisible(false);
     this.flat = scene.add.renderTexture(0, 0, width, height).setOrigin(0).setDepth(DAWN_DEPTH).setVisible(false);

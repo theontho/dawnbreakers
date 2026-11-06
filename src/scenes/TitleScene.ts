@@ -76,7 +76,7 @@ export class TitleScene extends Phaser.Scene {
     let bookmark = loadBookmark();
     const chapter = (data.chapter && chapterById(data.chapter)) || titleChapter(bookmark?.scene);
     const opening = TITLE_OPENINGS[chapter.id];
-    const sunrise = addSunriseBackground(this, width, height, vistaFor(opening.vista), openingEvening(opening));
+    const sunrise = addSunriseBackground(this, width, height, vistaFor(opening.vista), openingEvening(opening), opening.weather);
     const musicReady = loadTitleMusic(this);
 
     const titleLayer = this.add.container(0, 0);

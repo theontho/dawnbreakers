@@ -35,18 +35,37 @@ export interface RangeSpec {
   rim?: number;
   /** Shading strokes down the slopes. */
   gullies?: boolean;
+  /** Bands of bedded rock across the face, under the snow, as on a cliff. */
+  strata?: boolean;
+}
+
+/** How high `peak` lifts the crest at x, in screen pixels. */
+function peakLift(p: DawnPass, peak: Peak, x: number): number {
+  const u = Math.abs(x - peak.at * p.width) / (peak.w * p.k);
+  if (u >= 1) return 0;
+  const sharp = peak.sharp ?? 1.3;
+  return peak.h * p.k * (1 - u ** (2 / sharp)) ** sharp;
+}
+
+/** The peak that makes the crest at x, if any rises above the floor there. */
+function peakAt(p: DawnPass, spec: RangeSpec, x: number): Peak | undefined {
+  let best: Peak | undefined;
+  let lift = (spec.floor ?? 0) * p.k;
+  for (const peak of spec.peaks) {
+    const l = peakLift(p, peak, x);
+    if (l > lift) {
+      lift = l;
+      best = peak;
+    }
+  }
+  return best;
 }
 
 /** Screen y of the range's crest at x. */
 export function rangeY(p: DawnPass, spec: RangeSpec, x: number): number {
-  const { k, width } = p;
+  const { k } = p;
   let lift = (spec.floor ?? 0) * k;
-  for (const peak of spec.peaks) {
-    const u = Math.abs(x - peak.at * width) / (peak.w * k);
-    if (u >= 1) continue;
-    const sharp = peak.sharp ?? 1.3;
-    lift = Math.max(lift, peak.h * k * (1 - u ** (2 / sharp)) ** sharp);
-  }
+  for (const peak of spec.peaks) lift = Math.max(lift, peakLift(p, peak, x));
   const rough = (spec.rough ?? 4) * k;
   const s = spec.seed;
   const noise = Math.sin(x * 0.031 + s) * 0.5 + Math.sin(x * 0.083 + s * 1.7) * 0.3 + Math.sin(x * 0.19 + s * 2.9) * 0.2;
@@ -78,6 +97,7 @@ export function paintRange(p: DawnPass, spec: RangeSpec): Array<{ x: number; y: 
     ctx.save();
     trace();
     ctx.clip();
+    if (spec.strata) strata(p, spec);
     if (spec.snow !== undefined) snow(p, spec, points);
     if (spec.gullies !== false) gullies(p, spec, points);
     ctx.restore();
@@ -86,7 +106,12 @@ export function paintRange(p: DawnPass, spec: RangeSpec): Array<{ x: number; y: 
   return points;
 }
 
-/** Snow on each peak down to its snow line, ragged along the bottom. */
+/**
+ * Snow on each peak down to its snow line, ragged along the bottom. Each
+ * column takes the snow line of the peak that makes its crest, so where a
+ * lower peak's flank runs under a higher one its snow does not show through
+ * as a step.
+ */
 function snow(p: DawnPass, spec: RangeSpec, points: ReadonlyArray<{ x: number; y: number }>): void {
   const { ctx, k } = p;
   const depth = (spec.snow ?? 0) * k;
@@ -98,7 +123,10 @@ function snow(p: DawnPass, spec: RangeSpec, points: ReadonlyArray<{ x: number; y
     let open = false;
     const lower: Array<{ x: number; y: number }> = [];
     for (const pt of points) {
-      if (Math.abs(pt.x - peak.at * p.width) > peak.w * k) continue;
+      if (peakAt(p, spec, pt.x) !== peak) {
+        if (open) break;
+        continue;
+      }
       const ragged = line + Math.sin(pt.x * 0.21 + spec.seed) * 3 * k + Math.sin(pt.x * 0.057) * 5 * k;
       if (pt.y >= ragged) continue;
       if (!open) ctx.moveTo(pt.x, ragged);
@@ -128,6 +156,27 @@ function gullies(p: DawnPass, spec: RangeSpec, points: ReadonlyArray<{ x: number
     ctx.beginPath();
     ctx.moveTo(pt.x, pt.y + 2);
     ctx.quadraticCurveTo(pt.x + lean * 0.3, pt.y + len * 0.5, pt.x + lean, pt.y + len);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** Bands of rock across the face, each catching a little light along its lip. */
+function strata(p: DawnPass, spec: RangeSpec): void {
+  const { ctx, k, width } = p;
+  const tallest = Math.max(0, ...spec.peaks.map(peak => peak.h));
+  ctx.lineWidth = 1;
+  for (let i = 0; i * 20 < tallest - 6; i++) {
+    const y = spec.base - (16 + i * 20) * k;
+    ctx.strokeStyle = tone(p, spec.color, i % 2 ? 1.18 : 0.72, spec.depth);
+    ctx.lineWidth = (i % 3 === 0 ? 3 : 1.5) * k;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    for (let x = -8; x <= width + 8; x += 12) {
+      const dy = Math.sin(x * 0.02 + i) * 4 * k + Math.sin(x * 0.07 + i * 3) * 2 * k;
+      if (x === -8) ctx.moveTo(x, y + dy);
+      else ctx.lineTo(x, y + dy);
+    }
     ctx.stroke();
   }
   ctx.globalAlpha = 1;

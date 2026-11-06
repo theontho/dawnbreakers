@@ -12,7 +12,8 @@ const SUN_GAIN = 3.2;
  * haze: nothing while it is red on the skyline, full strength once its rays
  * are out. Cut along the roofs and minarets it rises behind, held back
  * under the dusky haze over the hills while that shows, and round
- * each letter of the title and the buttons that pass in front of it.
+ * each letter of the title and the buttons that pass in front of it, and
+ * dimmed with the sky under a dialog's wash.
  */
 export function glowTitleSun(scene: Phaser.Scene, sunrise: SunriseBackground): void {
   const glows = new SceneGlows(scene);
@@ -34,7 +35,7 @@ export function glowTitleSun(scene: Phaser.Scene, sunrise: SunriseBackground): v
       // The haze is drawn faint but reads as a ridge, so it hides the glow as fully as it is shown.
       haze: { top: sunrise.hazeTop, opacity: sunrise.dawnGlow.alpha },
     };
-    glows.update([sun], sceneOccluders(scene, glowBounds(sun)));
+    glows.update([sun], sceneOccluders(scene, glowBounds(sun), sunrise.nightWash));
   };
   scene.events.on(Phaser.Scenes.Events.POST_UPDATE, update);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.POST_UPDATE, update));

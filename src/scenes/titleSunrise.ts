@@ -8,6 +8,8 @@ import { seasonOf, type Vista } from '../assets/art/vista/types';
 import type { SunriseClock } from './titleSunriseClock';
 import { glowTitleSun } from './titleSunGlow';
 import { drawTitleSunRays } from './titleSunRays';
+import { TitleWeather } from './titleWeather';
+import type { Weather } from '../data/titleOpenings';
 
 /**
  * The title's dawn over the opening's place: night sky, stars, the city,
@@ -39,6 +41,7 @@ export type SunriseBackground = {
   city: TitleCity;
   nightWash: Phaser.GameObjects.Rectangle;
   cloudDrift: { fromX: number; toX: number };
+  weather?: TitleWeather;
 };
 
 export const SUNRISE_DURATION_MS = 210000;
@@ -46,7 +49,7 @@ const cloudDriftMs = 160000;
 const fixedSunPeakingElapsedMs = 23675;
 const sunTargetYMultiplier = -1.45;
 
-export function addSunriseBackground(scene: Phaser.Scene, width: number, height: number, vista: Vista, evening: Date): SunriseBackground {
+export function addSunriseBackground(scene: Phaser.Scene, width: number, height: number, vista: Vista, evening: Date, weather?: Weather): SunriseBackground {
   const horizonY = height * 0.62;
   const cityBaseY = horizonY + height * 0.1;
 
@@ -77,6 +80,7 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
     .setAlpha(0);
 
   const city = addTitleCity(scene, width, height, cityBaseY, vista, seasonOf(evening));
+  const sky = weather ? new TitleWeather(scene, weather, { width, height }, cityBaseY) : undefined;
   const nightWash = scene.add.rectangle(0, 0, width, height, 0x030611, 0.12).setOrigin(0);
 
   const background = {
@@ -99,6 +103,7 @@ export function addSunriseBackground(scene: Phaser.Scene, width: number, height:
     city,
     nightWash,
     cloudDrift,
+    weather: sky,
   };
   applySunriseLighting(background);
 
@@ -238,7 +243,9 @@ function applySunriseLighting(sunrise: SunriseBackground, positionMs = 0): void 
   sunrise.dawnGlow.setAlpha(daylight.dawnGlowAlpha);
   sunrise.sunEffects.forEach((effect) => effect.setAlpha(daylight.sunEffectsAlpha));
   sunrise.sunDisk.setFillStyle(daylight.sunTint, 1);
-  sunrise.nightSky.draw(sunrise.skyTime?.(positionMs) ?? sunrise.dawn.timeForAltitude(daylight.solarElevationDeg), daylight.starAlpha);
+  sunrise.weather?.setLight(daylight.solarElevationDeg, daylight.cityLightAmount);
+  const overcast = 0.85 * (sunrise.weather?.overcast ?? 0);
+  sunrise.nightSky.draw(sunrise.skyTime?.(positionMs) ?? sunrise.dawn.timeForAltitude(daylight.solarElevationDeg), daylight.starAlpha * (1 - overcast));
   sunrise.city.setLight(daylight.cityLightAmount);
   sunrise.dayClouds.setAlpha(daylight.cloudAlpha);
   sunrise.nightWash.setAlpha(daylight.nightWashAlpha);
