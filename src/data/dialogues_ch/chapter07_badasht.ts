@@ -14,9 +14,20 @@ import {
   unveiling,
 } from './chapter07_gardens';
 import { ch7Cook, ch7Khurasani, ch7Steward, ch7Villager } from './chapter07_hamlet';
+import {
+  ch7NiyalaAbdullah,
+  ch7NiyalaAbdullahAfter,
+  ch7NiyalaKhurasaniAfter,
+  ch7NiyalaLedger,
+  ch7NiyalaOdes,
+  ch7NiyalaShelter,
+  ch7NiyalaTahirih,
+  ch7NiyalaTahirihWait,
+  ch7NiyalaVillager,
+} from './chapter07_niyala';
 import { ch7QuddusPapers, ch7TentKeeper, ch7TentKeeperAfter } from './chapter07_tent';
 
-/** Chapter 7, the Conference of Badasht: the hamlet, then the three gardens. */
+/** Chapter 7, the Conference of Badasht: the hamlet, the three gardens, then the stoning at Niyálá. */
 const trees: DialogueTree[] = [
   ch7Steward,
   ch7Cook,
@@ -37,6 +48,15 @@ const trees: DialogueTree[] = [
   ch7TentKeeper,
   ch7TentKeeperAfter,
   ch7QuddusPapers,
+  ch7NiyalaShelter,
+  ch7NiyalaKhurasaniAfter,
+  ch7NiyalaAbdullah,
+  ch7NiyalaAbdullahAfter,
+  ch7NiyalaLedger,
+  ch7NiyalaOdes,
+  ch7NiyalaVillager,
+  ch7NiyalaTahirihWait,
+  ch7NiyalaTahirih,
 ];
 
 export const chapter07Dialogues: Record<string, DialogueTree> = Object.fromEntries(trees.map(t => [t.id, t]));

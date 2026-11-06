@@ -25,7 +25,9 @@ import { wallRun } from './wallRuns';
  * - Ṭáhirih's garden: walls x 27..40, y 17..31, gate (27, 24..25). The
  *   canopy at x 33..36, y 20..22 and the curtain before it at (34, 23).
  * - The meadow: between the gardens, the lane x 18..19 south to the
- *   hamlet at (18, 37); the keeper of names by the lane at y 33.
+ *   hamlet at (18, 37); the keeper of names by the lane at y 33. Once the
+ *   friends are reconciled, the road to Mázindarán (`Ch7Niyala`) leaves the
+ *   lane along row 14 for the north-west edge at (0, 14).
  */
 
 const W = 42;
@@ -33,6 +35,8 @@ const H = 38;
 const STREAM_X = [21, 22] as const;
 const LANE_X = 18;
 const CROSS_Y = [24, 25] as const;
+/** The road north-west toward Mázindarán, between the Host's garden and Quddús's. */
+const ROAD_Y = 14;
 const HOST_TENT = { x: 27, y: 3 } as const;
 /** Quddús's pavilion; its door is on the front row of the middle cell (see art/pavilion.ts). */
 const QUDDUS_TENT = { x: 4, y: 19 } as const;
@@ -99,7 +103,7 @@ const TAHIRIH_GARDEN: DecorSpec[] = [
 const MEADOW: DecorSpec[] = [
   ...blocking('plane-tree-old', [[2, 0], [39, 0]]),
   ...blocking('plane-tree', [[3, 35]]),
-  ...blocking('apricot-tree', [[1, 14], [11, 15], [16, 15], [25, 15], [30, 15], [40, 14], [7, 34], [11, 36], [29, 35], [34, 36], [38, 34]]),
+  ...blocking('apricot-tree', [[1, 11], [11, 15], [16, 15], [25, 15], [30, 15], [40, 14], [7, 34], [11, 36], [29, 35], [34, 36], [38, 34]]),
   ...blocking('cypress', [[16, 21], [16, 28], [24, 21], [24, 28]]),
   ...blocking('ch5-river-reeds', [[23, 17], [20, 30], [23, 34], [20, 19]]),
   ...blocking('floor-writing-board', [[15, 33]]),
@@ -131,6 +135,7 @@ export const ch7BadashtCampMap: MapDefinition = {
     paintRect(11, 32, 18, 6, 'sand');
     for (let y = 14; y < H; y += 1) { setTile(LANE_X, y, 'path'); setTile(LANE_X + 1, y, 'path'); }
     for (let x = 15; x < 27; x += 1) for (const y of CROSS_Y) setTile(x, y, 'path');
+    for (let x = 0; x < LANE_X; x += 1) setTile(x, ROAD_Y, 'path');
 
     // The stream runs north to south through the Host's garden and the meadow; footbridges cross it.
     for (let y = 0; y < H; y += 1) {
@@ -209,6 +214,11 @@ export const ch7BadashtCampMap: MapDefinition = {
     { fromX: LANE_X, fromY: H - 1, dx: 0, dy: 1,
       targetScene: 'Ch7BadashtHamlet', targetSpawnX: 31, targetSpawnY: 1,
       label: '↓ Back to the hamlet and the camp' },
+    { fromX: 0, fromY: ROAD_Y, dx: -1, dy: 0,
+      targetScene: 'Ch7Niyala', targetSpawnX: 30, targetSpawnY: 22,
+      label: '↖ Ride with the friends toward Mázindarán',
+      requires: f => !!f.ch7Reconciled,
+      lockedLabel: 'The road to Mázindarán: the friends have not yet set out' },
   ],
   ambience: {
     wash: { color: 0x2a3560, alpha: 0.5 },
