@@ -3,8 +3,9 @@ import type { DialogueTree } from '../../dialogue/types';
 /**
  * Mákú, the "Open Mountain", winter 1847 to spring 1848. The Báb is never a
  * speaker: He is reached through the barred window, the pages in His
- * amanuensis's room, and the testimony of the warden, the guards, the town,
- * and Mullá Ḥusayn.
+ * amanuensis's room, and the testimony of the warden, the guards and the
+ * town. Mullá Ḥusayn's Naw-Rúz at Mákú is at the river bridge
+ * (`chapter06_maku_gate.ts`).
  */
 
 export const ch6MakuWoman: DialogueTree = {
@@ -248,61 +249,6 @@ export const ch6MakuWindow: DialogueTree = {
       speaker: 'Narrator',
       onEnter: { set: { ch6SawBarredWindow: true } },
       text: 'You lay your palm on the stone below the bars. It is as cold as the mountain. You stay until the cold reaches your bones, and then a little longer.',
-    },
-  },
-};
-
-export const ch6MullaHusaynVisit: DialogueTree = {
-  id: 'ch6-mulla-husayn-visit',
-  startId: 'g',
-  nodes: {
-    g: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'Friend! You, here, at the edge of the world? I have come from Mashhad. On foot, every step of it. (He laughs at your face.) Do not look at my boots. They have given everything they had.',
-      choices: [
-        { text: '"On foot? From Mashhad?"', next: 'foot' },
-        { text: '"I remember the night of first recognition, in Shíráz."', next: 'memory',
-          requires: f => f.recognised === true, effect: { set: { ch6RememberedFirstNight: true } } },
-        { text: '"What sustains you after so much hardship?"', next: 'steadfast',
-          effect: { set: { ch6AskedSteadfastness: true } } },
-        { text: '"I have read the pages of the Bayán. Where will you go now?"', next: 'charge',
-          requires: f => !!f.ch6ReadBayan && !!f.ch6MetMullaHusayn },
-      ],
-    },
-    foot: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'A thousand miles and more. A friend offered me a horse. I told him some journeys must be paid for in steps. I wanted to arrive as a pilgrim arrives: tired enough to be emptied.',
-      choices: [{ text: '(Walk beside him a little way.)', next: 'meet' }],
-    },
-    memory: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'Then you know. A lamp once kindled does not become night again. These walls are only shadows thrown around that flame.',
-      choices: [{ text: '(Stand with him in silence.)', next: 'meet' }],
-    },
-    steadfast: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'The first word I heard from Him still walks ahead of me. I follow it, whether it leads to a garden or a prison gate. Today it led here, and I find I cannot tell the difference.',
-      choices: [{ text: '(Let his certainty steady your own heart.)', next: 'meet' }],
-    },
-    meet: {
-      speaker: 'Mullá Ḥusayn',
-      onEnter: { set: { ch6MetMullaHusayn: true } },
-      text: 'They tell me the Khán himself came out on foot and walked behind me to the gate, which no one can explain. I will keep Naw-Rúz up there, if they let me. Go up ahead of me. Read what is being written, and come back and tell me.',
-      choices: [
-        { text: '(Promise to return.)' },
-        { text: '"I have read it already. Where will you go now?"', next: 'charge', requires: f => !!f.ch6ReadBayan },
-      ],
-    },
-    charge: {
-      speaker: 'Mullá Ḥusayn',
-      text: 'I have been bidden onward, to Mázindarán. A treasure lies hidden there, He says, which I will know when I see it. And He spoke of the friends who will suffer, gently, the way a farmer speaks of the harvest.',
-      choices: [{ text: '"That frightens me."', next: 'farewell' }],
-    },
-    farewell: {
-      speaker: 'Mullá Ḥusayn',
-      onEnter: { set: { ch6HusaynCharge: true } },
-      text: 'Do not be frightened of it, friend. If the road is hard, it is only because it is going somewhere. Look for me among the green hills of Mázindarán, when the time comes.',
-      choices: [{ text: '(Embrace him.)' }],
     },
   },
 };

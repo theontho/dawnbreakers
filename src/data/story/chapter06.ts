@@ -8,9 +8,13 @@ export const chapter06Story: ChapterStory = {
       done: f => !!f.ch6WardenSoftened,
     },
     {
-      text: 'Read the pages of the Bayán, and find Mullá Ḥusayn on the Mashhad road',
-      done: f => !!f.ch6ReadBayan && !!f.ch6MetMullaHusayn,
-      progress: f => ({ current: Number(!!f.ch6ReadBayan) + Number(!!f.ch6MetMullaHusayn), total: 2 }),
+      text: 'Read the pages of the Bayán in the amanuensis\'s room',
+      done: f => !!f.ch6ReadBayan,
+    },
+    {
+      text: 'At Naw-Rúz, go up the Mashhad road to the river bridge',
+      done: f => !!f.ch6HusaynCharge,
+      progress: f => ({ current: Number(!!f.ch6HeardDream) + Number(!!f.ch6MetMullaHusayn) + Number(!!f.ch6HusaynCharge), total: 3 }),
     },
     {
       text: 'Ask the Mountain Courier in town for news',
@@ -76,14 +80,29 @@ export const chapter06Story: ChapterStory = {
       body: 'You stood beneath the frosted bars of the keep and heard the pen, and then the chanting. You stayed until the cold reached your bones.',
     },
     {
+      flag: 'ch6HeardDream',
+      title: 'The Warden\'s Dream',
+      body: 'The Khán\'s groom told you what ʿAlí Khán dreamed on the eve of Naw-Rúz: the Prophet coming to Mákú to greet the Prisoner, and himself running out on foot to the river bridge. At sunrise he walked out alone.',
+    },
+    {
       flag: 'ch6MetMullaHusayn',
       title: 'On Foot from Mashhad',
-      body: 'Mullá Ḥusayn walked the whole road from Mashhad to Mákú, a thousand miles and more, to keep Naw-Rúz near the Prisoner. "Some journeys must be paid for in steps."',
+      body: 'Mullá Ḥusayn came over the river bridge at Naw-Rúz, the whole road from Mashhad behind him. He would not mount the Khán\'s horses. He walked up the mountain to the gate, and the Khán walked behind him.',
+    },
+    {
+      flag: 'ch6MetQambar',
+      title: 'Qambar-ʿAlí',
+      body: 'Mullá Ḥusayn\'s one companion on the road followed him out of Mashhad in the dark, and would not be sent home.',
+    },
+    {
+      flag: 'ch6NawRuzGreeted',
+      title: 'Sprouted Wheat',
+      body: 'An old man kept the New Year by the bridge with a dish of green wheat on his knees. In seventy years he had never seen the Khán come down to the river on foot.',
     },
     {
       flag: 'ch6HusaynCharge',
       title: 'A Treasure in Mázindarán',
-      body: 'Mullá Ḥusayn has been bidden onward to Mázindarán, where a hidden treasure waits that he will know when he sees it. "Look for me among the green hills."',
+      body: 'On the ninth morning after Naw-Rúz Mullá Ḥusayn went back over the bridge on foot, bidden through every town where the friends are to Mázindarán, where a hidden treasure waits that he will know when he sees it.',
     },
     {
       flag: 'ch6TransferOrdered',

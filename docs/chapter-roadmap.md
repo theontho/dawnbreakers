@@ -289,6 +289,7 @@ add or change content now, see `docs/content-guide.md`.
 
 **New scene keys:**
 - `Ch6Maku`
+- `Ch6MakuGate`
 - `Ch6Chihriq`
 
 **Owned files for agent:**
@@ -304,6 +305,7 @@ add or change content now, see `docs/content-guide.md`.
 
 **Map design:**
 - `Ch6Maku`: bleak mountain fortress, narrow path, snow/stone palette.
+- `Ch6MakuGate`: the river bridge below Mákú at Naw-Rúz 1848, where Mullá Ḥusayn arrives on foot and leaves nine days later.
 - `Ch6Chihriq`: harsher fortress map with barred chamber and distant cliffs.
 
 **Important NPCs / objects:**
@@ -323,7 +325,7 @@ add or change content now, see `docs/content-guide.md`.
 **Dialogue requirements:**
 - Primary tree: `ch6-bayan`
 - Secondary tree: `ch6-warden-softens`
-- Optional tree: `ch6-mulla-husayn-visit`
+- Optional trees: `ch6-gate-husayn-arrival`, `ch6-gate-husayn-farewell`
 
 **Tone:** sparse, cold, contemplative.
 
